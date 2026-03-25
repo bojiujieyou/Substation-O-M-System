@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}变电站列表 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">变电站列表</h2>
+        <div class="page-actions">
+            <select id="county-filter" class="form-select form-select-sm">
+                <option value="">全部县区</option>
+                <option value="丽水">丽水</option>
+                <option value="云和">云和</option>
+                <option value="庆元">庆元</option>
+                <option value="景宁">景宁</option>
+                <option value="松阳">松阳</option>
+                <option value="缙云">缙云</option>
+                <option value="遂昌">遂昌</option>
+                <option value="青田">青田</option>
+                <option value="龙泉">龙泉</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>加载中...</span>
+    </div>
+
+    <!-- 错误状态 -->
+    <div id="error" class="error-state" style="display: none;">
+        <span class="error-icon">!</span>
+        <span>加载失败</span>
+        <button class="btn btn-sm btn-secondary" onclick="loadStations()">重试</button>
+    </div>
+
+    <!-- 空状态 -->
+    <div id="empty" class="empty-state" style="display: none;">
+        <p>暂无变电站数据</p>
+        <p class="text-muted">请在管理后台导入台账数据</p>
+        <a href="{{ url_for('admin_page') }}" class="btn btn-primary btn-sm" style="margin-top: 12px;">前往管理后台</a>
+    </div>
+
+    <!-- 变电站列表 -->
+    <div id="station-list" class="station-list" style="display: none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>变电站名称</th>
+                    <th>电压等级</th>
+                    <th>县区</th>
+                    <th>位置</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="station-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="detail-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">变电站详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- 动态加载 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <a href="#" id="modal-report-btn" class="btn btn-primary">报故障</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allStations = [];
+
+async function loadStations() {
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const empty = document.getElementById('empty');
+    const list = document.getElementById('station-list');
+
+    // 显示加载状态
+    loading.style.display = 'flex';
+    error.style.display = 'none';
+    empty.style.display = 'none';
+    list.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/stations');
+        if (!response.ok) throw new Error('加载失败');
+
+        const data = await response.json();
+        allStations = data.stations || [];
+
+        loading.style.display = 'none';
+
+        if (allStations.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+
+        renderStations(allStations);
+        list.style.display = 'block';
+
+    } catch (error) {
+        console.error('加载失败:', error);
+        loading.style.display = 'none';
+        error.style.display = 'flex';
+    }
+}
+
+function renderStations(stations) {
+    const tbody = document.getElementById('station-tbody');
+    tbody.innerHTML = stations.map(station => `
+        <tr>
+            <td class="station-name">${escapeHtml(station.name)}</td>
+            <td>${escapeHtml(station.voltage_level || '-')}</td>
+            <td>${escapeHtml(station.county || '-')}</td>
+            <td>${escapeHtml(station.location || '-')}</td>
+            <td>
+                <button class="btn btn-sm btn-ghost" onclick="showDetail(${station.id})">查看详情</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterByCounty(county) {
+    if (!county) {
+        renderStations(allStations);
+    } else {
+        const filtered = allStations.filter(s => s.county === county);
+        renderStations(filtered);
+    }
+}
+
+async function showDetail(stationId) {
+    const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalReportBtn = document.getElementById('modal-report-btn');
+
+    modalTitle.textContent = '加载中...';
+    modalBody.innerHTML = '<div class="spinner"></div>';
+    modal.show();
+
+    try {
+        const response = await fetch(`/api/stations/${stationId}`);
+        if (!response.ok) throw new Error('加载失败');
+
+        const data = await response.json();
+        const station = data.station;
+        const cameras = data.cameras || [];
+
+        modalTitle.textContent = station.name;
+
+        modalBody.innerHTML = `
+            <div class="detail-info">
+                <div class="detail-row">
+                    <span class="detail-label">电压等级:</span>
+                    <span class="detail-value">${escapeHtml(station.voltage_level || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">县区:</span>
+                    <span class="detail-value">${escapeHtml(station.county || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">位置:</span>
+                    <span class="detail-value">${escapeHtml(station.location || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">摄像头数量:</span>
+                    <span class="detail-value">${cameras.length}</span>
+                </div>
+            </div>
+            ${cameras.length > 0 ? `
+            <h6 class="detail-subtitle">摄像头列表</h6>
+            <div class="camera-list">
+                ${cameras.map(c => `
+                    <div class="camera-item">
+                        <span class="camera-location">${escapeHtml(c.location_desc || c.area || '-')}</span>
+                        <span class="camera-ip">${escapeHtml(c.ip_address || '-')}</span>
+                    </div>
+                `).join('')}
+            </div>
+            ` : '<p class="text-muted">暂无摄像头数据</p>'}
+        `;
+
+        modalReportBtn.href = `/fault/new?station_id=${stationId}`;
+
+    } catch (error) {
+        console.error('加载详情失败:', error);
+        modalTitle.textContent = '加载失败';
+        modalBody.innerHTML = '<p class="text-danger">加载详情失败，请重试</p>';
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 县区筛选
+document.getElementById('county-filter').addEventListener('change', (e) => {
+    filterByCounty(e.target.value);
+});
+
+// 页面加载时获取数据
+document.addEventListener('DOMContentLoaded', loadStations);
+</script>
+{% endblock %}

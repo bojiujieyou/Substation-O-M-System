@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.db
+*.db.backup
+
+# Environment
+.env
+
+# Static assets (generated)
+static/bootstrap-5.3.3.min.css
+static/bootstrap-5.3.3.bundle.min.js
+static/chart-4.4.1.umd.min.js
+static/leaflet-1.9.4.min.js
+
+# OS
+.DS_Store
+Thumbs.db
+
+# gstack
+.gstack/
+
+# Misc
+=1.2.0

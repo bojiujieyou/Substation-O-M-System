@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}变电站图像监控运维平台{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3.3 本地化 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-5.3.3.min.css') }}">
+
+    <!-- Design System CSS Variables -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">跳到主要内容</a>
+    <header class="app-header" role="banner">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="app-title">变电站图像监控运维平台</h1>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-hidden="true">
+                <label for="nav-toggle" class="nav-toggle-label" aria-label="切换导航">
+                    <span></span><span></span><span></span>
+                </label>
+                <nav class="app-nav" role="navigation" aria-label="主导航">
+                    <a href="{{ url_for('index') }}" class="nav-link">首页</a>
+                    <a href="{{ url_for('stations') }}" class="nav-link">变电站列表</a>
+                    <a href="{{ url_for('fault_new') }}" class="nav-link">报故障</a>
+                    <a href="{{ url_for('faults') }}" class="nav-link">故障记录</a>
+                    <a href="{{ url_for('statistics') }}" class="nav-link">统计</a>
+                    <a href="{{ url_for('map_page') }}" class="nav-link">地图</a>
+                    <a href="{{ url_for('admin_page') }}" class="nav-link">管理</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main" id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>变电站图像监控运维平台 &copy; 2024</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS 本地化 -->
+    <script src="{{ url_for('static', filename='bootstrap-5.3.3.bundle.min.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

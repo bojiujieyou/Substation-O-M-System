@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}故障记录 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">故障记录</h2>
+        <div class="page-actions">
+            <select id="status-filter" class="form-select form-select-sm">
+                <option value="">全部状态</option>
+                <option value="open">待处理</option>
+                <option value="handling">处理中</option>
+                <option value="closed">已关闭</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>加载中...</span>
+    </div>
+
+    <!-- 错误状态 -->
+    <div id="error" class="error-state" style="display: none;">
+        <span class="error-icon">!</span>
+        <span>加载失败</span>
+        <button class="btn btn-sm btn-secondary" onclick="loadFaults()">重试</button>
+    </div>
+
+    <!-- 空状态 -->
+    <div id="empty" class="empty-state" style="display: none;">
+        <p>暂无故障记录</p>
+    </div>
+
+    <!-- 故障列表 -->
+    <div id="fault-list" class="fault-list" style="display: none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>故障单号</th>
+                    <th>变电站</th>
+                    <th>摄像头位置</th>
+                    <th>故障类型</th>
+                    <th>状态</th>
+                    <th>报修时间</th>
+                    <th>报修人</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="fault-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 处理弹窗 -->
+<div class="modal" id="handle-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handle-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="handle-modal-title">处理故障</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-info mb-3">
+                    <div class="detail-row">
+                        <span class="detail-label">故障单号:</span>
+                        <span class="detail-value" id="handle-fault-id"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">变电站:</span>
+                        <span class="detail-value" id="handle-station"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">故障类型:</span>
+                        <span class="detail-value" id="handle-type"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">故障描述:</span>
+                        <span class="detail-value" id="handle-desc"></span>
+                    </div>
+                </div>
+                <form id="handle-form">
+                    <div class="form-group">
+                        <label for="handler-name" class="form-label">处理人姓名 <span class="required">*</span></label>
+                        <input type="text" id="handler-name" class="form-input" required placeholder="请输入处理人姓名">
+                    </div>
+                    <div class="form-group">
+                        <label for="handler-note" class="form-label">处理备注 <span class="required">*</span></label>
+                        <textarea id="handler-note" class="form-input" rows="3" required placeholder="请输入处理方法和结果"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirm-handle-btn">确认关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allFaults = [];
+let currentFaultId = null;
+
+async function loadFaults() {
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const empty = document.getElementById('empty');
+    const list = document.getElementById('fault-list');
+
+    loading.style.display = 'flex';
+    error.style.display = 'none';
+    empty.style.display = 'none';
+    list.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/faults');
+        if (!response.ok) throw new Error('加载失败');
+
+        const data = await response.json();
+        allFaults = data.faults || [];
+
+        loading.style.display = 'none';
+
+        if (allFaults.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+
+        renderFaults(allFaults);
+        list.style.display = 'block';
+
+    } catch (error) {
+        console.error('加载失败:', error);
+        loading.style.display = 'none';
+        error.style.display = 'flex';
+    }
+}
+
+function renderFaults(faults) {
+    const tbody = document.getElementById('fault-tbody');
+    tbody.innerHTML = faults.map(fault => `
+        <tr>
+            <td class="mono">${fault.id}</td>
+            <td>${escapeHtml(fault.station_name || '-')}</td>
+            <td>${escapeHtml(fault.camera_location || fault.camera_area || '-')}</td>
+            <td>${escapeHtml(fault.fault_type || '-')}</td>
+            <td><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></td>
+            <td class="mono">${formatDate(fault.created_at)}</td>
+            <td>${escapeHtml(fault.reporter_name || '-')}</td>
+            <td>
+                ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : '-'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function statusText(status) {
+    const map = { 'open': '待处理', 'handling': '处理中', 'closed': '已关闭' };
+    return map[status] || status;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function filterByStatus(status) {
+    if (!status) {
+        renderFaults(allFaults);
+    } else {
+        const filtered = allFaults.filter(f => f.status === status);
+        renderFaults(filtered);
+    }
+}
+
+async function showHandleModal(faultId) {
+    const fault = allFaults.find(f => f.id === faultId);
+    if (!fault) return;
+
+    currentFaultId = faultId;
+
+    document.getElementById('handle-fault-id').textContent = fault.id;
+    document.getElementById('handle-station').textContent = fault.station_name || '-';
+    document.getElementById('handle-type').textContent = fault.fault_type || '-';
+    document.getElementById('handle-desc').textContent = fault.description || '(无描述)';
+    document.getElementById('handler-name').value = '';
+    document.getElementById('handler-note').value = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('handle-modal'));
+    modal.show();
+}
+
+document.getElementById('confirm-handle-btn').addEventListener('click', async function() {
+    const handlerName = document.getElementById('handler-name').value.trim();
+    const handlerNote = document.getElementById('handler-note').value.trim();
+
+    if (!handlerName || !handlerNote) {
+        alert('请填写处理人姓名和处理备注');
+        return;
+    }
+
+    this.disabled = true;
+    this.textContent = '提交中...';
+
+    try {
+        // First transition to handling if open
+        const fault = allFaults.find(f => f.id === currentFaultId);
+        if (fault && fault.status === 'open') {
+            await fetch(`/api/faults/${currentFaultId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'handling' })
+            });
+        }
+
+        // Then close
+        const response = await fetch(`/api/faults/${currentFaultId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: 'closed',
+                handler_name: handlerName,
+                handler_note: handlerNote
+            })
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || '提交失败');
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('handle-modal')).hide();
+        loadFaults();
+
+    } catch (error) {
+        console.error('提交失败:', error);
+        alert('提交失败: ' + error.message);
+    } finally {
+        this.disabled = false;
+        this.textContent = '确认关闭';
+    }
+});
+
+document.getElementById('status-filter').addEventListener('change', function(e) {
+    filterByStatus(e.target.value);
+});
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadFaults);
+</script>
+{% endblock %}

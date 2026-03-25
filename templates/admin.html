@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 变电站图像监控运维平台{% endblock %}
+
+{% block extra_head %}
+<style>
+.admin-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+.admin-section h3 {
+    margin: 0 0 var(--space-md) 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+.upload-zone {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: border-color var(--transition-short);
+}
+.upload-zone:hover {
+    border-color: var(--color-primary);
+}
+.upload-zone.dragover {
+    border-color: var(--color-primary);
+    background: var(--color-info-bg);
+}
+.station-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.station-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.station-item:last-child {
+    border-bottom: none;
+}
+.station-info {
+    flex: 1;
+}
+.station-name {
+    font-weight: 500;
+}
+.station-meta {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+.station-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+.badge-count {
+    background: var(--color-info-bg);
+    color: var(--color-primary);
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">管理后台</h2>
+        <div class="page-actions">
+            <button class="btn btn-secondary" onclick="backupDb()">备份数据库</button>
+        </div>
+    </div>
+
+    <!-- 上传Excel -->
+    <div class="admin-section">
+        <h3>上传Excel导入</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="upload-zone" id="upload-zone">
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="form-group mb-3">
+                            <label for="county-select" class="form-label">县区</label>
+                            <select id="county-select" class="form-select" required>
+                                <option value="">选择县区</option>
+                                <option value="丽水">丽水</option>
+                                <option value="云和">云和</option>
+                                <option value="庆元">庆元</option>
+                                <option value="景宁">景宁</option>
+                                <option value="松阳">松阳</option>
+                                <option value="缙云">缙云</option>
+                                <option value="遂昌">遂昌</option>
+                                <option value="青田">青田</option>
+                                <option value="龙泉">龙泉</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input" style="height: auto; padding: 8px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
+                    </form>
+                    <div id="upload-result" class="mt-3"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <p class="text-muted" style="font-size: 13px;">
+                    <strong>说明：</strong><br>
+                    • 上传Excel文件将覆盖该变电站的摄像头数据<br>
+                    • 变电站信息不存在则新建，存在则更新<br>
+                    • 摄像头将全部重新导入（先删除后新增）<br>
+                    • 支持xlsx和xls格式
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 变电站列表 -->
+    <div class="admin-section">
+        <h3>变电站管理</h3>
+        <div class="mb-3">
+            <input type="text" id="search-station" class="form-input" placeholder="搜索变电站..." style="max-width: 300px;">
+        </div>
+        <div id="loading" class="loading-state">
+            <div class="spinner"></div>
+            <span>加载中...</span>
+        </div>
+        <div id="station-list" class="station-list" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- 编辑变电站弹窗 -->
+<div class="modal" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit-modal-title">编辑变电站</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <div class="form-group">
+                        <label for="edit-name" class="form-label">变电站名称</label>
+                        <input type="text" id="edit-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-voltage" class="form-label">电压等级</label>
+                        <select id="edit-voltage" class="form-select">
+                            <option value="220kV">220kV</option>
+                            <option value="110kV">110kV</option>
+                            <option value="35kV">35kV</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-county" class="form-label">县区</label>
+                        <select id="edit-county" class="form-select">
+                            <option value="丽水">丽水</option>
+                            <option value="云和">云和</option>
+                            <option value="庆元">庆元</option>
+                            <option value="景宁">景宁</option>
+                            <option value="松阳">松阳</option>
+                            <option value="缙云">缙云</option>
+                            <option value="遂昌">遂昌</option>
+                            <option value="青田">青田</option>
+                            <option value="龙泉">龙泉</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-location" class="form-label">位置</label>
+                        <input type="text" id="edit-location" class="form-input">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveStation()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加摄像头弹窗 -->
+<div class="modal" id="camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="camera-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="camera-modal-title">添加摄像头</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <form id="camera-form">
+                    <input type="hidden" id="camera-station-id">
+                    <div class="form-group">
+                        <label for="camera-ip" class="form-label">IP地址 <span class="required">*</span></label>
+                        <input type="text" id="camera-ip" class="form-input" required placeholder="如 192.168.1.100">
+                    </div>
+                    <div class="form-group">
+                        <label for="camera-location" class="form-label">位置描述</label>
+                        <input type="text" id="camera-location" class="form-input" placeholder="如 220kV场地北侧">
+                    </div>
+                    <div class="form-group">
+                        <label for="camera-area" class="form-label">区域</label>
+                        <input type="text" id="camera-area" class="form-input" placeholder="如 220kV场地">
+                    </div>
+                    <div class="form-group">
+                        <label for="camera-channel" class="form-label">通道号</label>
+                        <input type="number" id="camera-channel" class="form-input" placeholder="如 1">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="addCamera()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let stations = [];
+let currentStationId = null;
+
+async function loadStations() {
+    const loading = document.getElementById('loading');
+    const list = document.getElementById('station-list');
+
+    loading.style.display = 'flex';
+    list.style.display = 'none';
+
+    try {
+        const response = await fetch('/admin/stations');
+        const data = await response.json();
+        stations = data.stations || [];
+        renderStations(stations);
+        loading.style.display = 'none';
+        list.style.display = 'block';
+    } catch (error) {
+        console.error('加载失败:', error);
+        loading.innerHTML = '<span class="text-danger">加载失败</span>';
+    }
+}
+
+function renderStations(stationsToRender) {
+    const list = document.getElementById('station-list');
+    if (stationsToRender.length === 0) {
+        list.innerHTML = '<p class="text-muted">暂无变电站</p>';
+        return;
+    }
+
+    list.innerHTML = stationsToRender.map(s => `
+        <div class="station-item">
+            <div class="station-info">
+                <div class="station-name">${escapeHtml(s.name)} <span class="badge-count">${s.camera_count}个摄像头</span></div>
+                <div class="station-meta">${escapeHtml(s.voltage_level || '')} | ${escapeHtml(s.county || '')} | ${escapeHtml(s.location || '无位置')}</div>
+            </div>
+            <div class="station-actions">
+                <button class="btn btn-sm btn-ghost" onclick="editStation(${s.id})">编辑</button>
+                <button class="btn btn-sm btn-ghost" onclick="showCameraModal(${s.id})">添加摄像头</button>
+                <button class="btn btn-sm btn-ghost text-danger" onclick="deleteStation(${s.id})">删除</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterStations(query) {
+    if (!query) {
+        renderStations(stations);
+        return;
+    }
+    const filtered = stations.filter(s =>
+        s.name.includes(query) ||
+        (s.county && s.county.includes(query)) ||
+        (s.voltage_level && s.voltage_level.includes(query))
+    );
+    renderStations(filtered);
+}
+
+document.getElementById('search-station').addEventListener('input', function(e) {
+    filterStations(e.target.value);
+});
+
+// 上传Excel
+document.getElementById('upload-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('file', document.getElementById('excel-file').files[0]);
+    formData.append('county', document.getElementById('county-select').value);
+
+    if (!formData.get('county')) {
+        alert('请选择县区');
+        return;
+    }
+
+    const btn = document.getElementById('upload-btn');
+    btn.disabled = true;
+    btn.textContent = '上传中...';
+
+    const resultDiv = document.getElementById('upload-result');
+
+    try {
+        const response = await fetch('/admin/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            resultDiv.innerHTML = `<p class="text-success">✓ ${data.message}<br>变电站: ${data.station}<br>摄像头: ${data.cameras_added}个</p>`;
+            loadStations();
+        } else {
+            resultDiv.innerHTML = `<p class="text-danger">✗ ${data.error}</p>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<p class="text-danger">✗ 上传失败: ${error.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '上传并导入';
+    }
+});
+
+// 编辑变电站
+async function editStation(stationId) {
+    const station = stations.find(s => s.id === stationId);
+    if (!station) return;
+
+    document.getElementById('edit-id').value = station.id;
+    document.getElementById('edit-name').value = station.name;
+    document.getElementById('edit-voltage').value = station.voltage_level || '110kV';
+    document.getElementById('edit-county').value = station.county || '丽水';
+    document.getElementById('edit-location').value = station.location || '';
+
+    const modal = new bootstrap.Modal(document.getElementById('edit-modal'));
+    modal.show();
+}
+
+async function saveStation() {
+    const id = document.getElementById('edit-id').value;
+    const data = {
+        name: document.getElementById('edit-name').value,
+        voltage_level: document.getElementById('edit-voltage').value,
+        county: document.getElementById('edit-county').value,
+        location: document.getElementById('edit-location').value,
+    };
+
+    try {
+        const response = await fetch(`/admin/stations/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('edit-modal')).hide();
+            loadStations();
+        } else {
+            const data = await response.json();
+            alert(data.error || '保存失败');
+        }
+    } catch (error) {
+        alert('保存失败: ' + error.message);
+    }
+}
+
+async function deleteStation(stationId) {
+    const station = stations.find(s => s.id === stationId);
+    if (!station) return;
+
+    if (!confirm(`确定要删除 ${station.name} 吗？\n这将同时删除所有关联的摄像头。`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/stations/${stationId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadStations();
+        } else {
+            const data = await response.json();
+            alert(data.error || '删除失败');
+        }
+    } catch (error) {
+        alert('删除失败: ' + error.message);
+    }
+}
+
+// 添加摄像头
+function showCameraModal(stationId) {
+    currentStationId = stationId;
+    document.getElementById('camera-station-id').value = stationId;
+    document.getElementById('camera-ip').value = '';
+    document.getElementById('camera-location').value = '';
+    document.getElementById('camera-area').value = '';
+    document.getElementById('camera-channel').value = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('camera-modal'));
+    modal.show();
+}
+
+async function addCamera() {
+    const stationId = document.getElementById('camera-station-id').value;
+    const data = {
+        station_id: parseInt(stationId),
+        ip_address: document.getElementById('camera-ip').value,
+        location: document.getElementById('camera-location').value,
+        area: document.getElementById('camera-area').value,
+        channel_number: document.getElementById('camera-channel').value ? parseInt(document.getElementById('camera-channel').value) : null,
+    };
+
+    if (!data.ip_address) {
+        alert('请输入IP地址');
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/cameras', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('camera-modal')).hide();
+            loadStations();
+        } else {
+            const resp = await response.json();
+            alert(resp.error || '添加失败');
+        }
+    } catch (error) {
+        alert('添加失败: ' + error.message);
+    }
+}
+
+// 备份数据库
+async function backupDb() {
+    try {
+        const response = await fetch('/admin/backup', { method: 'POST' });
+        const data = await response.json();
+        if (response.ok) {
+            alert('✓ 备份成功\n备份文件: ' + data.backup);
+        } else {
+            alert('✗ ' + (data.error || '备份失败'));
+        }
+    } catch (error) {
+        alert('备份失败: ' + error.message);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadStations);
+</script>
+{% endblock %}

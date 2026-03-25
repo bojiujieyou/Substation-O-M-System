@@ -1,0 +1,44 @@
+# docker-compose.yml — 变电站图像监控运维平台
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: station_monitor
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_DEBUG=False
+      - API_TOKEN=${API_TOKEN:-}
+    volumes:
+      # 持久化数据库
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # 备份服务（可选，每天凌晨2点自动备份）
+  backup:
+    build: .
+    container_name: station_monitor_backup
+    volumes:
+      - ./backups:/app/backups
+    entrypoint: ["python", "-c", "
+import time, sqlite3, shutil, os
+from datetime import datetime
+
+while True:
+    now = datetime.now()
+    if now.hour == 2 and now.minute == 0:
+        src = '/app/data/station_monitor.db'
+        dst = f'/app/backups/station_monitor_{now.strftime(\"%Y%m%d_%H%M%S\")}.db'
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+            print(f'Backup saved: {dst}')
+    time.sleep(60)
+"]
+    restart: unless-stopped

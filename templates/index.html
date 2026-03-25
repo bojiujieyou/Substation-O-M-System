@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 主CTA区域 -->
+    <section class="hero-section">
+        <a href="{{ url_for('fault_new') }}" class="btn btn-primary btn-lg btn-report">
+            报 故 障
+        </a>
+        <p class="hero-subtitle">快速登记设备异常</p>
+    </section>
+
+    <!-- 统计卡片 -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-stations">-</div>
+                <div class="stat-label">变电站</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-cameras">-</div>
+                <div class="stat-label">摄像头</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-faults">-</div>
+                <div class="stat-label">故障报修</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-faults-month">-</div>
+                <div class="stat-label">本月故障</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速入口 -->
+    <section class="actions-section">
+        <a href="{{ url_for('stations') }}" class="btn btn-secondary">进入变电站列表</a>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadStats() {
+    try {
+        const response = await fetch('/api/stats');
+        if (!response.ok) throw new Error('加载失败');
+
+        const data = await response.json();
+
+        // 更新统计数字
+        updateStat('stat-stations', data.stations);
+        updateStat('stat-cameras', data.cameras);
+        updateStat('stat-faults', data.faults);
+        updateStat('stat-faults-month', data.faults_this_month);
+
+    } catch (error) {
+        console.error('加载统计失败:', error);
+        // 显示错误状态
+        document.querySelectorAll('.stat-value').forEach(el => {
+            el.textContent = '!';
+            el.classList.add('stat-error');
+        });
+    }
+}
+
+function updateStat(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = typeof value === 'number' ? value.toLocaleString() : value;
+    }
+}
+
+// 页面加载时获取统计
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}

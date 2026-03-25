@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}地图 - 变电站图像监控运维平台{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+#map {
+    height: calc(100vh - 180px);
+    min-height: 500px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+.map-legend {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 13px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.legend-dot.high { background: #d93025; }
+.legend-dot.medium { background: #f9ab00; }
+.legend-dot.low { background: #1e8e3e; }
+.station-popup {
+    min-width: 180px;
+}
+.station-popup h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+.station-popup .info {
+    font-size: 12px;
+    color: #5f6368;
+    margin-bottom: 4px;
+}
+.station-popup .camera-count {
+    font-size: 12px;
+    color: #1a73e8;
+    font-weight: 500;
+}
+.station-popup .action {
+    margin-top: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">变电站分布地图</h2>
+        <div class="page-actions">
+            <span class="text-muted" style="font-size: 13px;">点击标记查看详情</span>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="map-legend">
+        <div class="legend-item">
+            <span class="legend-dot high"></span>
+            <span>故障率 > 5%</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot medium"></span>
+            <span>故障率 1-5%</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot low"></span>
+            <span>故障率 &lt; 1%</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// 丽水地区各县区中心坐标
+const COUNTY_CENTERS = {
+    '丽水': { lat: 28.4672, lng: 119.9222 },
+    '云和': { lat: 28.1353, lng: 119.5579 },
+    '庆元': { lat: 27.6205, lng: 119.6205 },
+    '景宁': { lat: 27.9831, lng: 119.6333 },
+    '松阳': { lat: 28.4497, lng: 119.4811 },
+    '缙云': { lat: 28.6609, lng: 120.0778 },
+    '遂昌': { lat: 28.5931, lng: 119.2761 },
+    '青田': { lat: 28.0534, lng: 120.2991 },
+    '龙泉': { lat: 27.9237, lng: 119.1317 }
+};
+
+// 分散标记的偏移量
+const OFFSETS = [
+    { lat: 0.02, lng: 0.02 },
+    { lat: 0.02, lng: -0.02 },
+    { lat: -0.02, lng: 0.02 },
+    { lat: -0.02, lng: -0.02 },
+    { lat: 0.04, lng: 0 },
+    { lat: -0.04, lng: 0 },
+    { lat: 0, lng: 0.04 },
+    { lat: 0, lng: -0.04 },
+    { lat: 0.03, lng: 0.03 },
+    { lat: -0.03, lng: -0.03 }
+];
+
+let map;
+let stationsData = [];
+
+async function initMap() {
+    // 初始化地图
+    map = L.map('map').setView([28.3, 119.6], 10);
+
+    // 添加底图
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18
+    }).addTo(map);
+
+    // 加载数据
+    await loadStationsForMap();
+}
+
+async function loadStationsForMap() {
+    try {
+        const response = await fetch('/api/stations');
+        const data = await response.json();
+        stationsData = data.stations || [];
+
+        // 获取故障统计
+        const faultsResponse = await fetch('/api/faults');
+        const faultsData = await faultsResponse.json();
+        const faults = faultsData.faults || [];
+
+        // 按变电站统计故障数
+        const faultCountByStation = {};
+        faults.forEach(f => {
+            if (f.station_id) {
+                faultCountByStation[f.station_id] = (faultCountByStation[f.station_id] || 0) + 1;
+            }
+        });
+
+        // 获取摄像头数量
+        const camerasResponse = await fetch('/api/cameras');
+        const camerasData = await camerasResponse.json();
+        const cameras = camerasData.cameras || [];
+
+        const cameraCountByStation = {};
+        cameras.forEach(c => {
+            if (c.station_id) {
+                cameraCountByStation[c.station_id] = (cameraCountByStation[c.station_id] || 0) + 1;
+            }
+        });
+
+        // 按县区分组添加标记
+        const countyGroups = {};
+        stationsData.forEach(station => {
+            const county = station.county || '未知';
+            if (!countyGroups[county]) {
+                countyGroups[county] = [];
+            }
+            countyGroups[county].push(station);
+        });
+
+        // 为每个县添加标记
+        Object.entries(countyGroups).forEach(([county, stations]) => {
+            const center = COUNTY_CENTERS[county];
+            if (!center) return;
+
+            stations.forEach((station, idx) => {
+                const faultCount = faultCountByStation[station.id] || 0;
+                const cameraCount = cameraCountByStation[station.id] || 0;
+                const faultRate = cameraCount > 0 ? (faultCount / cameraCount * 100).toFixed(1) : 0;
+
+                // 计算标记颜色
+                const colorClass = faultRate > 5 ? 'high' : (faultRate >= 1 ? 'medium' : 'low');
+                const color = faultRate > 5 ? '#d93025' : (faultRate >= 1 ? '#f9ab00' : '#1e8e3e');
+
+                // 添加偏移避免重叠
+                const offset = OFFSETS[idx % OFFSETS.length];
+                const lat = center.lat + offset.lat;
+                const lng = center.lng + offset.lng;
+
+                // 创建自定义图标
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        background: ${color};
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        border: 3px solid white;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 11px;
+                        font-weight: bold;
+                    ">${stations.length > 1 ? (idx + 1) : ''}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+                marker.bindPopup(`
+                    <div class="station-popup">
+                        <h4>${escapeHtml(station.name)}</h4>
+                        <div class="info">电压等级: ${escapeHtml(station.voltage_level || '-')}</div>
+                        <div class="info">县区: ${escapeHtml(station.county || '-')}</div>
+                        <div class="camera-count">摄像头: ${cameraCount}个</div>
+                        <div class="camera-count">故障: ${faultCount}次 (${faultRate}%)</div>
+                        <div class="action">
+                            <a href="/fault/new?station_id=${station.id}" class="btn btn-sm btn-primary">报故障</a>
+                        </div>
+                    </div>
+                `);
+            });
+        });
+
+        // 如果只有一个变电站，直接放大到该位置
+        if (stationsData.length === 1) {
+            const station = stationsData[0];
+            const county = station.county;
+            const center = COUNTY_CENTERS[county];
+            if (center) {
+                map.setView([center.lat, center.lng], 13);
+            }
+        }
+
+    } catch (error) {
+        console.error('加载地图数据失败:', error);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %}
