@@ -53,37 +53,49 @@
 |-------|-----|-------|
 | `--color-primary` | `#1a73e8` | 主按钮、链接、激活状态 |
 | `--color-primary-hover` | `#1557b0` | 主色Hover |
+| `--color-secondary` | `#1fb6b9` | 次要强调色 |
+| `--color-accent` | `#7b61ff` | 特殊强调色（紫色） |
 
 ### Background & Surface
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-bg` | `#f8f9fa` | 页面背景 |
+| `--color-bg` | `#f3f6fc` | 页面背景 |
+| `--color-bg-elevated` | `#e9eefc` | 提升区块背景 |
 | `--color-surface` | `#ffffff` | 卡片、表格、弹窗背景 |
+| `--color-surface-strong` | `#f8faff` | 卡片内区块背景 |
 
 ### Text
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-text` | `#202124` | 主文字（高对比度） |
-| `--color-text-secondary` | `#5f6368` | 次要文字 |
-| `--color-text-muted` | `#9aa0a6` | 占位符、禁用文字 |
+| `--color-text` | `#1a2340` | 主文字（高对比度） |
+| `--color-text-secondary` | `#4f5b7a` | 次要文字 |
+| `--color-text-muted` | `#7b86a8` | 占位符、禁用文字 |
 
 ### Semantic — Status Colors
 
 | Token | HEX | BG | Usage |
 |-------|-----|-----|-------|
-| Success | `#1e8e3e` | `#e6f4ea` | 正常状态、已归档 |
-| Danger | `#d93025` | `#fce8e6` | 故障、紧急、错误 |
-| Warning | `#f9ab00` | `#fef7e0` | 处理中、告警 |
-| Info | `#1a73e8` | `#e8f0fe` | 提示、未关联 |
+| Success | `#157347` | `#dcf7e6` | 正常状态、已归档 |
+| Danger | `#c42a32` | `#fee9eb` | 故障、紧急、错误 |
+| Warning | `#b7791f` | `#fff4dc` | 处理中、告警 |
+| Info | `#1a73e8` | `#eaf0ff` | 提示、未关联 |
 
 ### Border
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-border` | `#dadce0` | 默认边框、分割线 |
-| `--color-border-strong` | `#5f6368` | 强调边框 |
+| `--color-border` | `#d8e0f3` | 默认边框、分割线 |
+| `--color-border-strong` | `#7f8bb2` | 强调边框 |
+
+### Header/Nav
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-header-bg` | `linear-gradient(105deg, #112a62 0%, #223f86 45%, #1a73e8 100%)` | 导航栏背景 |
+| `--color-header-text` | `#f4f7ff` | 导航栏主文字 |
+| `--color-header-text-muted` | `rgba(244, 247, 255, 0.84)` | 导航栏次要文字 |
 
 ---
 
@@ -113,9 +125,9 @@
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | 默认卡片 |
-| `--shadow-md` | `0 4px 6px rgba(0,0,0,0.07)` | Hover/交互反馈 |
-| `--shadow-lg` | `0 10px 15px rgba(0,0,0,0.10)` | 弹窗 |
+| `--shadow-sm` | `0 2px 8px rgba(26, 35, 64, 0.08)` | 默认卡片 |
+| `--shadow-md` | `0 8px 20px rgba(26, 35, 64, 0.12)` | Hover/交互反馈 |
+| `--shadow-lg` | `0 16px 34px rgba(17, 42, 98, 0.18)` | 弹窗 |
 
 ---
 
