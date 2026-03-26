@@ -22,7 +22,7 @@ def temp_db():
         temp_path = f.name
 
     Config.DATABASE_PATH = temp_path
-    init_db()
+    init_db(force=True)  # force=True ensures fresh db even if temp file already exists
 
     yield temp_path
 

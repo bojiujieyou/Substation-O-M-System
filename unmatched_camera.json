@@ -1,0 +1,645 @@
+[
+  {
+    "id": 26,
+    "station_id": 5,
+    "desc": "仓库摄像头正常，摄像头电源线重新接线",
+    "indices": []
+  },
+  {
+    "id": 31,
+    "station_id": 19,
+    "desc": "更换电容器室南侧摄像头",
+    "indices": []
+  },
+  {
+    "id": 41,
+    "station_id": 3,
+    "desc": "室外场地6个摄像头断电，在电缆层室空开跳闸，合闸后正常",
+    "indices": []
+  },
+  {
+    "id": 49,
+    "station_id": 64,
+    "desc": "110kV场地西侧摄像头故障",
+    "indices": []
+  },
+  {
+    "id": 57,
+    "station_id": 6,
+    "desc": "室外场地西、室外场地南摄像头故障，更换两个摄像头并调试后正常",
+    "indices": []
+  },
+  {
+    "id": 58,
+    "station_id": 8,
+    "desc": "110kV场地东侧摄像头故障，更换摄像头后正常",
+    "indices": []
+  },
+  {
+    "id": 67,
+    "station_id": 37,
+    "desc": "蓄电池室摄像头故障，更换调试后恢复正常",
+    "indices": []
+  },
+  {
+    "id": 68,
+    "station_id": 19,
+    "desc": "蓄电池室东北侧摄像头故障，更换调试后恢复正常",
+    "indices": []
+  },
+  {
+    "id": 72,
+    "station_id": 68,
+    "desc": "主控室、蓄电池室摄像头故障，更换并调试后正常",
+    "indices": []
+  },
+  {
+    "id": 74,
+    "station_id": 22,
+    "desc": "220kV场地西侧摄像头故障,更换调试后恢复正常",
+    "indices": []
+  },
+  {
+    "id": 79,
+    "station_id": 64,
+    "desc": "110kV场地西侧摄像头故障,更换调试后恢复正常",
+    "indices": []
+  },
+  {
+    "id": 80,
+    "station_id": 10,
+    "desc": "主控室西侧摄像头故障",
+    "indices": []
+  },
+  {
+    "id": 82,
+    "station_id": 28,
+    "desc": "10kV开关室室外楼顶全景平台摄像机图像无法显示，本地正常，平台上不显示，系统原因无法处理，后续跟进",
+    "indices": []
+  },
+  {
+    "id": 83,
+    "station_id": 16,
+    "desc": "主控室室外楼顶全景平台摄像机图像无法显示，本地正常，平台上不显示，系统原因无法处理，后续跟进",
+    "indices": []
+  },
+  {
+    "id": 115,
+    "station_id": 22,
+    "desc": "35kV开关室西侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 117,
+    "station_id": 27,
+    "desc": "电容器室西侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 120,
+    "station_id": 32,
+    "desc": "主控室北侧摄像机故障更换、110kV场地西侧光纤收发器故障更换。",
+    "indices": []
+  },
+  {
+    "id": 121,
+    "station_id": 30,
+    "desc": "电容器室摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 122,
+    "station_id": 56,
+    "desc": "35kV开关室北侧摄像机、10kV开关室北侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 124,
+    "station_id": 54,
+    "desc": "主控室南侧摄像机交换机网线端口接触不良，重新制作水晶头",
+    "indices": []
+  },
+  {
+    "id": 125,
+    "station_id": 44,
+    "desc": "10kV开关室西南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 128,
+    "station_id": 22,
+    "desc": "35kV开关室外墙北侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 129,
+    "station_id": 40,
+    "desc": "35kV开关室北侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 130,
+    "station_id": 7,
+    "desc": "35kV场地西北侧摄像机故障",
+    "indices": []
+  },
+  {
+    "id": 131,
+    "station_id": 10,
+    "desc": "10kV开关室西南侧、110kV开关室西侧、场地外围西北侧16号摄像机、场地外围东南侧17号摄像机故障处理",
+    "indices": []
+  },
+  {
+    "id": 132,
+    "station_id": 4,
+    "desc": "电容器室西侧、10kV开关室东南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 133,
+    "station_id": 17,
+    "desc": "110kVGIS室西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 134,
+    "station_id": 9,
+    "desc": "110kVGIS室西北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 135,
+    "station_id": 40,
+    "desc": "110kV场地东侧（补强）摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 136,
+    "station_id": 36,
+    "desc": "10kV开关室北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 140,
+    "station_id": 20,
+    "desc": "110kV场地南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 141,
+    "station_id": 32,
+    "desc": "110kV场地西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 142,
+    "station_id": 57,
+    "desc": "110kV场地西南侧摄像机故障更换，光纤收发器电源故障更换",
+    "indices": []
+  },
+  {
+    "id": 144,
+    "station_id": 40,
+    "desc": "35kV开关室北侧摄像机网口松动",
+    "indices": []
+  },
+  {
+    "id": 147,
+    "station_id": 10,
+    "desc": "场地外围西北侧16号摄像机电源转换器故障更换",
+    "indices": []
+  },
+  {
+    "id": 148,
+    "station_id": 42,
+    "desc": "主控室西南侧摄像机重启",
+    "indices": []
+  },
+  {
+    "id": 149,
+    "station_id": 59,
+    "desc": "110kV场地摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 150,
+    "station_id": 28,
+    "desc": "场地全景摄像头故障更换",
+    "indices": []
+  },
+  {
+    "id": 151,
+    "station_id": 22,
+    "desc": "220kV场地东侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 154,
+    "station_id": 8,
+    "desc": "110kV场地西南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 155,
+    "station_id": 44,
+    "desc": "主控室西南侧摄像机重启",
+    "indices": []
+  },
+  {
+    "id": 158,
+    "station_id": 68,
+    "desc": "主控室东南墙摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 160,
+    "station_id": 15,
+    "desc": "220kV场地西南侧摄像机故障重启",
+    "indices": []
+  },
+  {
+    "id": 161,
+    "station_id": 9,
+    "desc": "电容器室北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 162,
+    "station_id": 37,
+    "desc": "35kV开关室西南侧摄像头、35kV开关室楼顶（补强）摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 163,
+    "station_id": 5,
+    "desc": "仓库摄像机光纤传输故障，因场地施工原因无法恢复",
+    "indices": []
+  },
+  {
+    "id": 165,
+    "station_id": 22,
+    "desc": "220kV场地西南侧、西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 166,
+    "station_id": 8,
+    "desc": "110kV场地西南侧摄像机故障重启",
+    "indices": []
+  },
+  {
+    "id": 167,
+    "station_id": 65,
+    "desc": "就地继保室南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 168,
+    "station_id": 49,
+    "desc": "室外西北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 169,
+    "station_id": 32,
+    "desc": "110kV场地东北侧、西侧摄像机故障重启",
+    "indices": []
+  },
+  {
+    "id": 171,
+    "station_id": 59,
+    "desc": "110kV场地东北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 173,
+    "station_id": 42,
+    "desc": "主控室西南侧摄像机故障更换、110kV场地西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 174,
+    "station_id": 32,
+    "desc": "110kV场地西侧摄像机故障，光纤收发器电源重新接线后恢复",
+    "indices": []
+  },
+  {
+    "id": 175,
+    "station_id": 66,
+    "desc": "继保室西侧摄像机、10kV、35kV开关室西侧故障更换",
+    "indices": []
+  },
+  {
+    "id": 176,
+    "station_id": 52,
+    "desc": "10个摄像机黑屏，光纤收发器电源故障",
+    "indices": []
+  },
+  {
+    "id": 177,
+    "station_id": 42,
+    "desc": "10kV开关室东侧摄像机水晶头松动，重新制作水晶头后恢复",
+    "indices": []
+  },
+  {
+    "id": 179,
+    "station_id": 71,
+    "desc": "电容器室西南侧、电容器室东南侧摄像机更换",
+    "indices": []
+  },
+  {
+    "id": 182,
+    "station_id": 52,
+    "desc": "110kV场地西南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 187,
+    "station_id": 7,
+    "desc": "220kV场地南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 188,
+    "station_id": 24,
+    "desc": "主控楼西南外侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 190,
+    "station_id": 6,
+    "desc": "室外场地东侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 191,
+    "station_id": 8,
+    "desc": "10kV开关室南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 192,
+    "station_id": 5,
+    "desc": "电容器智能投切装置室摄像机已拆除，无需更换",
+    "indices": []
+  },
+  {
+    "id": 193,
+    "station_id": 59,
+    "desc": "35kV开关室西侧、35kV开关室东侧摄像机水晶头松动，重新制作水晶头后恢复",
+    "indices": []
+  },
+  {
+    "id": 196,
+    "station_id": 31,
+    "desc": "10kV开关室西侧摄像机故障，重启后恢复",
+    "indices": []
+  },
+  {
+    "id": 197,
+    "station_id": 23,
+    "desc": "大门枪机电源故障，重新接线后恢复",
+    "indices": []
+  },
+  {
+    "id": 198,
+    "station_id": 25,
+    "desc": "35kV开关室西南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 199,
+    "station_id": 38,
+    "desc": "电容器室东南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 200,
+    "station_id": 8,
+    "desc": "10kV开关室东南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 201,
+    "station_id": 37,
+    "desc": "35kV开关室西北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 207,
+    "station_id": 45,
+    "desc": "室外大门摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 211,
+    "station_id": 8,
+    "desc": "110kV场地东侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 214,
+    "station_id": 69,
+    "desc": "摄像机部分离线，机柜电源跳闸，合闸后恢复",
+    "indices": []
+  },
+  {
+    "id": 217,
+    "station_id": 59,
+    "desc": "35kV开关室东侧16#摄像机故障更换",
+    "indices": [
+      16
+    ]
+  },
+  {
+    "id": 226,
+    "station_id": 37,
+    "desc": "永都间隔道路旁摄像机拆除",
+    "indices": []
+  },
+  {
+    "id": 234,
+    "station_id": 37,
+    "desc": "永都间隔道路旁摄像机复原",
+    "indices": []
+  },
+  {
+    "id": 269,
+    "station_id": 23,
+    "desc": "大门枪机故障更换",
+    "indices": []
+  },
+  {
+    "id": 270,
+    "station_id": 19,
+    "desc": "12路摄像机掉线更换光纤收发器插槽电源",
+    "indices": []
+  },
+  {
+    "id": 275,
+    "station_id": 17,
+    "desc": "110kVGIS室西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 277,
+    "station_id": 37,
+    "desc": "电容器场地东北侧（黑光）摄像机电源接口松动，重新固定后恢复",
+    "indices": []
+  },
+  {
+    "id": 290,
+    "station_id": 37,
+    "desc": "就地继保室南侧、电容器场地西北侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 292,
+    "station_id": 9,
+    "desc": "10kV开关室摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 293,
+    "station_id": 41,
+    "desc": "110kV场地东侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 297,
+    "station_id": 31,
+    "desc": "大门外枪机故障更换",
+    "indices": []
+  },
+  {
+    "id": 301,
+    "station_id": 45,
+    "desc": "35kV开关室东南侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 318,
+    "station_id": 5,
+    "desc": "室外大门东侧摄像机集中电源接口故障，重新调换后正常",
+    "indices": []
+  },
+  {
+    "id": 333,
+    "station_id": 59,
+    "desc": "场地3、6号立杆摄像机配合电建改造拆除",
+    "indices": []
+  },
+  {
+    "id": 335,
+    "station_id": 52,
+    "desc": "电容器场地东南侧3#摄像机掉线，更换集中电源单路开关后恢复",
+    "indices": [
+      3
+    ]
+  },
+  {
+    "id": 337,
+    "station_id": 55,
+    "desc": "更换10kV开关室南侧故障摄像机",
+    "indices": []
+  },
+  {
+    "id": 356,
+    "station_id": 24,
+    "desc": "110kV场地东侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 370,
+    "station_id": 8,
+    "desc": "10kV开关室西侧摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 384,
+    "station_id": 37,
+    "desc": "主控楼门厅侧摄像机故障更换 | 地点: 缙云",
+    "indices": []
+  },
+  {
+    "id": 386,
+    "station_id": 54,
+    "desc": "110kV场地西侧摄像机故障更换 | 地点: 青田",
+    "indices": []
+  },
+  {
+    "id": 397,
+    "station_id": 40,
+    "desc": "河树24P3线避雷器C相云台、河树24P3开关东、河渔1210开关东故障云台更换 | 地点: 缙云",
+    "indices": []
+  },
+  {
+    "id": 419,
+    "station_id": 89,
+    "desc": "摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 420,
+    "station_id": 82,
+    "desc": "摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 421,
+    "station_id": 82,
+    "desc": "摄像机故障更换",
+    "indices": []
+  },
+  {
+    "id": 425,
+    "station_id": 73,
+    "desc": "1-2#电容器室东侧32#摄像机故障现场勘查",
+    "indices": [
+      2,
+      32
+    ]
+  },
+  {
+    "id": 426,
+    "station_id": 73,
+    "desc": "1-2#电容器室东侧32#摄像机电源短路故障，未恢复",
+    "indices": [
+      2,
+      32
+    ]
+  },
+  {
+    "id": 428,
+    "station_id": 80,
+    "desc": "1#电容器室南侧16#摄像机故障更换 | 地点: 莲都",
+    "indices": [
+      1,
+      16
+    ]
+  },
+  {
+    "id": 429,
+    "station_id": 81,
+    "desc": "智巡系统红外摄像机放线到内网交换机 | 地点: 云和",
+    "indices": []
+  },
+  {
+    "id": 430,
+    "station_id": 87,
+    "desc": "智巡系统红外摄像机放线到内网交换机 | 地点: 云和",
+    "indices": []
+  },
+  {
+    "id": 431,
+    "station_id": 92,
+    "desc": "智巡系统红外摄像机放线到内网交换机 | 地点: 云和",
+    "indices": []
+  },
+  {
+    "id": 432,
+    "station_id": 89,
+    "desc": "大门球机、主变球机故障更换（主业提供摄像机） | 地点: 松阳",
+    "indices": []
+  }
+]

@@ -28,14 +28,21 @@
                 <label for="nav-toggle" class="nav-toggle-label" aria-label="切换导航">
                     <span></span><span></span><span></span>
                 </label>
+                {% set current_endpoint = request.endpoint or '' %}
                 <nav class="app-nav" role="navigation" aria-label="主导航">
-                    <a href="{{ url_for('index') }}" class="nav-link">首页</a>
-                    <a href="{{ url_for('stations') }}" class="nav-link">变电站列表</a>
-                    <a href="{{ url_for('fault_new') }}" class="nav-link">报故障</a>
-                    <a href="{{ url_for('faults') }}" class="nav-link">故障记录</a>
-                    <a href="{{ url_for('statistics') }}" class="nav-link">统计</a>
-                    <a href="{{ url_for('map_page') }}" class="nav-link">地图</a>
-                    <a href="{{ url_for('admin_page') }}" class="nav-link">管理</a>
+                    <a href="{{ url_for('index') }}" class="nav-link {% if current_endpoint == 'index' %}nav-link-primary{% endif %}" {% if current_endpoint == 'index' %}aria-current="page"{% endif %}>首页</a>
+                    <a href="{{ url_for('stations') }}" class="nav-link {% if current_endpoint == 'stations' %}nav-link-primary{% endif %}" {% if current_endpoint == 'stations' %}aria-current="page"{% endif %}>变电站列表</a>
+                    <a href="{{ url_for('fault_new') }}" class="nav-link {% if current_endpoint == 'fault_new' %}nav-link-primary{% endif %}" {% if current_endpoint == 'fault_new' %}aria-current="page"{% endif %}>报故障</a>
+                    <a href="{{ url_for('faults') }}" class="nav-link {% if current_endpoint == 'faults' %}nav-link-primary{% endif %}" {% if current_endpoint == 'faults' %}aria-current="page"{% endif %}>故障记录</a>
+                    <a href="{{ url_for('statistics') }}" class="nav-link {% if current_endpoint == 'statistics' %}nav-link-primary{% endif %}" {% if current_endpoint == 'statistics' %}aria-current="page"{% endif %}>统计</a>
+                    <a href="{{ url_for('map_page') }}" class="nav-link {% if current_endpoint == 'map_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'map_page' %}aria-current="page"{% endif %}>地图</a>
+                    <a href="{{ url_for('photos_page') }}" class="nav-link {% if current_endpoint == 'photos_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'photos_page' %}aria-current="page"{% endif %}>照片</a>
+                    <a href="{{ url_for('admin_page') }}" class="nav-link {% if current_endpoint == 'admin_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'admin_page' %}aria-current="page"{% endif %}>管理</a>
+                    {% if session.get('user_id') %}
+                    <a href="#" class="nav-link" onclick="logout(); return false;">退出</a>
+                    {% else %}
+                    <a href="{{ url_for('login_page') }}" class="nav-link {% if current_endpoint == 'login_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'login_page' %}aria-current="page"{% endif %}>登录</a>
+                    {% endif %}
                 </nav>
             </div>
         </div>
@@ -53,6 +60,15 @@
 
     <!-- Bootstrap JS 本地化 -->
     <script src="{{ url_for('static', filename='bootstrap-5.3.3.bundle.min.js') }}"></script>
+    <script>
+    async function logout() {
+        try {
+            await fetch('/auth/logout', { method: 'POST' });
+        } finally {
+            window.location.href = '/login';
+        }
+    }
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

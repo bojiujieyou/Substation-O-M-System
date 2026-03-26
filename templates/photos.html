@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}照片分类 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">照片分类展示</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary btn-sm">进入管理后台索引</a>
+        </div>
+    </div>
+
+    <section class="card photo-filter-card">
+        <div class="card-body">
+            <div class="photo-filter-grid">
+                <div class="form-group">
+                    <label for="filter-county" class="form-label">县区</label>
+                    <select id="filter-county" class="form-select">
+                        <option value="">全部县区</option>
+                        <option value="丽水">丽水</option>
+                        <option value="云和">云和</option>
+                        <option value="庆元">庆元</option>
+                        <option value="景宁">景宁</option>
+                        <option value="松阳">松阳</option>
+                        <option value="缙云">缙云</option>
+                        <option value="遂昌">遂昌</option>
+                        <option value="青田">青田</option>
+                        <option value="龙泉">龙泉</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-status" class="form-label">匹配状态</label>
+                    <select id="filter-status" class="form-select">
+                        <option value="">全部</option>
+                        <option value="matched">已匹配</option>
+                        <option value="unmatched">未匹配</option>
+                        <option value="ignored">非图片</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-keyword" class="form-label">关键词</label>
+                    <input id="filter-keyword" class="form-input" placeholder="文件名/目录关键字">
+                </div>
+                <div class="form-group photo-filter-actions">
+                    <button id="filter-search" class="btn btn-primary">筛选</button>
+                    <button id="filter-reset" class="btn btn-secondary">重置</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="photo-loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>加载照片索引中...</span>
+    </div>
+
+    <div id="photo-error" class="error-state" style="display:none;">
+        <span class="error-icon">!</span>
+        <span id="photo-error-text">加载失败</span>
+        <button class="btn btn-sm btn-secondary" onclick="loadPhotoGroups()">重试</button>
+    </div>
+
+    <div id="photo-empty" class="empty-state" style="display:none;">
+        <p>暂无照片索引数据</p>
+        <p class="text-muted">请到管理后台执行照片索引</p>
+    </div>
+
+    <section id="photo-groups" class="photo-groups" style="display:none;"></section>
+
+    <section id="photo-unmatched" class="card photo-unmatched" style="display:none;">
+        <div class="card-body">
+            <h3 class="card-title">未匹配照片</h3>
+            <div id="photo-unmatched-grid" class="photo-grid"></div>
+        </div>
+    </section>
+</div>
+
+<div class="modal" id="photo-preview-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="photo-preview-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="photo-preview-title">照片预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="photo-preview-wrap">
+                    <img id="photo-preview-image" alt="照片预览">
+                </div>
+                <div id="photo-preview-meta" class="detail-info" style="margin-top:16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='photos.js') }}"></script>
+{% endblock %}

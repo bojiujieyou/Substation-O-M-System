@@ -4,10 +4,10 @@
 """
 import hashlib
 import secrets
-import sqlite3
 import time
 from datetime import datetime
-from flask import Blueprint, request, jsonify, g, session
+from flask import Blueprint, request, jsonify, session
+from utils import get_db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -38,14 +38,6 @@ def rate_limit_record(ip):
         _login_attempts[ip] = (count + 1, reset_time)
     else:
         _login_attempts[ip] = (1, now + 300)
-
-def get_db():
-    """获取数据库连接"""
-    from flask import current_app
-    if 'db' not in g:
-        g.db = sqlite3.connect(current_app.config['DATABASE_PATH'])
-        g.db.row_factory = sqlite3.Row
-    return g.db
 
 def hash_password(password, salt=None):
     """密码哈希（使用SHA256+盐）"""

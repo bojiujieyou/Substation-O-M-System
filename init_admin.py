@@ -4,7 +4,7 @@
 
 使用方式:
     python init_admin.py
-    python init_admin.py --username admin --password admin123
+    python init_admin.py --username admin --password Txjk@1234
 """
 import argparse
 import sqlite3
@@ -18,7 +18,7 @@ def hash_password(password, salt=None):
     h = hashlib.sha256((salt + password).encode()).hexdigest()
     return f"{salt}${h}"
 
-def init_admin(username='admin', password='admin123'):
+def init_admin(username='admin', password='Txjk@1234'):
     db_path = os.path.join(os.path.dirname(__file__), 'station_monitor.db')
 
     if not os.path.exists(db_path):
@@ -62,7 +62,7 @@ def init_admin(username='admin', password='admin123'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='初始化管理员账户')
     parser.add_argument('--username', default='admin', help='管理员用户名')
-    parser.add_argument('--password', default='admin123', help='管理员密码')
+    parser.add_argument('--password', default='Txjk@1234', help='管理员密码')
     args = parser.parse_args()
 
     init_admin(args.username, args.password)

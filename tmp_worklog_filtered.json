@@ -1,0 +1,4342 @@
+[
+  {
+    "seq": 5,
+    "time": "2022年8月04日",
+    "station": "水阁变",
+    "location": null,
+    "content": "水阁变图像监控3#摄像头维修",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 6,
+    "time": "2022年8月05日",
+    "station": "海潮变",
+    "location": null,
+    "content": "海潮变图像监控110kV开关室11#摄像头维修",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 8,
+    "time": "2022年8月16日",
+    "station": "睦田变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 9,
+    "time": "2022年8月17日",
+    "station": "河阳变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 11,
+    "time": "2022年8月30日",
+    "station": "水阁变/龙石变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 12,
+    "time": "2022年8月31日",
+    "station": "碧湖变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 13,
+    "time": "2022年8月31日",
+    "station": "河阳变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 14,
+    "time": "2022年9月01日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 15,
+    "time": "2022年9月05日",
+    "station": "河阳变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 16,
+    "time": "2022年9月06日",
+    "station": "港头变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 17,
+    "time": "2022年9月06日",
+    "station": "东源变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 18,
+    "time": "2022年9月07日",
+    "station": "景宁变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 19,
+    "time": "2022年9月08日",
+    "station": "松阳变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 20,
+    "time": "2022年9月13日",
+    "station": "岩泉变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 21,
+    "time": "2022年9月13日",
+    "station": "碧湖变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 22,
+    "time": "2022年9月14日-15日",
+    "station": "庆元变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 23,
+    "time": "2022年9月19日",
+    "station": "海潮变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 24,
+    "time": "2022年9月20日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 25,
+    "time": "2022年9月21日",
+    "station": "云和变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 26,
+    "time": "2022年9月22日",
+    "station": "缙云变",
+    "location": null,
+    "content": "图像监控设备巡检",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 27,
+    "time": "2022年9月26日",
+    "station": "河阳变",
+    "location": null,
+    "content": "图像监控设备故障处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 28,
+    "time": "2022年9月27日",
+    "station": "龙石变",
+    "location": null,
+    "content": "图像监控设备故障处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 29,
+    "time": "2022年9月28日",
+    "station": "海潮变",
+    "location": null,
+    "content": "图像监控设备故障处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 33,
+    "time": "2022年11月01日",
+    "station": "四都变",
+    "location": null,
+    "content": "1#-6#摄像头故障处理，未发现摄像头电源位置，未处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 34,
+    "time": "2022年11月01日",
+    "station": "岩泉变",
+    "location": null,
+    "content": "仓库摄像头正常，摄像头电源线重新接线",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 35,
+    "time": "2022年11月02日",
+    "station": "港头变",
+    "location": null,
+    "content": "更换大门摄像头、2#主变北侧摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 36,
+    "time": "2022年11月03日",
+    "station": "东源变",
+    "location": null,
+    "content": "更换1#主变摄像头、1#主变南侧摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 37,
+    "time": "2022年11月04日",
+    "station": "丽水变",
+    "location": null,
+    "content": "图像监控设备故障处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 38,
+    "time": "2022年11月10日",
+    "station": "睦田变",
+    "location": null,
+    "content": "1、220kV场地2#摄像头更换完成，旧光纤收发器电源异常\n2、35kV开关室摄像头更换完成，光纤收发器信号正常，未检测到摄像头IP地址",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 39,
+    "time": "2022年11月10日",
+    "station": "云和变",
+    "location": null,
+    "content": "更换电容器室南侧摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 41,
+    "time": "2022年11月15日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "35kV开关室西南侧18#摄像头更换完成",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 43,
+    "time": "2022年11月17日",
+    "station": "碧湖变",
+    "location": null,
+    "content": "更换110kV场地1#摄像头、2#主变3#摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 50,
+    "time": "2022年12月05日",
+    "station": "庆元变",
+    "location": null,
+    "content": "更换110kV西侧场地2#、110kV场地南侧4#摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 51,
+    "time": "2022年12月06日-07日",
+    "station": "荷地变",
+    "location": null,
+    "content": "更换2#主变东侧2#摄像头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 52,
+    "time": "2022年12月08日",
+    "station": "云和变",
+    "location": null,
+    "content": "通信机房南侧1#球机网线松动、电容器室南侧14#球机光纤收发器端尾纤故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 53,
+    "time": "2022年12月09日",
+    "station": "睦田变",
+    "location": null,
+    "content": "35kV开关室26#摄像头网线故障，重新制作水晶头后恢复；220kV场地2#摄像头尾纤信号弱、光纤收发器电源故障，更换备用光纤和电源后恢复。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 58,
+    "time": "2022年12月19日",
+    "station": "海口变",
+    "location": null,
+    "content": "格式化硬盘后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 59,
+    "time": "2022年12月22日",
+    "station": "石练变",
+    "location": null,
+    "content": "更换故障硬盘一块，增加硬盘两块",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 1,
+    "time": "2023年01月09日",
+    "station": "枫树变",
+    "location": null,
+    "content": "更换220kV场地东侧，35kV开关室外墙4#两个摄像头、就地继保室南侧摄像头网线被拔出",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 2,
+    "time": "2023年01月10日",
+    "station": "四都变",
+    "location": null,
+    "content": "室外场地6个摄像头断电，在电缆层室空开跳闸，合闸后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 3,
+    "time": "2023年01月11日",
+    "station": "海口变",
+    "location": null,
+    "content": "硬盘录像机硬盘故障更换4块硬盘",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 4,
+    "time": "2023年01月12日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "更换220kV场地1#球机，35kV开关室南侧19#球机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 5,
+    "time": "2023年01月13日",
+    "station": "河阳变",
+    "location": null,
+    "content": "更换35kV开关室20#球机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 6,
+    "time": "2023年02月13日",
+    "station": "松阳变",
+    "location": null,
+    "content": "更换光纤收发器电源插槽一台，有一个光纤收发器因插槽不够未能插上",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 7,
+    "time": "2023年02月14日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "光纤收发器电源插槽故障，将光纤收发器迁移到正常的一台电源插槽上，有三个光纤收发器因插槽不够未能插上",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 8,
+    "time": "2023年02月15日",
+    "station": "宏山变",
+    "location": null,
+    "content": "35kV开关室18#球机故障和光纤被咬坏，更换球机并重新布置光纤",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 9,
+    "time": "2023年02月15日",
+    "station": "芳野变",
+    "location": null,
+    "content": "#2主变东南侧摄像头故障、主控室西北侧摄像头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 10,
+    "time": "2023年02月16日",
+    "station": "安仁变",
+    "location": null,
+    "content": "110kV场地西侧摄像头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 11,
+    "time": "2023年02月17日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "电容器场地南侧、110kV场地北侧、#3主变东北侧摄像头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 12,
+    "time": "2023年02月20日",
+    "station": "高湖变",
+    "location": null,
+    "content": "1#主变-14#摄像头故障，1光球需更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 13,
+    "time": "2023年02月20日",
+    "station": "青田变",
+    "location": null,
+    "content": "已恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 14,
+    "time": "2023年02月21日",
+    "station": "温溪变",
+    "location": null,
+    "content": "主控室1#、主控室2#网线被拔出，插上后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 15,
+    "time": "2023年02月22日",
+    "station": "缙云变",
+    "location": null,
+    "content": "#1主变北侧摄像头故障，1光球需更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 16,
+    "time": "2023年02月22日",
+    "station": "问渔变",
+    "location": null,
+    "content": "#1主变南侧摄像头故障，重启恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 17,
+    "time": "2023年02月23日",
+    "station": "里隆变",
+    "location": null,
+    "content": "2#硬盘故障，更换硬盘并增加一块硬盘",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 18,
+    "time": "2023年02月27日",
+    "station": "张村变",
+    "location": null,
+    "content": "室外场地西、室外场地南摄像头故障，更换两个摄像头并调试后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 19,
+    "time": "2023年02月28日",
+    "station": "水阁变",
+    "location": null,
+    "content": "110kV场地东侧摄像头故障，更换摄像头后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 20,
+    "time": "2023年03月01日",
+    "station": "白云变",
+    "location": null,
+    "content": "2#主变南侧摄像头故障，更换摄像头后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 21,
+    "time": "2023年03月01日",
+    "station": "仙都变",
+    "location": null,
+    "content": "光纤收发器电源故障，更换后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 22,
+    "time": "2023年03月02日",
+    "station": "海潮变",
+    "location": null,
+    "content": "主控室4#摄像头故障，更换并调试后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 23,
+    "time": "2023年03月06日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "#主变北侧-1#球机、1#主变东南侧-9#球机、110kV场地北侧-1#球机故障，现场排查球机故障，计划下次更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 24,
+    "time": "2023年03月07日",
+    "station": "景宁变",
+    "location": null,
+    "content": "电容器室东侧-12#摄像头故障，更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 25,
+    "time": "2023年03月08日",
+    "station": "桃园变",
+    "location": null,
+    "content": "1#主变西南侧-1#摄像头故障，更换光纤收发器并调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 26,
+    "time": "2023年03月09日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地东北侧-1#摄像头故障，摄像机老化死机，现场设备调试优化后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 27,
+    "time": "2023年03月13日",
+    "station": "松阳变",
+    "location": null,
+    "content": "1#、3#、4#、6#、8#、10#、25#摄像头故障，更换光纤收发器电源1台和7个光纤收发器后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 28,
+    "time": "2023年03月14日-15日",
+    "station": "仙都变",
+    "location": null,
+    "content": "蓄电池室摄像头故障，更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 29,
+    "time": "2023年03月16日",
+    "station": "云和变",
+    "location": null,
+    "content": "蓄电池室东北侧摄像头故障，更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 30,
+    "time": "2023年03月17日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "1#主变东、1#主变西、35kV开关室西侧、2#主变北摄像头故障，更换光纤收发器电源1台后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 31,
+    "time": "2023年03月21日",
+    "station": "睦田变",
+    "location": null,
+    "content": "1#主变东侧、2#主变南侧、220kV场地西侧、35kV开关室摄像头故障，更换光纤收发器电源1台和2对光纤收发器后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 32,
+    "time": "2023年03月21日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "2块硬盘故障，更换硬盘后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 33,
+    "time": "2023年03月22日",
+    "station": "芳野变",
+    "location": null,
+    "content": "主控室、蓄电池室摄像头故障，更换并调试后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 34,
+    "time": "2023年03月23日",
+    "station": "龙山变",
+    "location": null,
+    "content": "全站离线抢修",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 36,
+    "time": "2023年04月03日",
+    "station": "睦田变",
+    "location": null,
+    "content": "220kV场地西侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 37,
+    "time": "2023年04月03日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "#3主变东北侧摄像头、110kV场地北侧摄像头、电容器场地南侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 38,
+    "time": "2023年04月04日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "#1主变东北侧摄像头、1#主变东南侧摄像头、110kV场地北侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 39,
+    "time": "2023年04月06日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "1#主变东侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 40,
+    "time": "2023年04月07日",
+    "station": "芳野变",
+    "location": null,
+    "content": "#2主变东南侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 41,
+    "time": "2023年04月07日",
+    "station": "安仁变",
+    "location": null,
+    "content": "110kV场地西侧摄像头故障,更换调试后恢复正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 42,
+    "time": "2023年04月18日",
+    "station": "滨江变",
+    "location": null,
+    "content": "主控室西侧摄像头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 43,
+    "time": "2023年04月19日",
+    "station": "张村变",
+    "location": null,
+    "content": "1#主变东南侧摄像头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 44,
+    "time": "2023年04月20日",
+    "station": "沙湾变",
+    "location": null,
+    "content": "10kV开关室室外楼顶全景平台摄像机图像无法显示，本地正常，平台上不显示，系统原因无法处理，后续跟进",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 45,
+    "time": "2023年04月21日",
+    "station": "陶庄变",
+    "location": null,
+    "content": "主控室室外楼顶全景平台摄像机图像无法显示，本地正常，平台上不显示，系统原因无法处理，后续跟进",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 46,
+    "time": "2023年04月24日-25日",
+    "station": "滨江变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 47,
+    "time": "2023年04月26日-27日",
+    "station": "枫树变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 48,
+    "time": "2023年05月08日-09日",
+    "station": "青田变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 49,
+    "time": "2023年05月10日-11日",
+    "station": "睦田变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 51,
+    "time": "2023年05月22日",
+    "station": "碧湖变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 52,
+    "time": "2023年05月23日",
+    "station": "百果变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 53,
+    "time": "2023年05月24日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 54,
+    "time": "2023年05月25日",
+    "station": "里隆变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 55,
+    "time": "2023年05月26日",
+    "station": "雁门变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 56,
+    "time": "2023年05月29日",
+    "station": "东山变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 57,
+    "time": "2023年05月30日",
+    "station": "河阳变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 58,
+    "time": "2023年05月31日",
+    "station": "黄龙变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 59,
+    "time": "2023年05月31日",
+    "station": "问渔变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 60,
+    "time": "2023年06月01日",
+    "station": "缙云变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 61,
+    "time": "2023年06月05日",
+    "station": "东源变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 62,
+    "time": "2023年06月05日",
+    "station": "油竹变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 63,
+    "time": "2023年06月06日",
+    "station": "高湖变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 64,
+    "time": "2023年06月06日",
+    "station": "侨乡变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 65,
+    "time": "2023年06月07日",
+    "station": "海口变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 66,
+    "time": "2023年06月12日",
+    "station": "宏山变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 67,
+    "time": "2023年06月13日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 68,
+    "time": "2023年06月14日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 69,
+    "time": "2023年06月15日-16日",
+    "station": "松阳变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 70,
+    "time": "2023年06月19日-20日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 71,
+    "time": "2023年06月26日",
+    "station": "仙都变",
+    "location": null,
+    "content": "图像监控系统网络优化提升现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 72,
+    "time": "2023年06月27日",
+    "station": "金亭变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 73,
+    "time": "2023年06月28日",
+    "station": "海潮变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 74,
+    "time": "2023年06月29日",
+    "station": "丽水变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 75,
+    "time": "2023年07月03日",
+    "station": "仙都变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 76,
+    "time": "2023年07月06日",
+    "station": "仙都变",
+    "location": null,
+    "content": "图像监控智慧屏故障抢修",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 77,
+    "time": "2023年07月10日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "电容器场地南侧3#摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 78,
+    "time": "2023年07月11日",
+    "station": "睦田变",
+    "location": null,
+    "content": "35kV开关室西侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 79,
+    "time": "2023年07月12日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "220kV场地东南侧、2#主变西南侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 80,
+    "time": "2023年07月13日-14日",
+    "station": "景宁变",
+    "location": null,
+    "content": "电容器室西侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 81,
+    "time": "2023年07月17日",
+    "station": "桃园变",
+    "location": null,
+    "content": "电容器室-4#摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 82,
+    "time": "2023年07月18日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "主控室北侧-8#摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 83,
+    "time": "2023年07月19日",
+    "station": "延庆变",
+    "location": null,
+    "content": "主控室北侧摄像机故障更换、110kV场地西侧光纤收发器故障更换。",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 84,
+    "time": "2023年07月20日-21日",
+    "station": "古市变",
+    "location": null,
+    "content": "电容器室摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 85,
+    "time": "2023年07月24日",
+    "station": "油竹变",
+    "location": null,
+    "content": "35kV开关室北侧摄像机、10kV开关室北侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 86,
+    "time": "2023年07月25日",
+    "station": "高湖变",
+    "location": null,
+    "content": "1#主变西侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 87,
+    "time": "2023年07月25日",
+    "station": "东源变",
+    "location": null,
+    "content": "主控室南侧摄像机交换机网线端口接触不良，重新制作水晶头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 88,
+    "time": "2023年07月26日",
+    "station": "雁门变",
+    "location": null,
+    "content": "10kV开关室西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 89,
+    "time": "2023年07月27日-28日",
+    "station": "缙云变",
+    "location": null,
+    "content": "更换尾纤1条和备用光配端口并调试",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 90,
+    "time": "2023年07月31日",
+    "station": "芳野变",
+    "location": null,
+    "content": "1#主变东南侧、110kV场地东侧、10kV开关室东侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "3台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 91,
+    "time": "2023年08月01日",
+    "station": "睦田变",
+    "location": null,
+    "content": "35kV开关室外墙北侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 92,
+    "time": "2023年08月02日",
+    "station": "河阳变",
+    "location": null,
+    "content": "35kV开关室北侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 93,
+    "time": "2023年08月03日-4日",
+    "station": "枫树变",
+    "location": null,
+    "content": "35kV场地西北侧摄像机故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 94,
+    "time": "2023年08月07日",
+    "station": "滨江变",
+    "location": null,
+    "content": "10kV开关室西南侧、110kV开关室西侧、场地外围西北侧16号摄像机、场地外围东南侧17号摄像机故障处理",
+    "type": "图像监控",
+    "foreman": "4台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 95,
+    "time": "2023年08月08日",
+    "station": "白云变",
+    "location": null,
+    "content": "电容器室西侧、10kV开关室东南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 96,
+    "time": "2023年08月09日",
+    "station": "高溪变",
+    "location": null,
+    "content": "110kVGIS室西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 97,
+    "time": "2023年08月10日",
+    "station": "海潮变",
+    "location": null,
+    "content": "110kVGIS室西北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 99,
+    "time": "2023年08月14日",
+    "station": "河阳变",
+    "location": null,
+    "content": "110kV场地东侧（补强）摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 100,
+    "time": "2023年08月14日",
+    "station": "东山变",
+    "location": null,
+    "content": "10kV开关室北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 101,
+    "time": "2023年08月15日",
+    "station": "缙云变",
+    "location": null,
+    "content": "故障光纤重新熔纤后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 102,
+    "time": "2023年08月15日",
+    "station": "问渔变",
+    "location": null,
+    "content": "1#主变摄像机故障，重启恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 103,
+    "time": "2023年08月16日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "3#主变东北侧摄像机、220kV场地东南侧故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 104,
+    "time": "2023年08月16日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "110kV场地南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 105,
+    "time": "2023年08月17日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 106,
+    "time": "2023年08月18日",
+    "station": "海口变",
+    "location": null,
+    "content": "110kV场地西南侧摄像机故障更换，光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 107,
+    "time": "2023年08月21日",
+    "station": "睦田变",
+    "location": null,
+    "content": "光纤收发器电源插槽故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 108,
+    "time": "2023年08月22日",
+    "station": "河阳变",
+    "location": null,
+    "content": "35kV开关室北侧摄像机网口松动",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 109,
+    "time": "2023年08月22日",
+    "station": "仙都变",
+    "location": null,
+    "content": "2#通信机房西北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 111,
+    "time": "2023年09月01日",
+    "station": "温溪变",
+    "location": null,
+    "content": "现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 112,
+    "time": "2023年09月04日",
+    "station": "滨江变",
+    "location": null,
+    "content": "场地外围西北侧16号摄像机电源转换器故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 113,
+    "time": "2023年09月04日",
+    "station": "里隆变",
+    "location": null,
+    "content": "主控室西南侧摄像机重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 114,
+    "time": "2023年09月05日",
+    "station": "港头变",
+    "location": null,
+    "content": "110kV场地摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 115,
+    "time": "2023年09月06日",
+    "station": "沙湾变",
+    "location": null,
+    "content": "场地全景摄像头故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 116,
+    "time": "2023年09月11日",
+    "station": "新兴变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 117,
+    "time": "2023年09月11日",
+    "station": "若寮变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 118,
+    "time": "2023年09月12日",
+    "station": "叶村变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 119,
+    "time": "2023年09月12日",
+    "station": "大东坝变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 120,
+    "time": "2023年09月12日",
+    "station": "玉岩变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 121,
+    "time": "2023年09月13日",
+    "station": "赤寿变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 122,
+    "time": "2023年09月13日",
+    "station": "象溪变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 123,
+    "time": "2023年09月13日",
+    "station": "城关变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 124,
+    "time": "2023年09月13日",
+    "station": "靖居变",
+    "location": null,
+    "content": "图像监控系统网络优化提升",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 125,
+    "time": "2023年09月14日",
+    "station": "睦田变",
+    "location": null,
+    "content": "220kV场地东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 126,
+    "time": "2023年09月14日",
+    "station": "枫树变",
+    "location": null,
+    "content": "2#主变西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 127,
+    "time": "2023年10月10日",
+    "station": "枫树变",
+    "location": null,
+    "content": "工作场地错误，终结此票",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 128,
+    "time": "2023年10月10日",
+    "station": "水阁变",
+    "location": null,
+    "content": "110kV场地西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 129,
+    "time": "2023年10月11日",
+    "station": "雁门变",
+    "location": null,
+    "content": "主控室西南侧摄像机重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 130,
+    "time": "2023年10月11日",
+    "station": "问渔变",
+    "location": null,
+    "content": "1#主变摄像机故障重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 131,
+    "time": "2023年10月16日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "3#主变摄像机、220kV西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 132,
+    "time": "2023年10月17日",
+    "station": "芳野变",
+    "location": null,
+    "content": "主控室东南墙摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 133,
+    "time": "2023年10月17日",
+    "station": "睦田变",
+    "location": null,
+    "content": "工作场地错误，终结此票",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 134,
+    "time": "2023年10月18日",
+    "station": "金亭变",
+    "location": null,
+    "content": "220kV场地西南侧摄像机故障重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 135,
+    "time": "2023年10月18日",
+    "station": "海潮变",
+    "location": null,
+    "content": "电容器室北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 136,
+    "time": "2023年10月19日",
+    "station": "仙都变",
+    "location": null,
+    "content": "35kV开关室西南侧摄像头、35kV开关室楼顶（补强）摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 137,
+    "time": "2023年10月19日-20日",
+    "station": "岩泉变",
+    "location": null,
+    "content": "仓库摄像机光纤传输故障，因场地施工原因无法恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 138,
+    "time": "2023年10月23日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "3#主变东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 139,
+    "time": "2023年10月24日",
+    "station": "睦田变",
+    "location": null,
+    "content": "220kV场地西南侧、西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 140,
+    "time": "2023年10月24日-25日",
+    "station": "水阁变",
+    "location": null,
+    "content": "110kV场地西南侧摄像机故障重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 141,
+    "time": "2023年10月30日",
+    "station": "宏山变",
+    "location": null,
+    "content": "就地继保室南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 142,
+    "time": "2023年10月31日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "室外西北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 143,
+    "time": "2023年10月31日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地东北侧、西侧摄像机故障重启",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 144,
+    "time": "2023年11月01日",
+    "station": "问渔变",
+    "location": null,
+    "content": "1#主变南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 145,
+    "time": "2023年11月13日",
+    "station": "港头变",
+    "location": null,
+    "content": "110kV场地东北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 146,
+    "time": "2023年11月13日",
+    "station": "滨江变",
+    "location": null,
+    "content": "3#-4#电容器室北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "旧网球"
+  },
+  {
+    "seq": 147,
+    "time": "2023年11月14日",
+    "station": "里隆变",
+    "location": null,
+    "content": "主控室西南侧摄像机故障更换、110kV场地西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 148,
+    "time": "2023年11月15日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地西侧摄像机故障，光纤收发器电源重新接线后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 149,
+    "time": "2023年11月16日",
+    "station": "官桥变",
+    "location": null,
+    "content": "继保室西侧摄像机、10kV、35kV开关室西侧故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 156,
+    "time": "2023年12月19日-20日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "10个摄像机黑屏，光纤收发器电源故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 1,
+    "time": "2024年01月02日",
+    "station": "里隆变",
+    "location": null,
+    "content": "10kV开关室东侧摄像机水晶头松动，重新制作水晶头后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 2,
+    "time": "2024年01月03日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "220kV场地西侧、#2主变北侧、电抗器场地西南侧摄像机更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 3,
+    "time": "2024年01月04日",
+    "station": "龙泉变",
+    "location": null,
+    "content": "电容器室西南侧、电容器室东南侧摄像机更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 4,
+    "time": "2024年01月04日",
+    "station": "云和变",
+    "location": null,
+    "content": "#1主变西北侧、10kV开关室东南侧摄像机更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 5,
+    "time": "2024年01月05日",
+    "station": "睦田变",
+    "location": null,
+    "content": "主控楼场地东南角、#1主变东侧摄像机更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 6,
+    "time": "2024年01月09日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "110kV场地西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 7,
+    "time": "2024年01月09日",
+    "station": "桃园变",
+    "location": null,
+    "content": "2#主变西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 8,
+    "time": "2024年01月10日",
+    "station": "松阳变",
+    "location": null,
+    "content": "大门南侧-11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 9,
+    "time": "2024年01月10日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地东北侧-1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 10,
+    "time": "2024年01月11日",
+    "station": "滨江变",
+    "location": null,
+    "content": "10kV开关室南侧-5#、蓄电池室-8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 11,
+    "time": "2024年01月15日",
+    "station": "枫树变",
+    "location": null,
+    "content": "220kV场地南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 12,
+    "time": "2024年01月16日",
+    "station": "庆元变",
+    "location": null,
+    "content": "主控楼西南外侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 13,
+    "time": "2024年01月17日",
+    "station": "云和变",
+    "location": null,
+    "content": "#1主变西北侧光纤故障，重新熔纤",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 14,
+    "time": "2024年01月18日",
+    "station": "张村变",
+    "location": null,
+    "content": "室外场地东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 15,
+    "time": "2024年01月18日",
+    "station": "水阁变",
+    "location": null,
+    "content": "10kV开关室南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 16,
+    "time": "2024年01月19日",
+    "station": "岩泉变",
+    "location": null,
+    "content": "电容器智能投切装置室摄像机已拆除，无需更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 17,
+    "time": "2024年01月23日",
+    "station": "港头变",
+    "location": null,
+    "content": "35kV开关室西侧、35kV开关室东侧摄像机水晶头松动，重新制作水晶头后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 18,
+    "time": "2024年01月25日",
+    "station": "宏山变",
+    "location": null,
+    "content": "光纤收发器电源故障，更换后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 19,
+    "time": "2024年01月31日",
+    "station": "仙都变",
+    "location": null,
+    "content": "35kV开关室东北侧-26#、35kV开关室东南侧-29#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 20,
+    "time": "2024年02月04日",
+    "station": "叶水变",
+    "location": null,
+    "content": "10kV开关室西侧摄像机故障，重启后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 21,
+    "time": "2024年03月04日",
+    "station": "屏都变",
+    "location": null,
+    "content": "大门枪机电源故障，重新接线后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 22,
+    "time": "2024年03月04日-05日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "35kV开关室西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 23,
+    "time": "2024年03月06日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "电容器室东南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 24,
+    "time": "2024年03月06日-07日",
+    "station": "水阁变",
+    "location": null,
+    "content": "10kV开关室东南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 25,
+    "time": "2024年03月11日",
+    "station": "仙都变",
+    "location": null,
+    "content": "35kV开关室西北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 26,
+    "time": "2024年03月12日",
+    "station": "睦田变",
+    "location": null,
+    "content": "1#主变南侧-11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 27,
+    "time": "2024年03月13日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "室外西北侧-16#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 28,
+    "time": "2024年03月14日",
+    "station": "张村变",
+    "location": null,
+    "content": "2#主变东南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 29,
+    "time": "2024年03月14日",
+    "station": "白云变",
+    "location": null,
+    "content": "蓄电池室北侧-7#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 30,
+    "time": "2024年03月18日",
+    "station": "睦田变",
+    "location": null,
+    "content": "2#主变东侧-4#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 31,
+    "time": "2024年03月19日",
+    "station": "黄龙变",
+    "location": null,
+    "content": "室外大门摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 32,
+    "time": "2024年03月20日",
+    "station": "海口变",
+    "location": null,
+    "content": "3#电容器南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 33,
+    "time": "2024年03月25日",
+    "station": "油竹变",
+    "location": null,
+    "content": "2#主变西南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 34,
+    "time": "2024年03月27日",
+    "station": "睦田变",
+    "location": null,
+    "content": "1#主变北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 35,
+    "time": "2024年03月28日",
+    "station": "水阁变",
+    "location": null,
+    "content": "110kV场地东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 36,
+    "time": "2024年04月09日",
+    "station": "丽水变",
+    "location": null,
+    "content": "220kV场地北侧1#摄像机电源故障，重启恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 37,
+    "time": "2024年04月09日",
+    "station": "滨江变",
+    "location": null,
+    "content": "继保室北侧10#摄像机网线水晶头故障。重新制作恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 38,
+    "time": "2024年04月12日",
+    "station": "龙南变",
+    "location": null,
+    "content": "摄像机部分离线，机柜电源跳闸，合闸后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 39,
+    "time": "2024年04月22日",
+    "station": "枫树变",
+    "location": null,
+    "content": "35kV开关室19#摄像机监控箱子脱落，重新固定后恢复。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 40,
+    "time": "2024年04月23日",
+    "station": "桃园变",
+    "location": null,
+    "content": "110kV开关室北侧11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 41,
+    "time": "2024年04月24日",
+    "station": "港头变",
+    "location": null,
+    "content": "35kV开关室东侧16#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 42,
+    "time": "2024年04月25日",
+    "station": "油竹变",
+    "location": null,
+    "content": "电容器室北侧7#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 43,
+    "time": "2024年04月27日",
+    "station": "仙都变",
+    "location": null,
+    "content": "市公司上传故障现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 44,
+    "time": "2024年04月28日",
+    "station": "缙云变",
+    "location": null,
+    "content": "35kV开关室北侧4#摄像机、电容器室（3#、4#）摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 45,
+    "time": "2024年04月28日",
+    "station": "仙都变",
+    "location": null,
+    "content": "1楼通信机房北侧15#摄像机故障更换，排除市公司上传故障",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 46,
+    "time": "2024年04月29日",
+    "station": "白云变",
+    "location": null,
+    "content": "10kV开关室东侧8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 47,
+    "time": "2024年05月09日-11日",
+    "station": "缙云",
+    "location": null,
+    "content": "智慧监控系统现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 48,
+    "time": "2024年05月13日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "10kV开关室西北侧10#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 49,
+    "time": "2024年05月13日",
+    "station": "雁门变",
+    "location": null,
+    "content": "主控室西南侧14#摄像机重启恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 50,
+    "time": "2024年05月20日",
+    "station": "仙都变",
+    "location": null,
+    "content": "永都间隔道路旁摄像机拆除",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 51,
+    "time": "2024年05月20日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 52,
+    "time": "2024年05月21日",
+    "station": "海口变",
+    "location": null,
+    "content": "2#主变北侧摄像机故障，因下雨未更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 53,
+    "time": "2024年05月29日",
+    "station": "雁门变",
+    "location": null,
+    "content": "主控室西南侧14#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 54,
+    "time": "2024年05月29日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "10kV开关室东北侧11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 55,
+    "time": "2024年05月31日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地西侧2#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 56,
+    "time": "2024年06月04日",
+    "station": "海口变",
+    "location": null,
+    "content": "2#主变东北侧-3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 57,
+    "time": "2024年06月12日",
+    "station": "景宁变",
+    "location": null,
+    "content": "110kV场地西南侧1#摄像机，因下雨未更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 58,
+    "time": "2024年06月13日",
+    "station": "仙都变",
+    "location": null,
+    "content": "永都间隔道路旁摄像机复原",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 59,
+    "time": "2024年06月18日",
+    "station": "河阳变",
+    "location": null,
+    "content": "全站离线现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 60,
+    "time": "2024年06月19日",
+    "station": "河阳变",
+    "location": null,
+    "content": "更换交换机一台",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 61,
+    "time": "2024年06月25日",
+    "station": "河阳变",
+    "location": null,
+    "content": "更换光纤收发器三个",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 62,
+    "time": "2024年07月05日",
+    "station": null,
+    "location": null,
+    "content": "摄像机接收50个",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 63,
+    "time": "2024年07月08日",
+    "station": "景宁变",
+    "location": null,
+    "content": "110kV场地西南侧1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 64,
+    "time": "2024年07月09日",
+    "station": "东源变",
+    "location": null,
+    "content": "电容器室8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 65,
+    "time": "2024年07月10日",
+    "station": "金亭变",
+    "location": null,
+    "content": "电容器场地11#摄像机故障，重启后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 66,
+    "time": "2024年07月11日",
+    "station": "张村变",
+    "location": null,
+    "content": "室外场地西侧2#摄像机故障更换，电源转接器故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 67,
+    "time": "2024年07月16日",
+    "station": "河阳变",
+    "location": null,
+    "content": "室外大门西北侧11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 68,
+    "time": "2024年07月18日",
+    "station": "睦田变",
+    "location": null,
+    "content": "2#主变南侧12#摄像机电源转换器故障备件不足，35kV开关室外墙北侧13#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 69,
+    "time": "2024年07月23日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "220kV场地西北侧2#摄像机更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 70,
+    "time": "2024年07月24日",
+    "station": "桃园变",
+    "location": null,
+    "content": "2#主变西南侧2#摄像机、大门东北侧3#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 71,
+    "time": "2024年07月25日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地西侧2#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 72,
+    "time": "2024年08月05日",
+    "station": "温溪变",
+    "location": null,
+    "content": "10kV开关室5#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 73,
+    "time": "2024年08月07日",
+    "station": "芳野变",
+    "location": null,
+    "content": "因高温，作业停止。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 74,
+    "time": "2024年08月14日",
+    "station": "芳野变",
+    "location": null,
+    "content": "110kV场地南侧1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 75,
+    "time": "2024年08月15日",
+    "station": "宏山变",
+    "location": null,
+    "content": "继保室北侧19#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 76,
+    "time": "2024年08月19日",
+    "station": "金亭变",
+    "location": null,
+    "content": "35kV开关室东北侧29#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 77,
+    "time": "2024年08月20日",
+    "station": "海口变",
+    "location": null,
+    "content": "#2主变西侧、电容器场地西北侧、220kV场地东南侧20#摄像机光纤收发器电源故障更换通道",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 78,
+    "time": "2024年08月21日",
+    "station": "仙都变",
+    "location": null,
+    "content": "35kV开关室楼顶1#、2#球机（补强）故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 79,
+    "time": "2024年08月27日",
+    "station": "睦田变",
+    "location": null,
+    "content": "1#主变东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 80,
+    "time": "2024年08月28日",
+    "station": "桃园变",
+    "location": null,
+    "content": "1#主变西南侧-1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 81,
+    "time": "2024年08月29日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "1#主变南侧摄像机故障，更换光纤收发器电源",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 82,
+    "time": "2024年09月04日",
+    "station": "陶庄变",
+    "location": null,
+    "content": "更换一台故障电交换机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 83,
+    "time": "2024年09月04日",
+    "station": "金亭变",
+    "location": null,
+    "content": "远程智能巡视220kV场地电源汇聚箱3#集中电源故障更换",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 84,
+    "time": "2024年09月05日",
+    "station": "峰源变/雅溪变",
+    "location": null,
+    "content": "远程智能巡视系统现场复勘",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 85,
+    "time": "2024年09月09日",
+    "station": "龙山变",
+    "location": null,
+    "content": "1#电容器室南8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 86,
+    "time": "2024年09月09日",
+    "station": "海口变",
+    "location": null,
+    "content": "继保室南侧21#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 87,
+    "time": "2024年09月10日",
+    "station": "濛洲变",
+    "location": null,
+    "content": "220kV场地东侧3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 88,
+    "time": "2024年09月11日",
+    "station": "睦田变",
+    "location": null,
+    "content": "110kV场地8#摄像机重启后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 90,
+    "time": "2024年09月18日",
+    "station": "金亭变",
+    "location": null,
+    "content": "1#主变110kV开关南侧36#云台故障更换",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 91,
+    "time": "2024年09月18日",
+    "station": "安仁变",
+    "location": null,
+    "content": "110kV场地北侧2#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 92,
+    "time": "2024年09月19日",
+    "station": "秋桐变",
+    "location": null,
+    "content": "电容器室外墙24#全景摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 93,
+    "time": "2024年09月20日",
+    "station": "桃园变",
+    "location": null,
+    "content": "电容器东北侧5#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 94,
+    "time": "2024年09月24日",
+    "station": "睦田变",
+    "location": null,
+    "content": "110kV场地8#摄像机故障，更换电源和水晶头",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 95,
+    "time": "2024年09月25日",
+    "station": "金溪变",
+    "location": null,
+    "content": "1#主变摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 96,
+    "time": "2024年09月26日",
+    "station": "屏都变",
+    "location": null,
+    "content": "大门枪机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 97,
+    "time": "2024年09月27日",
+    "station": "云和变",
+    "location": null,
+    "content": "12路摄像机掉线更换光纤收发器插槽电源",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 98,
+    "time": "2024年10月09日",
+    "station": "景宁变",
+    "location": null,
+    "content": "110kV场地西南侧1#摄像机网络传输故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 99,
+    "time": "2024年10月10日",
+    "station": "海口变",
+    "location": null,
+    "content": "继保室北侧18#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 100,
+    "time": "2024年10月11日",
+    "station": "枫树变",
+    "location": null,
+    "content": "35kV开关室西南侧15#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 101,
+    "time": "2024年10月15日",
+    "station": "河阳变",
+    "location": null,
+    "content": "电容器场地西北侧4#、电容器场地西侧7#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 102,
+    "time": "2024年10月16日",
+    "station": "高溪变",
+    "location": null,
+    "content": "110kVGIS室西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 103,
+    "time": "2024年10月22日",
+    "station": "雁门变",
+    "location": null,
+    "content": "硬盘录像机硬盘故障更换1块硬盘",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 104,
+    "time": "2024年10月23日",
+    "station": "仙都变",
+    "location": null,
+    "content": "电容器场地东北侧（黑光）摄像机电源接口松动，重新固定后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 105,
+    "time": "2024年10月24日",
+    "station": "温溪变",
+    "location": null,
+    "content": "电容器室7#摄像机光纤断裂，暂时无法恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 106,
+    "time": "2024年10月28日",
+    "station": "椤林变",
+    "location": null,
+    "content": "图像监控验收",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 107,
+    "time": "2024年10月29日",
+    "station": "枫树变",
+    "location": null,
+    "content": "35kV开关室西侧15#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 108,
+    "time": "2024年10月30日",
+    "station": "黄龙变",
+    "location": null,
+    "content": "10kV开关室东侧11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 109,
+    "time": "2024年10月31日",
+    "station": "海口变",
+    "location": null,
+    "content": "220kV场地南侧2#、2#主变西侧5#摄像机故障，光纤收发器电源故障，更换光纤收发器通道后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 110,
+    "time": "2024年11月05日",
+    "station": "温溪变",
+    "location": null,
+    "content": "电容器室#7摄像机光纤断裂，重新布线",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 111,
+    "time": "2024年11月06日",
+    "station": "石练变",
+    "location": null,
+    "content": "#2主变东北侧2#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 112,
+    "time": "2024年11月07日",
+    "station": "焦滩变",
+    "location": null,
+    "content": "大门北侧2#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 113,
+    "time": "2024年11月08日",
+    "station": "黄南变",
+    "location": null,
+    "content": "继保室大门5#枪机异常断电，备件不足未能处理",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 114,
+    "time": "2024年11月11日",
+    "station": "睦田变",
+    "location": null,
+    "content": "35kV开关室外墙东侧14#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 115,
+    "time": "2024年11月12日-17日",
+    "station": "黄沙腰变",
+    "location": null,
+    "content": "智能巡视项目施工",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 116,
+    "time": "2024年11月18日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "电容器室西南侧9#摄像机故障，人员不足未更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 117,
+    "time": "2024年11月19日",
+    "station": "海口变",
+    "location": null,
+    "content": "220kV场地南侧2#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机/1台光纤收发器电源/1对光纤收发器",
+    "leader": null
+  },
+  {
+    "seq": 118,
+    "time": "2024年11月20日",
+    "station": "枫树变",
+    "location": null,
+    "content": "110kV场地西侧3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 119,
+    "time": "2024年11月26日",
+    "station": "汤公变",
+    "location": null,
+    "content": "图像监控验收",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 120,
+    "time": "2024年11月27日-12月03日",
+    "station": "王村口变",
+    "location": null,
+    "content": "智能巡视项目施工",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 121,
+    "time": "2024年12月03日",
+    "station": "仙都变",
+    "location": null,
+    "content": "就地继保室南侧、电容器场地西北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 122,
+    "time": "2024年12月04日",
+    "station": "壶镇变",
+    "location": null,
+    "content": "电容器西南侧9#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 123,
+    "time": "2024年12月05日",
+    "station": "海潮变",
+    "location": null,
+    "content": "10kV开关室摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 124,
+    "time": "2024年12月09日-11日",
+    "station": "玉岩变",
+    "location": null,
+    "content": "智能巡视项目施工",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 125,
+    "time": "2024年12月17日",
+    "station": "缙云变",
+    "location": null,
+    "content": "110kV场地东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 126,
+    "time": "2024年12月18日",
+    "station": "景宁变",
+    "location": null,
+    "content": "光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 127,
+    "time": "2024年12月19日-24日",
+    "station": "东方变",
+    "location": null,
+    "content": "智能巡视项目施工",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 1,
+    "time": "2025年1月06日-11日",
+    "station": "东方变",
+    "location": null,
+    "content": "智能巡视项目施工",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 2,
+    "time": "2025年1月07日",
+    "station": "海口变",
+    "location": null,
+    "content": "35kV开关室北侧13#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 3,
+    "time": "2025年1月08日",
+    "station": "黄南变",
+    "location": null,
+    "content": "继保室门外5#枪机故障更换12V电源",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 4,
+    "time": "2025年1月09日",
+    "station": "叶水变",
+    "location": null,
+    "content": "大门外枪机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 5,
+    "time": "2025年1月14日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "220kV场地北侧1#、电容器场地东南侧3#摄像机故障因线路挖断未能恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 6,
+    "time": "2025年1月15日",
+    "station": "水阁变",
+    "location": null,
+    "content": "1#主变南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 7,
+    "time": "2025年1月16日",
+    "station": "里隆变",
+    "location": null,
+    "content": "电容器室南侧13#摄像机网口脱落",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 8,
+    "time": "2025年1月17日",
+    "station": "黄龙变",
+    "location": null,
+    "content": "35kV开关室东南侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 9,
+    "time": "2025年2月10日",
+    "station": "好溪变",
+    "location": null,
+    "content": "全站离线抢修",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 10,
+    "time": "2025年2月25日",
+    "station": "龙南变",
+    "location": null,
+    "content": "水泵房49#摄像机故障，因无法找到电源位置未能更换。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 11,
+    "time": "2025年2月26日",
+    "station": "秋桐变",
+    "location": null,
+    "content": "110kVGIS室东南侧23#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 12,
+    "time": "2025年2月27日",
+    "station": "滨江变",
+    "location": null,
+    "content": "10kV开关室西侧6#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 13,
+    "time": "2025年2月28日",
+    "station": "里隆变",
+    "location": null,
+    "content": "1#主变北侧1#摄像机网口脱落",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 14,
+    "time": "2025年3月11日",
+    "station": "杨柳变",
+    "location": null,
+    "content": "#2主变东南侧6#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 15,
+    "time": "2025年3月19日",
+    "station": "青田变",
+    "location": null,
+    "content": "智能巡视更换故障交换机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 16,
+    "time": "2025年3月25日",
+    "station": "金亭变",
+    "location": null,
+    "content": "图像监控更换三层交换机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 17,
+    "time": "2025年3月26日",
+    "station": "四都变",
+    "location": null,
+    "content": "图像监控更换三层交换机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 18,
+    "time": "2025年3月27日",
+    "station": "牛门变",
+    "location": null,
+    "content": "图像监控更换三层交换机",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 19,
+    "time": "2025年3月28日",
+    "station": "龙南变",
+    "location": null,
+    "content": "水泵房49#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 20,
+    "time": "2025年4月07日",
+    "station": "青田变",
+    "location": null,
+    "content": "智能巡视后续工作配置交换机等",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 21,
+    "time": "2025年4月08日",
+    "station": "仙都变",
+    "location": null,
+    "content": "智能巡视后续工作配置交换机等",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 22,
+    "time": "2025年4月09日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV西侧场地2#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 23,
+    "time": "2025年4月14日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "1#电容器室南侧6#摄像机水晶头重新制作",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 24,
+    "time": "2025年4月15日",
+    "station": "官桥变",
+    "location": null,
+    "content": "#2主变东侧7#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 25,
+    "time": "2025年4月16日",
+    "station": "岩泉变",
+    "location": null,
+    "content": "室外大门东侧摄像机集中电源接口故障，重新调换后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 26,
+    "time": "2025年4月21日",
+    "station": "缙云变",
+    "location": null,
+    "content": "110kV场地东侧11#摄像机集中电源接口故障，更换后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 27,
+    "time": "2025年4月21日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "220kV场地1#摄像机更换尾纤，光纤熔接电容器场地东南侧3#摄像机并调试。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 28,
+    "time": "2025年4月22日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV西侧场地2#摄像机水晶头松动，重新制作后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 29,
+    "time": "2025年4月23日",
+    "station": "龙南变",
+    "location": null,
+    "content": "更换#3主变东侧7#摄像机、大门口11#枪机",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1台枪机",
+    "leader": null
+  },
+  {
+    "seq": 30,
+    "time": "2025年4月24日",
+    "station": "河阳变",
+    "location": null,
+    "content": "更换光纤收发器集中电源",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 31,
+    "time": "2025年4月28日",
+    "station": "松阳变",
+    "location": null,
+    "content": "更换光纤收发器集中电源",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 32,
+    "time": "2025年4月29日",
+    "station": "官桥变",
+    "location": null,
+    "content": "#2主变东侧7#摄像机线路故障，后续更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 33,
+    "time": "2025年5月07日",
+    "station": "滨江变",
+    "location": null,
+    "content": "更换1#2#电容器室北侧4#摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 34,
+    "time": "2025年5月07日",
+    "station": "枫树变",
+    "location": null,
+    "content": "35kV开关室西侧15#摄像机调试",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 35,
+    "time": "2025年5月08日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "更换1#电容器室南侧6#摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 36,
+    "time": "2025年5月13日",
+    "station": "海口变",
+    "location": null,
+    "content": "更换大门北侧17#摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 37,
+    "time": "2025年5月21日",
+    "station": "大源变",
+    "location": null,
+    "content": "智能巡视设备现场调试接入",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 38,
+    "time": "2025年5月22日",
+    "station": "东方变",
+    "location": null,
+    "content": "智能巡视设备现场调试接入、红外测温安装",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 39,
+    "time": "2025年5月23日",
+    "station": "船寮变、钼矿变",
+    "location": null,
+    "content": "智能巡视项目现场勘查",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 40,
+    "time": "2025年5月26日",
+    "station": "桃园变",
+    "location": null,
+    "content": "更换8T硬盘2块",
+    "type": "图像监控",
+    "foreman": "8T硬盘2块",
+    "leader": "赵健"
+  },
+  {
+    "seq": 41,
+    "time": "2025年5月27日",
+    "station": "海口变",
+    "location": null,
+    "content": "更换主控室东侧19#摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 42,
+    "time": "2025年5月28日",
+    "station": "石郭变",
+    "location": null,
+    "content": "更换#1主变东侧8#摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 43,
+    "time": "2025年6月9日-10日",
+    "station": "港头变",
+    "location": null,
+    "content": "场地3、6号立杆摄像机配合电建改造拆除",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 46,
+    "time": "2025年6月20日",
+    "station": "青田变",
+    "location": null,
+    "content": "110kV场地南侧、#1主变南侧、主控室东侧、35kV电容器室东侧摄像机因交换机回路导致故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 47,
+    "time": "2025年6月24日",
+    "station": "遂昌变",
+    "location": null,
+    "content": "电容器场地东南侧3#摄像机掉线，更换集中电源单路开关后恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 48,
+    "time": "2025年6月25日",
+    "station": "官桥变",
+    "location": null,
+    "content": "#2主变东侧7#摄像机网线故障，重新放线后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 49,
+    "time": "2025年6月26日",
+    "station": "侨乡变",
+    "location": null,
+    "content": "更换10kV开关室南侧故障摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 50,
+    "time": "2025年6月27日",
+    "station": "海口变",
+    "location": null,
+    "content": "更换蓄电池室1#北侧23#故障摄像机",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 51,
+    "time": "2025年7月2日",
+    "station": "龙南变",
+    "location": null,
+    "content": "#1主变西侧5#、#2主变东侧6#、#3主变东侧7#、#3主变西侧8#、#2主变西侧9#、#1主变东侧10#故障恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 52,
+    "time": "2025年7月3日",
+    "station": "遂昌公司",
+    "location": null,
+    "content": "参加智能巡视系统操作会议",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 53,
+    "time": "2025年7月11日",
+    "station": "缙云变",
+    "location": null,
+    "content": "35kV外墙17#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 54,
+    "time": "2025年7月14日",
+    "station": "青田变",
+    "location": null,
+    "content": "智能巡视图像监控4#设备箱风扇故障安装",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 55,
+    "time": "2025年7月15日",
+    "station": "龙南变",
+    "location": null,
+    "content": "1#蓄电池室北侧28#摄像机为防爆摄像机，备件型号规格不符无法安装",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 56,
+    "time": "2025年7月16日",
+    "station": "龙石变",
+    "location": null,
+    "content": "电容器室北侧11#球机故障更换，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 57,
+    "time": "2025年7月22日",
+    "station": "海口变",
+    "location": null,
+    "content": "#2蓄电池室北侧23#摄像机故障更换，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 58,
+    "time": "2025年7月23日",
+    "station": "睦田变",
+    "location": null,
+    "content": "110kV场地8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 59,
+    "time": "2025年7月29日",
+    "station": "云和变",
+    "location": null,
+    "content": "通信机房南侧1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 60,
+    "time": "2025年7月30日-31日",
+    "station": "金溪变",
+    "location": null,
+    "content": "电容器室东侧11#摄像机光纤故障未恢复，录像机故障更换，增加硬盘一块8T",
+    "type": "图像监控",
+    "foreman": "1台录像机\n1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 61,
+    "time": "2025年8月06日",
+    "station": "张村变",
+    "location": null,
+    "content": "智能巡视设备现场调试接入",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 62,
+    "time": "2025年8月07日",
+    "station": "碧湖变",
+    "location": null,
+    "content": "智能巡视设备现场调试接入",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 63,
+    "time": "2025年8月08日",
+    "station": "四都变",
+    "location": null,
+    "content": "智能巡视设备现场调试接入",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 64,
+    "time": "2025年8月11日",
+    "station": "河阳变",
+    "location": null,
+    "content": "35kV开关室东南侧21#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 65,
+    "time": "2025年8月11日",
+    "station": "黄龙变",
+    "location": null,
+    "content": "#1主变南侧3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 66,
+    "time": "2025年8月12日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "110kV场地西侧5#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 67,
+    "time": "2025年8月13日",
+    "station": "象溪变、新兴变",
+    "location": null,
+    "content": "摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 68,
+    "time": "2025年8月19日",
+    "station": "官桥变",
+    "location": null,
+    "content": "GIS室北侧12#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 69,
+    "time": "2025年8月20日",
+    "station": "金溪变",
+    "location": null,
+    "content": "电容器室东侧11#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 70,
+    "time": "2025年8月27日",
+    "station": "庆元变",
+    "location": null,
+    "content": "110kV场地东侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "赵健"
+  },
+  {
+    "seq": 71,
+    "time": "2025年8月28日",
+    "station": "龙南变",
+    "location": null,
+    "content": "电容器室东侧13#摄像机电源线损坏更换后正常",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 72,
+    "time": "2025年9月02日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "35kV开关室北侧29#摄像机故障未更换，更换8T故障硬盘两块",
+    "type": "图像监控",
+    "foreman": "1块硬盘",
+    "leader": "赵健"
+  },
+  {
+    "seq": 73,
+    "time": "2025年9月03日",
+    "station": "新兴变",
+    "location": null,
+    "content": "摄像机故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "赵健"
+  },
+  {
+    "seq": 74,
+    "time": "2025年9月04日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "1#电容器室南侧6#摄像机故障更换，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1块硬盘",
+    "leader": "赵健"
+  },
+  {
+    "seq": 75,
+    "time": "2025年9月05日",
+    "station": "滨江变",
+    "location": null,
+    "content": "继保室南侧11#摄像机故障更换，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1块硬盘",
+    "leader": "赵健"
+  },
+  {
+    "seq": 76,
+    "time": "2025年9月09日",
+    "station": "枫树变",
+    "location": null,
+    "content": "智巡系统接入、调试",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 77,
+    "time": "2025年9月16日",
+    "station": "焦滩变",
+    "location": null,
+    "content": "#2主变北侧5#摄像机故障更换，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1台摄像机\n1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 78,
+    "time": "2025年9月17日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "10kV开关室9#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 79,
+    "time": "2025年9月18日",
+    "station": "睦田变",
+    "location": null,
+    "content": "110kV场地8#摄像机更换水晶头，硬盘增加一块8T",
+    "type": "图像监控",
+    "foreman": "1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 80,
+    "time": "2025年9月19日",
+    "station": "鹤溪变",
+    "location": null,
+    "content": "35kV开关室北侧29#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 81,
+    "time": "2025年10月13日",
+    "station": "松阳变",
+    "location": null,
+    "content": "大门南侧11#摄像机水晶头更换，硬盘增加一块8T，录像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台录像机\n1块硬盘",
+    "leader": null
+  },
+  {
+    "seq": 82,
+    "time": "2025年10月14日",
+    "station": "延庆变",
+    "location": null,
+    "content": "110kV场地西侧2#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 83,
+    "time": "2025年10月20日",
+    "station": "焦滩变",
+    "location": null,
+    "content": "10kV开关室北侧6#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 84,
+    "time": "2025年10月21日",
+    "station": "桃园变",
+    "location": null,
+    "content": "#2主变西南侧2#摄像机更换光纤收发器并更换尾纤",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 85,
+    "time": "2025年10月22日",
+    "station": "水阁变",
+    "location": null,
+    "content": "10kV开关室西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 86,
+    "time": "2025年10月23日",
+    "station": "睦田变",
+    "location": null,
+    "content": "#2主变东侧4#摄像机光纤收发器电源更换，10kV场地-8#摄像机光纤收发器水晶头重新制作",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 87,
+    "time": "2025年10月27日-31日",
+    "station": "小顺变",
+    "location": null,
+    "content": "智巡系统接入、调试",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 88,
+    "time": "2025年11月03日-05日",
+    "station": "北界变",
+    "location": null,
+    "content": "智巡系统接入、调试",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 89,
+    "time": "2025年11月10日-14日",
+    "station": "妙高变",
+    "location": null,
+    "content": "智巡系统接入、调试",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 90,
+    "time": "2025年11月17日",
+    "station": "仙宫变",
+    "location": null,
+    "content": "1-2#电容器室东侧32#摄像机故障现场勘查",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "许毅"
+  },
+  {
+    "seq": 91,
+    "time": "2025年11月18日",
+    "station": "宏山变",
+    "location": null,
+    "content": "35kV开关室外墙9#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "许毅"
+  },
+  {
+    "seq": 92,
+    "time": "2025年11月19日",
+    "station": "东山变",
+    "location": null,
+    "content": "35kV开关室6#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "许毅"
+  },
+  {
+    "seq": 93,
+    "time": "2025年11月20日",
+    "station": "里隆变",
+    "location": null,
+    "content": "10kV开关室11#摄像机网口松动",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "许毅"
+  },
+  {
+    "seq": 94,
+    "time": "2025年12月01日",
+    "station": "桃园变",
+    "location": null,
+    "content": "#2主变西侧2#摄像机光纤收发器电源故障更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 95,
+    "time": "2025年12月02日",
+    "station": "洋浩变",
+    "location": null,
+    "content": "大门南侧12#枪机、大门东侧5#枪机因支架备件不足未更换",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 96,
+    "time": "2025年12月03日",
+    "station": "仙宫变",
+    "location": null,
+    "content": "1-2#电容器室东侧32#摄像机电源短路故障，未恢复",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 97,
+    "time": "2025年12月04日",
+    "station": "五丰变",
+    "location": null,
+    "content": "室外全景1#枪机、室外大门6#枪机集中电源5V模块故障，重新接线后恢复。",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 99,
+    "time": "2025年12月08日",
+    "station": "宏山变",
+    "location": null,
+    "content": "110kV场地东侧8#摄像机改名35kV开关室东侧外墙8#摄像机并更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "许毅"
+  },
+  {
+    "seq": 100,
+    "time": "2025年12月09日",
+    "station": "金溪变",
+    "location": null,
+    "content": "主控室东南侧7#摄像机网线水晶头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "许毅"
+  },
+  {
+    "seq": 101,
+    "time": "2025年12月10日",
+    "station": "焦滩变",
+    "location": null,
+    "content": "110kV场地北侧3#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": "许毅"
+  },
+  {
+    "seq": 102,
+    "time": "2025年12月10日",
+    "station": "仙都变",
+    "location": null,
+    "content": "现场勘察",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 103,
+    "time": "2025年12月11日",
+    "station": "黄南变",
+    "location": null,
+    "content": "10kV开关室南侧7#摄像机网线水晶头故障",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": "许毅"
+  },
+  {
+    "seq": 104,
+    "time": "2025年12月11日-12日",
+    "station": "仙都变",
+    "location": null,
+    "content": "拆除2根立杆，恢复智慧监控3#云台",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 105,
+    "time": "2025年12月15日-19日",
+    "station": "靖居变",
+    "location": null,
+    "content": "智慧巡视项目补强",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 1,
+    "time": "2026年1月5日",
+    "station": "仙都变",
+    "location": "缙云",
+    "content": "主控楼门厅侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 2,
+    "time": "2026年1月6日",
+    "station": "里隆变",
+    "location": "缙云",
+    "content": "电容器室南侧13#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 3,
+    "time": "2026年1月7日",
+    "station": "东源变",
+    "location": "青田",
+    "content": "110kV场地西侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 4,
+    "time": "2026年1月8日",
+    "station": "寿元变",
+    "location": "莲都",
+    "content": "1#电容器室南侧16#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 5,
+    "time": "2026年1月13日",
+    "station": "小顺变",
+    "location": "云和",
+    "content": "智巡系统红外摄像机放线到内网交换机",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 6,
+    "time": "2026年1月13日",
+    "station": "紧水滩变",
+    "location": "云和",
+    "content": "智巡系统红外摄像机放线到内网交换机",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 7,
+    "time": "2026年1月14日",
+    "station": "黄岗变",
+    "location": "云和",
+    "content": "智巡系统红外摄像机放线到内网交换机",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 8,
+    "time": "2026年1月15日",
+    "station": "象溪变",
+    "location": "松阳",
+    "content": "大门球机、主变球机故障更换（主业提供摄像机）",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 9,
+    "time": "2026年1月26日",
+    "station": "金亭变",
+    "location": "莲都",
+    "content": "智能巡视辅控系统消缺",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 10,
+    "time": "2026年1月27日",
+    "station": "鹤溪变",
+    "location": "景宁",
+    "content": "智能巡视辅控系统消缺",
+    "type": "智能巡视",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 11,
+    "time": "2026年1月28日",
+    "station": "石练变",
+    "location": "遂昌",
+    "content": "110kV场地西侧1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 12,
+    "time": "2026年1月29日",
+    "station": "洋浩变",
+    "location": "遂昌",
+    "content": "大门南侧12#枪机、大门东侧5#枪机故障更换",
+    "type": "图像监控",
+    "foreman": "2台枪机",
+    "leader": null
+  },
+  {
+    "seq": 13,
+    "time": "2026年2月02日",
+    "station": "白龙变",
+    "location": "云和",
+    "content": "110kV场地南侧1#摄像机、110kV场地南侧2#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 14,
+    "time": "2026年2月02日",
+    "station": "杨柳变",
+    "location": "云和",
+    "content": "10kV开关室东侧10#摄像机水晶头故障重新制作",
+    "type": "图像监控",
+    "foreman": null,
+    "leader": null
+  },
+  {
+    "seq": 15,
+    "time": "2026年2月03日",
+    "station": "高湖变",
+    "location": "青田",
+    "content": "2#主变北侧摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 16,
+    "time": "2026年2月04日",
+    "station": "缙云变",
+    "location": "缙云",
+    "content": "1#主变北侧8#摄像机故障更换未恢复，怀疑光纤中断",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 17,
+    "time": "2026年2月05日",
+    "station": "侨乡变",
+    "location": "青田",
+    "content": "3#主变东南侧1#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 18,
+    "time": "2026年2月28日",
+    "station": "碧湖变",
+    "location": "莲都",
+    "content": "主控楼楼顶南侧6#摄像机、主控楼楼顶东南侧7#摄像机更换",
+    "type": "图像监控",
+    "foreman": "2台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 19,
+    "time": "2026年3月16日",
+    "station": "河阳变",
+    "location": "缙云",
+    "content": "河树24P3线避雷器C相云台、河树24P3开关东、河渔1210开关东故障云台更换",
+    "type": "辅控系统",
+    "foreman": "3台云台",
+    "leader": null
+  },
+  {
+    "seq": 20,
+    "time": "2026年3月17日",
+    "station": "仙都变",
+    "location": "缙云",
+    "content": "2#主变西南侧10#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 21,
+    "time": "2026年3月18日",
+    "station": "枫树变",
+    "location": "莲都",
+    "content": "就地继保室外墙8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  },
+  {
+    "seq": 22,
+    "time": "2026年3月19日",
+    "station": "缙云变",
+    "location": "缙云",
+    "content": "1#主变北侧8#摄像机故障更换",
+    "type": "图像监控",
+    "foreman": "1台摄像机",
+    "leader": null
+  }
+]

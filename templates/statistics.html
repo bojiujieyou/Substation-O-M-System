@@ -2,60 +2,18 @@
 
 {% block title %}统计报表 - 变电站图像监控运维平台{% endblock %}
 
-{% block extra_head %}
-<style>
-.stat-card {
-    background: var(--color-surface);
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-}
-.stat-card .stat-value {
-    font-size: 32px;
-    font-weight: 600;
-    color: var(--color-primary);
-    font-family: 'JetBrains Mono', monospace;
-}
-.stat-card .stat-label {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin-top: 4px;
-}
-.chart-section {
-    background: var(--color-surface);
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 24px;
-}
-.chart-section h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: var(--color-text);
-}
-.chart-container {
-    position: relative;
-    height: 300px;
-}
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container">
     <div class="page-header">
         <h2 class="page-title">统计报表</h2>
+        <div class="page-header-actions">
+            <select id="year-filter" class="form-select">
+                <option value="">全部年份</option>
+            </select>
+            <button id="export-btn" class="btn btn-secondary btn-sm" type="button" onclick="exportStats()">
+                导出Excel
+            </button>
+        </div>
     </div>
 
     <!-- 概览统计 -->
@@ -90,9 +48,21 @@
         </div>
         <div class="col-md-6">
             <div class="chart-section">
-                <h3>故障类型分布</h3>
-                <div class="chart-container">
-                    <canvas id="typeChart"></canvas>
+                <h3>摄像机故障维修排行 Top 5</h3>
+                <div class="chart-container" style="height: auto; min-height: 200px;">
+                    <table class="data-table" id="camera-ranking-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>摄像机位置</th>
+                                <th>变电站</th>
+                                <th>故障次数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="camera-ranking-body">
+                            <tr><td colspan="4" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -120,16 +90,58 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.page-header-actions .form-select {
+    width: auto;
+    min-width: 140px;
+}
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1a73e8;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+.rank-badge:nth-child(1) { background: #d93025; }
+.rank-badge:nth-child(2) { background: #f9ab00; }
+.rank-badge:nth-child(3) { background: #1e8e3e; }
+.fault-count {
+    font-weight: bold;
+    color: #d93025;
+}
+</style>
 <script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
 <script>
-let monthlyChart, typeChart, countyChart, voltageChart;
+let monthlyChart, countyChart, voltageChart;
+let currentYear = '';
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getYearFilter() {
+    return currentYear ? `?year=${currentYear}` : '';
+}
 
 async function loadStats() {
     try {
         // 加载统计数据
         const [statsRes, faultsRes, stationsRes] = await Promise.all([
-            fetch('/api/stats'),
-            fetch('/api/faults'),
+            fetch(`/api/stats${getYearFilter() ? '?' + getYearFilter().slice(1) : ''}`),
+            fetch(`/api/faults${getYearFilter()}`),
             fetch('/api/stations')
         ]);
 
@@ -153,14 +165,49 @@ async function loadStats() {
     }
 }
 
+function populateYearFilter(faults) {
+    const years = new Set();
+    faults.forEach(f => {
+        if (f.created_at) {
+            const y = f.created_at.substring(0, 4);
+            years.add(y);
+        }
+    });
+
+    const select = document.getElementById('year-filter');
+    // 保留"全部年份"选项
+    const allOption = select.options[0];
+    select.innerHTML = '';
+    select.appendChild(allOption);
+
+    const sortedYears = [...years].sort((a, b) => b - a);
+    sortedYears.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + ' 年';
+        select.appendChild(opt);
+    });
+}
+
 function processChartData(faults, stations) {
     // 月度故障趋势
     const monthlyData = {};
     const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        monthlyData[key] = 0;
+    const selectedYear = currentYear || now.getFullYear();
+
+    if (currentYear) {
+        // 显示选中年份的全部12个月
+        for (let m = 1; m <= 12; m++) {
+            const key = `${selectedYear}-${String(m).padStart(2, '0')}`;
+            monthlyData[key] = 0;
+        }
+    } else {
+        // 显示最近6个月
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            monthlyData[key] = 0;
+        }
     }
 
     faults.forEach(f => {
@@ -174,7 +221,7 @@ function processChartData(faults, stations) {
 
     const monthlyLabels = Object.keys(monthlyData).map(m => {
         const [y, mm] = m.split('-');
-        return `${y}年${parseInt(mm)}月`;
+        return `${parseInt(mm)}月`;
     });
     const monthlyValues = Object.values(monthlyData);
 
@@ -196,88 +243,65 @@ function processChartData(faults, stations) {
         }
     });
 
-    // 故障类型分布
-    const typeData = {};
+    // 摄像机故障维修排行 Top 5
+    const cameraData = {};
     faults.forEach(f => {
-        const type = f.fault_type || '未知';
-        typeData[type] = (typeData[type] || 0) + 1;
-    });
-
-    const typeLabels = Object.keys(typeData);
-    const typeValues = Object.values(typeData);
-    const typeColors = ['#d93025', '#f9ab00', '#1a73e8', '#1e8e3e', '#5f6368'];
-
-    if (typeChart) typeChart.destroy();
-    typeChart = new Chart(document.getElementById('typeChart'), {
-        type: 'doughnut',
-        data: {
-            labels: typeLabels,
-            datasets: [{
-                data: typeValues,
-                backgroundColor: typeColors.slice(0, typeLabels.length)
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'right' } }
+        if (f.camera_id && f.camera_location) {
+            const key = f.camera_id;
+            if (!cameraData[key]) {
+                cameraData[key] = { count: 0, location: f.camera_location, station_name: f.station_name };
+            }
+            cameraData[key].count++;
         }
     });
 
-    // 各县区统计
-    const countyData = {};
-    faults.forEach(f => {
-        const county = f.station_name ? '未知' : '未知'; // station doesn't have county in fault response
-        // Actually we need to get county from station - let's use a different approach
-    });
+    const topCameras = Object.entries(cameraData)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 5);
 
-    // Use stations data instead
+    const tbody = document.getElementById('camera-ranking-body');
+    if (topCameras.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无数据</td></tr>';
+    } else {
+        tbody.innerHTML = topCameras.map(([camId, data], idx) => {
+        const rankColors = ['#d93025', '#f9ab00', '#1e8e3e', '#1a73e8', '#5f6368'];
+        const rankColor = rankColors[idx] || '#5f6368';
+        return `
+            <tr>
+                <td><span class="rank-badge" style="background:${rankColor}">${idx + 1}</span></td>
+                <td>${escapeHtml(data.location || '-')}</td>
+                <td>${escapeHtml(data.station_name || '-')}</td>
+                <td><span class="fault-count">${data.count}</span></td>
+            </tr>
+        `;
+    }).join('');
+    }
+
+    // 各县区统计（按故障数统计，非变电站数）
     const stationCountyMap = {};
+    const stationVoltageMap = {};
     stations.forEach(s => {
-        stationCountyMap[s.id] = s.county;
+        stationCountyMap[s.id] = s.county || '未知';
+        stationVoltageMap[s.id] = s.voltage_level || '其他';
     });
 
-    const countyFaults = {};
+    const countyFaultStats = {};
+    const voltageFaultStats = {};
     faults.forEach(f => {
-        // We need station_id in faults - let's check the API response
-        // Actually faults have station_id, so we can map it
-    });
-
-    // Simpler: count faults by some grouping we have
-    // Since faults API doesn't include county directly, use station_name parsing
-    // For now, show as "按报修时间" or use station data
-
-    // Let's use station voltage levels for the county chart since we don't have county in faults
-    const voltageData = { '220kV': 0, '110kV': 0, '35kV': 0 };
-    faults.forEach(f => {
-        // We don't have voltage in fault data directly, skip for now
-    });
-
-    // Use stations by voltage for demo
-    const voltageStats = { '220kV': 0, '110kV': 0, '其他': 0 };
-    stations.forEach(s => {
-        const vl = s.voltage_level || '其他';
-        if (vl.includes('220')) voltageStats['220kV']++;
-        else if (vl.includes('110')) voltageStats['110kV']++;
-        else voltageStats['其他']++;
+        const county = stationCountyMap[f.station_id] || '未知';
+        const voltage = stationVoltageMap[f.station_id] || '其他';
+        countyFaultStats[county] = (countyFaultStats[county] || 0) + 1;
+        voltageFaultStats[voltage] = (voltageFaultStats[voltage] || 0) + 1;
     });
 
     if (countyChart) countyChart.destroy();
-    // Placeholder - show fault distribution by county from stations
-    const countyFaultStats = {};
-    // We can't easily get county from faults without the join, so show stations by county
-    stations.forEach(s => {
-        const c = s.county || '未知';
-        countyFaultStats[c] = (countyFaultStats[c] || 0) + 1;
-    });
-
     countyChart = new Chart(document.getElementById('countyChart'), {
         type: 'bar',
         data: {
-            labels: Object.keys(countyFaultStats),
+            labels: Object.keys(countyFaultStats).sort((a, b) => countyFaultStats[b] - countyFaultStats[a]),
             datasets: [{
-                label: '变电站数量',
-                data: Object.values(countyFaultStats),
+                label: '故障数量',
+                data: Object.keys(countyFaultStats).sort((a, b) => countyFaultStats[b] - countyFaultStats[a]).map(k => countyFaultStats[k]),
                 backgroundColor: '#1e8e3e'
             }]
         },
@@ -293,10 +317,10 @@ function processChartData(faults, stations) {
     voltageChart = new Chart(document.getElementById('voltageChart'), {
         type: 'pie',
         data: {
-            labels: Object.keys(voltageStats),
+            labels: Object.keys(voltageFaultStats),
             datasets: [{
-                data: Object.values(voltageStats),
-                backgroundColor: ['#1a73e8', '#f9ab00', '#9aa0a6']
+                data: Object.values(voltageFaultStats),
+                backgroundColor: ['#1a73e8', '#f9ab00', '#9aa0a6', '#1e8e3e']
             }]
         },
         options: {
@@ -307,6 +331,29 @@ function processChartData(faults, stations) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadStats);
+// 先加载全部数据用于提取年份列表，再初始化
+async function initPage() {
+    try {
+        const res = await fetch('/api/faults');
+        const data = await res.json();
+        populateYearFilter(data.faults || []);
+    } catch (error) {
+        console.error('加载年份列表失败:', error);
+    }
+    await loadStats();
+}
+
+document.getElementById('year-filter').addEventListener('change', async function() {
+    currentYear = this.value;
+    await loadStats();
+});
+
+function exportStats() {
+    const yearFilter = document.getElementById('year-filter').value;
+    const url = '/api/statistics/export' + (yearFilter ? `?year=${yearFilter}` : '');
+    window.location.href = url;
+}
+
+document.addEventListener('DOMContentLoaded', initPage);
 </script>
 {% endblock %}

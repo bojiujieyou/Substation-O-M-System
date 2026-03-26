@@ -115,3 +115,92 @@ class TestExcelParseError:
     def test_message(self):
         error = ExcelParseError('测试错误')
         assert str(error) == '测试错误'
+
+
+class TestParseStationExcelFull:
+    """端到端Excel解析测试"""
+
+    def test_parse_valid_excel(self, tmp_path):
+        """完整Excel解析：创建真实xlsx并解析"""
+        from openpyxl import Workbook
+
+        # 创建测试Excel文件（符合实际格式）
+        wb = Workbook()
+        ws = wb.active
+
+        # 第1行：变电站名称
+        ws['A1'] = '测试变电站'
+
+        # 添加电压等级信息
+        ws['A2'] = '220kV变电站设备清单'
+
+        # 添加摄像头表头（第17行，与实际格式一致）
+        ws['A17'] = '序号'
+        ws['B17'] = '位置'
+        ws['C17'] = '通道'
+        ws['D17'] = 'IP地址'
+        ws['E17'] = '备注'
+
+        # 添加摄像头数据（格式：col A='通道N', col B=位置, col D=IP）
+        ws['A18'] = '通道1'
+        ws['B18'] = '220kV场地北侧-1#球'
+        ws['D18'] = '192.168.1.100'
+
+        ws['A19'] = '通道10'
+        ws['B19'] = '35kV开关室1-10#球'
+        ws['D19'] = '192.168.1.110'
+
+        filepath = tmp_path / '测试变电站.xlsx'
+        wb.save(filepath)
+
+        # 解析
+        result = parse_station_excel(str(filepath))
+
+        # 验证结果结构
+        assert 'station' in result
+        assert 'cameras' in result
+        assert result['station']['name'] == '测试变电站'
+        assert len(result['cameras']) == 2
+
+        # 验证第一个摄像头
+        cam1 = result['cameras'][0]
+        assert cam1['ip_address'] == '192.168.1.100'
+        assert cam1['camera_index'] == '1'
+        assert cam1['location'] == '220kV场地北侧-1#球'
+
+    def test_parse_missing_station_name(self, tmp_path):
+        """空变电站名称应抛出异常"""
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws['A1'] = None  # 变电站名称为空
+
+        filepath = tmp_path / '空名称.xlsx'
+        wb.save(filepath)
+
+        with pytest.raises(ExcelParseError) as exc_info:
+            parse_station_excel(str(filepath))
+        assert '变电站名称为空' in str(exc_info.value)
+
+    def test_parse_nonexistent_file(self):
+        """不存在的文件应抛出异常"""
+        with pytest.raises(ExcelParseError) as exc_info:
+            parse_station_excel(r'C:\nonexistent\file.xlsx')
+        assert '文件不存在' in str(exc_info.value)
+
+    def test_parse_missing_header_row(self, tmp_path):
+        """缺少表头行时返回空摄像头列表"""
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws['A1'] = '测试变电站'
+        # 没有摄像头表头行
+
+        filepath = tmp_path / '无表头.xlsx'
+        wb.save(filepath)
+
+        result = parse_station_excel(str(filepath))
+        assert result['station']['name'] == '测试变电站'
+        assert result['cameras'] == []

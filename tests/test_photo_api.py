@@ -1,0 +1,160 @@
+# test_photo_api.py — 照片API与受控取图端点测试
+import sqlite3
+from pathlib import Path
+
+import pytest
+
+from app import app
+from config import Config
+from init_db import init_db
+
+
+@pytest.fixture
+def client(test_db):
+    import config as config_module
+    original_path = config_module.Config.DATABASE_PATH
+    config_module.Config.DATABASE_PATH = test_db
+    # Override app.config directly since app.config.from_object(Config)
+    # copies DATABASE_PATH at import time (before monkeypatch runs)
+    app_original_db_path = app.config['DATABASE_PATH']
+    app.config['DATABASE_PATH'] = test_db
+
+    app.config['TESTING'] = True
+    init_db()
+
+    with app.test_client() as c:
+        yield c
+
+    config_module.Config.DATABASE_PATH = original_path
+    app.config['DATABASE_PATH'] = app_original_db_path
+
+
+@pytest.fixture
+def temp_photo_root(tmp_path, monkeypatch):
+    root = tmp_path / "photo-root"
+    root.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(Config, "PHOTO_ROOT_PATH", str(root))
+    return root
+
+
+@pytest.fixture
+def auth_client(client, test_db):
+    """已登录的测试客户端"""
+    import sqlite3
+    from auth import hash_password
+
+    # 直接在测试数据库中创建测试用户
+    conn = sqlite3.connect(test_db)
+    password_hash = hash_password('admin')
+    conn.execute("""
+        INSERT INTO users (username, password_hash, role)
+        VALUES (?, ?, ?)
+    """, ('testadmin', password_hash, 'admin'))
+    conn.commit()
+    conn.close()
+
+    # 登录
+    client.post('/auth/login', json={'username': 'testadmin', 'password': 'admin'})
+    return client
+
+
+def _seed_station_and_photo(station_name: str, station_id: int = 1):
+    conn = sqlite3.connect(Config.DATABASE_PATH)
+    conn.execute(
+        """
+        INSERT INTO stations (id, name, voltage_level, county)
+        VALUES (?, ?, '110kV', '丽水')
+        """,
+        (station_id, station_name),
+    )
+    conn.commit()
+    return conn
+
+
+def test_get_photo_groups_returns_grouped_and_unmatched(client):
+    conn = _seed_station_and_photo("白云变电站", station_id=1)
+
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, county_hint)
+        VALUES (?, ?, ?, ?, ?, 'matched', 'name_exact', ?)
+        """,
+        ("丽水/白云变电站/a.jpg", "E:/dummy/a.jpg", "a.jpg", ".jpg", 1, "丽水"),
+    )
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, county_hint, station_hint, unmatched_reason)
+        VALUES (?, ?, ?, ?, NULL, 'unmatched', 'none', ?, ?, 'no_station_match')
+        """,
+        ("丽水/未知站/b.jpg", "E:/dummy/b.jpg", "b.jpg", ".jpg", "丽水", "未知站"),
+    )
+    conn.commit()
+    conn.close()
+
+    response = client.get('/api/photos/groups')
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data['group_count'] == 1
+    assert len(data['groups']) == 1
+    assert data['groups'][0]['station_name'] == '白云变电站'
+    assert len(data['groups'][0]['photos']) == 1
+
+    assert data['unmatched_count'] == 1
+    assert len(data['unmatched']) == 1
+    assert data['unmatched'][0]['filename'] == 'b.jpg'
+
+
+def test_get_photo_file_requires_auth(client, temp_photo_root):
+    """未登录时返回401"""
+    response = client.get('/photos/file/1')
+    assert response.status_code == 401
+    data = response.get_json()
+    assert '请先登录' in data['error']
+
+
+def test_get_photo_file_rejects_path_traversal_like_db_row(auth_client, temp_photo_root):
+    conn = _seed_station_and_photo("穿越测试站", station_id=1)
+
+    outside = temp_photo_root.parent / "outside.jpg"
+    outside.write_bytes(b"outside")
+
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method)
+        VALUES (?, ?, ?, ?, ?, 'matched', 'manual')
+        """,
+        ("fake/outside.jpg", str(outside), "outside.jpg", ".jpg", 1),
+    )
+    photo_id = conn.execute("SELECT id FROM photos WHERE filename='outside.jpg'").fetchone()[0]
+    conn.commit()
+    conn.close()
+
+    response = auth_client.get(f'/photos/file/{photo_id}')
+    assert response.status_code == 403
+    data = response.get_json()
+    assert '非法路径访问' in data['error']
+
+
+def test_get_photo_file_returns_image_under_root(auth_client, temp_photo_root):
+    conn = _seed_station_and_photo("站内图片测试站", station_id=1)
+
+    image_path = temp_photo_root / "丽水" / "站内图片测试站" / "ok.jpg"
+    image_path.parent.mkdir(parents=True, exist_ok=True)
+    image_bytes = b"\xff\xd8\xff\xd9"
+    image_path.write_bytes(image_bytes)
+
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method)
+        VALUES (?, ?, ?, ?, ?, 'matched', 'name_exact')
+        """,
+        ("丽水/站内图片测试站/ok.jpg", str(image_path), "ok.jpg", ".jpg", 1),
+    )
+    photo_id = conn.execute("SELECT id FROM photos WHERE filename='ok.jpg'").fetchone()[0]
+    conn.commit()
+    conn.close()
+
+    response = auth_client.get(f'/photos/file/{photo_id}')
+    assert response.status_code == 200
+    assert response.data == image_bytes

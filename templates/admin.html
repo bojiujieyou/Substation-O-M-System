@@ -3,70 +3,8 @@
 {% block title %}管理后台 - 变电站图像监控运维平台{% endblock %}
 
 {% block extra_head %}
-<style>
-.admin-section {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
-}
-.admin-section h3 {
-    margin: 0 0 var(--space-md) 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-.upload-zone {
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-xl);
-    text-align: center;
-    transition: border-color var(--transition-short);
-}
-.upload-zone:hover {
-    border-color: var(--color-primary);
-}
-.upload-zone.dragover {
-    border-color: var(--color-primary);
-    background: var(--color-info-bg);
-}
-.station-list {
-    max-height: 400px;
-    overflow-y: auto;
-}
-.station-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-sm) 0;
-    border-bottom: 1px solid var(--color-border);
-}
-.station-item:last-child {
-    border-bottom: none;
-}
-.station-info {
-    flex: 1;
-}
-.station-name {
-    font-weight: 500;
-}
-.station-meta {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-}
-.station-actions {
-    display: flex;
-    gap: var(--space-xs);
-}
-.badge-count {
-    background: var(--color-info-bg);
-    color: var(--color-primary);
-    padding: 2px 6px;
-    border-radius: var(--radius-full);
-    font-size: 12px;
-    font-weight: 500;
-}
-</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -78,7 +16,6 @@
         </div>
     </div>
 
-    <!-- 上传Excel -->
     <div class="admin-section">
         <h3>上传Excel导入</h3>
         <div class="row">
@@ -101,7 +38,7 @@
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input" style="height: auto; padding: 8px;">
+                            <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input" style="height:auto;padding:8px;" required>
                         </div>
                         <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
                     </form>
@@ -109,32 +46,74 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <p class="text-muted" style="font-size: 13px;">
+                <p class="text-muted" style="font-size:13px;">
                     <strong>说明：</strong><br>
-                    • 上传Excel文件将覆盖该变电站的摄像头数据<br>
-                    • 变电站信息不存在则新建，存在则更新<br>
-                    • 摄像头将全部重新导入（先删除后新增）<br>
-                    • 支持xlsx和xls格式
+                    • 上传Excel将覆盖该变电站摄像头数据（先删后增）<br>
+                    • 变电站不存在则新建，存在则更新<br>
+                    • 支持xlsx/xls格式
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- 变电站列表 -->
+    <div class="admin-section">
+        <h3>照片索引管理</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-info">
+                    <div class="detail-row"><span class="detail-label">照片根目录</span><span class="detail-value" id="photo-root-path">-</span></div>
+                    <div class="detail-row"><span class="detail-label">增量周期</span><span class="detail-value" id="photo-cron-minutes">-</span></div>
+                    <div class="detail-row"><span class="detail-label">总记录</span><span class="detail-value" id="photo-total">0</span></div>
+                    <div class="detail-row"><span class="detail-label">已匹配</span><span class="detail-value" id="photo-matched">0</span></div>
+                    <div class="detail-row"><span class="detail-label">未匹配</span><span class="detail-value" id="photo-unmatched">0</span></div>
+                    <div class="detail-row"><span class="detail-label">非图片</span><span class="detail-value" id="photo-ignored">0</span></div>
+                </div>
+                <div class="form-actions" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" id="photo-index-incremental">手动增量刷新</button>
+                    <button class="btn btn-secondary" id="photo-index-full">全量重建索引</button>
+                </div>
+                <p class="form-hint">访问照片页不会触发扫盘；建议部署侧按固定周期执行增量刷新。</p>
+                <div id="photo-index-result" class="form-hint"></div>
+            </div>
+            <div class="col-md-6">
+                <h4 class="card-subtitle">未匹配照片清洗</h4>
+                <div class="form-group">
+                    <label for="unmatched-photo-select" class="form-label">未匹配照片</label>
+                    <select id="unmatched-photo-select" class="form-select">
+                        <option value="">请选择未匹配照片</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="match-station-select" class="form-label">关联变电站</label>
+                    <select id="match-station-select" class="form-select">
+                        <option value="">请选择变电站</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="match-alias-input" class="form-label">别名（可选）</label>
+                    <input id="match-alias-input" class="form-input" placeholder="例如：桃园变电站简称">
+                </div>
+                <div class="form-actions" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" id="manual-match-btn">手动关联</button>
+                </div>
+                <div id="manual-match-result" class="form-hint"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="admin-section">
         <h3>变电站管理</h3>
         <div class="mb-3">
-            <input type="text" id="search-station" class="form-input" placeholder="搜索变电站..." style="max-width: 300px;">
+            <input type="text" id="search-station" class="form-input" placeholder="搜索变电站..." style="max-width:300px;">
         </div>
         <div id="loading" class="loading-state">
             <div class="spinner"></div>
             <span>加载中...</span>
         </div>
-        <div id="station-list" class="station-list" style="display: none;"></div>
+        <div id="station-list" class="station-list" style="display:none;"></div>
     </div>
 </div>
 
-<!-- 编辑变电站弹窗 -->
 <div class="modal" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -185,7 +164,6 @@
     </div>
 </div>
 
-<!-- 添加摄像头弹窗 -->
 <div class="modal" id="camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="camera-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -221,12 +199,53 @@
         </div>
     </div>
 </div>
+
+<div class="modal" id="coord-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="coord-modal-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="coord-modal-title">设置坐标</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">点击地图选择位置，或直接输入经纬度</p>
+                <div id="coord-map" style="height: 400px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                <div class="coord-inputs mt-3">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="coord-lat" class="form-label">纬度</label>
+                            <input type="number" step="0.000001" id="coord-lat" class="form-input" placeholder="如 28.467200">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="coord-lng" class="form-label">经度</label>
+                            <input type="number" step="0.000001" id="coord-lng" class="form-input" placeholder="如 119.922200">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearCoord()">清除坐标</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveCoord()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 let stations = [];
-let currentStationId = null;
+let unmatchedPhotos = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 async function loadStations() {
     const loading = document.getElementById('loading');
@@ -240,17 +259,17 @@ async function loadStations() {
         const data = await response.json();
         stations = data.stations || [];
         renderStations(stations);
+        populateMatchStationSelect();
         loading.style.display = 'none';
         list.style.display = 'block';
     } catch (error) {
-        console.error('加载失败:', error);
         loading.innerHTML = '<span class="text-danger">加载失败</span>';
     }
 }
 
 function renderStations(stationsToRender) {
     const list = document.getElementById('station-list');
-    if (stationsToRender.length === 0) {
+    if (!stationsToRender.length) {
         list.innerHTML = '<p class="text-muted">暂无变电站</p>';
         return;
     }
@@ -263,6 +282,7 @@ function renderStations(stationsToRender) {
             </div>
             <div class="station-actions">
                 <button class="btn btn-sm btn-ghost" onclick="editStation(${s.id})">编辑</button>
+                <button class="btn btn-sm btn-ghost" onclick="showCoordModal(${s.id})">坐标</button>
                 <button class="btn btn-sm btn-ghost" onclick="showCameraModal(${s.id})">添加摄像头</button>
                 <button class="btn btn-sm btn-ghost text-danger" onclick="deleteStation(${s.id})">删除</button>
             </div>
@@ -271,28 +291,34 @@ function renderStations(stationsToRender) {
 }
 
 function filterStations(query) {
-    if (!query) {
+    const q = (query || '').trim();
+    if (!q) {
         renderStations(stations);
         return;
     }
     const filtered = stations.filter(s =>
-        s.name.includes(query) ||
-        (s.county && s.county.includes(query)) ||
-        (s.voltage_level && s.voltage_level.includes(query))
+        s.name.includes(q) ||
+        (s.county && s.county.includes(q)) ||
+        (s.voltage_level && s.voltage_level.includes(q))
     );
     renderStations(filtered);
 }
 
-document.getElementById('search-station').addEventListener('input', function(e) {
+document.getElementById('search-station').addEventListener('input', (e) => {
     filterStations(e.target.value);
 });
 
-// 上传Excel
 document.getElementById('upload-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const fileInput = document.getElementById('excel-file');
+    if (!fileInput.files || !fileInput.files[0]) {
+        alert('请选择Excel文件');
+        return;
+    }
+
     const formData = new FormData();
-    formData.append('file', document.getElementById('excel-file').files[0]);
+    formData.append('file', fileInput.files[0]);
     formData.append('county', document.getElementById('county-select').value);
 
     if (!formData.get('county')) {
@@ -301,35 +327,29 @@ document.getElementById('upload-form').addEventListener('submit', async function
     }
 
     const btn = document.getElementById('upload-btn');
+    const resultDiv = document.getElementById('upload-result');
+
     btn.disabled = true;
     btn.textContent = '上传中...';
 
-    const resultDiv = document.getElementById('upload-result');
-
     try {
-        const response = await fetch('/admin/upload', {
-            method: 'POST',
-            body: formData
-        });
-
+        const response = await fetch('/admin/upload', { method: 'POST', body: formData });
         const data = await response.json();
-
         if (response.ok) {
-            resultDiv.innerHTML = `<p class="text-success">✓ ${data.message}<br>变电站: ${data.station}<br>摄像头: ${data.cameras_added}个</p>`;
-            loadStations();
+            resultDiv.innerHTML = `<p class="text-success">✓ ${data.message}<br>变电站: ${escapeHtml(data.station)}<br>摄像头: ${data.cameras_added}个</p>`;
+            await loadStations();
         } else {
-            resultDiv.innerHTML = `<p class="text-danger">✗ ${data.error}</p>`;
+            resultDiv.innerHTML = `<p class="text-danger">✗ ${escapeHtml(data.error || '导入失败')}</p>`;
         }
     } catch (error) {
-        resultDiv.innerHTML = `<p class="text-danger">✗ 上传失败: ${error.message}</p>`;
+        resultDiv.innerHTML = `<p class="text-danger">✗ 上传失败: ${escapeHtml(error.message)}</p>`;
     } finally {
         btn.disabled = false;
         btn.textContent = '上传并导入';
     }
 });
 
-// 编辑变电站
-async function editStation(stationId) {
+function editStation(stationId) {
     const station = stations.find(s => s.id === stationId);
     if (!station) return;
 
@@ -339,8 +359,7 @@ async function editStation(stationId) {
     document.getElementById('edit-county').value = station.county || '丽水';
     document.getElementById('edit-location').value = station.location || '';
 
-    const modal = new bootstrap.Modal(document.getElementById('edit-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('edit-modal')).show();
 }
 
 async function saveStation() {
@@ -361,10 +380,10 @@ async function saveStation() {
 
         if (response.ok) {
             bootstrap.Modal.getInstance(document.getElementById('edit-modal')).hide();
-            loadStations();
+            await loadStations();
         } else {
-            const data = await response.json();
-            alert(data.error || '保存失败');
+            const resp = await response.json();
+            alert(resp.error || '保存失败');
         }
     } catch (error) {
         alert('保存失败: ' + error.message);
@@ -380,42 +399,36 @@ async function deleteStation(stationId) {
     }
 
     try {
-        const response = await fetch(`/admin/stations/${stationId}`, {
-            method: 'DELETE'
-        });
-
+        const response = await fetch(`/admin/stations/${stationId}`, { method: 'DELETE' });
         if (response.ok) {
-            loadStations();
+            await loadStations();
         } else {
-            const data = await response.json();
-            alert(data.error || '删除失败');
+            const resp = await response.json();
+            alert(resp.error || '删除失败');
         }
     } catch (error) {
         alert('删除失败: ' + error.message);
     }
 }
 
-// 添加摄像头
 function showCameraModal(stationId) {
-    currentStationId = stationId;
     document.getElementById('camera-station-id').value = stationId;
     document.getElementById('camera-ip').value = '';
     document.getElementById('camera-location').value = '';
     document.getElementById('camera-area').value = '';
     document.getElementById('camera-channel').value = '';
 
-    const modal = new bootstrap.Modal(document.getElementById('camera-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('camera-modal')).show();
 }
 
 async function addCamera() {
     const stationId = document.getElementById('camera-station-id').value;
     const data = {
-        station_id: parseInt(stationId),
+        station_id: parseInt(stationId, 10),
         ip_address: document.getElementById('camera-ip').value,
         location: document.getElementById('camera-location').value,
         area: document.getElementById('camera-area').value,
-        channel_number: document.getElementById('camera-channel').value ? parseInt(document.getElementById('camera-channel').value) : null,
+        channel_number: document.getElementById('camera-channel').value ? parseInt(document.getElementById('camera-channel').value, 10) : null,
     };
 
     if (!data.ip_address) {
@@ -432,7 +445,7 @@ async function addCamera() {
 
         if (response.ok) {
             bootstrap.Modal.getInstance(document.getElementById('camera-modal')).hide();
-            loadStations();
+            await loadStations();
         } else {
             const resp = await response.json();
             alert(resp.error || '添加失败');
@@ -442,7 +455,6 @@ async function addCamera() {
     }
 }
 
-// 备份数据库
 async function backupDb() {
     try {
         const response = await fetch('/admin/backup', { method: 'POST' });
@@ -457,13 +469,266 @@ async function backupDb() {
     }
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function populateMatchStationSelect() {
+    const select = document.getElementById('match-station-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">请选择变电站</option>' +
+        stations.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.county || '-')})</option>`).join('');
 }
 
-document.addEventListener('DOMContentLoaded', loadStations);
+async function loadPhotoStats() {
+    try {
+        const response = await fetch('/admin/photos/stats');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '加载照片统计失败');
+
+        const stats = data.stats || {};
+        document.getElementById('photo-root-path').textContent = data.photo_root || '-';
+        document.getElementById('photo-cron-minutes').textContent = `${data.cron_minutes || 15} 分钟`;
+        document.getElementById('photo-total').textContent = stats.total || 0;
+        document.getElementById('photo-matched').textContent = stats.matched || 0;
+        document.getElementById('photo-unmatched').textContent = stats.unmatched || 0;
+        document.getElementById('photo-ignored').textContent = stats.ignored || 0;
+    } catch (error) {
+        document.getElementById('photo-index-result').textContent = error.message;
+    }
+}
+
+async function loadUnmatchedPhotos() {
+    try {
+        const response = await fetch('/admin/photos/unmatched?limit=200&offset=0');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '加载未匹配照片失败');
+
+        unmatchedPhotos = data.photos || [];
+        const select = document.getElementById('unmatched-photo-select');
+        select.innerHTML = '<option value="">请选择未匹配照片</option>' +
+            unmatchedPhotos.map(p => `<option value="${p.id}">${escapeHtml(p.filename)} ｜ ${escapeHtml(p.rel_path)}</option>`).join('');
+    } catch (error) {
+        document.getElementById('manual-match-result').textContent = error.message;
+    }
+}
+
+async function runPhotoIndex(mode) {
+    const resultEl = document.getElementById('photo-index-result');
+    resultEl.textContent = mode === 'full' ? '全量索引执行中...' : '增量刷新执行中...';
+
+    try {
+        const response = await fetch('/admin/photos/reindex', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '索引失败');
+
+        const scan = data.scan_stats || {};
+        resultEl.textContent = `${data.message}（扫描${scan.total_files || 0}项，匹配${scan.matched || 0}，未匹配${scan.unmatched || 0}）`;
+
+        await loadPhotoStats();
+        await loadUnmatchedPhotos();
+    } catch (error) {
+        resultEl.textContent = error.message;
+    }
+}
+
+async function manualMatchPhoto() {
+    const photoId = document.getElementById('unmatched-photo-select').value;
+    const stationId = document.getElementById('match-station-select').value;
+    const alias = document.getElementById('match-alias-input').value.trim();
+    const resultEl = document.getElementById('manual-match-result');
+
+    if (!photoId) {
+        resultEl.textContent = '请先选择未匹配照片';
+        return;
+    }
+    if (!stationId) {
+        resultEl.textContent = '请选择关联变电站';
+        return;
+    }
+
+    resultEl.textContent = '提交关联中...';
+
+    try {
+        const response = await fetch(`/admin/photos/${photoId}/match`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ station_id: parseInt(stationId, 10), alias })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '关联失败');
+
+        resultEl.textContent = data.message || '关联成功';
+        document.getElementById('match-alias-input').value = '';
+
+        await loadPhotoStats();
+        await loadUnmatchedPhotos();
+    } catch (error) {
+        resultEl.textContent = error.message;
+    }
+}
+
+document.getElementById('photo-index-incremental').addEventListener('click', () => runPhotoIndex('incremental'));
+document.getElementById('photo-index-full').addEventListener('click', () => {
+    if (confirm('确认执行全量重建索引？这会重新扫描整个照片目录。')) {
+        runPhotoIndex('full');
+    }
+});
+document.getElementById('manual-match-btn').addEventListener('click', manualMatchPhoto);
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadStations();
+    await loadPhotoStats();
+    await loadUnmatchedPhotos();
+});
+
+// ============================================================
+// 坐标编辑器
+// ============================================================
+
+let coordMap = null;
+let currentStationId = null;
+let coordMarker = null;
+
+// 模态框完全展开后再初始化地图
+document.getElementById('coord-modal').addEventListener('shown.bs.modal', function () {
+    initCoordMap();
+});
+
+// 模态框关闭时清理地图状态
+document.getElementById('coord-modal').addEventListener('hidden.bs.modal', function () {
+    if (coordMap) {
+        coordMap.remove();
+        coordMap = null;
+    }
+    coordMarker = null;
+    currentStationId = null;
+    document.getElementById('coord-lat').value = '';
+    document.getElementById('coord-lng').value = '';
+});
+
+// 显示坐标编辑模态框
+function showCoordModal(stationId) {
+    currentStationId = stationId;
+    const modal = new bootstrap.Modal(document.getElementById('coord-modal'));
+    modal.show();
+}
+
+// 初始化 Leaflet 地图
+function initCoordMap() {
+    const mapDiv = document.getElementById('coord-map');
+    if (!mapDiv) return;
+
+    if (coordMap) {
+        coordMap.remove();
+        coordMap = null;
+    }
+
+    coordMap = L.map('coord-map').setView([28.3, 119.6], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18
+    }).addTo(coordMap);
+
+    // 点击地图设置坐标
+    coordMap.on('click', function(e) {
+        updateCoordInputs(e.latlng.lat, e.latlng.lng);
+        updateMarker(e.latlng);
+    });
+
+    // 加载已有坐标
+    const station = stations.find(s => s.id === currentStationId);
+    if (station && station.latitude && station.longitude) {
+        const lat = parseFloat(station.latitude);
+        const lng = parseFloat(station.longitude);
+        updateCoordInputs(lat, lng);
+        updateMarker(L.latLng(lat, lng));
+        coordMap.setView([lat, lng], 14);
+    }
+}
+
+// 更新经纬度输入框
+function updateCoordInputs(lat, lng) {
+    document.getElementById('coord-lat').value = lat.toFixed(6);
+    document.getElementById('coord-lng').value = lng.toFixed(6);
+}
+
+// 更新地图标记
+function updateMarker(latlng) {
+    if (coordMarker) {
+        coordMarker.setLatLng(latlng);
+    } else {
+        coordMarker = L.marker(latlng).addTo(coordMap);
+    }
+}
+
+// 监听输入框变化，实时同步地图标记
+document.getElementById('coord-lat').addEventListener('input', syncMarkerFromInputs);
+document.getElementById('coord-lng').addEventListener('input', syncMarkerFromInputs);
+
+function syncMarkerFromInputs() {
+    const lat = parseFloat(document.getElementById('coord-lat').value);
+    const lng = parseFloat(document.getElementById('coord-lng').value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        updateMarker(L.latLng(lat, lng));
+    }
+}
+
+// 保存坐标
+async function saveCoord() {
+    const latStr = document.getElementById('coord-lat').value;
+    const lngStr = document.getElementById('coord-lng').value;
+
+    const lat = latStr ? parseFloat(latStr) : null;
+    const lng = lngStr ? parseFloat(lngStr) : null;
+
+    // 验证坐标范围（丽水地区大致范围）
+    if (lat !== null && lng !== null) {
+        if (lat < 27 || lat > 29 || lng < 118 || lng > 121) {
+            if (!confirm('坐标超出丽水地区范围 (纬度27-29, 经度118-121)，是否确认保存？')) {
+                return;
+            }
+        }
+    }
+
+    const body = {};
+    if (lat !== null) body.latitude = lat;
+    if (lng !== null) body.longitude = lng;
+
+    try {
+        const resp = await fetch(`/admin/stations/${currentStationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (resp.ok) {
+            // 更新本地缓存
+            const station = stations.find(s => s.id === currentStationId);
+            if (station) {
+                station.latitude = latStr || null;
+                station.longitude = lngStr || null;
+            }
+            bootstrap.Modal.getInstance(document.getElementById('coord-modal')).hide();
+            alert('坐标已保存');
+        } else {
+            const data = await resp.json();
+            alert(data.error || '保存失败');
+        }
+    } catch (e) {
+        alert('保存失败: ' + e.message);
+    }
+}
+
+// 清除坐标
+function clearCoord() {
+    document.getElementById('coord-lat').value = '';
+    document.getElementById('coord-lng').value = '';
+    if (coordMarker) {
+        coordMap.removeLayer(coordMarker);
+        coordMarker = null;
+    }
+}
 </script>
 {% endblock %}

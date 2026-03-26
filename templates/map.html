@@ -4,61 +4,6 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-#map {
-    height: calc(100vh - 180px);
-    min-height: 500px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-}
-.map-legend {
-    position: absolute;
-    bottom: 30px;
-    left: 10px;
-    z-index: 1000;
-    background: white;
-    padding: 12px;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    font-size: 13px;
-}
-.legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 6px;
-}
-.legend-item:last-child { margin-bottom: 0; }
-.legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-.legend-dot.high { background: #d93025; }
-.legend-dot.medium { background: #f9ab00; }
-.legend-dot.low { background: #1e8e3e; }
-.station-popup {
-    min-width: 180px;
-}
-.station-popup h4 {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    font-weight: 600;
-}
-.station-popup .info {
-    font-size: 12px;
-    color: #5f6368;
-    margin-bottom: 4px;
-}
-.station-popup .camera-count {
-    font-size: 12px;
-    color: #1a73e8;
-    font-weight: 500;
-}
-.station-popup .action {
-    margin-top: 8px;
-}
-</style>
 {% endblock %}
 
 {% block content %}
@@ -66,7 +11,10 @@
     <div class="page-header">
         <h2 class="page-title">变电站分布地图</h2>
         <div class="page-actions">
-            <span class="text-muted" style="font-size: 13px;">点击标记查看详情</span>
+            <select id="year-filter" class="form-select">
+                <option value="">全部年份</option>
+            </select>
+            <span class="text-muted" style="font-size: 13px; color: var(--color-text-secondary);">点击标记查看详情</span>
         </div>
     </div>
 
@@ -75,15 +23,15 @@
     <div class="map-legend">
         <div class="legend-item">
             <span class="legend-dot high"></span>
-            <span>故障率 > 5%</span>
+            <span>故障次数 ≥10</span>
         </div>
         <div class="legend-item">
             <span class="legend-dot medium"></span>
-            <span>故障率 1-5%</span>
+            <span>故障次数 5-9</span>
         </div>
         <div class="legend-item">
             <span class="legend-dot low"></span>
-            <span>故障率 &lt; 1%</span>
+            <span>故障次数 &lt;5</span>
         </div>
     </div>
 </div>
@@ -121,6 +69,18 @@ const OFFSETS = [
 
 let map;
 let stationsData = [];
+let currentYear = '';
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getYearFilter() {
+    return currentYear ? `?year=${currentYear}` : '';
+}
 
 async function initMap() {
     // 初始化地图
@@ -132,8 +92,33 @@ async function initMap() {
         maxZoom: 18
     }).addTo(map);
 
+    // 加载年份列表
+    await populateYearFilter();
     // 加载数据
     await loadStationsForMap();
+}
+
+async function populateYearFilter() {
+    try {
+        const res = await fetch('/api/faults');
+        const data = await res.json();
+        const years = new Set();
+        (data.faults || []).forEach(f => {
+            if (f.created_at) {
+                years.add(f.created_at.substring(0, 4));
+            }
+        });
+        const select = document.getElementById('year-filter');
+        const sortedYears = [...years].sort((a, b) => b - a);
+        sortedYears.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y + ' 年';
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error('加载年份列表失败:', error);
+    }
 }
 
 async function loadStationsForMap() {
@@ -142,8 +127,8 @@ async function loadStationsForMap() {
         const data = await response.json();
         stationsData = data.stations || [];
 
-        // 获取故障统计
-        const faultsResponse = await fetch('/api/faults');
+        // 获取故障统计（带年份筛选）
+        const faultsResponse = await fetch('/api/faults' + getYearFilter());
         const faultsData = await faultsResponse.json();
         const faults = faultsData.faults || [];
 
@@ -179,22 +164,27 @@ async function loadStationsForMap() {
 
         // 为每个县添加标记
         Object.entries(countyGroups).forEach(([county, stations]) => {
-            const center = COUNTY_CENTERS[county];
-            if (!center) return;
+            const center = COUNTY_CENTERS[county] || { lat: 28.3, lng: 119.6 };
 
             stations.forEach((station, idx) => {
                 const faultCount = faultCountByStation[station.id] || 0;
                 const cameraCount = cameraCountByStation[station.id] || 0;
                 const faultRate = cameraCount > 0 ? (faultCount / cameraCount * 100).toFixed(1) : 0;
 
-                // 计算标记颜色
-                const colorClass = faultRate > 5 ? 'high' : (faultRate >= 1 ? 'medium' : 'low');
-                const color = faultRate > 5 ? '#d93025' : (faultRate >= 1 ? '#f9ab00' : '#1e8e3e');
+                // 计算标记颜色（按故障次数）
+                const colorClass = faultCount >= 10 ? 'high' : (faultCount >= 5 ? 'medium' : 'low');
+                const color = faultCount >= 10 ? '#d93025' : (faultCount >= 5 ? '#f9ab00' : '#1e8e3e');
 
-                // 添加偏移避免重叠
-                const offset = OFFSETS[idx % OFFSETS.length];
-                const lat = center.lat + offset.lat;
-                const lng = center.lng + offset.lng;
+                // 优先使用真实坐标，否则使用县区中心+偏移
+                let lat, lng;
+                if (station.latitude && station.longitude) {
+                    lat = parseFloat(station.latitude);
+                    lng = parseFloat(station.longitude);
+                } else {
+                    const offset = OFFSETS[idx % OFFSETS.length];
+                    lat = center.lat + offset.lat;
+                    lng = center.lng + offset.lng;
+                }
 
                 // 创建自定义图标
                 const icon = L.divIcon({
@@ -255,6 +245,12 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// 年份筛选变化时重新加载
+document.getElementById('year-filter').addEventListener('change', async function() {
+    currentYear = this.value;
+    await loadStationsForMap();
+});
 
 document.addEventListener('DOMContentLoaded', initMap);
 </script>

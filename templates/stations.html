@@ -6,8 +6,11 @@
 <div class="container">
     <div class="page-header">
         <h2 class="page-title">变电站列表</h2>
-        <div class="page-actions">
-            <select id="county-filter" class="form-select form-select-sm">
+        <div class="page-actions station-page-actions">
+            {% if session.get('role') == 'admin' %}
+            <button id="stations-create-btn" class="btn btn-primary stations-create-btn" onclick="openCreateModal()">新建变电站</button>
+            {% endif %}
+            <select id="county-filter" class="form-select station-county-filter">
                 <option value="">全部县区</option>
                 <option value="丽水">丽水</option>
                 <option value="云和">云和</option>
@@ -74,6 +77,74 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                 <a href="#" id="modal-report-btn" class="btn btn-primary">报故障</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建变电站弹窗 -->
+<div class="modal" id="create-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="create-modal-title">新建变电站</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-station-form">
+                    <div class="mb-3">
+                        <label class="form-label">变电站名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" required placeholder="如：莲都变电站">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">电压等级 <span class="text-danger">*</span></label>
+                        <select class="form-select" name="voltage_level" required>
+                            <option value="">请选择</option>
+                            <option value="35kV">35kV</option>
+                            <option value="110kV">110kV</option>
+                            <option value="220kV">220kV</option>
+                            <option value="500kV">500kV</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">县区</label>
+                        <select class="form-select" name="county" id="create-county-select">
+                            <option value="">请选择</option>
+                            <option value="丽水">丽水</option>
+                            <option value="云和">云和</option>
+                            <option value="庆元">庆元</option>
+                            <option value="景宁">景宁</option>
+                            <option value="松阳">松阳</option>
+                            <option value="缙云">缙云</option>
+                            <option value="遂昌">遂昌</option>
+                            <option value="青田">青田</option>
+                            <option value="龙泉">龙泉</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">位置</label>
+                        <input type="text" class="form-control" name="location" placeholder="详细地址">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IP网段</label>
+                        <input type="text" class="form-control" name="ip_range" placeholder="如：192.168.1.0/24">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">NVR IP</label>
+                            <input type="text" class="form-control" name="nvr_ip" placeholder="如：192.168.1.100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">NVR端口</label>
+                            <input type="number" class="form-control" name="nvr_port" placeholder="如：8000">
+                        </div>
+                    </div>
+                    <div id="create-error" class="alert alert-danger" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="create-submit-btn" onclick="submitCreateStation()">保存</button>
             </div>
         </div>
     </div>
@@ -216,6 +287,58 @@ function escapeHtml(text) {
 document.getElementById('county-filter').addEventListener('change', (e) => {
     filterByCounty(e.target.value);
 });
+
+// 新建变电站
+function openCreateModal() {
+    document.getElementById('create-station-form').reset();
+    document.getElementById('create-error').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('create-modal')).show();
+}
+
+async function submitCreateStation() {
+    const form = document.getElementById('create-station-form');
+    const errorEl = document.getElementById('create-error');
+    const submitBtn = document.getElementById('create-submit-btn');
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    submitBtn.disabled = true;
+    errorEl.style.display = 'none';
+
+    try {
+        const response = await fetch('/admin/stations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            if (response.status === 403) {
+                errorEl.textContent = '仅管理员可新建变电站，请先使用管理员账号登录';
+            } else {
+                errorEl.textContent = result.error || '创建失败';
+            }
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('create-modal')).hide();
+        loadStations(); // 刷新列表
+    } catch (e) {
+        errorEl.textContent = '网络错误，请重试';
+        errorEl.style.display = 'block';
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
 
 // 页面加载时获取数据
 document.addEventListener('DOMContentLoaded', loadStations);

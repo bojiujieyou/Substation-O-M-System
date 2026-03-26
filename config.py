@@ -21,4 +21,8 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', '1', 'yes')
 
     # 数据源路径
-    DATA_SOURCE_PATH = r'e:\办公\图像监控\图像监控设备资料'
+    DATA_SOURCE_PATH = os.environ.get('DATA_SOURCE_PATH', r'e:\办公\图像监控\图像监控设备资料')
+
+    # 照片目录与索引策略（开发机与fnOS部署均可通过环境变量覆盖）
+    PHOTO_ROOT_PATH = os.environ.get('PHOTO_ROOT_PATH', r'e:\办公\图像监控\照片')
+    PHOTO_INDEX_CRON_MINUTES = int(os.environ.get('PHOTO_INDEX_CRON_MINUTES', '15'))

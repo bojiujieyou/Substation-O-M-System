@@ -11,18 +11,24 @@ from app import app, get_db
 from config import Config
 
 @pytest.fixture
-def client():
+def client(test_db):
     """测试客户端"""
+    # Override app.config directly since app.config.from_object(Config)
+    # copies DATABASE_PATH at import time (before monkeypatch runs)
+    original_db_path = app.config['DATABASE_PATH']
+    app.config['DATABASE_PATH'] = test_db
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
+    app.config['DATABASE_PATH'] = original_db_path
 
 @pytest.fixture
 def init_db(test_db):
     """初始化测试数据库"""
     from init_db import init_db
     # DATABASE_PATH已通过conftest.py的use_test_db自动指向test_db
-    init_db()
+    # force=True确保即使数据库已存在也能重建（test_db fixture已删除旧文件）
+    init_db(force=True)
     yield
 
 def get_token():
@@ -138,10 +144,20 @@ class TestFaultStatusTransition:
     """故障状态转换测试（决策#7）"""
 
     @pytest.fixture
-    def setup_fault(self, client, init_db):
+    def setup_fault(self, client, test_db):
         """创建测试故障记录"""
-        # 先创建测试数据
-        conn = sqlite3.connect(Config.DATABASE_PATH)
+        # 确保使用测试数据库（与test_import.py相同的模式）
+        import config
+        original_path = config.Config.DATABASE_PATH
+        config.Config.DATABASE_PATH = test_db
+
+        # 调用init_db确保schema正确
+        from init_db import init_db
+        init_db()
+
+        # 通过直接连接插入测试数据
+        import sqlite3
+        conn = sqlite3.connect(test_db)
         conn.execute("""
             INSERT INTO stations (id, name, voltage_level, county)
             VALUES (1, '测试变电站', '220kV', '测试县')
@@ -152,6 +168,9 @@ class TestFaultStatusTransition:
         """)
         conn.commit()
         conn.close()
+
+        # 恢复原始路径
+        config.Config.DATABASE_PATH = original_path
         return 1
 
     def test_open_to_handling(self, client, init_db, setup_fault):
@@ -195,14 +214,57 @@ class TestFaultStatusTransition:
                               json={'status': 'handling'})
         assert response.status_code == 404
 
+    def test_closed_to_handling_rejected(self, client, init_db, setup_fault):
+        """closed -> handling 应该被拒绝"""
+        # 先将故障关闭
+        client.put('/api/faults/1/status', json={
+            'status': 'closed',
+            'handler_name': '张三',
+            'handler_note': '已处理'
+        })
+
+        # 尝试从closed转为handling应该失败
+        response = client.put('/api/faults/1/status',
+                              json={'status': 'handling'})
+        assert response.status_code == 400
+        data = response.get_json()
+        assert '不能从 closed 转换为 handling' in data['error']
+
+    def test_closed_to_open_rejected(self, client, init_db, setup_fault):
+        """closed -> open 应该被拒绝"""
+        # 先将故障关闭
+        client.put('/api/faults/1/status', json={
+            'status': 'closed',
+            'handler_name': '张三',
+            'handler_note': '已处理'
+        })
+
+        # 尝试从closed转为open应该失败
+        response = client.put('/api/faults/1/status',
+                              json={'status': 'open'})
+        assert response.status_code == 400
+        data = response.get_json()
+        assert '不能从 closed 转换为 open' in data['error']
+
 
 class TestIdempotency:
     """幂等键测试（决策#7）"""
 
     @pytest.fixture
-    def setup_with_camera(self, init_db):
+    def setup_with_camera(self, client, test_db):
         """创建带摄像头的测试数据"""
-        conn = sqlite3.connect(Config.DATABASE_PATH)
+        # 确保使用测试数据库（与test_import.py相同的模式）
+        import config
+        original_path = config.Config.DATABASE_PATH
+        config.Config.DATABASE_PATH = test_db
+
+        # 调用init_db确保schema正确
+        from init_db import init_db
+        init_db()
+
+        # 通过直接连接插入测试数据
+        import sqlite3
+        conn = sqlite3.connect(test_db)
         conn.execute("""
             INSERT INTO stations (id, name, voltage_level, county)
             VALUES (1, '测试变电站', '220kV', '测试县')
@@ -213,6 +275,9 @@ class TestIdempotency:
         """)
         conn.commit()
         conn.close()
+
+        # 恢复原始路径
+        config.Config.DATABASE_PATH = original_path
 
     def test_duplicate_submission_conflict(self, client, init_db, setup_with_camera):
         """5分钟内重复提交返回409"""
@@ -246,3 +311,42 @@ class TestIdempotency:
         })
         # 没有IP匹配，应该能成功（不会触发幂等）
         assert response.status_code in [201, 400]
+
+    def test_idempotency_window_boundary(self, client, init_db, setup_with_camera):
+        """5分钟窗口边界：14:59和15:01属于不同窗口，都应创建记录"""
+        import time
+        import math
+
+        # 计算两个不同5分钟窗口的时间戳
+        # 窗口1: floor(t / 300) = W
+        # 窗口2: floor((t + 301) / 300) = W + 1
+        base_time = int(time.time())
+        window1 = math.floor(base_time / 300) * 300  # 窗口1的起始时间（对齐到5分钟）
+        # 确保两个时间落在不同的5分钟窗口
+        time_in_window1 = window1 + 60   # 窗口1的第60秒 (14:59附近)
+        time_in_window2 = window1 + 301  # 下一个窗口的第1秒 (15:01附近)
+
+        # 第一次提交（窗口1）
+        response = client.post('/api/faults', json={
+            'station_id': 1,
+            'camera_id': 1,
+            'fault_type': '无图像',
+            'reporter_name': '张三',
+            'report_time': str(time_in_window1)
+        })
+        assert response.status_code == 201
+        fault_id_1 = response.get_json()['fault_id']
+
+        # 第二次提交（窗口2，相隔301秒）应该成功（新窗口）
+        response = client.post('/api/faults', json={
+            'station_id': 1,
+            'camera_id': 1,
+            'fault_type': '无图像',
+            'reporter_name': '张三',
+            'report_time': str(time_in_window2)
+        })
+        assert response.status_code == 201
+        fault_id_2 = response.get_json()['fault_id']
+
+        # 两次提交应该创建不同的故障记录
+        assert fault_id_1 != fault_id_2

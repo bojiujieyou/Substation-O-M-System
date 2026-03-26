@@ -78,7 +78,7 @@ python init_admin.py
 # 4. 启动服务
 python app.py
 # 访问 http://localhost:5000
-# 默认管理员: admin / admin123
+# 默认管理员: admin / Txjk@1234
 ```
 
 ## 关键规范

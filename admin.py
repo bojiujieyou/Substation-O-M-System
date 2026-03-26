@@ -8,8 +8,10 @@ import sqlite3
 import logging
 from datetime import datetime
 from functools import wraps
-from flask import Blueprint, request, jsonify, g, current_app, session
+from flask import Blueprint, request, jsonify, session
 from werkzeug.utils import secure_filename
+from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
+from utils import get_db
 
 logger = logging.getLogger('station_monitor')
 
@@ -25,13 +27,6 @@ def require_admin(f):
             return jsonify({'error': '需要管理员权限'}), 403
         return f(*args, **kwargs)
     return decorated
-
-def get_db():
-    """获取数据库连接"""
-    if 'db' not in g:
-        g.db = sqlite3.connect(current_app.config['DATABASE_PATH'])
-        g.db.row_factory = sqlite3.Row
-    return g.db
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -168,6 +163,41 @@ def list_stations():
     stations = [dict(row) for row in cursor.fetchall()]
     return jsonify({'stations': stations})
 
+@admin_bp.route('/stations', methods=['POST'])
+@require_admin
+def create_station():
+    """新建变电站"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': '无效数据'}), 400
+
+    required = ['name', 'voltage_level']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'缺少必填字段: {field}'}), 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO stations (name, voltage_level, county, location, ip_range, nvr_ip, nvr_port)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data['name'],
+        data['voltage_level'],
+        data.get('county', ''),
+        data.get('location', ''),
+        data.get('ip_range', ''),
+        data.get('nvr_ip', ''),
+        data.get('nvr_port', ''),
+    ))
+
+    station_id = cursor.lastrowid
+    db.commit()
+    logger.info(f"Station created: id={station_id}, name={data['name']}")
+
+    return jsonify({'message': '新建成功', 'station_id': station_id}), 201
+
 @admin_bp.route('/stations/<int:station_id>', methods=['DELETE'])
 @require_admin
 def delete_station(station_id):
@@ -207,27 +237,29 @@ def update_station(station_id):
     if not cursor.fetchone():
         return jsonify({'error': '变电站不存在'}), 404
 
-    cursor.execute("""
-        UPDATE stations SET
-            name = COALESCE(?, name),
-            voltage_level = COALESCE(?, voltage_level),
-            county = COALESCE(?, county),
-            location = COALESCE(?, location),
-            ip_range = COALESCE(?, ip_range),
-            nvr_ip = COALESCE(?, nvr_ip),
-            nvr_port = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    """, (
-        data.get('name'),
-        data.get('voltage_level'),
-        data.get('county'),
-        data.get('location'),
-        data.get('ip_range'),
-        data.get('nvr_ip'),
-        data.get('nvr_port'),
-        station_id
-    ))
+    # 动态构建更新字段（只更新传入的字段）
+    update_fields = []
+    params = []
+    for field in ('name', 'voltage_level', 'county', 'location', 'ip_range', 'nvr_ip', 'nvr_port'):
+        if field in data:
+            update_fields.append(f"{field} = ?")
+            params.append(data[field])
+
+    # 坐标字段单独处理（支持设置为NULL）
+    if 'latitude' in data:
+        update_fields.append("latitude = ?")
+        params.append(data['latitude'])  # 可以是 None 来清除
+    if 'longitude' in data:
+        update_fields.append("longitude = ?")
+        params.append(data['longitude'])
+
+    if not update_fields:
+        return jsonify({'error': '没有要更新的字段'}), 400
+
+    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+    query = f"UPDATE stations SET {', '.join(update_fields)} WHERE id = ?"
+    params.append(station_id)
+    cursor.execute(query, params)
 
     db.commit()
 
@@ -309,3 +341,95 @@ def backup_db():
         return jsonify({'message': '备份成功', 'backup': backup_path})
     except Exception as e:
         return jsonify({'error': f'备份失败: {str(e)}'}), 500
+
+
+# ============================================================
+# 照片索引管理
+# ============================================================
+
+@admin_bp.route('/photos/reindex', methods=['POST'])
+@require_admin
+def photo_reindex():
+    """照片索引重建/增量刷新"""
+    data = request.get_json(silent=True) or {}
+    mode = data.get('mode', 'incremental')
+
+    try:
+        if mode == 'full':
+            stats = run_full_index(current_app.config['DATABASE_PATH'])
+        else:
+            mode = 'incremental'
+            stats = run_incremental_index(current_app.config['DATABASE_PATH'])
+
+        db = get_db()
+        summary = get_photo_stats(db)
+
+        return jsonify({
+            'message': f'照片索引{ "全量重建" if mode == "full" else "增量刷新" }完成',
+            'mode': mode,
+            'scan_stats': stats,
+            'summary': summary,
+            'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),
+            'cron_minutes': current_app.config.get('PHOTO_INDEX_CRON_MINUTES', 15)
+        })
+    except FileNotFoundError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.exception('photo_reindex failed')
+        return jsonify({'error': f'索引失败: {str(e)}'}), 500
+
+
+@admin_bp.route('/photos/stats', methods=['GET'])
+@require_admin
+def photo_stats():
+    """获取照片索引统计"""
+    db = get_db()
+    try:
+        stats = get_photo_stats(db)
+        return jsonify({
+            'stats': stats,
+            'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),
+            'cron_minutes': current_app.config.get('PHOTO_INDEX_CRON_MINUTES', 15)
+        })
+    except sqlite3.OperationalError:
+        return jsonify({
+            'stats': {'total': 0, 'matched': 0, 'unmatched': 0, 'ignored': 0},
+            'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),
+            'cron_minutes': current_app.config.get('PHOTO_INDEX_CRON_MINUTES', 15)
+        })
+
+
+@admin_bp.route('/photos/unmatched', methods=['GET'])
+@require_admin
+def photo_unmatched():
+    """获取未匹配照片列表"""
+    db = get_db()
+    limit = request.args.get('limit', default=100, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+    limit = min(max(limit, 1), 300)
+    offset = max(offset, 0)
+
+    rows = list_unmatched(db, limit=limit, offset=offset)
+    return jsonify({'photos': rows, 'limit': limit, 'offset': offset})
+
+
+@admin_bp.route('/photos/<int:photo_id>/match', methods=['PUT'])
+@require_admin
+def photo_manual_match(photo_id):
+    """手动关联未匹配照片到变电站，并可写入别名"""
+    data = request.get_json(silent=True) or {}
+    station_id = data.get('station_id')
+    alias = data.get('alias', '')
+
+    if not station_id:
+        return jsonify({'error': '缺少 station_id'}), 400
+
+    db = get_db()
+    try:
+        manual_match_photo(db, photo_id, int(station_id), alias)
+        return jsonify({'message': '手动关联成功'})
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        logger.exception('photo_manual_match failed')
+        return jsonify({'error': f'关联失败: {str(e)}'}), 500
