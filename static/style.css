@@ -2,8 +2,8 @@
 
 :root {
     /* Brand */
-    --color-primary: #2f67f6;
-    --color-primary-hover: #1f4fd1;
+    --color-primary: #1a73e8;
+    --color-primary-hover: #1557b0;
     --color-secondary: #1fb6b9;
     --color-accent: #7b61ff;
 
@@ -25,7 +25,7 @@
     --color-danger-bg: #fee9eb;
     --color-warning: #b7791f;
     --color-warning-bg: #fff4dc;
-    --color-info: #2f67f6;
+    --color-info: #1a73e8;
     --color-info-bg: #eaf0ff;
 
     /* Border */
@@ -33,7 +33,7 @@
     --color-border-strong: #7f8bb2;
 
     /* Header/Nav */
-    --color-header-bg: linear-gradient(105deg, #112a62 0%, #223f86 45%, #2f67f6 100%);
+    --color-header-bg: linear-gradient(105deg, #112a62 0%, #223f86 45%, #1a73e8 100%);
     --color-header-text: #f4f7ff;
     --color-header-text-muted: rgba(244, 247, 255, 0.84);
 
