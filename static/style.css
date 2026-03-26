@@ -104,15 +104,21 @@
 }
 
 body {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 14px;
     color: var(--color-text);
     background:
-        radial-gradient(circle at 10% -10%, rgba(47, 103, 246, 0.14), transparent 42%),
+        radial-gradient(circle at 10% -10%, rgba(26, 115, 232, 0.14), transparent 42%),
         radial-gradient(circle at 95% 0%, rgba(31, 182, 185, 0.16), transparent 38%),
         var(--color-bg);
     margin: 0;
     line-height: 1.5;
+}
+
+/* Override Bootstrap user-agent Times New Roman leak */
+h1, h2, h3, h4, h5, h6,
+th, td, blockquote, pre, code {
+    font-family: var(--font-sans) !important;
 }
 
 .container {
@@ -1272,8 +1278,8 @@ textarea.form-input {
     align-items: center;
     justify-content: center;
     background:
-        radial-gradient(circle at 10% -10%, rgba(47, 103, 246, 0.16), transparent 38%),
-        radial-gradient(circle at 90% 10%, rgba(123, 97, 255, 0.16), transparent 36%),
+        radial-gradient(circle at 10% -10%, rgba(26, 115, 232, 0.16), transparent 38%),
+        radial-gradient(circle at 90% 10%, rgba(26, 115, 232, 0.10), transparent 36%),
         var(--color-bg);
 }
 
