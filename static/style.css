@@ -43,9 +43,9 @@
     --shadow-lg: 0 16px 34px rgba(17, 42, 98, 0.18);
 
     /* Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
     --radius-full: 9999px;
 
     /* Font */
