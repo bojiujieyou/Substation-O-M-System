@@ -8,7 +8,7 @@ import sqlite3
 import logging
 from datetime import datetime
 from functools import wraps
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.utils import secure_filename
 from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
 from utils import get_db
