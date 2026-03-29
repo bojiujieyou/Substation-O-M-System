@@ -8,7 +8,7 @@ from pathlib import Path
 from functools import wraps
 from flask import Flask, request, jsonify, g, current_app, session, redirect, render_template, send_file
 from config import Config
-from admin import admin_bp
+from admin import admin_bp, require_admin
 from auth import auth_bp
 from photo_indexer import IMAGE_EXTENSIONS
 from utils import get_db, close_db, init_app
@@ -645,10 +645,12 @@ def update_fault_status(fault_id):
     if new_status not in valid_transitions.get(current_status, []):
         return api_error(f'不能从 {current_status} 转换为 {new_status}')
 
-    # handling→closed需要处理人和备注
+    # handling→closed需要处理人和备注、设备信息
     if new_status == 'closed' and current_status == 'handling':
         handler_name = data.get('handler_name')
         handler_note = data.get('handler_note')
+        equipment_type = data.get('equipment_type', '')
+        equipment_quantity = data.get('equipment_quantity', 0)
 
         if not handler_name or not handler_note:
             return api_error('关闭故障需要提供处理人姓名和处理备注')
@@ -656,9 +658,10 @@ def update_fault_status(fault_id):
         db.execute("""
             UPDATE fault_reports
             SET status = 'closed', handler_name = ?, handler_note = ?,
+                equipment_type = ?, equipment_quantity = ?,
                 closed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (handler_name, handler_note, fault_id))
+        """, (handler_name, handler_note, equipment_type, equipment_quantity, fault_id))
     else:
         db.execute("""
             UPDATE fault_reports
@@ -670,6 +673,51 @@ def update_fault_status(fault_id):
     logger.info(f"Fault status updated: id={fault_id}, {current_status} -> {new_status}")
 
     return api_success({'message': f'状态已更新为 {new_status}'})
+
+# ============================================================
+# API: 故障记录删除（仅admin）
+# ============================================================
+
+@app.route('/api/faults/<int:fault_id>', methods=['DELETE'])
+@require_admin
+def delete_fault(fault_id):
+    """删除故障记录（仅admin）"""
+    db = get_db()
+
+    fault = db.execute("SELECT id FROM fault_reports WHERE id = ?",
+                        (fault_id,)).fetchone()
+
+    if not fault:
+        return api_error('故障记录不存在', 404)
+
+    db.execute("DELETE FROM fault_reports WHERE id = ?", (fault_id,))
+    db.commit()
+    logger.info(f"Fault deleted: id={fault_id}")
+
+    return api_success({'message': '故障记录已删除'})
+
+# ============================================================
+# API: 故障详情（GET）
+# ============================================================
+
+@app.route('/api/faults/<int:fault_id>/detail', methods=['GET'])
+def get_fault_detail(fault_id):
+    """获取故障完整详情"""
+    db = get_db()
+    fault = db.execute("""
+        SELECT f.*, s.name as station_name,
+               c.camera_index, c.area as camera_area, c.location_desc as camera_location,
+               c.ip_address as camera_ip
+        FROM fault_reports f
+        LEFT JOIN stations s ON f.station_id = s.id
+        LEFT JOIN cameras c ON f.camera_id = c.id
+        WHERE f.id = ?
+    """, (fault_id,)).fetchone()
+
+    if not fault:
+        return api_error('故障记录不存在', 404)
+
+    return api_success({'fault': dict(fault)})
 
 
 # ============================================================
@@ -878,7 +926,7 @@ def fault_new():
 @app.route('/faults')
 def faults():
     """故障记录页"""
-    return render_template('faults.html')
+    return render_template('faults.html', is_admin=session.get('role') == 'admin')
 
 @app.route('/statistics')
 def statistics():
