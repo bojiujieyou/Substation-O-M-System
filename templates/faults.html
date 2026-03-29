@@ -91,11 +91,38 @@
                         <label for="handler-note" class="form-label">处理备注 <span class="required">*</span></label>
                         <textarea id="handler-note" class="form-input" rows="3" required placeholder="请输入处理方法和结果"></textarea>
                     </div>
+                    <div class="form-group">
+                        <label for="equipment-type" class="form-label">更换设备类型</label>
+                        <input type="text" id="equipment-type" class="form-input" placeholder="如：摄像头、交换机、NVR等">
+                    </div>
+                    <div class="form-group">
+                        <label for="equipment-quantity" class="form-label">更换设备数量</label>
+                        <input type="number" id="equipment-quantity" class="form-input" min="0" placeholder="请输入数量">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                 <button type="button" class="btn btn-primary" id="confirm-handle-btn">确认关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="detail-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detail-modal-title">故障详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-info" id="detail-content">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
@@ -106,6 +133,8 @@
 <script>
 let allFaults = [];
 let currentFaultId = null;
+const is_admin = {{ is_admin | tojson }};
+const current_user = {{ session.get('username', '') | tojson }};
 
 async function loadFaults() {
     const loading = document.getElementById('loading');
@@ -154,7 +183,9 @@ function renderFaults(faults) {
             <td class="mono">${formatDate(fault.created_at)}</td>
             <td>${escapeHtml(fault.reporter_name || '-')}</td>
             <td>
-                ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : '-'}
+                <button class="btn btn-sm btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
+                ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
+                ${is_admin ? `<button class="btn btn-sm btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
             </td>
         </tr>
     `).join('');
@@ -192,14 +223,116 @@ async function showHandleModal(faultId) {
     document.getElementById('handle-desc').textContent = fault.description || '(无描述)';
     document.getElementById('handler-name').value = '';
     document.getElementById('handler-note').value = '';
+    document.getElementById('equipment-type').value = fault.equipment_type || '';
+    document.getElementById('equipment-quantity').value = fault.equipment_quantity || 0;
 
     const modal = new bootstrap.Modal(document.getElementById('handle-modal'));
     modal.show();
 }
 
+async function showDetailModal(faultId) {
+    try {
+        const response = await fetch(`/api/faults/${faultId}/detail`);
+        if (!response.ok) throw new Error('加载失败');
+
+        const data = await response.json();
+        const f = data.fault;
+
+        const html = `
+            <div class="detail-section">
+                <h6 class="detail-section-title">基本信息</h6>
+                <div class="detail-row">
+                    <span class="detail-label">故障单号:</span>
+                    <span class="detail-value">${f.id}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">变电站:</span>
+                    <span class="detail-value">${f.station_name || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">故障类型:</span>
+                    <span class="detail-value">${f.fault_type || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">故障描述:</span>
+                    <span class="detail-value">${f.description || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">状态:</span>
+                    <span class="badge badge-${f.status}">${statusText(f.status)}</span>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h6 class="detail-section-title">报修信息</h6>
+                <div class="detail-row">
+                    <span class="detail-label">报修人:</span>
+                    <span class="detail-value">${f.reporter_name || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">联系电话:</span>
+                    <span class="detail-value">${f.reporter_contact || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">报修时间:</span>
+                    <span class="detail-value">${formatDate(f.created_at)}</span>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h6 class="detail-section-title">处理信息</h6>
+                <div class="detail-row">
+                    <span class="detail-label">处理人:</span>
+                    <span class="detail-value">${f.handler_name || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">处理备注:</span>
+                    <span class="detail-value">${f.handler_note || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">更换设备:</span>
+                    <span class="detail-value">${f.equipment_type || '-'}${f.equipment_quantity ? ' x ' + f.equipment_quantity + '个' : ''}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">关闭时间:</span>
+                    <span class="detail-value">${f.closed_at ? formatDate(f.closed_at) : '-'}</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('detail-content').innerHTML = html;
+        const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
+        modal.show();
+    } catch (err) {
+        alert('加载详情失败: ' + err.message);
+    }
+}
+
+async function deleteFault(faultId) {
+    if (!confirm('确定要删除故障记录 #' + faultId + ' 吗？此操作不可撤销。')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/faults/${faultId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('故障记录已删除');
+            loadFaults();  // 重新加载列表
+        } else {
+            const data = await response.json();
+            alert('删除失败: ' + (data.error || '未知错误'));
+        }
+    } catch (err) {
+        alert('删除失败: ' + err.message);
+    }
+}
+
 document.getElementById('confirm-handle-btn').addEventListener('click', async function() {
     const handlerName = document.getElementById('handler-name').value.trim();
     const handlerNote = document.getElementById('handler-note').value.trim();
+    const equipmentType = document.getElementById('equipment-type').value.trim();
+    const equipmentQuantity = parseInt(document.getElementById('equipment-quantity').value) || 0;
 
     if (!handlerName || !handlerNote) {
         alert('请填写处理人姓名和处理备注');
@@ -220,14 +353,16 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
             });
         }
 
-        // Then close
+        // Then close with equipment info
         const response = await fetch(`/api/faults/${currentFaultId}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 status: 'closed',
                 handler_name: handlerName,
-                handler_note: handlerNote
+                handler_note: handlerNote,
+                equipment_type: equipmentType,
+                equipment_quantity: equipmentQuantity
             })
         });
 
