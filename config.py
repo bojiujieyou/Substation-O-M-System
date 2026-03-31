@@ -3,7 +3,7 @@ import os
 
 class Config:
     # 数据库
-    DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'station_monitor.db')
+    DATABASE_PATH = os.environ.get('DATABASE_PATH', os.path.join(os.path.dirname(__file__), 'station_monitor.db'))
 
     # SQLite WAL模式配置（决策#6）
     SQLITE_WAL_MODE = True
