@@ -6,40 +6,47 @@
 <div class="container">
     <div class="page-header">
         <h2 class="page-title">故障记录</h2>
-        <div class="page-actions">
+        <div class="page-actions" style="gap:12px; flex-wrap:wrap;">
+            <select id="project-filter" class="form-select form-select-sm">
+                <option value="">加载项目中...</option>
+            </select>
             <select id="status-filter" class="form-select form-select-sm">
                 <option value="">全部状态</option>
                 <option value="open">待处理</option>
                 <option value="handling">处理中</option>
                 <option value="closed">已关闭</option>
             </select>
+            <select id="source-filter" class="form-select form-select-sm">
+                <option value="">全部来源</option>
+                <option value="manual">手工</option>
+                <option value="import_worklog">工单导入</option>
+                <option value="import_excel">Excel导入</option>
+                <option value="migration">迁移</option>
+            </select>
         </div>
     </div>
 
-    <!-- 加载状态 -->
     <div id="loading" class="loading-state">
         <div class="spinner"></div>
         <span>加载中...</span>
     </div>
 
-    <!-- 错误状态 -->
-    <div id="error" class="error-state" style="display: none;">
+    <div id="error" class="error-state" style="display:none;">
         <span class="error-icon">!</span>
         <span>加载失败</span>
         <button class="btn btn-sm btn-secondary" onclick="loadFaults()">重试</button>
     </div>
 
-    <!-- 空状态 -->
-    <div id="empty" class="empty-state" style="display: none;">
-        <p>暂无故障记录</p>
+    <div id="empty" class="empty-state" style="display:none;">
+        <p>当前筛选条件下没有故障记录</p>
     </div>
 
-    <!-- 故障列表 -->
-    <div id="fault-list" class="fault-list" style="display: none;">
-        <table class="data-table">
+    <div id="fault-list" class="fault-list" style="display:none;">
+        <table class="data-table table-cards">
             <thead>
                 <tr>
-                    <th>故障单号</th>
+                    <th>单号</th>
+                    <th>项目</th>
                     <th>变电站</th>
                     <th>摄像头位置</th>
                     <th>故障类型</th>
@@ -49,13 +56,11 @@
                     <th>操作</th>
                 </tr>
             </thead>
-            <tbody id="fault-tbody">
-            </tbody>
+            <tbody id="fault-tbody"></tbody>
         </table>
     </div>
 </div>
 
-<!-- 处理弹窗 -->
 <div class="modal" id="handle-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handle-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -65,22 +70,11 @@
             </div>
             <div class="modal-body">
                 <div class="detail-info mb-3">
-                    <div class="detail-row">
-                        <span class="detail-label">故障单号:</span>
-                        <span class="detail-value" id="handle-fault-id"></span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">变电站:</span>
-                        <span class="detail-value" id="handle-station"></span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">故障类型:</span>
-                        <span class="detail-value" id="handle-type"></span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">故障描述:</span>
-                        <span class="detail-value" id="handle-desc"></span>
-                    </div>
+                    <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value" id="handle-fault-id"></span></div>
+                    <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value" id="handle-project"></span></div>
+                    <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value" id="handle-station"></span></div>
+                    <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value" id="handle-type"></span></div>
+                    <div class="detail-row"><span class="detail-label">故障描述:</span><span class="detail-value" id="handle-desc"></span></div>
                 </div>
                 <form id="handle-form">
                     <div class="form-group">
@@ -93,7 +87,7 @@
                     </div>
                     <div class="form-group">
                         <label for="equipment-type" class="form-label">更换设备类型</label>
-                        <input type="text" id="equipment-type" class="form-input" placeholder="如：摄像头、交换机、NVR等">
+                        <input type="text" id="equipment-type" class="form-input" placeholder="例如：摄像头、交换机">
                     </div>
                     <div class="form-group">
                         <label for="equipment-quantity" class="form-label">更换设备数量</label>
@@ -109,7 +103,6 @@
     </div>
 </div>
 
-<!-- 详情弹窗 -->
 <div class="modal" id="detail-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -118,8 +111,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
             <div class="modal-body">
-                <div class="detail-info" id="detail-content">
-                </div>
+                <div class="detail-info" id="detail-content"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
@@ -133,14 +125,237 @@
 <script>
 let allFaults = [];
 let currentFaultId = null;
+let visibleProjects = [];
+let currentDetailFault = null;
+let tagSuggestions = [];
 const is_admin = {{ is_admin | tojson }};
-const current_user = {{ session.get('username', '') | tojson }};
+const can_edit_tags = {{ can_edit_tags | tojson }};
+
+function withProject(path, extraParams) {
+    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
+        return window.AppProjectState.withProject(path, extraParams);
+    }
+    const url = new URL(path, window.location.origin);
+    if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function getUrlProjectCode() {
+    return new URLSearchParams(window.location.search).get('project') || '';
+}
+
+function updateUrlProject(projectCode) {
+    const url = new URL(window.location.href);
+    if (projectCode) {
+        url.searchParams.set('project', projectCode);
+    } else {
+        url.searchParams.delete('project');
+    }
+    window.history.replaceState({}, '', url.toString());
+    if (window.AppProjectState) {
+        window.AppProjectState.projectCode = projectCode || '';
+    }
+    const globalProjectSelect = document.getElementById('global-project-select');
+    if (globalProjectSelect) {
+        globalProjectSelect.value = projectCode || '';
+    }
+}
+
+function statusText(status) {
+    return { open: '待处理', handling: '处理中', closed: '已关闭' }[status] || status;
+}
+
+function sourceTypeText(sourceType) {
+    return {
+        manual: '手工',
+        import_worklog: '工单导入',
+        import_excel: 'Excel导入',
+        migration: '迁移'
+    }[sourceType] || (sourceType || '-');
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function projectNameById(projectId) {
+    const project = visibleProjects.find(item => item.id === projectId);
+    return project ? project.name : (projectId || '-');
+}
+
+function projectCodeById(projectId) {
+    const project = visibleProjects.find(item => item.id === projectId);
+    return project ? project.code : '';
+}
+
+function renderTagBadges(tags) {
+    if (!tags || !tags.length) {
+        return '<span class="text-muted">暂无标签</span>';
+    }
+    return tags.map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('');
+}
+
+function injectAssignmentDetailRows(fault) {
+    const processingSection = document.querySelector('#detail-content .detail-section:last-child');
+    if (!processingSection || processingSection.dataset.assignmentInjected === 'true') {
+        return;
+    }
+
+    const title = processingSection.querySelector('.detail-section-title');
+    if (!title) {
+        return;
+    }
+
+    const assignedValue = fault.assigned_to_username || (fault.assigned_to != null ? `#${fault.assigned_to}` : '-');
+    title.insertAdjacentHTML('afterend', `
+        <div class="detail-row"><span class="detail-label">当前责任人:</span><span class="detail-value">${escapeHtml(assignedValue)}</span></div>
+        <div class="detail-row"><span class="detail-label">开始处理时间:</span><span class="detail-value">${fault.handling_started_at ? formatDate(fault.handling_started_at) : '-'}</span></div>
+    `);
+    processingSection.dataset.assignmentInjected = 'true';
+}
+
+function injectImportAuditDetailRows(fault) {
+    const sections = Array.from(document.querySelectorAll('#detail-content .detail-section'));
+    if (!sections.length) {
+        return;
+    }
+
+    const basicSection = sections[0];
+    const reportSection = sections.find((section) => {
+        const title = section.querySelector('.detail-section-title');
+        return title && title.textContent.includes('报修');
+    }) || (sections.length >= 2 ? sections[sections.length - 2] : null);
+
+    if (basicSection && basicSection.dataset.auditBasicInjected !== 'true') {
+        const title = basicSection.querySelector('.detail-section-title');
+        if (title) {
+            title.insertAdjacentHTML('afterend', `
+                <div class="detail-row"><span class="detail-label">槽位 ID:</span><span class="detail-value">${fault.camera_slot_id != null ? escapeHtml(fault.camera_slot_id) : '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">项目设备编号:</span><span class="detail-value">${escapeHtml(fault.project_device_code || '-')}</span></div>
+            `);
+            basicSection.dataset.auditBasicInjected = 'true';
+        }
+    }
+
+    if (reportSection && reportSection.dataset.auditSourceInjected !== 'true') {
+        const title = reportSection.querySelector('.detail-section-title');
+        if (title) {
+            title.insertAdjacentHTML('afterend', `
+                <div class="detail-row"><span class="detail-label">原始时间:</span><span class="detail-value">${escapeHtml(fault.source_time_raw || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">原始时区:</span><span class="detail-value">${escapeHtml(fault.source_timezone || '-')}</span></div>
+            `);
+            reportSection.dataset.auditSourceInjected = 'true';
+        }
+    }
+}
+
+function buildFaultDetailHtml(fault) {
+    const tags = Array.isArray(fault.tags) ? fault.tags : [];
+    const tagEditor = can_edit_tags ? `
+        <div class="tag-editor">
+            <input
+                type="text"
+                id="fault-tags-input"
+                class="form-input"
+                list="fault-tag-suggestions"
+                placeholder="多个标签用逗号分隔"
+                value="${escapeHtml(tags.join(', '))}"
+            >
+            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
+        </div>
+        <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
+        <datalist id="fault-tag-suggestions">
+            ${tagSuggestions.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join('')}
+        </datalist>
+    ` : '';
+
+    return `
+        <div class="detail-section">
+            <h6 class="detail-section-title">基本信息</h6>
+            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
+            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
+            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">标签</h6>
+            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
+            ${tagEditor}
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">报修信息</h6>
+            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">处理信息</h6>
+            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
+        </div>
+    `;
+}
+
+async function loadTagSuggestions(projectCode) {
+    const response = await fetch(withProject('/api/fault-tags', projectCode ? { project: projectCode } : {}));
+    if (!response.ok) {
+        throw new Error('加载标签建议失败');
+    }
+    const data = await response.json();
+    tagSuggestions = data.tags || [];
+}
+
+async function loadProjects() {
+    const response = await fetch('/api/projects');
+    if (!response.ok) throw new Error('加载项目失败');
+    const data = await response.json();
+    visibleProjects = data.projects || [];
+    const select = document.getElementById('project-filter');
+    select.innerHTML = '<option value="">全部可见项目</option>' +
+        visibleProjects.map(project => `<option value="${project.code}">${escapeHtml(project.name)}</option>`).join('');
+
+    const current = getUrlProjectCode();
+    if (current && visibleProjects.some(project => project.code === current)) {
+        select.value = current;
+    } else if (data.default_project_code) {
+        select.value = data.default_project_code;
+        updateUrlProject(data.default_project_code);
+    }
+}
 
 async function loadFaults() {
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
     const empty = document.getElementById('empty');
     const list = document.getElementById('fault-list');
+    const status = document.getElementById('status-filter').value;
+    const project = document.getElementById('project-filter').value;
+    const sourceType = document.getElementById('source-filter').value;
 
     loading.style.display = 'flex';
     error.style.display = 'none';
@@ -148,24 +363,25 @@ async function loadFaults() {
     list.style.display = 'none';
 
     try {
-        const response = await fetch('/api/faults');
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        if (project) params.set('project', project);
+        if (sourceType) params.set('source_type', sourceType);
+        const response = await fetch(withProject('/api/faults', Object.fromEntries(params.entries())));
         if (!response.ok) throw new Error('加载失败');
-
         const data = await response.json();
         allFaults = data.faults || [];
-
         loading.style.display = 'none';
 
-        if (allFaults.length === 0) {
+        if (!allFaults.length) {
             empty.style.display = 'block';
             return;
         }
 
         renderFaults(allFaults);
         list.style.display = 'block';
-
-    } catch (error) {
-        console.error('加载失败:', error);
+    } catch (err) {
+        console.error(err);
         loading.style.display = 'none';
         error.style.display = 'flex';
     }
@@ -175,156 +391,285 @@ function renderFaults(faults) {
     const tbody = document.getElementById('fault-tbody');
     tbody.innerHTML = faults.map(fault => `
         <tr>
-            <td class="mono">${fault.id}</td>
-            <td>${escapeHtml(fault.station_name || '-')}</td>
-            <td>${escapeHtml(fault.camera_location || fault.camera_area || '-')}</td>
-            <td>${escapeHtml(fault.fault_type || '-')}</td>
-            <td><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></td>
-            <td class="mono">${formatDate(fault.created_at)}</td>
-            <td>${escapeHtml(fault.reporter_name || '-')}</td>
-            <td>
-                <button class="btn btn-sm btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
-                ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
-                ${is_admin ? `<button class="btn btn-sm btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
+            <td class="mono" data-label="单号">${fault.id}</td>
+            <td data-label="项目">${escapeHtml(projectNameById(fault.project_id))}</td>
+            <td data-label="变电站">${escapeHtml(fault.station_name || '-')}</td>
+            <td data-label="摄像头位置">${escapeHtml(fault.camera_location || fault.camera_area || '-')}</td>
+            <td data-label="故障类型">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</td>
+            <td data-label="状态"><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></td>
+            <td class="mono" data-label="报修时间">${formatDate(fault.created_at)}</td>
+            <td data-label="报修人">${escapeHtml(fault.reporter_name || '-')}</td>
+            <td data-label="操作">
+                <div class="table-action-group">
+                    <button class="btn btn-sm btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
+                    ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
+                    ${is_admin ? `<button class="btn btn-sm btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
+                </div>
             </td>
         </tr>
     `).join('');
 }
 
-function statusText(status) {
-    const map = { 'open': '待处理', 'handling': '处理中', 'closed': '已关闭' };
-    return map[status] || status;
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const d = new Date(dateStr);
-    return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
-
-function filterByStatus(status) {
-    if (!status) {
-        renderFaults(allFaults);
-    } else {
-        const filtered = allFaults.filter(f => f.status === status);
-        renderFaults(filtered);
-    }
-}
-
 async function showHandleModal(faultId) {
-    const fault = allFaults.find(f => f.id === faultId);
+    const fault = allFaults.find(item => item.id === faultId);
     if (!fault) return;
-
     currentFaultId = faultId;
-
     document.getElementById('handle-fault-id').textContent = fault.id;
+    document.getElementById('handle-project').textContent = projectNameById(fault.project_id);
     document.getElementById('handle-station').textContent = fault.station_name || '-';
-    document.getElementById('handle-type').textContent = fault.fault_type || '-';
+    document.getElementById('handle-type').textContent = fault.fault_type_label_snapshot || fault.fault_type || '-';
     document.getElementById('handle-desc').textContent = fault.description || '(无描述)';
     document.getElementById('handler-name').value = '';
     document.getElementById('handler-note').value = '';
     document.getElementById('equipment-type').value = fault.equipment_type || '';
     document.getElementById('equipment-quantity').value = fault.equipment_quantity || 0;
-
-    const modal = new bootstrap.Modal(document.getElementById('handle-modal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('handle-modal')).show();
 }
 
 async function showDetailModal(faultId) {
     try {
-        const response = await fetch(`/api/faults/${faultId}/detail`);
+        const response = await fetch(withProject(`/api/faults/${faultId}/detail`));
         if (!response.ok) throw new Error('加载失败');
-
         const data = await response.json();
-        const f = data.fault;
-
-        const html = `
+        const fault = data.fault;
+        document.getElementById('detail-content').innerHTML = `
             <div class="detail-section">
                 <h6 class="detail-section-title">基本信息</h6>
-                <div class="detail-row">
-                    <span class="detail-label">故障单号:</span>
-                    <span class="detail-value">${f.id}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">变电站:</span>
-                    <span class="detail-value">${f.station_name || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">故障类型:</span>
-                    <span class="detail-value">${f.fault_type || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">故障描述:</span>
-                    <span class="detail-value">${f.description || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">状态:</span>
-                    <span class="badge badge-${f.status}">${statusText(f.status)}</span>
-                </div>
+                <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
+                <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
+                <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+                <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
             </div>
             <div class="detail-section">
                 <h6 class="detail-section-title">报修信息</h6>
-                <div class="detail-row">
-                    <span class="detail-label">报修人:</span>
-                    <span class="detail-value">${f.reporter_name || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">联系电话:</span>
-                    <span class="detail-value">${f.reporter_contact || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">报修时间:</span>
-                    <span class="detail-value">${formatDate(f.created_at)}</span>
-                </div>
+                <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
             </div>
             <div class="detail-section">
                 <h6 class="detail-section-title">处理信息</h6>
-                <div class="detail-row">
-                    <span class="detail-label">处理人:</span>
-                    <span class="detail-value">${f.handler_name || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">处理备注:</span>
-                    <span class="detail-value">${f.handler_note || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">更换设备:</span>
-                    <span class="detail-value">${f.equipment_type || '-'}${f.equipment_quantity ? ' x ' + f.equipment_quantity + '个' : ''}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">关闭时间:</span>
-                    <span class="detail-value">${f.closed_at ? formatDate(f.closed_at) : '-'}</span>
-                </div>
+                <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
             </div>
         `;
+        new bootstrap.Modal(document.getElementById('detail-modal')).show();
+    } catch (error) {
+        alert('加载详情失败: ' + error.message);
+    }
+}
 
-        document.getElementById('detail-content').innerHTML = html;
-        const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
-        modal.show();
-    } catch (err) {
-        alert('加载详情失败: ' + err.message);
+async function showDetailModal(faultId) {
+    try {
+        const response = await fetch(withProject(`/api/faults/${faultId}/detail`));
+        if (!response.ok) throw new Error('加载失败');
+        const data = await response.json();
+        const projectCode = projectCodeById(data.fault.project_id) || getUrlProjectCode();
+        await loadTagSuggestions(projectCode);
+        currentDetailFault = data.fault;
+        document.getElementById('detail-content').innerHTML = buildFaultDetailHtml(currentDetailFault);
+        injectImportAuditDetailRows(currentDetailFault);
+        injectAssignmentDetailRows(currentDetailFault);
+        new bootstrap.Modal(document.getElementById('detail-modal')).show();
+    } catch (error) {
+        alert('加载详情失败: ' + error.message);
+    }
+}
+
+function buildFaultDetailHtml(fault) {
+    const tags = Array.isArray(fault.tags) ? fault.tags : [];
+    const tagEditor = can_edit_tags ? `
+        <div class="tag-editor">
+            <input
+                type="text"
+                id="fault-tags-input"
+                class="form-input"
+                list="fault-tag-suggestions"
+                placeholder="多个标签用逗号分隔"
+                value="${escapeHtml(tags.join(', '))}"
+            >
+            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
+        </div>
+        <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
+        <datalist id="fault-tag-suggestions">
+            ${tagSuggestions.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join('')}
+        </datalist>
+    ` : '';
+
+    return `
+        <div class="detail-section">
+            <h6 class="detail-section-title">基本信息</h6>
+            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
+            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
+            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
+            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">标签</h6>
+            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
+            ${tagEditor}
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">报修信息</h6>
+            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">处理信息</h6>
+            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
+        </div>
+    `;
+}
+
+function renderSlotHistory(historyItems) {
+    if (!historyItems || !historyItems.length) {
+        return '<div class="text-muted">暂无同槽位历史故障</div>';
+    }
+
+    return `
+        <div class="slot-history-list">
+            ${historyItems.map((item) => `
+                <div class="slot-history-item">
+                    <div class="slot-history-main">
+                        <span class="slot-history-title">#${item.id} ${escapeHtml(item.fault_label || '-')}</span>
+                        <span class="badge badge-${item.status}">${statusText(item.status)}</span>
+                    </div>
+                    <div class="slot-history-meta">
+                        <span>创建于 ${formatDate(item.created_at)}</span>
+                        <span>${item.closed_at ? `关闭于 ${formatDate(item.closed_at)}` : '尚未关闭'}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function buildFaultDetailHtml(fault) {
+    const tags = Array.isArray(fault.tags) ? fault.tags : [];
+    const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
+    const tagEditor = can_edit_tags ? `
+        <div class="tag-editor">
+            <input
+                type="text"
+                id="fault-tags-input"
+                class="form-input"
+                list="fault-tag-suggestions"
+                placeholder="多个标签用逗号分隔"
+                value="${escapeHtml(tags.join(', '))}"
+            >
+            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
+        </div>
+        <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
+        <datalist id="fault-tag-suggestions">
+            ${tagSuggestions.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join('')}
+        </datalist>
+    ` : '';
+
+    return `
+        <div class="detail-section">
+            <h6 class="detail-section-title">基本信息</h6>
+            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
+            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
+            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
+            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">同槽位历史</h6>
+            ${renderSlotHistory(slotHistory)}
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">标签</h6>
+            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
+            ${tagEditor}
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">报修信息</h6>
+            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">处理信息</h6>
+            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
+        </div>
+    `;
+}
+
+async function saveFaultTags(faultId) {
+    const input = document.getElementById('fault-tags-input');
+    if (!input) {
+        return;
+    }
+
+    const saveButton = document.querySelector(`button[onclick="saveFaultTags(${faultId})"]`);
+    const originalText = saveButton ? saveButton.textContent : '';
+    const tags = input.value
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = '保存中...';
+    }
+
+    try {
+        const response = await fetch(withProject(`/api/faults/${faultId}/tags`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tags })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || '保存标签失败');
+        }
+
+        currentDetailFault = {
+            ...(currentDetailFault || {}),
+            ...data.fault,
+        };
+
+        const projectCode = projectCodeById(currentDetailFault.project_id) || getUrlProjectCode();
+        await loadTagSuggestions(projectCode);
+        document.getElementById('detail-content').innerHTML = buildFaultDetailHtml(currentDetailFault);
+        injectImportAuditDetailRows(currentDetailFault);
+        injectAssignmentDetailRows(currentDetailFault);
+    } catch (error) {
+        alert('保存标签失败: ' + error.message);
+    } finally {
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = originalText || '保存标签';
+        }
     }
 }
 
 async function deleteFault(faultId) {
-    if (!confirm('确定要删除故障记录 #' + faultId + ' 吗？此操作不可撤销。')) {
+    if (!confirm(`确定要删除故障记录 #${faultId} 吗？此操作不可撤销。`)) {
         return;
     }
-
     try {
-        const response = await fetch(`/api/faults/${faultId}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            alert('故障记录已删除');
-            loadFaults();  // 重新加载列表
-        } else {
-            const data = await response.json();
-            alert('删除失败: ' + (data.error || '未知错误'));
-        }
-    } catch (err) {
-        alert('删除失败: ' + err.message);
+        const response = await fetch(withProject(`/api/faults/${faultId}`), { method: 'DELETE' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '删除失败');
+        await loadFaults();
+    } catch (error) {
+        alert('删除失败: ' + error.message);
     }
 }
 
@@ -332,7 +677,7 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
     const handlerName = document.getElementById('handler-name').value.trim();
     const handlerNote = document.getElementById('handler-note').value.trim();
     const equipmentType = document.getElementById('equipment-type').value.trim();
-    const equipmentQuantity = parseInt(document.getElementById('equipment-quantity').value) || 0;
+    const equipmentQuantity = parseInt(document.getElementById('equipment-quantity').value || '0', 10) || 0;
 
     if (!handlerName || !handlerNote) {
         alert('请填写处理人姓名和处理备注');
@@ -341,20 +686,17 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
 
     this.disabled = true;
     this.textContent = '提交中...';
-
     try {
-        // First transition to handling if open
-        const fault = allFaults.find(f => f.id === currentFaultId);
+        const fault = allFaults.find(item => item.id === currentFaultId);
         if (fault && fault.status === 'open') {
-            await fetch(`/api/faults/${currentFaultId}/status`, {
+            await fetch(withProject(`/api/faults/${currentFaultId}/status`), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'handling' })
+                body: JSON.stringify({ status: 'handling' }),
             });
         }
 
-        // Then close with equipment info
-        const response = await fetch(`/api/faults/${currentFaultId}/status`, {
+        const response = await fetch(withProject(`/api/faults/${currentFaultId}/status`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -365,35 +707,38 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
                 equipment_quantity: equipmentQuantity
             })
         });
-
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || '提交失败');
-        }
-
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '提交失败');
         bootstrap.Modal.getInstance(document.getElementById('handle-modal')).hide();
-        loadFaults();
-
+        await loadFaults();
     } catch (error) {
-        console.error('提交失败:', error);
-        alert('提交失败: ' + error.message);
+        alert('处理失败: ' + error.message);
     } finally {
         this.disabled = false;
         this.textContent = '确认关闭';
     }
 });
 
-document.getElementById('status-filter').addEventListener('change', function(e) {
-    filterByStatus(e.target.value);
+document.getElementById('project-filter').addEventListener('change', function() {
+    updateUrlProject(this.value);
+    loadFaults();
 });
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+document.getElementById('status-filter').addEventListener('change', loadFaults);
+document.getElementById('source-filter').addEventListener('change', loadFaults);
 
-document.addEventListener('DOMContentLoaded', loadFaults);
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+            await window.AppProjectState.ready();
+        }
+        await loadProjects();
+        await loadFaults();
+    } catch (error) {
+        console.error(error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'flex';
+    }
+});
 </script>
 {% endblock %}

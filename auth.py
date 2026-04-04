@@ -7,6 +7,14 @@ import secrets
 import time
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
+from project_access import (
+    get_default_project_code,
+    get_projects,
+    get_user_project_scope_rows,
+    get_visible_projects,
+    projects_enabled,
+    project_scopes_enabled,
+)
 from utils import get_db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -54,6 +62,26 @@ def verify_password(password, stored):
     except:
         return False
 
+
+def _admin_required():
+    return session.get('role') == 'admin'
+
+
+def _build_user_payload(db, user):
+    projects = get_visible_projects(
+        db,
+        user_id=user['id'],
+        role=user['role'],
+        include_inactive=False,
+    )
+    return {
+        'id': user['id'],
+        'username': user['username'],
+        'role': user['role'],
+        'projects': projects,
+        'default_project_code': get_default_project_code(projects),
+    }
+
 # ============================================================
 # 登录
 # ============================================================
@@ -93,11 +121,7 @@ def login():
 
     return jsonify({
         'message': '登录成功',
-        'user': {
-            'id': user['id'],
-            'username': user['username'],
-            'role': user['role']
-        }
+        'user': _build_user_payload(db, user)
     })
 
 # ============================================================
@@ -121,12 +145,15 @@ def me():
     if not user_id:
         return jsonify({'error': '未登录'}), 401
 
+    db = get_db()
+    user = {
+        'id': session.get('user_id'),
+        'username': session.get('username'),
+        'role': session.get('role')
+    }
+
     return jsonify({
-        'user': {
-            'id': session.get('user_id'),
-            'username': session.get('username'),
-            'role': session.get('role')
-        }
+        'user': _build_user_payload(db, user)
     })
 
 # ============================================================
@@ -136,7 +163,7 @@ def me():
 @auth_bp.route('/users', methods=['GET'])
 def list_users():
     """获取用户列表（仅管理员）"""
-    if session.get('role') != 'admin':
+    if not _admin_required():
         return jsonify({'error': '需要管理员权限'}), 403
 
     db = get_db()
@@ -150,7 +177,7 @@ def list_users():
 @auth_bp.route('/users', methods=['POST'])
 def create_user():
     """创建用户（仅管理员）"""
-    if session.get('role') != 'admin':
+    if not _admin_required():
         return jsonify({'error': '需要管理员权限'}), 403
 
     data = request.get_json()
@@ -185,7 +212,7 @@ def create_user():
 @auth_bp.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     """删除用户（仅管理员）"""
-    if session.get('role') != 'admin':
+    if not _admin_required():
         return jsonify({'error': '需要管理员权限'}), 403
 
     if user_id == session.get('user_id'):
@@ -198,3 +225,120 @@ def delete_user(user_id):
     db.commit()
 
     return jsonify({'message': '用户已删除'})
+
+
+@auth_bp.route('/users/<int:user_id>/projects', methods=['GET'])
+def get_user_projects(user_id):
+    """获取用户项目授权（仅管理员）"""
+    if not _admin_required():
+        return jsonify({'error': '需要管理员权限'}), 403
+
+    db = get_db()
+    user = db.execute(
+        "SELECT id, username, role FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    if not user:
+        return jsonify({'error': '用户不存在'}), 404
+
+    all_projects = get_projects(db, include_inactive=True)
+    if user['role'] == 'admin':
+        projects = []
+        for project in all_projects:
+            item = dict(project)
+            item['assigned'] = True
+            item['can_write'] = True
+            item['inherited_admin'] = True
+            projects.append(item)
+    else:
+        scope_map = {
+            row['project_id']: row
+            for row in get_user_project_scope_rows(db, user['id'])
+        }
+        projects = []
+        for project in all_projects:
+            item = dict(project)
+            scope = scope_map.get(project['id'])
+            item['assigned'] = scope is not None
+            item['can_write'] = bool(scope['can_write']) if scope else False
+            item['inherited_admin'] = False
+            projects.append(item)
+
+    return jsonify({
+        'user': {
+            'id': user['id'],
+            'username': user['username'],
+            'role': user['role'],
+        },
+        'multi_project_enabled': projects_enabled(db),
+        'project_scope_enabled': project_scopes_enabled(db),
+        'projects': projects,
+    })
+
+
+@auth_bp.route('/users/<int:user_id>/projects', methods=['PUT'])
+def update_user_projects(user_id):
+    """更新用户项目授权（仅管理员）"""
+    if not _admin_required():
+        return jsonify({'error': '需要管理员权限'}), 403
+
+    db = get_db()
+    if not projects_enabled(db) or not project_scopes_enabled(db):
+        return jsonify({'error': '当前数据库尚未启用项目授权能力'}), 409
+
+    user = db.execute(
+        "SELECT id, username, role FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    if not user:
+        return jsonify({'error': '用户不存在'}), 404
+    if user['role'] == 'admin':
+        return jsonify({'error': 'admin 角色不需要单独配置项目授权'}), 400
+
+    data = request.get_json(silent=True) or {}
+    raw_projects = data.get('projects')
+    if not isinstance(raw_projects, list):
+        return jsonify({'error': 'projects 必须是数组'}), 400
+
+    all_projects = get_projects(db, include_inactive=True)
+    valid_ids = {project['id'] for project in all_projects}
+    project_code_to_id = {project['code']: project['id'] for project in all_projects}
+
+    normalized = []
+    seen_project_ids = set()
+    for item in raw_projects:
+        if not isinstance(item, dict):
+            return jsonify({'error': 'projects 数组元素必须是对象'}), 400
+        project_id = item.get('project_id')
+        if project_id is None and item.get('project_code'):
+            project_id = project_code_to_id.get(item.get('project_code'))
+        if project_id not in valid_ids:
+            return jsonify({'error': f'无效项目: {item.get("project_code") or project_id}'}), 400
+        if project_id in seen_project_ids:
+            return jsonify({'error': f'重复项目授权: {project_id}'}), 400
+        seen_project_ids.add(project_id)
+        normalized.append((project_id, 1 if item.get('can_write') else 0))
+
+    db.execute("DELETE FROM user_project_scopes WHERE user_id = ?", (user_id,))
+    for project_id, can_write in normalized:
+        db.execute(
+            """
+            INSERT INTO user_project_scopes (user_id, project_id, can_write)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, project_id, can_write),
+        )
+    db.commit()
+
+    updated_projects = [
+        {
+            'project_id': project_id,
+            'can_write': bool(can_write),
+        }
+        for project_id, can_write in normalized
+    ]
+    return jsonify({
+        'message': '项目授权已更新',
+        'user_id': user_id,
+        'projects': updated_projects,
+    })

@@ -5,45 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}变电站图像监控运维平台{% endblock %}</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5.3.3 本地化 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-5.3.3.min.css') }}">
-
-    <!-- Design System CSS Variables -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    {% set current_endpoint = request.endpoint or '' %}
+    {% set requested_project_code = request.args.get('project', '') %}
     <a href="#main-content" class="skip-link">跳到主要内容</a>
+
     <header class="app-header" role="banner">
         <div class="container">
             <div class="header-content">
                 <h1 class="app-title">变电站图像监控运维平台</h1>
+
                 <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-hidden="true">
                 <label for="nav-toggle" class="nav-toggle-label" aria-label="切换导航">
                     <span></span><span></span><span></span>
                 </label>
-                {% set current_endpoint = request.endpoint or '' %}
-                <nav class="app-nav" role="navigation" aria-label="主导航">
-                    <a href="{{ url_for('index') }}" class="nav-link {% if current_endpoint == 'index' %}nav-link-primary{% endif %}" {% if current_endpoint == 'index' %}aria-current="page"{% endif %}>首页</a>
-                    <a href="{{ url_for('stations') }}" class="nav-link {% if current_endpoint == 'stations' %}nav-link-primary{% endif %}" {% if current_endpoint == 'stations' %}aria-current="page"{% endif %}>变电站列表</a>
-                    <a href="{{ url_for('fault_new') }}" class="nav-link {% if current_endpoint == 'fault_new' %}nav-link-primary{% endif %}" {% if current_endpoint == 'fault_new' %}aria-current="page"{% endif %}>报故障</a>
-                    <a href="{{ url_for('faults') }}" class="nav-link {% if current_endpoint == 'faults' %}nav-link-primary{% endif %}" {% if current_endpoint == 'faults' %}aria-current="page"{% endif %}>故障记录</a>
-                    <a href="{{ url_for('statistics') }}" class="nav-link {% if current_endpoint == 'statistics' %}nav-link-primary{% endif %}" {% if current_endpoint == 'statistics' %}aria-current="page"{% endif %}>统计</a>
-                    <a href="{{ url_for('map_page') }}" class="nav-link {% if current_endpoint == 'map_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'map_page' %}aria-current="page"{% endif %}>地图</a>
-                    <a href="{{ url_for('photos_page') }}" class="nav-link {% if current_endpoint == 'photos_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'photos_page' %}aria-current="page"{% endif %}>照片</a>
-                    <a href="{{ url_for('admin_page') }}" class="nav-link {% if current_endpoint == 'admin_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'admin_page' %}aria-current="page"{% endif %}>管理</a>
-                    {% if session.get('user_id') %}
-                    <a href="#" class="nav-link" onclick="logout(); return false;">退出</a>
-                    {% else %}
-                    <a href="{{ url_for('login_page') }}" class="nav-link {% if current_endpoint == 'login_page' %}nav-link-primary{% endif %}" {% if current_endpoint == 'login_page' %}aria-current="page"{% endif %}>登录</a>
-                    {% endif %}
-                </nav>
+
+                <div class="header-right">
+                    <nav class="app-nav" role="navigation" aria-label="主导航">
+                        <a
+                            href="{{ url_for('index', project=requested_project_code) if requested_project_code else url_for('index') }}"
+                            class="nav-link {% if current_endpoint == 'index' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'index' %}aria-current="page"{% endif %}
+                        >首页</a>
+                        <a
+                            href="{{ url_for('stations', project=requested_project_code) if requested_project_code else url_for('stations') }}"
+                            class="nav-link {% if current_endpoint == 'stations' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'stations' %}aria-current="page"{% endif %}
+                        >变电站</a>
+                        <a
+                            href="{{ url_for('fault_new', project=requested_project_code) if requested_project_code else url_for('fault_new') }}"
+                            class="nav-link {% if current_endpoint == 'fault_new' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'fault_new' %}aria-current="page"{% endif %}
+                        >报故障</a>
+                        <a
+                            href="{{ url_for('faults', project=requested_project_code) if requested_project_code else url_for('faults') }}"
+                            class="nav-link {% if current_endpoint == 'faults' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'faults' %}aria-current="page"{% endif %}
+                        >故障记录</a>
+                        <a
+                            href="{{ url_for('statistics', project=requested_project_code) if requested_project_code else url_for('statistics') }}"
+                            class="nav-link {% if current_endpoint == 'statistics' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'statistics' %}aria-current="page"{% endif %}
+                        >统计</a>
+                        <a
+                            href="{{ url_for('map_page', project=requested_project_code) if requested_project_code else url_for('map_page') }}"
+                            class="nav-link {% if current_endpoint == 'map_page' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'map_page' %}aria-current="page"{% endif %}
+                        >地图</a>
+                        <a
+                            href="{{ url_for('photos_page', project=requested_project_code) if requested_project_code else url_for('photos_page') }}"
+                            class="nav-link {% if current_endpoint == 'photos_page' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'photos_page' %}aria-current="page"{% endif %}
+                        >照片</a>
+                        <a
+                            href="{{ url_for('admin_page', project=requested_project_code) if requested_project_code else url_for('admin_page') }}"
+                            class="nav-link {% if current_endpoint == 'admin_page' %}nav-link-primary{% endif %}"
+                            data-project-link
+                            {% if current_endpoint == 'admin_page' %}aria-current="page"{% endif %}
+                        >管理</a>
+                        {% if session.get('user_id') %}
+                        <a href="#" class="nav-link" onclick="logout(); return false;">退出</a>
+                        {% else %}
+                        <a
+                            href="{{ url_for('login_page') }}"
+                            class="nav-link {% if current_endpoint == 'login_page' %}nav-link-primary{% endif %}"
+                            {% if current_endpoint == 'login_page' %}aria-current="page"{% endif %}
+                        >登录</a>
+                        {% endif %}
+                    </nav>
+
+                    <div id="global-project-switcher" class="project-switcher" hidden>
+                        <label for="global-project-select" class="project-switcher-label">当前项目</label>
+                        <select id="global-project-select" class="project-switcher-select" aria-label="切换项目">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -58,7 +111,6 @@
         </div>
     </footer>
 
-    <!-- Bootstrap JS 本地化 -->
     <script src="{{ url_for('static', filename='bootstrap-5.3.3.bundle.min.js') }}"></script>
     <script>
     async function logout() {
@@ -68,6 +120,180 @@
             window.location.href = '/login';
         }
     }
+
+    (function() {
+        const requestedProjectCode = {{ requested_project_code|tojson }};
+        const switcherEl = document.getElementById('global-project-switcher');
+        const switcherSelect = document.getElementById('global-project-select');
+
+        function setExtraParams(url, extraParams) {
+            if (!extraParams) {
+                return;
+            }
+            Object.entries(extraParams).forEach(([key, value]) => {
+                if (value === undefined || value === null || value === '') {
+                    url.searchParams.delete(key);
+                    return;
+                }
+                url.searchParams.set(key, value);
+            });
+        }
+
+        const projectState = {
+            projectCode: requestedProjectCode || '',
+            projects: [],
+            multiProjectEnabled: false,
+            defaultProjectCode: '',
+            readyPromise: null,
+            getProjectCode() {
+                return this.projectCode || new URLSearchParams(window.location.search).get('project') || '';
+            },
+            withProject(pathOrUrl, extraParams) {
+                const url = new URL(pathOrUrl, window.location.origin);
+                if (url.origin !== window.location.origin) {
+                    return url.toString();
+                }
+
+                const activeProject = this.getProjectCode();
+                if (activeProject) {
+                    url.searchParams.set('project', activeProject);
+                } else {
+                    url.searchParams.delete('project');
+                }
+
+                setExtraParams(url, extraParams);
+                return `${url.pathname}${url.search}${url.hash}`;
+            },
+            syncProjectLinks(root) {
+                const scope = root || document;
+                scope.querySelectorAll('[data-project-link]').forEach((link) => {
+                    const currentHref = link.getAttribute('href') || '';
+                    if (!currentHref || currentHref.startsWith('#') || currentHref.startsWith('javascript:')) {
+                        return;
+                    }
+                    if (!link.dataset.baseHref) {
+                        link.dataset.baseHref = currentHref;
+                    }
+                    link.setAttribute('href', this.withProject(link.dataset.baseHref));
+                });
+            },
+            renderSwitcher() {
+                if (!this.multiProjectEnabled || this.projects.length === 0) {
+                    switcherEl.hidden = true;
+                    return;
+                }
+
+                const activeProject = this.getProjectCode() || this.defaultProjectCode || this.projects[0].code;
+                switcherSelect.innerHTML = this.projects.map((project) => {
+                    const selected = project.code === activeProject ? ' selected' : '';
+                    return `<option value="${project.code}"${selected}>${project.short_name || project.name}</option>`;
+                }).join('');
+                switcherEl.hidden = false;
+            },
+            navigate(nextProjectCode) {
+                const nextUrl = new URL(window.location.href);
+                if (nextProjectCode) {
+                    nextUrl.searchParams.set('project', nextProjectCode);
+                } else {
+                    nextUrl.searchParams.delete('project');
+                }
+                window.location.href = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+            },
+            async init() {
+                const response = await fetch('/api/projects', { credentials: 'same-origin' });
+                if (!response.ok) {
+                    throw new Error('加载项目列表失败');
+                }
+
+                const data = await response.json();
+                this.projects = Array.isArray(data.projects) ? data.projects : [];
+                this.multiProjectEnabled = !!data.multi_project_enabled;
+                this.defaultProjectCode = data.default_project_code || (this.projects[0] && this.projects[0].code) || '';
+
+                if (this.multiProjectEnabled && !this.projectCode && this.defaultProjectCode) {
+                    const nextUrl = new URL(window.location.href);
+                    nextUrl.searchParams.set('project', this.defaultProjectCode);
+                    this.projectCode = this.defaultProjectCode;
+                    window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+                } else {
+                    this.projectCode = this.getProjectCode();
+                }
+
+                this.syncProjectLinks(document);
+                this.renderSwitcher();
+
+                document.dispatchEvent(new CustomEvent('app:project-ready', {
+                    detail: {
+                        projectCode: this.getProjectCode(),
+                        projects: this.projects,
+                        defaultProjectCode: this.defaultProjectCode,
+                        multiProjectEnabled: this.multiProjectEnabled
+                    }
+                }));
+
+                return this;
+            },
+            ready() {
+                if (!this.readyPromise) {
+                    this.readyPromise = this.init().catch((error) => {
+                        console.error('初始化项目上下文失败:', error);
+                        this.syncProjectLinks(document);
+                        return this;
+                    });
+                }
+                return this.readyPromise;
+            }
+        };
+
+        window.AppProjectState = projectState;
+
+        switcherSelect.addEventListener('change', (event) => {
+            projectState.navigate(event.target.value);
+        });
+
+        document.addEventListener('click', (event) => {
+            if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+            ) {
+                return;
+            }
+
+            const link = event.target.closest('a[href]');
+            if (!link || link.dataset.projectIgnore === 'true' || link.target === '_blank') {
+                return;
+            }
+
+            const href = link.getAttribute('href') || '';
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) {
+                return;
+            }
+
+            const resolved = new URL(link.href, window.location.origin);
+            if (resolved.origin !== window.location.origin) {
+                return;
+            }
+            if (resolved.pathname.startsWith('/login') || resolved.pathname.startsWith('/auth/')) {
+                return;
+            }
+
+            const activeProject = projectState.getProjectCode();
+            if (!activeProject) {
+                return;
+            }
+
+            link.setAttribute('href', projectState.withProject(link.href));
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            projectState.syncProjectLinks(document);
+            projectState.ready();
+        });
+    })();
     </script>
 
     {% block scripts %}{% endblock %}

@@ -3,14 +3,18 @@
 变电站数据管理：上传Excel、增删改查
 """
 import os
+import re
 import shutil
 import sqlite3
 import logging
+import json
+import hashlib
 from datetime import datetime
 from functools import wraps
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.utils import secure_filename
 from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
+from project_access import get_project_by_code, projects_enabled, table_exists
 from utils import get_db
 
 logger = logging.getLogger('station_monitor')
@@ -327,6 +331,493 @@ def add_camera():
 # ============================================================
 # 批量操作
 # ============================================================
+
+def _get_table_columns(db, table_name):
+    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {row["name"] for row in rows}
+
+
+def _multi_project_camera_schema_enabled(db):
+    camera_columns = _get_table_columns(db, "cameras")
+    return (
+        projects_enabled(db)
+        and table_exists(db, "camera_slots")
+        and {"project_id", "slot_id", "status"}.issubset(camera_columns)
+    )
+
+
+def _resolve_admin_project(db, project_code):
+    project_code = (project_code or '').strip()
+    if not project_code:
+        return None, (jsonify({'error': '缂哄皯 project 鍙傛暟'}), 400)
+    project = get_project_by_code(db, project_code, include_inactive=False)
+    if not project:
+        return None, (jsonify({'error': '椤圭洰涓嶅瓨鍦�'}), 404)
+    return project, None
+
+
+def _normalize_text(value):
+    return (value or '').strip()
+
+
+def _build_legacy_slot_suffix(area_key, location_key):
+    seed = f"{area_key}|{location_key}"
+    digest = hashlib.sha1(seed.encode('utf-8')).hexdigest()[:10]
+    compact = re.sub(r'\s+', '', seed)
+    compact = re.sub(r'[^0-9A-Za-z\u4e00-\u9fff#-]+', '_', compact).strip('_')
+    compact = compact[:24] or 'NA'
+    return f"{compact}_{digest}"
+
+
+def _build_slot_code(camera, station_id, project_code, row_index):
+    raw_slot_code = _normalize_text(camera.get('slot_code'))
+    if raw_slot_code:
+        return raw_slot_code
+
+    channel_key = camera.get('channel_number')
+    if channel_key in (None, ''):
+        channel_key = _normalize_text(camera.get('camera_index')) or f"ROW{row_index + 1}"
+
+    location_key = _normalize_text(camera.get('location') or camera.get('location_desc'))
+    area_key = _normalize_text(camera.get('area'))
+    suffix = _build_legacy_slot_suffix(area_key, location_key)
+    return f"LEGACY_{project_code}_{station_id}_{channel_key}_{suffix}"
+
+
+def _ensure_camera_slot(cursor, station_id, project_id, project_code, camera, row_index):
+    location_desc = _normalize_text(camera.get('location') or camera.get('location_desc'))
+    area = _normalize_text(camera.get('area'))
+    channel_number = camera.get('channel_number')
+    slot_code = _build_slot_code(camera, station_id, project_code, row_index)
+
+    row = cursor.execute(
+        """
+        SELECT id
+        FROM camera_slots
+        WHERE station_id = ? AND project_id = ? AND slot_code = ?
+        """,
+        (station_id, project_id, slot_code),
+    ).fetchone()
+    if row:
+        return row['id'], slot_code
+
+    row = cursor.execute(
+        """
+        SELECT id
+        FROM camera_slots
+        WHERE station_id = ?
+          AND project_id = ?
+          AND location_desc = ?
+          AND area = ?
+          AND ((channel_number IS NULL AND ? IS NULL) OR channel_number = ?)
+        """,
+        (station_id, project_id, location_desc, area, channel_number, channel_number),
+    ).fetchone()
+    if row:
+        return row['id'], slot_code
+
+    cursor.execute(
+        """
+        INSERT INTO camera_slots (slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (slot_code, station_id, project_id, location_desc, area, channel_number),
+    )
+    return cursor.lastrowid, slot_code
+
+
+def _camera_matches(active_camera, camera):
+    return (
+        _normalize_text(active_camera['camera_index']) == _normalize_text(camera.get('camera_index'))
+        and _normalize_text(active_camera['area']) == _normalize_text(camera.get('area'))
+        and _normalize_text(active_camera['location_desc']) == _normalize_text(camera.get('location') or camera.get('location_desc'))
+        and _normalize_text(active_camera['ip_address']) == _normalize_text(camera.get('ip_address'))
+        and active_camera['channel_port'] == camera.get('channel_port')
+        and active_camera['channel_number'] == camera.get('channel_number')
+    )
+
+
+def _insert_camera_instance(cursor, slot_id, station_id, project_id, camera):
+    cursor.execute(
+        """
+        INSERT INTO cameras (
+            slot_id, station_id, project_id, project_camera_code, camera_index,
+            area, location_desc, ip_address, channel_port, channel_number, status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        """,
+        (
+            slot_id,
+            station_id,
+            project_id,
+            camera.get('project_camera_code'),
+            camera.get('camera_index', ''),
+            _normalize_text(camera.get('area')),
+            _normalize_text(camera.get('location') or camera.get('location_desc')),
+            camera.get('ip_address', ''),
+            camera.get('channel_port'),
+            camera.get('channel_number'),
+        ),
+    )
+    return cursor.lastrowid
+
+
+def _replace_active_camera(cursor, active_camera, replacement_camera):
+    cursor.execute(
+        """
+        UPDATE cameras
+        SET status = 'replaced',
+            retired_at = COALESCE(retired_at, CURRENT_TIMESTAMP),
+            replaced_by_camera_id = NULL
+        WHERE id = ?
+        """,
+        (active_camera['id'],),
+    )
+    new_camera_id = _insert_camera_instance(
+        cursor,
+        active_camera['slot_id'],
+        active_camera['station_id'],
+        active_camera['project_id'],
+        replacement_camera,
+    )
+    cursor.execute(
+        "UPDATE cameras SET replaced_by_camera_id = ? WHERE id = ?",
+        (new_camera_id, active_camera['id']),
+    )
+    return new_camera_id
+
+
+def _sync_station_project_cameras(db, station_id, project, cameras):
+    cursor = db.cursor()
+    project_id = project['id']
+    project_code = project['code']
+    processed_camera_ids = set()
+    metrics = {
+        'cameras_added': 0,
+        'cameras_updated': 0,
+        'cameras_replaced': 0,
+        'cameras_retired': 0,
+    }
+
+    for row_index, camera in enumerate(cameras):
+        slot_id, _ = _ensure_camera_slot(cursor, station_id, project_id, project_code, camera, row_index)
+        location_desc = _normalize_text(camera.get('location') or camera.get('location_desc'))
+        area = _normalize_text(camera.get('area'))
+        active_camera = cursor.execute(
+            "SELECT * FROM cameras WHERE slot_id = ? AND status = 'active'",
+            (slot_id,),
+        ).fetchone()
+
+        if active_camera and _camera_matches(active_camera, camera):
+            cursor.execute(
+                """
+                UPDATE cameras
+                SET station_id = ?, project_id = ?, camera_index = ?, area = ?, location_desc = ?,
+                    ip_address = ?, channel_port = ?, channel_number = ?
+                WHERE id = ?
+                """,
+                (
+                    station_id,
+                    project_id,
+                    camera.get('camera_index', ''),
+                    area,
+                    location_desc,
+                    camera.get('ip_address', ''),
+                    camera.get('channel_port'),
+                    camera.get('channel_number'),
+                    active_camera['id'],
+                ),
+            )
+            processed_camera_ids.add(active_camera['id'])
+            metrics['cameras_updated'] += 1
+            continue
+
+        normalized_camera = {
+            **camera,
+            'area': area,
+            'location_desc': location_desc,
+            'location': location_desc,
+        }
+        if active_camera:
+            new_camera_id = _replace_active_camera(cursor, active_camera, normalized_camera)
+        else:
+            new_camera_id = _insert_camera_instance(
+                cursor,
+                slot_id,
+                station_id,
+                project_id,
+                normalized_camera,
+            )
+        processed_camera_ids.add(new_camera_id)
+        if active_camera:
+            metrics['cameras_replaced'] += 1
+        else:
+            metrics['cameras_added'] += 1
+
+    retire_query = """
+        UPDATE cameras
+        SET status = 'retired',
+            retired_at = CURRENT_TIMESTAMP
+        WHERE station_id = ?
+          AND project_id = ?
+          AND status = 'active'
+    """
+    retire_params = [station_id, project_id]
+    if processed_camera_ids:
+        placeholders = ", ".join(["?"] * len(processed_camera_ids))
+        retire_query += f" AND id NOT IN ({placeholders})"
+        retire_params.extend(sorted(processed_camera_ids))
+    before = db.total_changes
+    cursor.execute(retire_query, retire_params)
+    metrics['cameras_retired'] = db.total_changes - before
+    return metrics
+
+
+def upload_excel_scoped():
+    db = get_db()
+    if not _multi_project_camera_schema_enabled(db):
+        return upload_excel()
+
+    if 'file' not in request.files:
+        return jsonify({'error': '娌℃湁鏂囦欢'}), 400
+
+    file = request.files['file']
+    county = request.form.get('county', '')
+    project, error = _resolve_admin_project(db, request.form.get('project'))
+    if error:
+        return error
+
+    if file.filename == '':
+        return jsonify({'error': '娌℃湁閫夋嫨鏂囦欢'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'error': '鍙敮鎸亁lsx/xls鏍煎紡'}), 400
+    if not county:
+        return jsonify({'error': '璇烽€夋嫨鍘垮尯'}), 400
+
+    filename = secure_filename(file.filename)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
+    file.save(filepath)
+
+    try:
+        data = parse_excel_admin(filepath)
+        data['station']['county'] = county
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO stations (name, voltage_level, county, location, ip_range, nvr_ip, nvr_port)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(name, voltage_level) DO UPDATE SET
+                county = excluded.county,
+                location = excluded.location,
+                ip_range = excluded.ip_range,
+                nvr_ip = excluded.nvr_ip,
+                nvr_port = excluded.nvr_port,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (
+                data['station']['name'],
+                data['station']['voltage_level'],
+                data['station']['county'],
+                data['station']['location'],
+                data['station']['ip_range'],
+                data['station']['nvr_ip'],
+                data['station']['nvr_port'],
+            ),
+        )
+        cursor.execute(
+            "SELECT id FROM stations WHERE name = ? AND voltage_level = ?",
+            (data['station']['name'], data['station']['voltage_level']),
+        )
+        station_id = cursor.fetchone()[0]
+        metrics = _sync_station_project_cameras(db, station_id, project, data['cameras'])
+        db.commit()
+        return jsonify({
+            'message': '瀵煎叆鎴愬姛',
+            'station': data['station']['name'],
+            'station_id': station_id,
+            'project': project['code'],
+            **metrics,
+        })
+    except Exception as e:
+        db.rollback()
+        logger.exception('upload_excel_scoped failed')
+        return jsonify({'error': f'瑙ｆ瀽澶辫触: {str(e)}'}), 500
+    finally:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+
+def delete_camera_scoped(camera_id):
+    db = get_db()
+    if not _multi_project_camera_schema_enabled(db):
+        return delete_camera(camera_id)
+
+    cursor = db.cursor()
+    camera = cursor.execute("SELECT id FROM cameras WHERE id = ?", (camera_id,)).fetchone()
+    if not camera:
+        return jsonify({'error': '鎽勫儚澶翠笉瀛樺湪'}), 404
+
+    cursor.execute(
+        """
+        UPDATE cameras
+        SET status = 'retired',
+            retired_at = COALESCE(retired_at, CURRENT_TIMESTAMP)
+        WHERE id = ?
+        """,
+        (camera_id,),
+    )
+    db.commit()
+    return jsonify({'message': '宸插仠鐢ㄦ憚鍍忓ご'})
+
+
+def add_camera_scoped():
+    db = get_db()
+    if not _multi_project_camera_schema_enabled(db):
+        return add_camera()
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': '鏃犳晥鏁版嵁'}), 400
+
+    required = ['station_id', 'ip_address']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'缂哄皯蹇呭～瀛楁: {field}'}), 400
+
+    project, error = _resolve_admin_project(db, data.get('project') or data.get('project_code'))
+    if error:
+        return error
+
+    cursor = db.cursor()
+    station = cursor.execute("SELECT id FROM stations WHERE id = ?", (data['station_id'],)).fetchone()
+    if not station:
+        return jsonify({'error': '鍙樼數绔欎笉瀛樺湪'}), 404
+
+    slot_id, slot_code = _ensure_camera_slot(
+        cursor,
+        data['station_id'],
+        project['id'],
+        project['code'],
+        data,
+        0,
+    )
+    active_camera = cursor.execute(
+        "SELECT * FROM cameras WHERE slot_id = ? AND status = 'active'",
+        (slot_id,),
+    ).fetchone()
+    if active_camera:
+        if _camera_matches(active_camera, data):
+            return jsonify({
+                'message': '鎽勫儚澶村凡瀛樺湪',
+                'camera_id': active_camera['id'],
+                'slot_id': slot_id,
+                'slot_code': slot_code,
+            })
+        return jsonify({'error': '璇ユЫ浣嶅凡鏈夊湪鐢ㄨ澶囷紝璇蜂娇鐢ㄦ洿鎹㈡祦绋�'}), 409
+
+    camera_id = _insert_camera_instance(
+        cursor,
+        slot_id,
+        data['station_id'],
+        project['id'],
+        data,
+    )
+    db.commit()
+    return jsonify({
+        'message': '娣诲姞鎴愬姛',
+        'camera_id': camera_id,
+        'slot_id': slot_id,
+        'slot_code': slot_code,
+    }), 201
+ 
+ 
+@admin_bp.route('/cameras/<int:camera_id>/replace', methods=['POST'])
+@require_admin
+def replace_camera_scoped(camera_id):
+    db = get_db()
+    if not _multi_project_camera_schema_enabled(db):
+        return jsonify({'error': 'multi-project camera replacement is not enabled'}), 400
+
+    data = request.get_json(silent=True) or {}
+    if not data.get('ip_address'):
+        return jsonify({'error': 'missing required field: ip_address'}), 400
+
+    cursor = db.cursor()
+    old_camera = cursor.execute(
+        """
+        SELECT c.*, p.code AS project_code
+        FROM cameras c
+        LEFT JOIN projects p ON p.id = c.project_id
+        WHERE c.id = ?
+        """,
+        (camera_id,),
+    ).fetchone()
+    if not old_camera:
+        return jsonify({'error': 'camera not found'}), 404
+    if old_camera['status'] != 'active':
+        return jsonify({'error': 'only active cameras can be replaced'}), 409
+    if not old_camera['project_id']:
+        return jsonify({'error': 'camera is missing project ownership'}), 409
+
+    requested_project = _normalize_text(data.get('project') or data.get('project_code'))
+    if requested_project and requested_project != _normalize_text(old_camera['project_code']):
+        return jsonify({'error': 'replacement camera must stay in the same project'}), 400
+
+    replacement_camera = {
+        'project_camera_code': data.get('project_camera_code'),
+        'camera_index': data.get('camera_index', old_camera['camera_index']),
+        'area': data.get('area', old_camera['area']),
+        'location_desc': data.get('location_desc', old_camera['location_desc']),
+        'location': data.get('location') if 'location' in data else old_camera['location_desc'],
+        'ip_address': data.get('ip_address'),
+        'channel_port': data.get('channel_port', old_camera['channel_port']),
+        'channel_number': data.get('channel_number', old_camera['channel_number']),
+    }
+
+    try:
+        db.execute("BEGIN")
+        slot_id = old_camera['slot_id']
+        if not slot_id:
+            slot_id, _ = _ensure_camera_slot(
+                cursor,
+                old_camera['station_id'],
+                old_camera['project_id'],
+                old_camera['project_code'],
+                old_camera,
+                0,
+            )
+            cursor.execute("UPDATE cameras SET slot_id = ? WHERE id = ?", (slot_id, camera_id))
+            old_camera = cursor.execute(
+                """
+                SELECT c.*, p.code AS project_code
+                FROM cameras c
+                LEFT JOIN projects p ON p.id = c.project_id
+                WHERE c.id = ?
+                """,
+                (camera_id,),
+            ).fetchone()
+        new_camera_id = _replace_active_camera(cursor, old_camera, replacement_camera)
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.exception('replace_camera_scoped failed')
+        return jsonify({'error': 'failed to replace camera'}), 500
+
+    return jsonify({
+        'message': 'camera replaced',
+        'old_camera_id': old_camera['id'],
+        'new_camera_id': new_camera_id,
+        'slot_id': slot_id,
+        'project': old_camera['project_code'],
+    }), 201
+
+
+admin_bp.view_functions['upload_excel'] = upload_excel_scoped
+admin_bp.view_functions['delete_camera'] = delete_camera_scoped
+admin_bp.view_functions['add_camera'] = add_camera_scoped
 
 @admin_bp.route('/backup', methods=['POST'])
 @require_admin

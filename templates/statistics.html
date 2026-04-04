@@ -11,12 +11,11 @@
                 <option value="">全部年份</option>
             </select>
             <button id="export-btn" class="btn btn-secondary btn-sm" type="button" onclick="exportStats()">
-                导出Excel
+                导出 Excel
             </button>
         </div>
     </div>
 
-    <!-- 概览统计 -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-value" id="total-stations">-</div>
@@ -24,11 +23,11 @@
         </div>
         <div class="stat-card">
             <div class="stat-value" id="total-cameras">-</div>
-            <div class="stat-label">摄像头总数</div>
+            <div class="stat-label">当前设备总数</div>
         </div>
         <div class="stat-card">
             <div class="stat-value" id="total-faults">-</div>
-            <div class="stat-label">故障报修总数</div>
+            <div class="stat-label">故障总数</div>
         </div>
         <div class="stat-card">
             <div class="stat-value" id="fault-rate">-</div>
@@ -36,7 +35,29 @@
         </div>
     </div>
 
-    <!-- 图表区域 -->
+    <div class="stats-grid kpi-grid">
+        <div class="stat-card stat-card-soft">
+            <div class="stat-value stat-small" id="open-count">-</div>
+            <div class="stat-label">打开中</div>
+        </div>
+        <div class="stat-card stat-card-soft">
+            <div class="stat-value stat-small" id="handling-count">-</div>
+            <div class="stat-label">处理中</div>
+        </div>
+        <div class="stat-card stat-card-soft">
+            <div class="stat-value stat-small" id="closed-count">-</div>
+            <div class="stat-label">已关闭</div>
+        </div>
+        <div class="stat-card stat-card-soft">
+            <div class="stat-value stat-small" id="avg-response">-</div>
+            <div class="stat-label">平均响应时长</div>
+        </div>
+        <div class="stat-card stat-card-soft">
+            <div class="stat-value stat-small" id="avg-close">-</div>
+            <div class="stat-label">平均关闭时长</div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6">
             <div class="chart-section">
@@ -48,21 +69,9 @@
         </div>
         <div class="col-md-6">
             <div class="chart-section">
-                <h3>摄像机故障维修排行 Top 5</h3>
-                <div class="chart-container" style="height: auto; min-height: 200px;">
-                    <table class="data-table" id="camera-ranking-table">
-                        <thead>
-                            <tr>
-                                <th>排名</th>
-                                <th>摄像机位置</th>
-                                <th>变电站</th>
-                                <th>故障次数</th>
-                            </tr>
-                        </thead>
-                        <tbody id="camera-ranking-body">
-                            <tr><td colspan="4" class="text-muted">加载中...</td></tr>
-                        </tbody>
-                    </table>
+                <h3>故障语义分组</h3>
+                <div class="chart-container">
+                    <canvas id="faultTypeChart"></canvas>
                 </div>
             </div>
         </div>
@@ -86,6 +95,28 @@
             </div>
         </div>
     </div>
+
+    <div class="chart-section">
+        <div class="chart-header">
+            <h3>摄像头故障排行 Top 5</h3>
+            <div class="chart-subtitle">按当前筛选范围统计</div>
+        </div>
+        <div class="chart-container chart-container-table">
+            <table class="data-table table-cards" id="camera-ranking-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>摄像头位置</th>
+                        <th>变电站</th>
+                        <th>故障次数</th>
+                    </tr>
+                </thead>
+                <tbody id="camera-ranking-body">
+                    <tr><td colspan="4" class="text-muted">加载中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -96,10 +127,41 @@
     align-items: center;
     gap: 8px;
 }
+
 .page-header-actions .form-select {
     width: auto;
     min-width: 140px;
 }
+
+.kpi-grid {
+    margin-top: 12px;
+}
+
+.stat-card-soft {
+    background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 100%);
+}
+
+.stat-small {
+    font-size: 24px;
+}
+
+.chart-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.chart-subtitle {
+    color: #5f6368;
+    font-size: 13px;
+}
+
+.chart-container-table {
+    height: auto;
+    min-height: 220px;
+}
+
 .rank-badge {
     display: inline-flex;
     align-items: center;
@@ -107,14 +169,11 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #1a73e8;
     color: white;
     font-weight: bold;
     font-size: 12px;
 }
-.rank-badge:nth-child(1) { background: #d93025; }
-.rank-badge:nth-child(2) { background: #f9ab00; }
-.rank-badge:nth-child(3) { background: #1e8e3e; }
+
 .fault-count {
     font-weight: bold;
     color: #d93025;
@@ -122,8 +181,26 @@
 </style>
 <script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
 <script>
-let monthlyChart, countyChart, voltageChart;
+let monthlyChart;
+let faultTypeChart;
+let countyChart;
+let voltageChart;
 let currentYear = '';
+
+function withProject(path, extraParams) {
+    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
+        return window.AppProjectState.withProject(path, extraParams);
+    }
+    const url = new URL(path, window.location.origin);
+    if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+}
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -132,107 +209,75 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function formatDuration(seconds) {
+    if (seconds === null || seconds === undefined) {
+        return '-';
+    }
+    if (seconds < 60) {
+        return `${Math.round(seconds)}秒`;
+    }
+    if (seconds < 3600) {
+        return `${(seconds / 60).toFixed(1)}分钟`;
+    }
+    if (seconds < 86400) {
+        return `${(seconds / 3600).toFixed(1)}小时`;
+    }
+    return `${(seconds / 86400).toFixed(1)}天`;
+}
+
 function getYearFilter() {
-    return currentYear ? `?year=${currentYear}` : '';
+    return currentYear ? { year: currentYear } : {};
 }
 
-async function loadStats() {
-    try {
-        // 加载统计数据
-        const [statsRes, faultsRes, stationsRes] = await Promise.all([
-            fetch(`/api/stats${getYearFilter() ? '?' + getYearFilter().slice(1) : ''}`),
-            fetch(`/api/faults${getYearFilter()}`),
-            fetch('/api/stations')
-        ]);
-
-        const stats = await statsRes.json();
-        const faults = await faultsRes.json();
-        const stations = await stationsRes.json();
-
-        // 更新概览
-        document.getElementById('total-stations').textContent = stats.stations || 0;
-        document.getElementById('total-cameras').textContent = stats.cameras || 0;
-        document.getElementById('total-faults').textContent = stats.faults || 0;
-
-        const faultRate = stats.cameras > 0 ? ((stats.faults / stats.cameras) * 100).toFixed(1) + '%' : '0%';
-        document.getElementById('fault-rate').textContent = faultRate;
-
-        // 处理图表数据
-        processChartData(faults.faults || [], stations.stations || []);
-
-    } catch (error) {
-        console.error('加载统计失败:', error);
+function destroyChart(chart) {
+    if (chart) {
+        chart.destroy();
     }
 }
 
-function populateYearFilter(faults) {
-    const years = new Set();
-    faults.forEach(f => {
-        if (f.created_at) {
-            const y = f.created_at.substring(0, 4);
-            years.add(y);
-        }
-    });
+function renderCameraRanking(rows) {
+    const tbody = document.getElementById('camera-ranking-body');
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无数据</td></tr>';
+        return;
+    }
 
+    const rankColors = ['#d93025', '#f9ab00', '#1e8e3e', '#1a73e8', '#5f6368'];
+    tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+            <td data-label="排名"><span class="rank-badge" style="background:${rankColors[index] || '#5f6368'}">${index + 1}</span></td>
+            <td data-label="摄像头位置">${escapeHtml(row.camera_location || '-')}</td>
+            <td data-label="变电站">${escapeHtml(row.station_name || '-')}</td>
+            <td data-label="故障次数"><span class="fault-count">${row.fault_count || 0}</span></td>
+        </tr>
+    `).join('');
+}
+
+function populateYearFilter(availableYears) {
     const select = document.getElementById('year-filter');
-    // 保留"全部年份"选项
-    const allOption = select.options[0];
-    select.innerHTML = '';
-    select.appendChild(allOption);
-
-    const sortedYears = [...years].sort((a, b) => b - a);
-    sortedYears.forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = y + ' 年';
-        select.appendChild(opt);
+    select.innerHTML = '<option value="">全部年份</option>';
+    (availableYears || []).forEach((year) => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year} 年`;
+        select.appendChild(option);
     });
+    select.value = currentYear || '';
 }
 
-function processChartData(faults, stations) {
-    // 月度故障趋势
-    const monthlyData = {};
-    const now = new Date();
-    const selectedYear = currentYear || now.getFullYear();
+function renderCharts(payload) {
+    destroyChart(monthlyChart);
+    destroyChart(faultTypeChart);
+    destroyChart(countyChart);
+    destroyChart(voltageChart);
 
-    if (currentYear) {
-        // 显示选中年份的全部12个月
-        for (let m = 1; m <= 12; m++) {
-            const key = `${selectedYear}-${String(m).padStart(2, '0')}`;
-            monthlyData[key] = 0;
-        }
-    } else {
-        // 显示最近6个月
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            monthlyData[key] = 0;
-        }
-    }
-
-    faults.forEach(f => {
-        if (f.created_at) {
-            const month = f.created_at.substring(0, 7);
-            if (month in monthlyData) {
-                monthlyData[month]++;
-            }
-        }
-    });
-
-    const monthlyLabels = Object.keys(monthlyData).map(m => {
-        const [y, mm] = m.split('-');
-        return `${parseInt(mm)}月`;
-    });
-    const monthlyValues = Object.values(monthlyData);
-
-    if (monthlyChart) monthlyChart.destroy();
     monthlyChart = new Chart(document.getElementById('monthlyChart'), {
         type: 'bar',
         data: {
-            labels: monthlyLabels,
+            labels: (payload.monthly_trend || []).map((item) => item.month),
             datasets: [{
                 label: '故障数量',
-                data: monthlyValues,
+                data: (payload.monthly_trend || []).map((item) => item.count),
                 backgroundColor: '#1a73e8'
             }]
         },
@@ -243,65 +288,29 @@ function processChartData(faults, stations) {
         }
     });
 
-    // 摄像机故障维修排行 Top 5
-    const cameraData = {};
-    faults.forEach(f => {
-        if (f.camera_id && f.camera_location) {
-            const key = f.camera_id;
-            if (!cameraData[key]) {
-                cameraData[key] = { count: 0, location: f.camera_location, station_name: f.station_name };
-            }
-            cameraData[key].count++;
+    faultTypeChart = new Chart(document.getElementById('faultTypeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: (payload.fault_type_distribution || []).map((item) => item.fault_label),
+            datasets: [{
+                data: (payload.fault_type_distribution || []).map((item) => item.count),
+                backgroundColor: ['#1a73e8', '#34a853', '#f9ab00', '#d93025', '#5f6368', '#7cb342']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 
-    const topCameras = Object.entries(cameraData)
-        .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 5);
-
-    const tbody = document.getElementById('camera-ranking-body');
-    if (topCameras.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无数据</td></tr>';
-    } else {
-        tbody.innerHTML = topCameras.map(([camId, data], idx) => {
-        const rankColors = ['#d93025', '#f9ab00', '#1e8e3e', '#1a73e8', '#5f6368'];
-        const rankColor = rankColors[idx] || '#5f6368';
-        return `
-            <tr>
-                <td><span class="rank-badge" style="background:${rankColor}">${idx + 1}</span></td>
-                <td>${escapeHtml(data.location || '-')}</td>
-                <td>${escapeHtml(data.station_name || '-')}</td>
-                <td><span class="fault-count">${data.count}</span></td>
-            </tr>
-        `;
-    }).join('');
-    }
-
-    // 各县区统计（按故障数统计，非变电站数）
-    const stationCountyMap = {};
-    const stationVoltageMap = {};
-    stations.forEach(s => {
-        stationCountyMap[s.id] = s.county || '未知';
-        stationVoltageMap[s.id] = s.voltage_level || '其他';
-    });
-
-    const countyFaultStats = {};
-    const voltageFaultStats = {};
-    faults.forEach(f => {
-        const county = stationCountyMap[f.station_id] || '未知';
-        const voltage = stationVoltageMap[f.station_id] || '其他';
-        countyFaultStats[county] = (countyFaultStats[county] || 0) + 1;
-        voltageFaultStats[voltage] = (voltageFaultStats[voltage] || 0) + 1;
-    });
-
-    if (countyChart) countyChart.destroy();
     countyChart = new Chart(document.getElementById('countyChart'), {
         type: 'bar',
         data: {
-            labels: Object.keys(countyFaultStats).sort((a, b) => countyFaultStats[b] - countyFaultStats[a]),
+            labels: (payload.county_distribution || []).map((item) => item.county),
             datasets: [{
                 label: '故障数量',
-                data: Object.keys(countyFaultStats).sort((a, b) => countyFaultStats[b] - countyFaultStats[a]).map(k => countyFaultStats[k]),
+                data: (payload.county_distribution || []).map((item) => item.count),
                 backgroundColor: '#1e8e3e'
             }]
         },
@@ -313,14 +322,13 @@ function processChartData(faults, stations) {
         }
     });
 
-    if (voltageChart) voltageChart.destroy();
     voltageChart = new Chart(document.getElementById('voltageChart'), {
         type: 'pie',
         data: {
-            labels: Object.keys(voltageFaultStats),
+            labels: (payload.voltage_distribution || []).map((item) => item.voltage_level),
             datasets: [{
-                data: Object.values(voltageFaultStats),
-                backgroundColor: ['#1a73e8', '#f9ab00', '#9aa0a6', '#1e8e3e']
+                data: (payload.voltage_distribution || []).map((item) => item.count),
+                backgroundColor: ['#1a73e8', '#f9ab00', '#34a853', '#d93025', '#9aa0a6']
             }]
         },
         options: {
@@ -331,14 +339,34 @@ function processChartData(faults, stations) {
     });
 }
 
-// 先加载全部数据用于提取年份列表，再初始化
-async function initPage() {
+async function loadStats() {
     try {
-        const res = await fetch('/api/faults');
-        const data = await res.json();
-        populateYearFilter(data.faults || []);
+        const response = await fetch(withProject('/api/stats', getYearFilter()));
+        const payload = await response.json();
+
+        document.getElementById('total-stations').textContent = payload.stations || 0;
+        document.getElementById('total-cameras').textContent = payload.cameras || 0;
+        document.getElementById('total-faults').textContent = payload.faults || 0;
+        document.getElementById('fault-rate').textContent = `${(payload.fault_rate || 0).toFixed(2)}%`;
+
+        const kpi = payload.kpi || {};
+        document.getElementById('open-count').textContent = kpi.open_count || 0;
+        document.getElementById('handling-count').textContent = kpi.handling_count || 0;
+        document.getElementById('closed-count').textContent = kpi.closed_count || 0;
+        document.getElementById('avg-response').textContent = formatDuration(kpi.avg_response_seconds);
+        document.getElementById('avg-close').textContent = formatDuration(kpi.avg_close_seconds);
+
+        populateYearFilter(payload.available_years || []);
+        renderCharts(payload);
+        renderCameraRanking(payload.camera_ranking || []);
     } catch (error) {
-        console.error('加载年份列表失败:', error);
+        console.error('加载统计失败:', error);
+    }
+}
+
+async function initPage() {
+    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+        await window.AppProjectState.ready();
     }
     await loadStats();
 }
@@ -350,8 +378,7 @@ document.getElementById('year-filter').addEventListener('change', async function
 
 function exportStats() {
     const yearFilter = document.getElementById('year-filter').value;
-    const url = '/api/statistics/export' + (yearFilter ? `?year=${yearFilter}` : '');
-    window.location.href = url;
+    window.location.href = withProject('/api/statistics/export', yearFilter ? { year: yearFilter } : {});
 }
 
 document.addEventListener('DOMContentLoaded', initPage);

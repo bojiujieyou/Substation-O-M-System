@@ -1,0 +1,8 @@
+﻿station,county,review_priority,cameras_updated,cameras_replaced,cameras_retired,issue_types,duplicate_device_code_groups,duplicate_slot_signature_groups,location_collision_groups,filepath
+220kV海口变电站,丽丽枫运检班,high,5,0,0,duplicate_slot_signature,0,5,0,C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV海口变电站.xlsx
+220kV金亭变电站,丽丽枫运检班,high,6,0,0,duplicate_slot_signature,0,6,0,C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV金亭变电站.xlsx
+220kV青田变电站,丽丽枫运检班,medium,4,0,0,duplicate_slot_signature,0,4,0,C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV青田变电站.xlsx
+220kV仙宫变电站,丽宏山运检班,low,1,0,0,duplicate_slot_signature,0,1,0,C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV仙宫变电站.xlsx
+220kV宏山变电站,丽宏山运检班,high,6,0,0,"duplicate_device_code,duplicate_slot_signature",6,6,0,C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV宏山变电站.xlsx
+220kV濛洲变电站,丽宏山运检班,medium,3,0,0,duplicate_slot_signature,0,3,0,C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV濛洲变电站.xlsx
+110kV东亭变电站,遂昌县供电公司,medium,2,0,0,duplicate_slot_signature,0,2,0,C:\Users\Administrator\Desktop\26.4.2\遂昌县供电公司\110kV东亭变电站.xlsx

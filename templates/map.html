@@ -79,10 +79,28 @@ function escapeHtml(text) {
 }
 
 function getYearFilter() {
-    return currentYear ? `?year=${currentYear}` : '';
+    return currentYear ? { year: currentYear } : {};
+}
+
+function withProject(path, extraParams) {
+    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
+        return window.AppProjectState.withProject(path, extraParams);
+    }
+    const url = new URL(path, window.location.origin);
+    if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
 }
 
 async function initMap() {
+    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+        await window.AppProjectState.ready();
+    }
     // 初始化地图
     map = L.map('map').setView([28.3, 119.6], 10);
 
@@ -100,7 +118,7 @@ async function initMap() {
 
 async function populateYearFilter() {
     try {
-        const res = await fetch('/api/faults');
+        const res = await fetch(withProject('/api/faults'));
         const data = await res.json();
         const years = new Set();
         (data.faults || []).forEach(f => {
@@ -123,12 +141,12 @@ async function populateYearFilter() {
 
 async function loadStationsForMap() {
     try {
-        const response = await fetch('/api/stations');
+        const response = await fetch(withProject('/api/stations'));
         const data = await response.json();
         stationsData = data.stations || [];
 
         // 获取故障统计（带年份筛选）
-        const faultsResponse = await fetch('/api/faults' + getYearFilter());
+        const faultsResponse = await fetch(withProject('/api/faults', getYearFilter()));
         const faultsData = await faultsResponse.json();
         const faults = faultsData.faults || [];
 
@@ -141,7 +159,7 @@ async function loadStationsForMap() {
         });
 
         // 获取摄像头数量
-        const camerasResponse = await fetch('/api/cameras');
+        const camerasResponse = await fetch(withProject('/api/cameras'));
         const camerasData = await camerasResponse.json();
         const cameras = camerasData.cameras || [];
 

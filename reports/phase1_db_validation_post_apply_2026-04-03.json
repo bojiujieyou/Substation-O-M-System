@@ -1,0 +1,83 @@
+{
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "generated_at": "2026-04-03T12:46:26.992223+00:00",
+  "connection": {
+    "foreign_keys": 1
+  },
+  "migration": {
+    "target_version": 1,
+    "current_version": 1
+  },
+  "tables": {
+    "required": [
+      "camera_slots",
+      "fault_import_review_queue",
+      "import_batches",
+      "project_fault_type_versions",
+      "project_fault_types",
+      "project_notification_configs",
+      "project_notification_policies",
+      "projects",
+      "schema_migrations",
+      "station_external_names",
+      "station_name_mapping_proposals",
+      "user_project_scopes"
+    ],
+    "present": 12,
+    "missing": []
+  },
+  "views": {
+    "required": [
+      "v_camera_slots_with_current_camera"
+    ],
+    "missing": []
+  },
+  "indexes": {
+    "required": [
+      "idx_cameras_one_active_per_slot",
+      "idx_fault_source_record_key"
+    ],
+    "missing": []
+  },
+  "columns": {
+    "cameras": {
+      "required_count": 15,
+      "missing": []
+    },
+    "fault_reports": {
+      "required_count": 14,
+      "missing": []
+    },
+    "photos": {
+      "required_count": 2,
+      "missing": []
+    }
+  },
+  "critical_checks": {
+    "fault_reports_camera_id_orphans": 0,
+    "fault_reports_station_id_orphans": 0,
+    "cameras_station_id_orphans": 0,
+    "notification_config_policy_orphans": 0
+  },
+  "post_validation": {
+    "projects_count": 3,
+    "camera_slots_count": 1363,
+    "cameras_count": 1363,
+    "fault_reports_count": 435,
+    "fault_reports_camera_id_orphans": 0,
+    "active_camera_slot_conflicts": 0,
+    "fault_reports_with_camera_slot_id": 265,
+    "fault_reports_without_camera_slot_id": 170
+  },
+  "project_seed_check": {
+    "missing_project_codes": []
+  },
+  "summary": {
+    "status": "ready",
+    "structural_missing_count": 0,
+    "critical_failure_count": 0,
+    "next_actions": [
+      "当前库已满足 Phase 1 结构校验，可进入下一阶段验收。"
+    ]
+  }
+}

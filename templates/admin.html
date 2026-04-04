@@ -12,6 +12,11 @@
     <div class="page-header">
         <h2 class="page-title">管理后台</h2>
         <div class="page-actions">
+            <a href="{{ url_for('admin_projects.project_center_page') }}" class="btn btn-primary" data-project-link>项目管理中心</a>
+            <a href="{{ url_for('admin_notifications.notification_center_page') }}" class="btn btn-primary" data-project-link>项目通知配置</a>
+            <a href="{{ url_for('admin_user_access.user_access_center_page') }}" class="btn btn-primary" data-project-link>用户项目授权</a>
+            <a href="{{ url_for('admin_fault_types.fault_type_center_page') }}" class="btn btn-primary" data-project-link>故障类型版本</a>
+            <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-primary" data-project-link>导入审查中心</a>
             <button class="btn btn-secondary" onclick="backupDb()">备份数据库</button>
         </div>
     </div>
@@ -200,6 +205,57 @@
     </div>
 </div>
 
+<div class="modal" id="replace-camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="replace-camera-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="replace-camera-modal-title">替换设备</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <form id="replace-camera-form">
+                    <input type="hidden" id="replace-camera-station-id">
+                    <div class="form-group">
+                        <label for="replace-camera-current" class="form-label">当前设备</label>
+                        <select id="replace-camera-current" class="form-select" required>
+                            <option value="">请选择当前设备</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-ip" class="form-label">新设备 IP <span class="required">*</span></label>
+                        <input type="text" id="replace-camera-ip" class="form-input" required placeholder="如 192.168.1.101">
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-index" class="form-label">新设备编号</label>
+                        <input type="text" id="replace-camera-index" class="form-input" placeholder="默认沿用当前设备编号">
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-code" class="form-label">项目设备编码</label>
+                        <input type="text" id="replace-camera-code" class="form-input" placeholder="可选">
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-location" class="form-label">位置描述</label>
+                        <input type="text" id="replace-camera-location" class="form-input" placeholder="默认沿用当前设备位置">
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-area" class="form-label">区域</label>
+                        <input type="text" id="replace-camera-area" class="form-input" placeholder="默认沿用当前设备区域">
+                    </div>
+                    <div class="form-group">
+                        <label for="replace-camera-channel" class="form-label">通道号</label>
+                        <input type="number" id="replace-camera-channel" class="form-input" placeholder="默认沿用当前设备通道号">
+                    </div>
+                </form>
+                <div id="replace-camera-result" class="form-hint"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="replaceCamera()">确认替换</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="coord-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="coord-modal-title">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -239,12 +295,88 @@
 <script>
 let stations = [];
 let unmatchedPhotos = [];
+let availableProjects = [];
+let replaceStationCameras = [];
 
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function getCurrentProjectCode() {
+    if (window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function') {
+        return window.AppProjectState.getProjectCode();
+    }
+    return new URLSearchParams(window.location.search).get('project') || '';
+}
+
+function getDefaultProjectCode() {
+    return getCurrentProjectCode() || (availableProjects[0] && availableProjects[0].code) || '';
+}
+
+function ensureAdminProjectSelectors() {
+    const uploadForm = document.getElementById('upload-form');
+    if (uploadForm && !document.getElementById('upload-project-select')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'form-group mb-3';
+        wrapper.innerHTML = `
+            <label for="upload-project-select" class="form-label">项目</label>
+            <select id="upload-project-select" class="form-select" required>
+                <option value="">加载项目中...</option>
+            </select>
+        `;
+        const fileInput = document.getElementById('excel-file');
+        const fileGroup = fileInput ? fileInput.closest('.form-group') : null;
+        if (fileGroup) {
+            uploadForm.insertBefore(wrapper, fileGroup);
+        } else {
+            uploadForm.appendChild(wrapper);
+        }
+    }
+
+    const cameraForm = document.getElementById('camera-form');
+    if (cameraForm && !document.getElementById('camera-project')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'form-group';
+        wrapper.innerHTML = `
+            <label for="camera-project" class="form-label">项目 <span class="required">*</span></label>
+            <select id="camera-project" class="form-select" required>
+                <option value="">加载项目中...</option>
+            </select>
+        `;
+        const stationIdInput = document.getElementById('camera-station-id');
+        if (stationIdInput) {
+            stationIdInput.insertAdjacentElement('afterend', wrapper);
+        } else {
+            cameraForm.prepend(wrapper);
+        }
+    }
+}
+
+function populateAdminProjectSelects(defaultProjectCode) {
+    ['upload-project-select', 'camera-project']
+        .map((id) => document.getElementById(id))
+        .filter(Boolean)
+        .forEach((select) => {
+            select.innerHTML = '<option value="">请选择项目</option>' +
+                availableProjects.map((project) => `
+                    <option value="${project.code}">${escapeHtml(project.name)}</option>
+                `).join('');
+            select.value = defaultProjectCode || '';
+        });
+}
+
+async function loadAdminProjects() {
+    ensureAdminProjectSelectors();
+    const response = await fetch('/api/projects');
+    if (!response.ok) {
+        throw new Error('加载项目失败');
+    }
+    const data = await response.json();
+    availableProjects = data.projects || [];
+    populateAdminProjectSelects(getCurrentProjectCode() || data.default_project_code || '');
 }
 
 async function loadStations() {
@@ -284,6 +416,7 @@ function renderStations(stationsToRender) {
                 <button class="btn btn-sm btn-ghost" onclick="editStation(${s.id})">编辑</button>
                 <button class="btn btn-sm btn-ghost" onclick="showCoordModal(${s.id})">坐标</button>
                 <button class="btn btn-sm btn-ghost" onclick="showCameraModal(${s.id})">添加摄像头</button>
+                <button class="btn btn-sm btn-ghost" onclick="showReplaceCameraModal(${s.id})">替换设备</button>
                 <button class="btn btn-sm btn-ghost text-danger" onclick="deleteStation(${s.id})">删除</button>
             </div>
         </div>
@@ -320,6 +453,11 @@ document.getElementById('upload-form').addEventListener('submit', async function
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
     formData.append('county', document.getElementById('county-select').value);
+    formData.append('project', document.getElementById('upload-project-select')?.value || '');
+    if (!formData.get('project')) {
+        alert('璇烽€夋嫨椤圭洰');
+        return;
+    }
 
     if (!formData.get('county')) {
         alert('请选择县区');
@@ -413,6 +551,10 @@ async function deleteStation(stationId) {
 
 function showCameraModal(stationId) {
     document.getElementById('camera-station-id').value = stationId;
+    const cameraProject = document.getElementById('camera-project');
+    if (cameraProject) {
+        cameraProject.value = getDefaultProjectCode();
+    }
     document.getElementById('camera-ip').value = '';
     document.getElementById('camera-location').value = '';
     document.getElementById('camera-area').value = '';
@@ -421,16 +563,155 @@ function showCameraModal(stationId) {
     new bootstrap.Modal(document.getElementById('camera-modal')).show();
 }
 
+function populateReplaceCameraOptions(cameras) {
+    const select = document.getElementById('replace-camera-current');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">请选择当前设备</option>' + cameras.map((camera) => {
+        const labelParts = [
+            camera.project_camera_code || camera.camera_index || `#${camera.id}`,
+            camera.location_desc || '未命名位置',
+            camera.ip_address || '无IP',
+        ];
+        return `<option value="${camera.id}">${escapeHtml(labelParts.join(' | '))}</option>`;
+    }).join('');
+}
+
+function fillReplaceCameraFields() {
+    const currentId = parseInt(document.getElementById('replace-camera-current').value, 10);
+    const camera = replaceStationCameras.find((item) => item.id === currentId);
+    if (!camera) {
+        document.getElementById('replace-camera-ip').value = '';
+        document.getElementById('replace-camera-index').value = '';
+        document.getElementById('replace-camera-code').value = '';
+        document.getElementById('replace-camera-location').value = '';
+        document.getElementById('replace-camera-area').value = '';
+        document.getElementById('replace-camera-channel').value = '';
+        return;
+    }
+
+    document.getElementById('replace-camera-ip').value = camera.ip_address || '';
+    document.getElementById('replace-camera-index').value = camera.camera_index || '';
+    document.getElementById('replace-camera-code').value = '';
+    document.getElementById('replace-camera-location').value = camera.location_desc || '';
+    document.getElementById('replace-camera-area').value = camera.area || '';
+    document.getElementById('replace-camera-channel').value = camera.channel_number ?? '';
+}
+
+async function showReplaceCameraModal(stationId) {
+    const projectCode = getDefaultProjectCode();
+    if (!projectCode) {
+        alert('请先选择项目');
+        return;
+    }
+
+    const resultEl = document.getElementById('replace-camera-result');
+    if (resultEl) {
+        resultEl.textContent = '';
+    }
+
+    document.getElementById('replace-camera-station-id').value = stationId;
+
+    try {
+        const url = new URL(`/api/stations/${stationId}`, window.location.origin);
+        url.searchParams.set('project', projectCode);
+
+        const response = await fetch(url.toString());
+        const payload = await response.json();
+        if (!response.ok) {
+            throw new Error(payload.error || '加载当前设备失败');
+        }
+
+        replaceStationCameras = payload.cameras || [];
+        if (!replaceStationCameras.length) {
+            alert('当前项目下没有可替换的在用设备');
+            return;
+        }
+
+        populateReplaceCameraOptions(replaceStationCameras);
+        document.getElementById('replace-camera-current').value = String(replaceStationCameras[0].id);
+        fillReplaceCameraFields();
+        new bootstrap.Modal(document.getElementById('replace-camera-modal')).show();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function replaceCamera() {
+    const currentId = parseInt(document.getElementById('replace-camera-current').value, 10);
+    if (!currentId) {
+        alert('请选择当前设备');
+        return;
+    }
+
+    const projectCode = getDefaultProjectCode();
+    if (!projectCode) {
+        alert('请先选择项目');
+        return;
+    }
+
+    const resultEl = document.getElementById('replace-camera-result');
+    if (resultEl) {
+        resultEl.textContent = '提交替换中...';
+    }
+
+    const payload = {
+        project: projectCode,
+        ip_address: document.getElementById('replace-camera-ip').value.trim(),
+        camera_index: document.getElementById('replace-camera-index').value.trim(),
+        project_camera_code: document.getElementById('replace-camera-code').value.trim(),
+        location: document.getElementById('replace-camera-location').value.trim(),
+        area: document.getElementById('replace-camera-area').value.trim(),
+        channel_number: document.getElementById('replace-camera-channel').value
+            ? parseInt(document.getElementById('replace-camera-channel').value, 10)
+            : null,
+    };
+
+    if (!payload.ip_address) {
+        alert('请输入新设备 IP');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/cameras/${currentId}/replace`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || '替换失败');
+        }
+
+        if (resultEl) {
+            resultEl.textContent = `替换成功，新设备 ID: ${data.new_camera_id}`;
+        }
+        bootstrap.Modal.getInstance(document.getElementById('replace-camera-modal')).hide();
+        await loadStations();
+    } catch (error) {
+        if (resultEl) {
+            resultEl.textContent = error.message;
+        } else {
+            alert(error.message);
+        }
+    }
+}
+
 async function addCamera() {
     const stationId = document.getElementById('camera-station-id').value;
     const data = {
         station_id: parseInt(stationId, 10),
+        project: document.getElementById('camera-project')?.value || '',
         ip_address: document.getElementById('camera-ip').value,
         location: document.getElementById('camera-location').value,
         area: document.getElementById('camera-area').value,
         channel_number: document.getElementById('camera-channel').value ? parseInt(document.getElementById('camera-channel').value, 10) : null,
     };
 
+    if (!data.project) {
+        alert('璇烽€夋嫨椤圭洰');
+        return;
+    }
     if (!data.ip_address) {
         alert('请输入IP地址');
         return;
@@ -576,8 +857,13 @@ document.getElementById('photo-index-full').addEventListener('click', () => {
     }
 });
 document.getElementById('manual-match-btn').addEventListener('click', manualMatchPhoto);
+document.getElementById('replace-camera-current').addEventListener('change', fillReplaceCameraFields);
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+        await window.AppProjectState.ready();
+    }
+    await loadAdminProjects();
     await loadStations();
     await loadPhotoStats();
     await loadUnmatchedPhotos();

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}用户项目授权 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">用户项目授权</h2>
+            <p class="text-muted mb-0">维护管理员与运维人员账号，并按项目配置可见范围和写权限。</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="admin-section">
+                <h3 class="mb-3">创建用户</h3>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="new-username">用户名</label>
+                    <input id="new-username" class="form-input" placeholder="例如：operator2">
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="new-password">初始密码</label>
+                    <input id="new-password" type="password" class="form-input" placeholder="至少填写一次初始密码">
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="new-role">角色</label>
+                    <select id="new-role" class="form-select">
+                        <option value="operator">operator</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </div>
+                <div class="form-actions" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" onclick="createUser()">创建用户</button>
+                </div>
+                <div id="user-create-message" class="form-hint mt-3"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="admin-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">用户与项目权限</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="loadUsers()">刷新</button>
+                </div>
+                <div id="user-list" class="d-flex flex-column gap-3">
+                    <div class="text-muted">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let userRows = [];
+let projectCache = {};
+
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
+function setCreateMessage(message, isError = false) {
+    const el = document.getElementById('user-create-message');
+    el.className = isError ? 'text-danger' : 'text-success';
+    el.textContent = message || '';
+}
+
+async function fetchJson(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || '请求失败');
+    }
+    return data;
+}
+
+async function loadUsers() {
+    const data = await fetchJson('/auth/users');
+    userRows = data.users || [];
+    await Promise.all(userRows.map(user => loadUserProjects(user.id)));
+    renderUsers();
+}
+
+async function loadUserProjects(userId) {
+    try {
+        const data = await fetchJson(`/auth/users/${userId}/projects`);
+        projectCache[userId] = data;
+    } catch (error) {
+        projectCache[userId] = { error: error.message, projects: [] };
+    }
+}
+
+function renderUsers() {
+    const container = document.getElementById('user-list');
+    if (!userRows.length) {
+        container.innerHTML = '<div class="text-muted">当前没有用户。</div>';
+        return;
+    }
+    container.innerHTML = userRows.map(user => {
+        const scopeData = projectCache[user.id] || { projects: [] };
+        const projects = scopeData.projects || [];
+        const projectCheckboxes = projects.map(project => `
+            <div class="border rounded p-2 mb-2">
+                <div class="form-check">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="user-${user.id}-project-${project.id}"
+                        ${project.assigned ? 'checked' : ''}
+                        ${user.role === 'admin' ? 'disabled' : ''}
+                    >
+                    <label class="form-check-label" for="user-${user.id}-project-${project.id}">
+                        ${escapeHtml(project.name)} ${project.is_active ? '' : '<span class="text-muted">(已停用)</span>'}
+                    </label>
+                </div>
+                <div class="form-check mt-1">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="user-${user.id}-project-${project.id}-write"
+                        ${project.can_write ? 'checked' : ''}
+                        ${!project.assigned || user.role === 'admin' ? 'disabled' : ''}
+                        onchange="toggleWriteDependency(${user.id}, ${project.id})"
+                    >
+                    <label class="form-check-label" for="user-${user.id}-project-${project.id}-write">
+                        写权限
+                    </label>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h4 class="card-title mb-1">${escapeHtml(user.username)}</h4>
+                            <div class="text-muted">${escapeHtml(user.role)} · ${escapeHtml(user.created_at || '')}</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            ${user.role !== 'admin' ? `<button class="btn btn-sm btn-primary" onclick="saveUserProjects(${user.id})">保存授权</button>` : ''}
+                            <button class="btn btn-sm btn-secondary" onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')">删除</button>
+                        </div>
+                    </div>
+                    ${scopeData.error ? `<div class="text-danger">${escapeHtml(scopeData.error)}</div>` : projectCheckboxes}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    userRows.forEach(user => {
+        const scopeData = projectCache[user.id] || { projects: [] };
+        (scopeData.projects || []).forEach(project => {
+            const assignedCheckbox = document.getElementById(`user-${user.id}-project-${project.id}`);
+            const writeCheckbox = document.getElementById(`user-${user.id}-project-${project.id}-write`);
+            if (assignedCheckbox && writeCheckbox && user.role !== 'admin') {
+                assignedCheckbox.addEventListener('change', () => {
+                    writeCheckbox.disabled = !assignedCheckbox.checked;
+                    if (!assignedCheckbox.checked) {
+                        writeCheckbox.checked = false;
+                    }
+                });
+            }
+        });
+    });
+}
+
+function toggleWriteDependency(userId, projectId) {
+    const assignedCheckbox = document.getElementById(`user-${userId}-project-${projectId}`);
+    const writeCheckbox = document.getElementById(`user-${userId}-project-${projectId}-write`);
+    if (!assignedCheckbox.checked) {
+        writeCheckbox.checked = false;
+    }
+}
+
+async function createUser() {
+    const username = document.getElementById('new-username').value.trim();
+    const password = document.getElementById('new-password').value;
+    const role = document.getElementById('new-role').value;
+    try {
+        await fetchJson('/auth/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, role }),
+        });
+        document.getElementById('new-username').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('new-role').value = 'operator';
+        setCreateMessage(`用户 ${username} 创建成功。`);
+        await loadUsers();
+    } catch (error) {
+        setCreateMessage(error.message, true);
+    }
+}
+
+async function saveUserProjects(userId) {
+    const scopeData = projectCache[userId] || { projects: [] };
+    const projects = (scopeData.projects || []).map(project => {
+        const assigned = document.getElementById(`user-${userId}-project-${project.id}`).checked;
+        const canWrite = assigned && document.getElementById(`user-${userId}-project-${project.id}-write`).checked;
+        return assigned ? { project_id: project.id, can_write: canWrite } : null;
+    }).filter(Boolean);
+
+    try {
+        await fetchJson(`/auth/users/${userId}/projects`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projects }),
+        });
+        await loadUserProjects(userId);
+        renderUsers();
+        setCreateMessage(`用户 #${userId} 的项目授权已更新。`);
+    } catch (error) {
+        setCreateMessage(error.message, true);
+    }
+}
+
+async function deleteUser(userId, username) {
+    if (!window.confirm(`确认删除用户 ${username} 吗？`)) {
+        return;
+    }
+    try {
+        await fetchJson(`/auth/users/${userId}`, { method: 'DELETE' });
+        setCreateMessage(`用户 ${username} 已删除。`);
+        await loadUsers();
+    } catch (error) {
+        setCreateMessage(error.message, true);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadUsers();
+    } catch (error) {
+        setCreateMessage(error.message, true);
+        document.getElementById('user-list').innerHTML = '<div class="text-danger">加载失败</div>';
+    }
+});
+</script>
+{% endblock %}

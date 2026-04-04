@@ -1,0 +1,6 @@
+@echo off
+echo 重启服务...
+sudo systemctl restart substation-monitor
+echo.
+echo 查看启动日志...
+sudo journalctl -u substation-monitor -n 20

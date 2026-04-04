@@ -7,10 +7,11 @@
     python init_admin.py --username admin --password Txjk@1234
 """
 import argparse
-import sqlite3
 import hashlib
 import secrets
 import os
+
+from utils import create_db_connection
 
 def hash_password(password, salt=None):
     if salt is None:
@@ -19,13 +20,13 @@ def hash_password(password, salt=None):
     return f"{salt}${h}"
 
 def init_admin(username='admin', password='Txjk@1234'):
-    db_path = os.path.join(os.path.dirname(__file__), 'station_monitor.db')
+    db_path = os.environ.get('DATABASE_PATH', os.path.join(os.path.dirname(__file__), 'station_monitor.db'))
 
     if not os.path.exists(db_path):
         print("错误: 数据库不存在，请先运行 python init_db.py")
         return False
 
-    conn = sqlite3.connect(db_path)
+    conn = create_db_connection(db_path)
     cursor = conn.cursor()
 
     # 检查用户表是否存在

@@ -204,3 +204,92 @@ class TestParseStationExcelFull:
         result = parse_station_excel(str(filepath))
         assert result['station']['name'] == '测试变电站'
         assert result['cameras'] == []
+
+    def test_parse_flat_inventory_excel(self, tmp_path):
+        """智慧巡视按设备逐行台账也能解析"""
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['序号', '变电站', '设备名称', '设备型号', '生产厂家', '使用单位', '使用类型', '视频类型', '安装位置', '运行状态', '设备来源'])
+        ws.append(['1', '110kV四都变电站', '四都变1-18-大门口-球机-1', 'DS-1', '海康威视', '', '球机', '可见光', '', '在线', '南瑞'])
+        ws.append(['2', '110kV四都变电站', '四都变1-12-#1主变南侧-云台-33', 'DS-2', '海康威视', '', '云台', '可见光', '', '在线', '南瑞'])
+
+        county_dir = tmp_path / '智慧巡视样本'
+        county_dir.mkdir()
+        filepath = county_dir / '110kV四都变电站.xlsx'
+        wb.save(filepath)
+
+        result = parse_station_excel(str(filepath))
+
+        assert result['station']['name'] == '110kV四都变电站'
+        assert result['station']['voltage_level'] == '110kV'
+        assert result['station']['county'] == '智慧巡视样本'
+        assert len(result['cameras']) == 2
+        assert result['cameras'][0]['project_camera_code'] == '四都变1-18-大门口-球机-1'
+        assert result['cameras'][0]['location_desc'] == '大门口'
+        assert result['cameras'][0]['camera_index'] == '1'
+        assert result['cameras'][1]['location_desc'] == '#1主变南侧'
+        assert result['cameras'][1]['camera_index'] == '33'
+
+    def test_parse_flat_inventory_excel_with_compact_device_names(self, tmp_path):
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['序号', '变电站', '设备名称', '设备型号', '使用类型'])
+        ws.append(['1', '220kV仙都变电站', '220kV区域#1主变220kV开关旁#1云台', 'DS-1', '云台'])
+        ws.append(['2', '220kV金亭变电站', 'A1-金亭变-110kV区域#1球机', 'DS-2', '球机'])
+
+        county_dir = tmp_path / '智慧巡视样本'
+        county_dir.mkdir()
+        filepath = county_dir / 'inspection_compact.xlsx'
+        wb.save(filepath)
+
+        result = parse_station_excel(str(filepath))
+
+        first = result['cameras'][0]
+        second = result['cameras'][1]
+        assert first['location_desc'] == '220kV区域#1主变220kV开关旁#1'
+        assert first['camera_index'] == '1'
+        assert second['location_desc'] == '金亭变-110kV区域#1'
+        assert second['camera_index'] == '1'
+
+    def test_parse_flat_inventory_keeps_video_type_and_semantic_prefix(self, tmp_path):
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['序号', '变电站', '设备名称', '设备型号', '使用类型', '视频类型'])
+        ws.append(['1', '220kV松阳变电站', '红外-松阳变-#2主变西北侧#50测温球机', 'DS-1', '球机', '测温'])
+        ws.append(['2', '220kV青田变电站', '#1电容器旁#1热成像球机-可见光', 'DS-2', '球机', '可见光'])
+
+        county_dir = tmp_path / '智慧巡视样本'
+        county_dir.mkdir()
+        filepath = county_dir / 'inspection_video_type.xlsx'
+        wb.save(filepath)
+
+        result = parse_station_excel(str(filepath))
+        first = result['cameras'][0]
+        second = result['cameras'][1]
+
+        assert first['location_desc'] == '红外-松阳变-#2主变西北侧#50'
+        assert first['camera_index'] == '50'
+        assert first['area'] == '球机/测温'
+        assert second['location_desc'] == '#1电容器旁#1热成像'
+        assert second['camera_index'] == '1'
+        assert second['area'] == '球机/可见光'
+
+    def test_validate_flat_inventory_excel(self, tmp_path):
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['序号', '变电站', '设备名称'])
+        ws.append(['1', '220kV演练变电站', '演练变1-主变东-球机-1'])
+        filepath = tmp_path / 'inspection_flat.xlsx'
+        wb.save(filepath)
+
+        result = validate_excel_structure(str(filepath))
+        assert result['valid'] is True
+        assert result['errors'] == []

@@ -1,253 +1,629 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-import_faults_worklog.py — 将工作记录.xlsx导入为故障记录
 
-数据源: e:\办公\图像监控\工作记录.xlsx
-目标: fault_reports表
+"""Import worklog xlsx rows into fault_reports."""
 
-导入范围: 系统类型 in {图像监控, 智能巡视, 辅控系统}
-
-字段映射:
-  变电站(col2)      -> station_id (模糊匹配, 支持多站 / 或 、分隔)
-  类型(col5)        -> system_type
-  工作内容(col4)    -> description
-  地点(col3)        -> 追加到description
-  时间(col1)        -> created_at, closed_at
-  工作负责人(col7)  -> handler_name
-  (自动推断)        -> fault_type
-  (固定: closed)    -> status
-"""
-
+import argparse
+import hashlib
+import json
 import re
 import sys
-import hashlib
-import sqlite3
 from pathlib import Path
-from datetime import datetime
 
 import openpyxl
 
 sys.path.insert(0, str(Path(__file__).parent))
-from config import Config
-from init_db import get_db_path, set_wal_mode
+from init_db import get_db_path
+from import_review_support import (
+    build_source_record_key,
+    create_import_batch,
+    enqueue_fault_review_item,
+    ensure_station_name_proposal,
+    fault_source_key_exists,
+    get_columns,
+    get_project_row,
+    multi_project_import_enabled,
+    project_code_from_system_type,
+    resolve_station_match,
+    split_station_tokens,
+    update_import_batch_stats,
+)
+from utils import backup_sqlite_database, create_db_connection
 
-SOURCE_FILE = r'e:\办公\图像监控\工作记录.xlsx'
-TARGET_TYPES = {'图像监控', '智能巡视', '辅控系统'}
+
+SOURCE_FILE = r"e:\办公\图像监控\工作记录.xlsx"
+SOURCE_TYPE = "import_worklog"
+SOURCE_SYSTEM = "worklog"
+IMPORT_MODE = "best-effort"
+TIMEZONE_DEFAULT = "Asia/Shanghai"
+TARGET_TYPES = {"图像监控", "智能巡视", "辅控系统"}
+SKIP_STATIONS = {"缙云", "遂昌公司", "丽水", "湖州", "钦矿变"}
 
 
-def parse_time(val):
-    """解析时间字符串, 返回 'YYYY-MM-DD' 或 None"""
-    if val is None:
+FAIL_ON_ANY_FAILURE = "any_failure"
+FAIL_ON_DUPLICATE = "duplicate"
+FAIL_ON_ROWS_SKIPPED = "rows_skipped"
+
+
+class ImportAbortError(RuntimeError):
+    def __init__(self, message, *, report=None):
+        super().__init__(message)
+        self.report = report
+
+
+def parse_fail_on_rules(value):
+    if not value:
+        return set()
+    rules = set()
+    for part in str(value).split(","):
+        normalized = part.strip().lower().replace("-", "_")
+        if normalized:
+            rules.add(normalized)
+    return rules
+
+
+def should_abort_import(*, fail_on_rules, reason, action):
+    if not fail_on_rules:
+        return False
+    normalized_reason = str(reason).strip().lower().replace("-", "_")
+    normalized_action = str(action).strip().lower().replace("-", "_")
+    if FAIL_ON_ANY_FAILURE in fail_on_rules and normalized_action in {"queue", "skip"}:
+        return True
+    if normalized_reason in fail_on_rules or normalized_action in fail_on_rules:
+        return True
+    if normalized_action == "duplicate_skip" and FAIL_ON_DUPLICATE in fail_on_rules:
+        return True
+    if normalized_action == "skip" and FAIL_ON_ROWS_SKIPPED in fail_on_rules:
+        return True
+    return False
+
+
+def abort_import_if_needed(*, fail_on_rules, row_result, reason, action):
+    if not should_abort_import(fail_on_rules=fail_on_rules, reason=reason, action=action):
+        return
+    row_index = row_result.get("row_index")
+    raise ImportAbortError(
+        f"fail-on rule triggered: {reason} at row {row_index}" if row_index else f"fail-on rule triggered: {reason}"
+    )
+
+
+def build_report(
+    *,
+    database_path,
+    source_file,
+    dry_run,
+    fail_on_rules,
+    timezone_default,
+    stats,
+    report_rows,
+    aborted=False,
+    error=None,
+):
+    report = {
+        "database": str(database_path),
+        "source": str(source_file),
+        "source_type": SOURCE_TYPE,
+        "mode": IMPORT_MODE,
+        "dry_run": dry_run,
+        "fail_on": sorted(fail_on_rules),
+        "timezone_default": timezone_default,
+        "aborted": aborted,
+        **stats,
+        "rows": report_rows,
+    }
+    if error:
+        report["error"] = error
+    return report
+
+
+def write_report_file(report_path, report):
+    if not report_path:
+        return
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def parse_time(value):
+    if value is None:
         return None
-    s = str(val).strip()
-    # 处理范围如 '2022年8月22日-26日', 取第一个日期
-    s = s.split('-')[0].split('~')[0].split('至')[0].strip()
-    # 'YYYY年M月D日'
-    m = re.match(r'(\d{4})年(\d{1,2})月(\d{1,2})日', s)
-    if m:
-        return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
-    # openpyxl 可能直接返回 datetime
-    if hasattr(val, 'strftime'):
-        return val.strftime('%Y-%m-%d')
+    if hasattr(value, "strftime"):
+        return value.strftime("%Y-%m-%d")
+
+    text = str(value).strip()
+    if not text:
+        return None
+    text = text.split("-")[0].split("~")[0].split("至")[0].strip()
+    match = re.match(r"(\d{4})年(\d{1,2})月(\d{1,2})日", text)
+    if match:
+        return f"{match.group(1)}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
     return None
 
 
-def infer_fault_type(content, system_type):
-    """根据描述推断故障类型"""
-    if not content:
-        return '设备故障'
-    c = str(content)
-    if any(k in c for k in ['网络', '断网', '掉线', '通信']):
-        return '网络故障'
-    return '设备故障'
+def infer_fault_type(content):
+    text = str(content or "")
+    if any(token in text for token in ["网络", "断网", "掉线", "通信"]):
+        return "网络故障"
+    return "设备故障"
 
 
-def build_station_lookup(conn):
-    """构建站名查找表: 短名 -> [(id, full_name), ...]"""
-    rows = conn.execute('SELECT id, name FROM stations').fetchall()
-    lookup = {}  # short_name -> list of (id, full_name)
-    for r in rows:
-        full = r[0] if isinstance(r, (list, tuple)) else r['id']
-        # sqlite3.Row
-        sid = r[0]
-        name = r[1]
-        # 短名: 去掉电压等级前缀
-        short = re.sub(r'^\d+kV', '', name).strip()
-        if short not in lookup:
-            lookup[short] = []
-        lookup[short].append((sid, name))
-        # 也加入完整名
-        if name not in lookup:
-            lookup[name] = []
-        lookup[name].append((sid, name))
-    return lookup
+def make_legacy_idempotency_key(station_id, time_text, description):
+    raw = f"{station_id}|{time_text or ''}|{description or ''}"
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()[:24]
 
 
-def find_station_ids(station_str, lookup):
-    """
-    从工作记录的变电站字段匹配数据库station_id列表。
-    支持 '水阁变/龙石变'、'景宁变、壶镇变' 等多站格式。
-    返回: [(station_id, matched_name), ...]
-    """
-    if not station_str:
-        return []
-    # 分割多站
-    parts = re.split(r'[/、,，]', str(station_str))
-    results = []
-    for part in parts:
-        part = part.strip()
-        if not part:
-            continue
-        if part in lookup:
-            # 精确匹配
-            for sid, name in lookup[part]:
-                results.append((sid, name, part))
+def build_description(location, content):
+    parts = []
+    if content:
+        parts.append(content)
+    if location and location not in str(content or ""):
+        parts.append(f"地点: {location}")
+    return " | ".join(parts) if parts else (content or "")
+
+
+def get_or_create_project_batch(
+    conn,
+    batch_cache,
+    project_code,
+    *,
+    dry_run=False,
+    timezone_default=TIMEZONE_DEFAULT,
+    report_path=None,
+):
+    if project_code in batch_cache:
+        return batch_cache[project_code]
+
+    project = get_project_row(conn, project_code)
+    if not project:
+        return None
+
+    batch_id = None
+    if not dry_run:
+        batch_id = create_import_batch(
+            conn,
+            project_id=project["id"],
+            source_type=SOURCE_TYPE,
+            mode=IMPORT_MODE,
+            file_count=1,
+            report_path=str(report_path) if report_path else None,
+            timezone_default_used=timezone_default,
+        )
+    batch_cache[project_code] = {
+        "project": project,
+        "batch_id": batch_id,
+        "success_count": 0,
+        "fail_count": 0,
+    }
+    return batch_cache[project_code]
+
+
+def insert_fault_report(
+    conn,
+    *,
+    station_id,
+    system_type,
+    fault_type,
+    description,
+    handler_name,
+    created_at,
+    legacy_idempotency_key,
+    project_row=None,
+    batch_id=None,
+    source_record_key=None,
+    raw_time_value=None,
+    timezone_default=TIMEZONE_DEFAULT,
+):
+    columns = get_columns(conn, "fault_reports")
+    insert_columns = [
+        "station_id",
+        "system_type",
+        "fault_type",
+        "description",
+        "reporter_name",
+        "handler_name",
+        "status",
+        "closed_at",
+        "created_at",
+        "updated_at",
+        "idempotency_key",
+    ]
+    values = [
+        station_id,
+        system_type,
+        fault_type,
+        description,
+        "工作记录导入",
+        handler_name,
+        "closed",
+        created_at,
+        created_at,
+        created_at,
+        legacy_idempotency_key,
+    ]
+
+    optional_values = [
+        ("project_id", project_row["id"] if project_row else None),
+        ("source_type", SOURCE_TYPE),
+        ("source_batch_id", str(batch_id) if batch_id else None),
+        ("source_record_key", source_record_key),
+        ("fault_type_label_snapshot", fault_type),
+        ("source_time_raw", str(raw_time_value) if raw_time_value is not None else None),
+        ("source_timezone", timezone_default),
+    ]
+    for column_name, column_value in optional_values:
+        if column_name in columns:
+            insert_columns.append(column_name)
+            values.append(column_value)
+
+    placeholders = ", ".join(["?"] * len(insert_columns))
+    conn.execute(
+        f"""
+        INSERT INTO fault_reports ({", ".join(insert_columns)})
+        VALUES ({placeholders})
+        """,
+        values,
+    )
+
+
+def import_worklog_file(
+    source_file=SOURCE_FILE,
+    *,
+    database_path=None,
+    dry_run=False,
+    report_path=None,
+    fail_on="",
+    timezone_default=TIMEZONE_DEFAULT,
+):
+    workbook = openpyxl.load_workbook(source_file, data_only=True)
+    try:
+        worksheet = workbook.active
+        rows = list(worksheet.iter_rows(values_only=True))
+    finally:
+        workbook.close()
+
+    database_path = Path(database_path or get_db_path()).resolve()
+    source_path = Path(source_file).resolve()
+    conn = create_db_connection(database_path, row_factory=True, enable_wal=True)
+    multi_project_enabled = multi_project_import_enabled(conn)
+    batch_cache = {}
+    fail_on_rules = parse_fail_on_rules(fail_on)
+    report_rows = []
+    stats = {
+        "inserted": 0,
+        "duplicates_skipped": 0,
+        "queue_items_created": 0,
+        "station_proposals_created": 0,
+        "rows_skipped": 0,
+        "fail_count": 0,
+        "errors": [],
+    }
+
+    try:
+        for row_index, row in enumerate(rows[2:], start=3):
+            if not row or row[5] is None:
+                continue
+            system_type = str(row[5]).strip()
+            if system_type not in TARGET_TYPES:
+                continue
+
+            seq = row[0]
+            raw_time = row[1]
+            created_at = parse_time(raw_time)
+            station_text = str(row[2]).strip() if row[2] else ""
+            location = str(row[3]).strip() if row[3] else ""
+            content = str(row[4]).strip() if row[4] else ""
+            handler_name = str(row[7]).strip() if len(row) > 7 and row[7] else None
+            fault_type = infer_fault_type(content)
+            description = build_description(location, content)
+
+            if not station_text:
+                row_result = {"row_index": row_index, "sequence": seq, "action": "skip", "reason": "missing_station_name"}
+                stats["rows_skipped"] += 1
+                report_rows.append(row_result)
+                abort_import_if_needed(
+                    fail_on_rules=fail_on_rules,
+                    row_result=row_result,
+                    reason="missing_station_name",
+                    action="skip",
+                )
+                continue
+
+            project_code = project_code_from_system_type(system_type)
+            batch_state = (
+                get_or_create_project_batch(
+                    conn,
+                    batch_cache,
+                    project_code,
+                    dry_run=dry_run,
+                    timezone_default=timezone_default,
+                    report_path=Path(report_path).resolve() if report_path else None,
+                )
+                if multi_project_enabled and project_code
+                else None
+            )
+            batch_id = batch_state["batch_id"] if batch_state else None
+
+            for station_token in split_station_tokens(station_text):
+                row_result = {"row_index": row_index, "sequence": seq, "station_token": station_token}
+
+                if station_token in SKIP_STATIONS:
+                    stats["rows_skipped"] += 1
+                    row_result["action"] = "skip"
+                    row_result["reason"] = "station_skipped"
+                    report_rows.append(row_result)
+                    abort_import_if_needed(
+                        fail_on_rules=fail_on_rules,
+                        row_result=row_result,
+                        reason="station_skipped",
+                        action="skip",
+                    )
+                    continue
+
+                source_record_key = (
+                    build_source_record_key(
+                        project_code or "legacy",
+                        SOURCE_TYPE,
+                        raw_external_id=f"{SOURCE_SYSTEM}:{seq}:{station_token}",
+                    )
+                    if multi_project_enabled
+                    else None
+                )
+                match = resolve_station_match(
+                    conn,
+                    station_token,
+                    source_system=SOURCE_SYSTEM,
+                )
+
+                raw_context = {
+                    "sequence": seq,
+                    "system_type": system_type,
+                    "station_text": station_text,
+                    "station_token": station_token,
+                    "location": location,
+                    "content": content,
+                    "description": description,
+                    "fault_type": fault_type,
+                    "handler_name": handler_name,
+                    "parsed_time": created_at,
+                    "raw_time": str(raw_time) if raw_time is not None else None,
+                    "source_timezone": timezone_default,
+                }
+
+                if match["should_create_proposal"] and multi_project_enabled and batch_state and not dry_run:
+                    proposal_id = ensure_station_name_proposal(
+                        conn,
+                        import_batch_id=batch_id,
+                        project_id=batch_state["project"]["id"],
+                        source_system=SOURCE_SYSTEM,
+                        external_name=station_token,
+                        candidate_station_id=match["proposal_candidate_station_id"],
+                        confidence_score=match["confidence_score"],
+                        raw_context=raw_context,
+                    )
+                    if proposal_id:
+                        stats["station_proposals_created"] += 1
+
+                if not match["matched"]:
+                    stats["fail_count"] += 1
+                    row_result["action"] = "queue"
+                    row_result["reason"] = "station_not_resolved"
+                    report_rows.append(row_result)
+                    if multi_project_enabled and batch_state and not dry_run:
+                        queue_id = enqueue_fault_review_item(
+                            conn,
+                            import_batch_id=batch_id,
+                            project_id=batch_state["project"]["id"],
+                            source_type=SOURCE_TYPE,
+                            source_record_key_candidate=source_record_key,
+                            raw_payload=raw_context,
+                            issue_type="station_not_resolved",
+                            issue_detail=f"Unable to resolve station token: {station_token}",
+                        )
+                        if queue_id:
+                            stats["queue_items_created"] += 1
+                        batch_state["fail_count"] += 1
+                    else:
+                        stats["errors"].append(
+                            {"sequence": seq, "station_token": station_token, "error": "station_not_resolved"}
+                        )
+                    abort_import_if_needed(
+                        fail_on_rules=fail_on_rules,
+                        row_result=row_result,
+                        reason="station_not_resolved",
+                        action="queue",
+                    )
+                    continue
+
+                if multi_project_enabled and source_record_key and fault_source_key_exists(conn, source_record_key):
+                    stats["duplicates_skipped"] += 1
+                    row_result["action"] = "duplicate-skip"
+                    row_result["reason"] = "source_record_key_exists"
+                    report_rows.append(row_result)
+                    abort_import_if_needed(
+                        fail_on_rules=fail_on_rules,
+                        row_result=row_result,
+                        reason="source_record_key_exists",
+                        action="duplicate_skip",
+                    )
+                    continue
+
+                legacy_idempotency_key = make_legacy_idempotency_key(
+                    match["station_id"], created_at, description
+                )
+                existing = conn.execute(
+                    "SELECT id FROM fault_reports WHERE idempotency_key = ?",
+                    (legacy_idempotency_key,),
+                ).fetchone()
+                if existing:
+                    stats["duplicates_skipped"] += 1
+                    row_result["action"] = "duplicate-skip"
+                    row_result["reason"] = "legacy_idempotency_key_exists"
+                    report_rows.append(row_result)
+                    abort_import_if_needed(
+                        fail_on_rules=fail_on_rules,
+                        row_result=row_result,
+                        reason="legacy_idempotency_key_exists",
+                        action="duplicate_skip",
+                    )
+                    continue
+
+                try:
+                    if not dry_run:
+                        insert_fault_report(
+                            conn,
+                            station_id=match["station_id"],
+                            system_type=system_type,
+                            fault_type=fault_type,
+                            description=description,
+                            handler_name=handler_name,
+                            created_at=created_at,
+                            legacy_idempotency_key=legacy_idempotency_key,
+                            project_row=batch_state["project"] if batch_state else None,
+                            batch_id=batch_id,
+                            source_record_key=source_record_key,
+                            raw_time_value=raw_time,
+                            timezone_default=timezone_default,
+                        )
+                    stats["inserted"] += 1
+                    row_result["action"] = "insert"
+                    row_result["station_id"] = match["station_id"]
+                    report_rows.append(row_result)
+                    if batch_state:
+                        batch_state["success_count"] += 1
+                except Exception as exc:
+                    stats["fail_count"] += 1
+                    row_result["action"] = "queue"
+                    row_result["reason"] = "insert_failed"
+                    row_result["error"] = str(exc)
+                    report_rows.append(row_result)
+                    stats["errors"].append(
+                        {
+                            "sequence": seq,
+                            "station_token": station_token,
+                            "error": str(exc),
+                        }
+                    )
+                    if multi_project_enabled and batch_state and not dry_run:
+                        queue_id = enqueue_fault_review_item(
+                            conn,
+                            import_batch_id=batch_id,
+                            project_id=batch_state["project"]["id"],
+                            source_type=SOURCE_TYPE,
+                            source_record_key_candidate=source_record_key,
+                            raw_payload=raw_context,
+                            issue_type="insert_failed",
+                            issue_detail=str(exc),
+                        )
+                        if queue_id:
+                            stats["queue_items_created"] += 1
+                        batch_state["fail_count"] += 1
+                    abort_import_if_needed(
+                        fail_on_rules=fail_on_rules,
+                        row_result=row_result,
+                        reason="insert_failed",
+                        action="queue",
+                    )
+
+        if not dry_run:
+            for state in batch_cache.values():
+                if state["batch_id"] is None:
+                    continue
+                update_import_batch_stats(
+                    conn,
+                    state["batch_id"],
+                    success_count=state["success_count"],
+                    fail_count=state["fail_count"],
+                )
+            conn.commit()
+    except Exception as exc:
+        if not dry_run:
+            conn.rollback()
+        report = build_report(
+            database_path=database_path,
+            source_file=source_path,
+            dry_run=dry_run,
+            fail_on_rules=fail_on_rules,
+            timezone_default=timezone_default,
+            stats=stats,
+            report_rows=report_rows,
+            aborted=True,
+            error=str(exc),
+        )
+        write_report_file(Path(report_path).resolve() if report_path else None, report)
+        if isinstance(exc, ImportAbortError):
+            exc.report = report
+        raise
+    finally:
+        conn.close()
+
+    report = build_report(
+        database_path=database_path,
+        source_file=source_path,
+        dry_run=dry_run,
+        fail_on_rules=fail_on_rules,
+        timezone_default=timezone_default,
+        stats=stats,
+        report_rows=report_rows,
+    )
+    write_report_file(Path(report_path).resolve() if report_path else None, report)
+    return report
+
+
+def legacy_main_unused():
+    backup_path = backup_sqlite_database(get_db_path(), label="import_worklog")
+    if backup_path:
+        print(f"[备份] 已创建数据库备份: {backup_path}")
+    stats = import_worklog_file(SOURCE_FILE)
+    print("=" * 60)
+    print("Worklog import completed")
+    print("=" * 60)
+    for key, value in stats.items():
+        if key == "errors":
+            print(f"{key}: {len(value)}")
         else:
-            # 模糊: 包含关系
-            matched = False
-            for key, vals in lookup.items():
-                if part in key or key in part:
-                    for sid, name in vals:
-                        results.append((sid, name, part))
-                    matched = True
-                    break
-            if not matched:
-                results.append((None, None, part))
-    return results
+            print(f"{key}: {value}")
+    return stats
 
 
-def make_idempotency_key(station_id, time_str, content):
-    raw = f"{station_id}|{time_str}|{content or ''}"
-    return hashlib.md5(raw.encode('utf-8')).hexdigest()[:24]
+def parse_args():
+    parser = argparse.ArgumentParser(description="Import worklog xlsx rows into fault_reports")
+    parser.add_argument("--source", default=SOURCE_FILE, help="Path to worklog xlsx file")
+    parser.add_argument("--database", default=get_db_path(), help="Path to SQLite database")
+    parser.add_argument("--report", help="Optional JSON report output path")
+    parser.add_argument("--dry-run", action="store_true", help="Preview only, do not write database")
+    parser.add_argument("--fail-on", default="", help="Comma-separated fail-fast rules")
+    parser.add_argument("--timezone-default", default=TIMEZONE_DEFAULT, help="Timezone label stored on imported rows")
+    parser.add_argument("--skip-backup", action="store_true", help="Skip automatic SQLite backup before write import")
+    return parser.parse_args()
 
 
 def main():
-    print("=" * 60)
-    print("工作记录 -> 故障记录 导入脚本")
-    print("=" * 60)
+    args = parse_args()
+    database_path = Path(args.database).resolve()
+    report_path = Path(args.report).resolve() if args.report else None
 
-    # 读取Excel
-    print(f"读取: {SOURCE_FILE}")
-    wb = openpyxl.load_workbook(SOURCE_FILE, data_only=True)
-    ws = wb.active
-    rows = list(ws.iter_rows(values_only=True))
-    wb.close()
-    print(f"总行数: {len(rows)} (含标题行)")
+    if not args.dry_run and not args.skip_backup:
+        backup_path = backup_sqlite_database(database_path, label="import_worklog")
+        if backup_path:
+            print(f"[澶囦唤] 宸插垱寤烘暟鎹簱澶囦唤: {backup_path}")
 
-    # 过滤目标类型
-    target_rows = []
-    for r in rows[2:]:  # 跳过标题行和年份行
-        if r[5] and str(r[5]).strip() in TARGET_TYPES:
-            if any(c is not None for c in r[:8]):
-                target_rows.append(r)
-    print(f"目标记录数 (系统类型 in {TARGET_TYPES}): {len(target_rows)}")
-
-    # 连接数据库
-    conn = sqlite3.connect(get_db_path())
-    conn.row_factory = sqlite3.Row
-    set_wal_mode(conn)
-    cursor = conn.cursor()
-
-    # 构建站名映射
-    lookup = build_station_lookup(conn)
-    print(f"数据库变电站数: {len(set(sid for vals in lookup.values() for sid, _ in vals))}")
-
-    # 统计
-    inserted = 0
-    skipped_dup = 0
-    unmatched_stations = []
-    errors = []
-
-    for r in target_rows:
-        seq = r[0]
-        time_str = parse_time(r[1])
-        station_str = str(r[2]).strip() if r[2] else ''
-        location = str(r[3]).strip() if r[3] else ''
-        content = str(r[4]).strip() if r[4] else ''
-        system_type = str(r[5]).strip() if r[5] else ''
-        handler = str(r[7]).strip() if r[7] else None
-
-        # 构建description
-        desc_parts = []
-        if content:
-            desc_parts.append(content)
-        if location and location not in content:
-            desc_parts.append(f'地点: {location}')
-        description = ' | '.join(desc_parts) if desc_parts else content
-
-        fault_type = infer_fault_type(content, system_type)
-
-        # 匹配变电站
-        matches = find_station_ids(station_str, lookup)
-
-        if not matches:
-            unmatched_stations.append({'seq': seq, 'station': station_str})
-            continue
-
-        for station_id, matched_name, raw_part in matches:
-            if station_id is None:
-                unmatched_stations.append({'seq': seq, 'station': raw_part})
-                continue
-
-            ikey = make_idempotency_key(station_id, time_str or '', description)
-
-            # 检查幂等
-            existing = cursor.execute(
-                'SELECT id FROM fault_reports WHERE idempotency_key = ?', (ikey,)
-            ).fetchone()
-            if existing:
-                skipped_dup += 1
-                continue
-
-            try:
-                cursor.execute("""
-                    INSERT INTO fault_reports (
-                        station_id, system_type, fault_type, description,
-                        reporter_name, handler_name, status,
-                        closed_at, created_at, updated_at, idempotency_key
-                    ) VALUES (?, ?, ?, ?, ?, ?, 'closed', ?, ?, ?, ?)
-                """, (
-                    station_id,
-                    system_type,
-                    fault_type,
-                    description,
-                    '工作记录导入',
-                    handler,
-                    time_str,
-                    time_str,
-                    time_str,
-                    ikey,
-                ))
-                inserted += 1
-            except Exception as e:
-                errors.append({'seq': seq, 'station': station_str, 'error': str(e)})
-
-    conn.commit()
-    conn.close()
-
-    print()
-    print("=" * 60)
-    print("导入完成")
-    print("=" * 60)
-    print(f"成功插入: {inserted} 条")
-    print(f"重复跳过: {skipped_dup} 条")
-    print(f"未匹配站: {len(unmatched_stations)} 条")
-    if unmatched_stations:
-        print("  未匹配变电站列表:")
-        seen = set()
-        for u in unmatched_stations:
-            key = u['station']
-            if key not in seen:
-                print(f"    seq={u['seq']} station='{u['station']}'")
-                seen.add(key)
-    if errors:
-        print(f"错误: {len(errors)} 条")
-        for e in errors[:10]:
-            print(f"  {e}")
-
-    return inserted, unmatched_stations
+    try:
+        report = import_worklog_file(
+            args.source,
+            database_path=database_path,
+            dry_run=args.dry_run,
+            report_path=report_path,
+            fail_on=args.fail_on,
+            timezone_default=args.timezone_default,
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return report
+    except ImportAbortError as exc:
+        if exc.report:
+            print(json.dumps(exc.report, ensure_ascii=False, indent=2))
+        else:
+            print(json.dumps({"error": str(exc)}, ensure_ascii=False, indent=2))
+        raise SystemExit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

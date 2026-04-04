@@ -8,75 +8,68 @@
         <h2 class="page-title">故障报修</h2>
     </div>
 
-    <!-- IP快速查询 -->
     <section class="quick-search-section card">
         <div class="card-body">
-            <h3 class="card-title">按IP地址快速查找</h3>
+            <h3 class="card-title">按 IP 快速定位</h3>
             <div class="search-form">
-                <input type="text" id="ip-search" class="form-input" placeholder="输入摄像头IP地址，如 192.168.1.100">
+                <input type="text" id="ip-search" class="form-input" placeholder="输入摄像头 IP，例如 192.168.1.100">
                 <button type="button" class="btn btn-primary" onclick="searchByIp()">查询</button>
             </div>
             <div id="ip-search-result" class="search-result"></div>
         </div>
     </section>
 
-    <!-- 报修表单 -->
     <section class="report-form-section card">
         <div class="card-body">
-            <h3 class="card-title">选择变电站报修</h3>
+            <h3 class="card-title">按项目上报故障</h3>
 
             <form id="fault-form">
-                <!-- 变电站选择 -->
+                <div class="form-group">
+                    <label for="project-select" class="form-label">项目 <span class="required">*</span></label>
+                    <select id="project-select" class="form-select" required>
+                        <option value="">加载中...</option>
+                    </select>
+                    <div id="project-help" class="form-hint"></div>
+                </div>
+
                 <div class="form-group">
                     <label for="station-select" class="form-label">变电站 <span class="required">*</span></label>
                     <select id="station-select" class="form-select" required>
-                        <option value="">请选择变电站</option>
+                        <option value="">请先选择项目</option>
                     </select>
                 </div>
 
-                <!-- 摄像头选择 -->
                 <div class="form-group">
                     <label for="camera-select" class="form-label">摄像头</label>
                     <select id="camera-select" class="form-select">
                         <option value="">请先选择变电站</option>
                     </select>
-                    <div id="camera-loading" class="form-hint" style="display: none;">加载中...</div>
+                    <div id="camera-loading" class="form-hint" style="display:none;">加载摄像头中...</div>
                 </div>
 
-                <!-- 故障类型 -->
                 <div class="form-group">
                     <label for="fault-type" class="form-label">故障类型 <span class="required">*</span></label>
                     <select id="fault-type" class="form-select" required>
-                        <option value="">请选择故障类型</option>
-                        <option value="无图像">无图像</option>
-                        <option value="图像模糊">图像模糊</option>
-                        <option value="画面卡顿">画面卡顿</option>
-                        <option value="夜视异常">夜视异常</option>
-                        <option value="其他故障">其他故障</option>
+                        <option value="">请先选择项目</option>
                     </select>
+                    <div id="fault-type-help" class="form-hint"></div>
                 </div>
 
-                <!-- 故障描述 -->
                 <div class="form-group">
                     <label for="description" class="form-label">故障描述</label>
-                    <textarea id="description" class="form-input" rows="3"
-                              placeholder="详细描述故障现象（选填）"></textarea>
+                    <textarea id="description" class="form-input" rows="3" placeholder="可补充位置、现象、时间段等信息"></textarea>
                 </div>
 
-                <!-- 报修人信息 -->
                 <div class="form-group">
                     <label for="reporter-name" class="form-label">报修人姓名 <span class="required">*</span></label>
-                    <input type="text" id="reporter-name" class="form-input" required
-                           placeholder="请输入您的姓名">
+                    <input type="text" id="reporter-name" class="form-input" required placeholder="请输入报修人姓名">
                 </div>
 
                 <div class="form-group">
                     <label for="reporter-contact" class="form-label">联系方式</label>
-                    <input type="text" id="reporter-contact" class="form-input"
-                           placeholder="手机号码或短号（选填）">
+                    <input type="text" id="reporter-contact" class="form-input" placeholder="手机号码或短号">
                 </div>
 
-                <!-- 提交按钮 -->
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="resetForm()">重置</button>
                     <button type="submit" class="btn btn-primary" id="submit-btn">提交报修</button>
@@ -86,7 +79,6 @@
     </section>
 </div>
 
-<!-- 确认弹窗 -->
 <div class="modal" id="confirm-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -94,9 +86,7 @@
                 <h5 class="modal-title" id="confirm-modal-title">确认报修信息</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
-            <div class="modal-body" id="confirm-body">
-                <!-- 动态填充 -->
-            </div>
+            <div class="modal-body" id="confirm-body"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">返回修改</button>
                 <button type="button" class="btn btn-primary" id="confirm-submit">确认提交</button>
@@ -105,7 +95,6 @@
     </div>
 </div>
 
-<!-- 成功弹窗 -->
 <div class="modal" id="success-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -122,7 +111,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="resetForm()">继续报修</button>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">返回首页</a>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary" data-project-link>返回首页</a>
             </div>
         </div>
     </div>
@@ -131,32 +120,171 @@
 
 {% block scripts %}
 <script>
+const LEGACY_FAULT_TYPES = [
+    { type_code: '', type_label: '无图像' },
+    { type_code: '', type_label: '图像模糊' },
+    { type_code: '', type_label: '画面卡顿' },
+    { type_code: '', type_label: '夜视异常' },
+    { type_code: '', type_label: '其他故障' },
+];
+
+let availableProjects = [];
 let stations = [];
 let cameras = [];
 let selectedCamera = null;
+let currentProjectCode = '';
+let multiProjectEnabled = false;
+let currentFaultTypes = [];
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function getUrlProjectCode() {
+    return new URLSearchParams(window.location.search).get('project') || '';
+}
+
+function getUrlStationId() {
+    return new URLSearchParams(window.location.search).get('station_id') || '';
+}
+
+function updateUrlState({ project = currentProjectCode, stationId = document.getElementById('station-select').value || '' } = {}) {
+    const url = new URL(window.location.href);
+    if (project) {
+        url.searchParams.set('project', project);
+    } else {
+        url.searchParams.delete('project');
+    }
+    if (stationId) {
+        url.searchParams.set('station_id', stationId);
+    } else {
+        url.searchParams.delete('station_id');
+    }
+    window.history.replaceState({}, '', url.toString());
+    if (window.AppProjectState) {
+        window.AppProjectState.projectCode = project || '';
+    }
+    const globalProjectSelect = document.getElementById('global-project-select');
+    if (globalProjectSelect) {
+        globalProjectSelect.value = project || '';
+    }
+}
+
+function setFaultTypeHelp(message, isError = false) {
+    const el = document.getElementById('fault-type-help');
+    el.className = isError ? 'text-danger' : 'form-hint';
+    el.textContent = message || '';
+}
+
+function setProjectHelp(message, isError = false) {
+    const el = document.getElementById('project-help');
+    el.className = isError ? 'text-danger' : 'form-hint';
+    el.textContent = message || '';
+}
+
+function renderFaultTypes(faultTypes) {
+    currentFaultTypes = faultTypes || [];
+    const select = document.getElementById('fault-type');
+    if (!currentFaultTypes.length) {
+        select.innerHTML = '<option value="">当前项目暂无已发布故障类型</option>';
+        select.disabled = true;
+        return;
+    }
+    select.disabled = false;
+    select.innerHTML = '<option value="">请选择故障类型</option>' +
+        currentFaultTypes.map(item => `
+            <option value="${escapeHtml(item.type_code || item.type_label)}" data-label="${escapeHtml(item.type_label)}">
+                ${escapeHtml(item.type_label)}
+            </option>
+        `).join('');
+}
+
+async function loadProjects() {
+    const response = await fetch('/api/projects');
+    if (!response.ok) {
+        throw new Error('加载项目失败');
+    }
+    const data = await response.json();
+    availableProjects = data.projects || [];
+    multiProjectEnabled = !!data.multi_project_enabled;
+
+    if (!availableProjects.length) {
+        throw new Error('当前用户没有可用项目');
+    }
+
+    const requestedProject = getUrlProjectCode();
+    const defaultProjectCode = requestedProject || data.default_project_code || availableProjects[0].code;
+    const select = document.getElementById('project-select');
+    select.innerHTML = availableProjects.map(project => `
+        <option value="${project.code}">${escapeHtml(project.name)}</option>
+    `).join('');
+
+    currentProjectCode = availableProjects.some(project => project.code === defaultProjectCode)
+        ? defaultProjectCode
+        : availableProjects[0].code;
+    select.value = currentProjectCode;
+    updateUrlState({ project: currentProjectCode, stationId: getUrlStationId() });
+    setProjectHelp(`当前按项目 ${availableProjects.find(project => project.code === currentProjectCode)?.name || currentProjectCode} 上报。`);
+}
+
+async function loadFaultTypes(projectCode) {
+    try {
+        const response = await fetch(`/api/projects/${encodeURIComponent(projectCode)}/fault-types`);
+        if (!response.ok) {
+            throw new Error('加载故障类型失败');
+        }
+        const data = await response.json();
+        if ((data.fault_types || []).length) {
+            renderFaultTypes(data.fault_types);
+            const version = data.project && data.project.current_fault_type_version;
+            setFaultTypeHelp(version ? `当前使用已发布版本 v${version.version}` : '当前使用项目故障类型。');
+            return;
+        }
+        if (!multiProjectEnabled) {
+            renderFaultTypes(LEGACY_FAULT_TYPES);
+            setFaultTypeHelp('当前数据库未启用版本化故障类型，使用兼容默认值。');
+            return;
+        }
+        renderFaultTypes([]);
+        setFaultTypeHelp('当前项目还没有已发布故障类型，请先在管理后台发布。', true);
+    } catch (error) {
+        if (!multiProjectEnabled) {
+            renderFaultTypes(LEGACY_FAULT_TYPES);
+            setFaultTypeHelp('故障类型接口不可用，已回退到兼容默认值。', true);
+            return;
+        }
+        renderFaultTypes([]);
+        setFaultTypeHelp(error.message, true);
+    }
+}
 
 async function loadStations() {
+    const stationSelect = document.getElementById('station-select');
+    stationSelect.innerHTML = '<option value="">加载中...</option>';
     try {
-        const response = await fetch('/api/stations');
-        if (!response.ok) throw new Error('加载失败');
+        const response = await fetch(`/api/stations?project=${encodeURIComponent(currentProjectCode)}`);
+        if (!response.ok) throw new Error('加载变电站失败');
 
         const data = await response.json();
         stations = data.stations || [];
+        stationSelect.innerHTML = '<option value="">请选择变电站</option>' +
+            stations.map(station => `<option value="${station.id}">${escapeHtml(station.name)} (${escapeHtml(station.county || '')})</option>`).join('');
 
-        const select = document.getElementById('station-select');
-        select.innerHTML = '<option value="">请选择变电站</option>' +
-            stations.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.county || '')})</option>`).join('');
-
-        // 检查URL参数
-        const urlParams = new URLSearchParams(window.location.search);
-        const stationId = urlParams.get('station_id');
-        if (stationId) {
-            select.value = stationId;
-            loadCameras(stationId);
+        const stationId = getUrlStationId();
+        if (stationId && stations.some(station => String(station.id) === stationId)) {
+            stationSelect.value = stationId;
+            await loadCameras(stationId);
+        } else {
+            updateUrlState({ project: currentProjectCode, stationId: '' });
+            cameras = [];
+            document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
         }
-
     } catch (error) {
-        console.error('加载变电站失败:', error);
+        stationSelect.innerHTML = '<option value="">加载失败</option>';
+        console.error(error);
     }
 }
 
@@ -167,25 +295,28 @@ async function loadCameras(stationId) {
     if (!stationId) {
         cameraSelect.innerHTML = '<option value="">请先选择变电站</option>';
         cameras = [];
+        updateUrlState({ project: currentProjectCode, stationId: '' });
         return;
     }
 
     loading.style.display = 'block';
     cameraSelect.disabled = true;
+    updateUrlState({ project: currentProjectCode, stationId });
 
     try {
-        const response = await fetch(`/api/stations/${stationId}`);
-        if (!response.ok) throw new Error('加载失败');
-
+        const response = await fetch(`/api/stations/${stationId}?project=${encodeURIComponent(currentProjectCode)}`);
+        if (!response.ok) throw new Error('加载摄像头失败');
         const data = await response.json();
         cameras = data.cameras || [];
-
-        cameraSelect.innerHTML = '<option value="">请选择摄像头（选填）</option>' +
-            cameras.map(c => `<option value="${c.id}">${escapeHtml(c.location_desc || c.area || '-')} (${escapeHtml(c.ip_address || '-')})</option>`).join('');
-
+        cameraSelect.innerHTML = '<option value="">请选择摄像头（可选）</option>' +
+            cameras.map(camera => `
+                <option value="${camera.id}">
+                    ${escapeHtml(camera.location_desc || camera.area || '-')} (${escapeHtml(camera.ip_address || '-')})
+                </option>
+            `).join('');
     } catch (error) {
-        console.error('加载摄像头失败:', error);
         cameraSelect.innerHTML = '<option value="">加载失败</option>';
+        console.error(error);
     } finally {
         loading.style.display = 'none';
         cameraSelect.disabled = false;
@@ -196,47 +327,37 @@ async function searchByIp() {
     const ipInput = document.getElementById('ip-search');
     const resultDiv = document.getElementById('ip-search-result');
     const ip = ipInput.value.trim();
-
     if (!ip) {
-        resultDiv.innerHTML = '<p class="text-muted">请输入IP地址</p>';
+        resultDiv.innerHTML = '<p class="text-muted">请输入 IP 地址</p>';
         return;
     }
 
-    resultDiv.innerHTML = '<div class="spinner-sm"></div> 搜索中...';
-
+    resultDiv.innerHTML = '<div class="spinner-sm"></div> 查询中...';
     try {
-        const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}`);
+        const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}&project=${encodeURIComponent(currentProjectCode)}`);
         const data = await response.json();
-
         if (response.status === 404) {
-            resultDiv.innerHTML = `<p class="text-warning">${data.error}</p>
-                <p class="text-muted">建议：使用上方"选择变电站报修"功能手动选择</p>`;
+            resultDiv.innerHTML = `<p class="text-warning">${escapeHtml(data.error || '未找到摄像头')}</p>`;
             selectedCamera = null;
             return;
         }
-
-        if (!response.ok) throw new Error('搜索失败');
+        if (!response.ok) throw new Error(data.error || '查询失败');
 
         const camera = data.camera;
         selectedCamera = camera;
-
         resultDiv.innerHTML = `
             <div class="search-result-success">
                 <p><strong>${escapeHtml(camera.station_name)}</strong> - ${escapeHtml(camera.location_desc || camera.area || '-')}</p>
-                <p class="text-muted">IP: ${escapeHtml(camera.ip_address)} | 区域: ${escapeHtml(camera.area || '-')}</p>
+                <p class="text-muted">IP: ${escapeHtml(camera.ip_address || '-')}</p>
                 <button type="button" class="btn btn-sm btn-primary" onclick="selectFoundCamera()">选择此摄像头</button>
             </div>
         `;
 
-        // 自动填充变电站
         document.getElementById('station-select').value = camera.station_id;
-        loadCameras(camera.station_id).then(() => {
-            document.getElementById('camera-select').value = camera.id;
-        });
-
+        await loadCameras(camera.station_id);
+        document.getElementById('camera-select').value = camera.id;
     } catch (error) {
-        console.error('搜索失败:', error);
-        resultDiv.innerHTML = '<p class="text-danger">搜索失败，请重试</p>';
+        resultDiv.innerHTML = `<p class="text-danger">${escapeHtml(error.message)}</p>`;
     }
 }
 
@@ -250,141 +371,21 @@ function resetForm() {
     document.getElementById('fault-form').reset();
     document.getElementById('ip-search').value = '';
     document.getElementById('ip-search-result').innerHTML = '';
-    document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
     selectedCamera = null;
     cameras = [];
+    document.getElementById('station-select').value = '';
+    document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
+    updateUrlState({ project: currentProjectCode, stationId: '' });
+    renderFaultTypes(currentFaultTypes);
 }
 
-// 表单提交前显示确认
-document.getElementById('fault-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // 清除之前的错误
-    clearFieldErrors();
-
-    const stationId = document.getElementById('station-select').value;
-    const faultType = document.getElementById('fault-type').value;
-    const reporterName = document.getElementById('reporter-name').value.trim();
-
-    let hasError = false;
-
-    if (!stationId) {
-        showFieldError('station-select', '请选择变电站');
-        hasError = true;
-    }
-    if (!faultType) {
-        showFieldError('fault-type', '请选择故障类型');
-        hasError = true;
-    }
-    if (!reporterName) {
-        showFieldError('reporter-name', '请输入报修人姓名');
-        hasError = true;
-    }
-
-    if (hasError) {
-        return;
-    }
-
-    // 显示确认弹窗
-    const stationName = document.querySelector(`#station-select option[value="${stationId}"]`).textContent;
-    const cameraSelect = document.getElementById('camera-select');
-    const cameraId = cameraSelect.value;
-    const cameraName = cameraId ? cameraSelect.options[cameraSelect.selectedIndex].text : '未选择';
-
-    document.getElementById('confirm-body').innerHTML = `
-        <div class="confirm-info">
-            <div class="confirm-row">
-                <span class="confirm-label">变电站:</span>
-                <span class="confirm-value">${stationName}</span>
-            </div>
-            <div class="confirm-row">
-                <span class="confirm-label">摄像头:</span>
-                <span class="confirm-value">${cameraName}</span>
-            </div>
-            <div class="confirm-row">
-                <span class="confirm-label">故障类型:</span>
-                <span class="confirm-value">${faultType}</span>
-            </div>
-            <div class="confirm-row">
-                <span class="confirm-label">报修人:</span>
-                <span class="confirm-value">${escapeHtml(reporterName)}</span>
-            </div>
-        </div>
-    `;
-
-    const modal = new bootstrap.Modal(document.getElementById('confirm-modal'));
-    modal.show();
-});
-
-// 确认提交
-document.getElementById('confirm-submit').addEventListener('click', async function() {
-    const btn = this;
-    btn.disabled = true;
-    btn.textContent = '提交中...';
-
-    const submitBtn = document.getElementById('submit-btn');
-    submitBtn.disabled = true;
-
-    try {
-        const stationId = document.getElementById('station-select').value;
-        const cameraSelect = document.getElementById('camera-select');
-        const cameraId = cameraSelect.value || null;
-        const faultType = document.getElementById('fault-type').value;
-        const description = document.getElementById('description').value;
-        const reporterName = document.getElementById('reporter-name').value;
-        const reporterContact = document.getElementById('reporter-contact').value;
-
-        const response = await fetch('/api/faults', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                station_id: parseInt(stationId),
-                camera_id: cameraId ? parseInt(cameraId) : null,
-                fault_type: faultType,
-                description: description,
-                reporter_name: reporterName,
-                reporter_contact: reporterContact
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.status === 409) {
-            // 幂等冲突
-            alert(data.error);
-            bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error(data.error || '提交失败');
-        }
-
-        // 成功
-        document.getElementById('fault-id-display').textContent = `报修单号: ${data.fault_id}`;
-        bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
-        const successModal = new bootstrap.Modal(document.getElementById('success-modal'));
-        successModal.show();
-
-    } catch (error) {
-        console.error('提交失败:', error);
-        alert('提交失败: ' + error.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = '确认提交';
-        submitBtn.disabled = false;
-    }
-});
-
-// 清除字段错误样式
 function clearFieldErrors() {
-    document.querySelectorAll('.form-input.error, .form-select.error').forEach(el => {
-        el.classList.remove('error');
+    document.querySelectorAll('.form-input.error, .form-select.error').forEach(element => {
+        element.classList.remove('error');
     });
-    document.querySelectorAll('.form-error[data-field]').forEach(el => el.remove());
+    document.querySelectorAll('.form-error[data-field]').forEach(element => element.remove());
 }
 
-// 显示字段错误
 function showFieldError(fieldId, message) {
     const field = document.getElementById(fieldId);
     if (!field) return;
@@ -396,19 +397,136 @@ function showFieldError(fieldId, message) {
     field.parentNode.appendChild(errorEl);
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function selectedFaultTypeOption() {
+    const select = document.getElementById('fault-type');
+    return select.options[select.selectedIndex] || null;
 }
 
-// 变电站选择变化时加载摄像头
+document.getElementById('fault-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    clearFieldErrors();
+
+    const projectCode = document.getElementById('project-select').value;
+    const stationId = document.getElementById('station-select').value;
+    const reporterName = document.getElementById('reporter-name').value.trim();
+    const faultTypeOption = selectedFaultTypeOption();
+    const faultTypeValue = document.getElementById('fault-type').value;
+
+    let hasError = false;
+    if (!projectCode) {
+        showFieldError('project-select', '请选择项目');
+        hasError = true;
+    }
+    if (!stationId) {
+        showFieldError('station-select', '请选择变电站');
+        hasError = true;
+    }
+    if (!faultTypeValue) {
+        showFieldError('fault-type', '请选择故障类型');
+        hasError = true;
+    }
+    if (!reporterName) {
+        showFieldError('reporter-name', '请输入报修人姓名');
+        hasError = true;
+    }
+    if (hasError) {
+        return;
+    }
+
+    const stationName = document.querySelector(`#station-select option[value="${stationId}"]`)?.textContent || '-';
+    const cameraSelect = document.getElementById('camera-select');
+    const cameraName = cameraSelect.value ? cameraSelect.options[cameraSelect.selectedIndex].text : '未选择';
+    const projectName = document.querySelector(`#project-select option[value="${projectCode}"]`)?.textContent || projectCode;
+    const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue;
+
+    document.getElementById('confirm-body').innerHTML = `
+        <div class="confirm-info">
+            <div class="confirm-row"><span class="confirm-label">项目</span><span class="confirm-value">${escapeHtml(projectName)}</span></div>
+            <div class="confirm-row"><span class="confirm-label">变电站</span><span class="confirm-value">${escapeHtml(stationName)}</span></div>
+            <div class="confirm-row"><span class="confirm-label">摄像头</span><span class="confirm-value">${escapeHtml(cameraName)}</span></div>
+            <div class="confirm-row"><span class="confirm-label">故障类型</span><span class="confirm-value">${escapeHtml(faultTypeLabel)}</span></div>
+            <div class="confirm-row"><span class="confirm-label">报修人</span><span class="confirm-value">${escapeHtml(reporterName)}</span></div>
+        </div>
+    `;
+
+    new bootstrap.Modal(document.getElementById('confirm-modal')).show();
+});
+
+document.getElementById('confirm-submit').addEventListener('click', async function() {
+    const btn = this;
+    const submitBtn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    submitBtn.disabled = true;
+    btn.textContent = '提交中...';
+
+    try {
+        const stationId = document.getElementById('station-select').value;
+        const cameraId = document.getElementById('camera-select').value || null;
+        const faultTypeOption = selectedFaultTypeOption();
+        const faultTypeCode = document.getElementById('fault-type').value;
+        const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeCode;
+
+        const response = await fetch('/api/faults', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                station_id: parseInt(stationId, 10),
+                camera_id: cameraId ? parseInt(cameraId, 10) : null,
+                project: currentProjectCode,
+                fault_type: faultTypeLabel,
+                fault_type_code: faultTypeCode || null,
+                description: document.getElementById('description').value,
+                reporter_name: document.getElementById('reporter-name').value,
+                reporter_contact: document.getElementById('reporter-contact').value,
+            })
+        });
+        const data = await response.json();
+        if (response.status === 409) {
+            alert(data.error);
+            bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
+            return;
+        }
+        if (!response.ok) {
+            throw new Error(data.error || '提交失败');
+        }
+
+        document.getElementById('fault-id-display').textContent = `报修单号: ${data.fault_id}`;
+        bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
+        new bootstrap.Modal(document.getElementById('success-modal')).show();
+    } catch (error) {
+        alert('提交失败: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        submitBtn.disabled = false;
+        btn.textContent = '确认提交';
+    }
+});
+
+document.getElementById('project-select').addEventListener('change', async function() {
+    currentProjectCode = this.value;
+    updateUrlState({ project: currentProjectCode, stationId: '' });
+    document.getElementById('station-select').value = '';
+    document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
+    await loadFaultTypes(currentProjectCode);
+    await loadStations();
+});
+
 document.getElementById('station-select').addEventListener('change', function() {
     loadCameras(this.value);
 });
 
-// 页面加载时获取变电站列表
-document.addEventListener('DOMContentLoaded', loadStations);
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+            await window.AppProjectState.ready();
+        }
+        await loadProjects();
+        await loadFaultTypes(currentProjectCode);
+        await loadStations();
+    } catch (error) {
+        setProjectHelp(error.message, true);
+        setFaultTypeHelp('初始化失败', true);
+    }
+});
 </script>
 {% endblock %}

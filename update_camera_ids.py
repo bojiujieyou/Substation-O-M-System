@@ -11,13 +11,13 @@ update_camera_ids.py — 从故障描述中提取摄像头编号，更新fault_r
 """
 
 import re
-import sqlite3
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from config import Config
-from init_db import get_db_path, set_wal_mode
+from init_db import get_db_path
+from utils import create_db_connection
 
 
 def extract_camera_indices(description):
@@ -180,9 +180,7 @@ def main():
     print("更新故障记录的 camera_id (增强版)")
     print("=" * 60)
 
-    conn = sqlite3.connect(get_db_path())
-    conn.row_factory = sqlite3.Row
-    set_wal_mode(conn)
+    conn = create_db_connection(get_db_path(), row_factory=True, enable_wal=True)
     cursor = conn.cursor()
 
     # 构建摄像头查找表

@@ -2,17 +2,16 @@
 import argparse
 import os
 import shutil
-import sqlite3
 from datetime import datetime
 from config import Config
+from utils import create_db_connection, enable_wal_mode
 
 def get_db_path():
     return Config.DATABASE_PATH
 
 def set_wal_mode(conn):
     """启用WAL模式（决策#6）"""
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute("PRAGMA busy_timeout=30000;")
+    enable_wal_mode(conn)
 
 def init_db(force=False):
     """初始化数据库结构和索引
@@ -46,8 +45,7 @@ def init_db(force=False):
             if os.path.exists(wal_path):
                 os.remove(wal_path)
 
-    conn = sqlite3.connect(db_path)
-    set_wal_mode(conn)
+    conn = create_db_connection(db_path, enable_wal=True)
     cursor = conn.cursor()
 
     # 变电站表
@@ -100,6 +98,8 @@ def init_db(force=False):
             status TEXT DEFAULT 'open' CHECK(status IN ('open', 'handling', 'closed')),
             handler_name TEXT,
             handler_note TEXT,
+            equipment_type TEXT,
+            equipment_quantity INTEGER DEFAULT 0,
             closed_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

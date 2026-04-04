@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}项目通知配置 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">项目通知配置</h2>
+            <p class="text-muted mb-0">按项目维护通知策略、静默时段、升级阈值和通知目标启停。</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="admin-section">
+                <h3 class="mb-3">策略配置</h3>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="notification-project-select">项目</label>
+                    <select id="notification-project-select" class="form-select"></select>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="policy-active" checked>
+                    <label class="form-check-label" for="policy-active">启用通知策略</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="notify-on-create" checked>
+                    <label class="form-check-label" for="notify-on-create">故障创建时通知</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="notify-on-close" checked>
+                    <label class="form-check-label" for="notify-on-close">故障关闭时通知</label>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="quiet-start">静默开始</label>
+                        <input id="quiet-start" class="form-input" placeholder="22:00">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="quiet-end">静默结束</label>
+                        <input id="quiet-end" class="form-input" placeholder="08:00">
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="escalate-after">升级阈值（分钟）</label>
+                        <input id="escalate-after" type="number" class="form-input" placeholder="例如 30">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="escalation-target">升级通知目标</label>
+                        <select id="escalation-target" class="form-select">
+                            <option value="">不配置</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" onclick="saveNotificationPolicy()">保存策略</button>
+                </div>
+                <div id="notification-policy-message" class="form-hint mt-3"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="admin-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">通知目标</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="loadNotificationData()">刷新</button>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label" for="config-event-type">事件</label>
+                        <select id="config-event-type" class="form-select"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="config-channel">渠道</label>
+                        <select id="config-channel" class="form-select"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="config-target-value">目标值</label>
+                        <input id="config-target-value" class="form-input" placeholder="手机号 / webhook / 邮箱">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="config-dedupe">去重分钟</label>
+                        <input id="config-dedupe" type="number" class="form-input" value="60">
+                    </div>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="config-active" checked>
+                    <label class="form-check-label" for="config-active">新建目标时启用</label>
+                </div>
+                <div class="form-actions mb-3" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" onclick="createNotificationConfig()">新增通知目标</button>
+                </div>
+                <div id="notification-config-message" class="form-hint mb-3"></div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>事件</th>
+                                <th>渠道</th>
+                                <th>目标</th>
+                                <th>去重</th>
+                                <th>状态</th>
+                                <th style="width:160px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notification-config-table">
+                            <tr><td colspan="6" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-section mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="mb-1">最近派发计划</h3>
+                        <p class="text-muted mb-0">展示当前项目的通知计划日志，并支持手动执行一次升级巡检。</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-secondary" onclick="runNotificationMaintenance(false)">预演升级巡检</button>
+                        <button class="btn btn-sm btn-primary" onclick="runNotificationMaintenance(true)">执行升级巡检</button>
+                        <button class="btn btn-sm btn-secondary" onclick="loadNotificationLogs()">刷新日志</button>
+                    </div>
+                </div>
+                <div id="notification-log-message" class="form-hint mb-3"></div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>事件</th>
+                                <th>目标</th>
+                                <th>故障</th>
+                                <th>站点</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notification-log-table">
+                            <tr><td colspan="6" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let notificationProjects = [];
+let notificationPolicies = [];
+let notificationConfigs = [];
+let notificationDispatchLogs = [];
+let allowedEventTypes = [];
+let allowedChannels = [];
+let currentNotificationProjectCode = '';
+
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
+function setNotificationMessage(targetId, message, isError = false) {
+    const el = document.getElementById(targetId);
+    el.className = isError ? 'text-danger' : 'text-success';
+    el.textContent = message || '';
+}
+
+async function fetchJson(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || '请求失败');
+    }
+    return data;
+}
+
+function currentPolicy() {
+    return notificationPolicies.find(item => item.project_code === currentNotificationProjectCode) || null;
+}
+
+function currentConfigs() {
+    const policy = currentPolicy();
+    if (!policy) return [];
+    return notificationConfigs.filter(item => item.policy_id === policy.id);
+}
+
+function fillSelect(selectId, values, formatter) {
+    const select = document.getElementById(selectId);
+    const currentValue = select.value;
+    select.innerHTML = values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(formatter ? formatter(value) : value)}</option>`).join('');
+    if (values.includes(currentValue)) {
+        select.value = currentValue;
+    }
+}
+
+function renderPolicy() {
+    const policy = currentPolicy();
+    if (!policy) {
+        return;
+    }
+    const quietHours = policy.quiet_hours || {};
+    document.getElementById('policy-active').checked = !!policy.is_active && !!policy.project_is_active;
+    document.getElementById('policy-active').disabled = !policy.project_is_active;
+    document.getElementById('notify-on-create').checked = !!policy.notify_on_create;
+    document.getElementById('notify-on-close').checked = !!policy.notify_on_close;
+    document.getElementById('quiet-start').value = quietHours.start || '';
+    document.getElementById('quiet-end').value = quietHours.end || '';
+    document.getElementById('escalate-after').value = policy.escalate_after_minutes || '';
+
+    const escalationSelect = document.getElementById('escalation-target');
+    const configOptions = [''].concat(currentConfigs().map(item => String(item.id)));
+    escalationSelect.innerHTML = configOptions.map(value => {
+        if (!value) {
+            return '<option value="">不配置</option>';
+        }
+        const config = notificationConfigs.find(item => String(item.id) === value);
+        return `<option value="${value}">${escapeHtml(`${config.event_type} / ${config.channel} / ${config.target_value}`)}</option>`;
+    }).join('');
+    escalationSelect.value = policy.escalation_target_config_id ? String(policy.escalation_target_config_id) : '';
+
+    if (!policy.project_is_active) {
+        setNotificationMessage('notification-policy-message', '当前项目已停用，通知自动静默。');
+    } else {
+        setNotificationMessage('notification-policy-message', '');
+    }
+}
+
+function renderConfigs() {
+    const tbody = document.getElementById('notification-config-table');
+    const configs = currentConfigs();
+    if (!configs.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted">当前项目还没有通知目标。</td></tr>';
+        return;
+    }
+    tbody.innerHTML = configs.map(item => `
+        <tr>
+            <td>${escapeHtml(item.event_type)}</td>
+            <td>${escapeHtml(item.channel)}</td>
+            <td>${escapeHtml(item.target_value)}</td>
+            <td>${escapeHtml(item.deduplication_window_minutes || 60)} 分钟</td>
+            <td>${item.is_active ? '启用' : '停用'}</td>
+            <td>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-secondary" onclick="toggleNotificationConfig(${item.id}, ${item.is_active ? 'false' : 'true'})">${item.is_active ? '停用' : '启用'}</button>
+                    <button class="btn btn-sm btn-secondary" onclick="deleteNotificationConfig(${item.id})">删除</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderNotificationLogs() {
+    const tbody = document.getElementById('notification-log-table');
+    if (!notificationDispatchLogs.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted">当前项目还没有通知派发计划。</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = notificationDispatchLogs.map(item => {
+        const payload = item.payload || {};
+        return `
+            <tr>
+                <td>${escapeHtml(item.created_at || '-')}</td>
+                <td>${escapeHtml(item.event_type || '-')}</td>
+                <td>${escapeHtml(`${item.channel || '-'} / ${item.target_value || '-'}`)}</td>
+                <td>#${escapeHtml(item.fault_id || '-')}</td>
+                <td>${escapeHtml(payload.station_name || '-')}</td>
+                <td>${escapeHtml(item.status || '-')}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function loadNotificationLogs() {
+    if (!currentNotificationProjectCode) {
+        notificationDispatchLogs = [];
+        renderNotificationLogs();
+        return;
+    }
+
+    const params = new URLSearchParams({
+        project: currentNotificationProjectCode,
+        limit: '20',
+    });
+    const data = await fetchJson(`/admin/project-notification-dispatch-logs?${params.toString()}`);
+    notificationDispatchLogs = data.logs || [];
+    renderNotificationLogs();
+}
+
+async function loadNotificationData() {
+    const data = await fetchJson('/admin/project-notifications');
+    notificationProjects = data.projects || [];
+    notificationPolicies = data.policies || [];
+    notificationConfigs = data.configs || [];
+    allowedEventTypes = data.allowed_event_types || [];
+    allowedChannels = data.allowed_channels || [];
+
+    const projectSelect = document.getElementById('notification-project-select');
+    const current = currentNotificationProjectCode || (notificationProjects[0] && notificationProjects[0].code) || '';
+    projectSelect.innerHTML = notificationProjects.map(project => `
+        <option value="${project.code}">${escapeHtml(project.name)}${project.is_active ? '' : ' (已停用)'}</option>
+    `).join('');
+    currentNotificationProjectCode = current;
+    if (currentNotificationProjectCode) {
+        projectSelect.value = currentNotificationProjectCode;
+    }
+
+    fillSelect('config-event-type', allowedEventTypes);
+    fillSelect('config-channel', allowedChannels);
+    renderPolicy();
+    renderConfigs();
+    await loadNotificationLogs();
+}
+
+async function saveNotificationPolicy() {
+    const quietStart = document.getElementById('quiet-start').value.trim();
+    const quietEnd = document.getElementById('quiet-end').value.trim();
+    const quietHours = quietStart || quietEnd ? { start: quietStart, end: quietEnd } : null;
+    try {
+        await fetchJson(`/admin/project-notification-policies/${encodeURIComponent(currentNotificationProjectCode)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                is_active: document.getElementById('policy-active').checked,
+                notify_on_create: document.getElementById('notify-on-create').checked,
+                notify_on_close: document.getElementById('notify-on-close').checked,
+                quiet_hours: quietHours,
+                escalate_after_minutes: document.getElementById('escalate-after').value || null,
+                escalation_target_config_id: document.getElementById('escalation-target').value || null,
+            }),
+        });
+        setNotificationMessage('notification-policy-message', '通知策略已保存。');
+        await loadNotificationData();
+    } catch (error) {
+        setNotificationMessage('notification-policy-message', error.message, true);
+    }
+}
+
+async function createNotificationConfig() {
+    try {
+        await fetchJson('/admin/project-notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_code: currentNotificationProjectCode,
+                event_type: document.getElementById('config-event-type').value,
+                channel: document.getElementById('config-channel').value,
+                target_value: document.getElementById('config-target-value').value.trim(),
+                deduplication_window_minutes: document.getElementById('config-dedupe').value || 60,
+                is_active: document.getElementById('config-active').checked,
+            }),
+        });
+        document.getElementById('config-target-value').value = '';
+        document.getElementById('config-dedupe').value = '60';
+        document.getElementById('config-active').checked = true;
+        setNotificationMessage('notification-config-message', '通知目标已新增。');
+        await loadNotificationData();
+    } catch (error) {
+        setNotificationMessage('notification-config-message', error.message, true);
+    }
+}
+
+async function toggleNotificationConfig(configId, active) {
+    const config = notificationConfigs.find(item => item.id === configId);
+    if (!config) return;
+    try {
+        await fetchJson(`/admin/project-notifications/${configId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event_type: config.event_type,
+                channel: config.channel,
+                target_value: config.target_value,
+                deduplication_window_minutes: config.deduplication_window_minutes,
+                is_active: active,
+            }),
+        });
+        setNotificationMessage('notification-config-message', `通知目标 #${configId} 已${active ? '启用' : '停用'}。`);
+        await loadNotificationData();
+    } catch (error) {
+        setNotificationMessage('notification-config-message', error.message, true);
+    }
+}
+
+async function deleteNotificationConfig(configId) {
+    if (!window.confirm(`确认停用通知目标 #${configId} 吗？`)) {
+        return;
+    }
+    try {
+        await fetchJson(`/admin/project-notifications/${configId}`, { method: 'DELETE' });
+        setNotificationMessage('notification-config-message', `通知目标 #${configId} 已停用。`);
+        await loadNotificationData();
+    } catch (error) {
+        setNotificationMessage('notification-config-message', error.message, true);
+    }
+}
+
+async function runNotificationMaintenance(apply) {
+    try {
+        const data = await fetchJson('/admin/project-notifications/maintenance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apply }),
+        });
+        const report = data.report || {};
+        const suppressed = (report.suppressed || []).length;
+        setNotificationMessage(
+            'notification-log-message',
+            `${apply ? '升级巡检已执行' : '升级巡检预演完成'}：候选 ${report.candidates || 0} 条，新增计划 ${report.dispatched || 0} 条，抑制 ${suppressed} 条。`
+        );
+        await loadNotificationLogs();
+    } catch (error) {
+        setNotificationMessage('notification-log-message', error.message, true);
+    }
+}
+
+document.getElementById('notification-project-select').addEventListener('change', event => {
+    currentNotificationProjectCode = event.target.value;
+    renderPolicy();
+    renderConfigs();
+    loadNotificationLogs().catch(error => {
+        setNotificationMessage('notification-log-message', error.message, true);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadNotificationData();
+    } catch (error) {
+        setNotificationMessage('notification-policy-message', error.message, true);
+        document.getElementById('notification-config-table').innerHTML = '<tr><td colspan="6" class="text-danger">加载失败</td></tr>';
+        document.getElementById('notification-log-table').innerHTML = '<tr><td colspan="6" class="text-danger">加载失败</td></tr>';
+    }
+});
+</script>
+{% endblock %}

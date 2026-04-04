@@ -7,9 +7,9 @@
     python import_coordinates.py coordinates.xlsx
 """
 import argparse
-import sqlite3
 import os
 import sys
+from pathlib import Path
 
 try:
     import openpyxl
@@ -17,7 +17,10 @@ except ImportError:
     print("错误: 需要 openpyxl 库，运行: pip install openpyxl")
     sys.exit(1)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'station_monitor.db')
+from init_db import get_db_path
+from utils import backup_sqlite_database, create_db_connection
+
+DB_PATH = get_db_path()
 
 
 def load_coordinates_from_excel(filepath):
@@ -63,7 +66,7 @@ def load_coordinates_from_excel(filepath):
 
 def match_and_update(coords):
     """匹配变电站并更新坐标"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = create_db_connection(DB_PATH)
     cursor = conn.cursor()
 
     # 获取所有变电站
@@ -108,7 +111,7 @@ def match_and_update(coords):
 
 def show_current_coordinates():
     """显示当前已导入的坐标"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = create_db_connection(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, name, county, latitude, longitude FROM stations ORDER BY county, name")
@@ -142,6 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description='导入变电站经纬度坐标')
     parser.add_argument('file', nargs='?', help='Excel文件路径')
     parser.add_argument('--show', action='store_true', help='显示当前坐标')
+    parser.add_argument('--skip-backup', action='store_true', help='导入前跳过自动数据库备份')
     args = parser.parse_args()
 
     if args.show:
@@ -162,12 +166,18 @@ def main():
         print("  第4列: 经度")
         return
 
-    if not os.path.exists(args.file):
+    source_file = Path(args.file)
+    if not source_file.exists():
         print(f"文件不存在: {args.file}")
         return
 
-    print(f"\n从 {args.file} 加载坐标...")
-    coords = load_coordinates_from_excel(args.file)
+    if not args.skip_backup:
+        backup_path = backup_sqlite_database(DB_PATH, label='import_coordinates')
+        if backup_path:
+            print(f"\n[备份] 已创建数据库备份: {backup_path}")
+
+    print(f"\n从 {source_file} 加载坐标...")
+    coords = load_coordinates_from_excel(str(source_file))
     print(f"加载了 {len(coords)} 条坐标记录")
 
     if not coords:
@@ -186,6 +196,8 @@ def main():
             print(f"  ... 还有 {len(not_found) - 20} 个")
 
     # 验证结果
+    conn = create_db_connection(DB_PATH)
+    cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM stations WHERE latitude IS NOT NULL AND longitude IS NOT NULL")
     count = cursor.fetchone()[0]
     print(f"\n当前已设置坐标: {count} 个变电站")

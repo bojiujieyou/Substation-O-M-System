@@ -1,0 +1,418 @@
+{
+  "generated_at_utc": "2026-04-03T12:45:56.192530+00:00",
+  "database_path": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "mode": "apply",
+  "migration": {
+    "version": 1,
+    "name": "V1__multi_project.py",
+    "description": "Phase 1 executable migration for multi-project V1",
+    "current_version": 1,
+    "checksum": "3ca15c7b8322e3c21a11e09a8433f02031bf74fab4ced2cf45409fcac6f030e8"
+  },
+  "live_tables": [
+    "camera_slots",
+    "cameras",
+    "fault_import_review_queue",
+    "fault_reports",
+    "import_batches",
+    "photos",
+    "project_fault_type_versions",
+    "project_fault_types",
+    "project_notification_configs",
+    "project_notification_policies",
+    "projects",
+    "schema_migrations",
+    "station_aliases",
+    "station_external_names",
+    "station_name_mapping_proposals",
+    "stations",
+    "user_project_scopes",
+    "users"
+  ],
+  "live_counts": {
+    "camera_slots": 1363,
+    "cameras": 1363,
+    "fault_import_review_queue": 0,
+    "fault_reports": 435,
+    "import_batches": 0,
+    "photos": 527,
+    "project_fault_type_versions": 0,
+    "project_fault_types": 0,
+    "project_notification_configs": 0,
+    "project_notification_policies": 0,
+    "projects": 3,
+    "schema_migrations": 1,
+    "station_aliases": 1,
+    "station_external_names": 0,
+    "station_name_mapping_proposals": 0,
+    "stations": 96,
+    "user_project_scopes": 0,
+    "users": 1
+  },
+  "fault_reports_columns": [
+    "assigned_to",
+    "camera_id",
+    "camera_location_text",
+    "camera_slot_id",
+    "closed_at",
+    "created_at",
+    "description",
+    "fault_type",
+    "fault_type_code",
+    "fault_type_label_snapshot",
+    "fault_type_version_id",
+    "handler_name",
+    "handler_note",
+    "handling_started_at",
+    "id",
+    "idempotency_key",
+    "project_device_code",
+    "project_id",
+    "reporter_contact",
+    "reporter_name",
+    "source_batch_id",
+    "source_record_key",
+    "source_time_raw",
+    "source_timezone",
+    "source_type",
+    "station_id",
+    "status",
+    "system_type",
+    "tags_json",
+    "updated_at"
+  ],
+  "cameras_columns": [
+    "area",
+    "camera_index",
+    "channel_number",
+    "channel_port",
+    "created_at",
+    "id",
+    "ip_address",
+    "location_desc",
+    "project_camera_code",
+    "project_id",
+    "replaced_by_camera_id",
+    "retired_at",
+    "slot_id",
+    "station_id",
+    "status"
+  ],
+  "photos_columns": [
+    "abs_path",
+    "captured_at",
+    "county_hint",
+    "ext",
+    "file_mtime",
+    "filename",
+    "first_seen_at",
+    "id",
+    "last_seen_at",
+    "match_method",
+    "match_status",
+    "project_hint",
+    "project_id",
+    "rel_path",
+    "size_bytes",
+    "station_hint",
+    "station_id",
+    "unmatched_reason",
+    "updated_at"
+  ],
+  "actions": [
+    {
+      "category": "skip-existing-table",
+      "target": "schema_migrations",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "projects",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "project_fault_type_versions",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "project_fault_types",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "camera_slots",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "project_notification_policies",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "project_notification_configs",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "user_project_scopes",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "station_external_names",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "import_batches",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "station_name_mapping_proposals",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-table",
+      "target": "fault_import_review_queue",
+      "detail": "table already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.project_id",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.camera_slot_id",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.assigned_to",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.fault_type_code",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.fault_type_label_snapshot",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.fault_type_version_id",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.source_type",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.source_batch_id",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.source_record_key",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.project_device_code",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.handling_started_at",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.source_time_raw",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.source_timezone",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "fault_reports.tags_json",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "baseline-confirmed-column",
+      "target": "fault_reports.closed_at",
+      "detail": "documented as existing; do not add again",
+      "sql": null
+    },
+    {
+      "category": "baseline-confirmed-column",
+      "target": "fault_reports.idempotency_key",
+      "detail": "documented as existing; do not add again",
+      "sql": null
+    },
+    {
+      "category": "baseline-confirmed-column",
+      "target": "fault_reports.status",
+      "detail": "documented as existing; do not add again",
+      "sql": null
+    },
+    {
+      "category": "baseline-confirmed-column",
+      "target": "fault_reports.system_type",
+      "detail": "documented as existing; do not add again",
+      "sql": null
+    },
+    {
+      "category": "preserve-legacy-column",
+      "target": "fault_reports.camera_location_text",
+      "detail": "live-only legacy field detected; preserve through V1",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "photos.project_id",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-column",
+      "target": "photos.project_hint",
+      "detail": "column already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-index",
+      "target": "idx_fault_source_record_key",
+      "detail": "index already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-existing-index",
+      "target": "idx_cameras_one_active_per_slot",
+      "detail": "index already exists",
+      "sql": null
+    },
+    {
+      "category": "skip-rebuild",
+      "target": "cameras",
+      "detail": "table already matches required Phase 1 shape",
+      "sql": null
+    },
+    {
+      "category": "validation",
+      "target": "fault_reports.camera_id",
+      "detail": "post-rebuild orphan check must return zero",
+      "sql": "SELECT COUNT(*) FROM fault_reports WHERE camera_id IS NOT NULL AND camera_id NOT IN (SELECT id FROM cameras);"
+    }
+  ],
+  "notes": [
+    "Legacy cameras were migrated into project=unified and one legacy slot per legacy camera.",
+    "fault_reports.camera_slot_id was backfilled only for rows with a non-null camera_id.",
+    "fault_type_code/source_record_key remain null for legacy rows when source semantics are unsafe."
+  ],
+  "execution": {
+    "backup_path": "E:\\项目\\变电站图像监控运维平台\\reports\\station_monitor.pre_v1_live_2026-04-03.db",
+    "applied": true,
+    "created_tables": [
+      "projects",
+      "project_fault_type_versions",
+      "project_fault_types",
+      "camera_slots",
+      "project_notification_policies",
+      "project_notification_configs",
+      "user_project_scopes",
+      "station_external_names",
+      "import_batches",
+      "station_name_mapping_proposals",
+      "fault_import_review_queue"
+    ],
+    "seeded_projects_inserted": 3,
+    "added_fault_columns": [
+      "project_id",
+      "camera_slot_id",
+      "assigned_to",
+      "fault_type_code",
+      "fault_type_label_snapshot",
+      "fault_type_version_id",
+      "source_type",
+      "source_batch_id",
+      "source_record_key",
+      "project_device_code",
+      "handling_started_at",
+      "source_time_raw",
+      "source_timezone",
+      "tags_json"
+    ],
+    "added_photo_columns": [
+      "project_id",
+      "project_hint"
+    ],
+    "created_fault_indexes": [
+      "idx_fault_source_record_key"
+    ],
+    "created_legacy_camera_slots": 1363,
+    "cameras_rebuild": {
+      "rebuilt": true,
+      "old_count": 1363,
+      "new_count": 1363
+    },
+    "fault_backfill": {
+      "project_id_backfilled": 435,
+      "fault_type_label_snapshot_backfilled": 435,
+      "source_type_backfilled": 435,
+      "assigned_to_backfilled": 0,
+      "camera_link_backfilled": 265,
+      "fault_reports_with_camera_slot_id": 265,
+      "fault_reports_without_camera_slot_id": 170,
+      "fault_reports_with_project_id": 435
+    },
+    "post_validation": {
+      "projects_count": 3,
+      "camera_slots_count": 1363,
+      "cameras_count": 1363,
+      "fault_reports_count": 435,
+      "fault_reports_camera_id_orphans": 0,
+      "active_camera_slot_conflicts": 0,
+      "fault_reports_with_camera_slot_id": 265,
+      "fault_reports_without_camera_slot_id": 170
+    }
+  }
+}

@@ -1,12 +1,18 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 .pytest_cache/
+venv/
+.venv/
 *.db
 *.db.backup
+*.db-shm
+*.db-wal
 
 # Environment
 .env
+.env.*
 
 # Static assets (generated)
 static/bootstrap-5.3.3.min.css
@@ -23,3 +29,16 @@ Thumbs.db
 
 # Misc
 =1.2.0
+
+# Logs
+logs/
+*.log
+
+# Data (runtime)
+data/
+
+# Captures (camera captures - large files)
+captures/
+*.jpg
+*.mp4
+!static/images/*.jpg

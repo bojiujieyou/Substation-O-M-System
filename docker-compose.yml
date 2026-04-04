@@ -1,44 +1,40 @@
-# docker-compose.yml — 变电站图像监控运维平台
+# docker-compose.yml - Substation Monitor Platform (fnOS/NAS)
 version: '3.8'
 
 services:
   app:
     build: .
-    container_name: station_monitor
+    container_name: substation_monitor
     restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
       - FLASK_DEBUG=False
       - API_TOKEN=${API_TOKEN:-}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - DATABASE_PATH=/app/data/station_monitor.db
+      - PHOTO_ROOT_PATH=/app/photos
+      - DATA_SOURCE_PATH=/app/source_docs
     volumes:
-      # 持久化数据库
-      - ./data:/app/data
+      - /vol1/1000/Docker/Substation-O-M-System/data:/app/data
+      - /vol1/1000/备份/办公/图像监控/照片:/app/photos:ro
+      - /vol1/1000/备份/办公/图像监控/图像监控设备资料:/app/source_docs:ro
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request, sqlite3, os, sys; urllib.request.urlopen('http://localhost:5000/health', timeout=5); sqlite3.connect(os.environ.get('DATABASE_PATH', '/app/data/station_monitor.db')).close(); sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
+    env_file:
+      - /vol1/1000/Docker/Substation-O-M-System/.env
 
-  # 备份服务（可选，每天凌晨2点自动备份）
   backup:
     build: .
-    container_name: station_monitor_backup
+    container_name: substation_monitor_backup
     volumes:
-      - ./backups:/app/backups
-    entrypoint: ["python", "-c", "
-import time, sqlite3, shutil, os
-from datetime import datetime
-
-while True:
-    now = datetime.now()
-    if now.hour == 2 and now.minute == 0:
-        src = '/app/data/station_monitor.db'
-        dst = f'/app/backups/station_monitor_{now.strftime(\"%Y%m%d_%H%M%S\")}.db'
-        if os.path.exists(src):
-            shutil.copy2(src, dst)
-            print(f'Backup saved: {dst}')
-    time.sleep(60)
-"]
+      - /vol1/1000/Docker/Substation-O-M-System/data:/app/data:ro
+      - /vol1/1000/Docker/Substation-O-M-System/backups:/app/backups
+    entrypoint: ["python", "-c", "import time, sqlite3, os\nfrom datetime import datetime\n\ndef backup_db():\n    src = '/app/data/station_monitor.db'\n    dst = f'/app/backups/station_monitor_{datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.db'\n    if os.path.exists(src):\n        src_conn = sqlite3.connect(f'file:{src}?mode=ro', uri=True)\n        dst_conn = sqlite3.connect(dst)\n        src_conn.backup(dst_conn)\n        src_conn.close()\n        dst_conn.close()\n        print(f'Backup saved: {dst}')\n\nwhile True:\n    now = datetime.now()\n    if now.hour == 2 and now.minute == 0:\n        backup_db()\n    time.sleep(60)\n"]
     restart: unless-stopped
+    env_file:
+      - /vol1/1000/Docker/Substation-O-M-System/.env

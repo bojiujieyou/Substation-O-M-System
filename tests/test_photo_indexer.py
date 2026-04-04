@@ -1,4 +1,3 @@
-# test_photo_indexer.py — 照片索引模块单元测试
 import os
 import sqlite3
 from pathlib import Path
@@ -32,7 +31,7 @@ def _write_file(path: Path, content: bytes = b"x"):
     path.write_bytes(content)
 
 
-def _insert_station(conn, station_id: int, name: str, county: str = "丽水"):
+def _insert_station(conn, station_id: int, name: str, county: str = "Lishui"):
     conn.execute(
         """
         INSERT INTO stations (id, name, voltage_level, county)
@@ -43,12 +42,42 @@ def _insert_station(conn, station_id: int, name: str, county: str = "丽水"):
     conn.commit()
 
 
-def test_index_photos_classifies_matched_unmatched_and_ignored(db_conn, photo_root):
-    _insert_station(db_conn, 1, "测试变电站")
+def _seed_projects(conn):
+    conn.execute(
+        """
+        CREATE TABLE projects (
+            id INTEGER PRIMARY KEY,
+            code TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            short_name TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO projects (id, code, name, short_name, sort_order, is_active)
+        VALUES
+            (1, 'unified', 'Unified Platform', 'Unified', 1, 1),
+            (2, 'inspection', 'Inspection', 'Inspect', 2, 1)
+        """
+    )
+    conn.commit()
 
-    _write_file(photo_root / "丽水" / "测试变电站" / "a.jpg", b"img-a")
-    _write_file(photo_root / "丽水" / "未知站" / "b.jpg", b"img-b")
-    _write_file(photo_root / "丽水" / "测试变电站" / "note.txt", b"text")
+
+def _enable_camera_project_fields(conn):
+    conn.execute("ALTER TABLE cameras ADD COLUMN project_id INTEGER")
+    conn.execute("ALTER TABLE cameras ADD COLUMN status TEXT DEFAULT 'active'")
+    conn.commit()
+
+
+def test_index_photos_classifies_matched_unmatched_and_ignored(db_conn, photo_root):
+    _insert_station(db_conn, 1, "Alpha Station")
+
+    _write_file(photo_root / "Lishui" / "Alpha Station" / "a.jpg", b"img-a")
+    _write_file(photo_root / "Lishui" / "Unknown Station" / "b.jpg", b"img-b")
+    _write_file(photo_root / "Lishui" / "Alpha Station" / "note.txt", b"text")
 
     stats = index_photos(db_conn, full_rebuild=True)
 
@@ -61,8 +90,7 @@ def test_index_photos_classifies_matched_unmatched_and_ignored(db_conn, photo_ro
     rows = db_conn.execute(
         "SELECT filename, match_status, station_id, match_method, unmatched_reason FROM photos ORDER BY filename"
     ).fetchall()
-
-    by_name = {r["filename"]: dict(r) for r in rows}
+    by_name = {row["filename"]: dict(row) for row in rows}
 
     assert by_name["a.jpg"]["match_status"] == "matched"
     assert by_name["a.jpg"]["station_id"] == 1
@@ -75,9 +103,9 @@ def test_index_photos_classifies_matched_unmatched_and_ignored(db_conn, photo_ro
 
 
 def test_manual_match_persists_alias_for_future_index(db_conn, photo_root):
-    _insert_station(db_conn, 1, "桃园变电站")
+    _insert_station(db_conn, 1, "Peach Garden Station")
 
-    _write_file(photo_root / "丽水" / "桃园站" / "first.jpg", b"first")
+    _write_file(photo_root / "Lishui" / "Peach Garden Alias" / "first.jpg", b"first")
 
     index_photos(db_conn, full_rebuild=True)
 
@@ -86,7 +114,7 @@ def test_manual_match_persists_alias_for_future_index(db_conn, photo_root):
     ).fetchone()
     assert row is not None
 
-    manual_match_photo(db_conn, row["id"], 1, alias_text="桃园站")
+    manual_match_photo(db_conn, row["id"], 1, alias_text="Peach Garden Alias")
 
     matched_row = db_conn.execute(
         "SELECT station_id, match_status, match_method FROM photos WHERE id = ?",
@@ -97,12 +125,12 @@ def test_manual_match_persists_alias_for_future_index(db_conn, photo_root):
 
     alias_row = db_conn.execute(
         "SELECT station_id, alias FROM station_aliases WHERE alias = ?",
-        ("桃园站",),
+        ("Peach Garden Alias",),
     ).fetchone()
     assert alias_row is not None
     assert alias_row["station_id"] == 1
 
-    _write_file(photo_root / "丽水" / "桃园站" / "second.jpg", b"second")
+    _write_file(photo_root / "Lishui" / "Peach Garden Alias" / "second.jpg", b"second")
     index_photos(db_conn, full_rebuild=False)
 
     second = db_conn.execute(
@@ -115,9 +143,9 @@ def test_manual_match_persists_alias_for_future_index(db_conn, photo_root):
 
 
 def test_incremental_index_removes_deleted_files(db_conn, photo_root):
-    _insert_station(db_conn, 1, "清水变电站")
+    _insert_station(db_conn, 1, "Clear Water Station")
 
-    target = photo_root / "丽水" / "清水变电站" / "to-delete.jpg"
+    target = photo_root / "Lishui" / "Clear Water Station" / "to-delete.jpg"
     _write_file(target, b"x")
 
     index_photos(db_conn, full_rebuild=True)
@@ -129,3 +157,68 @@ def test_incremental_index_removes_deleted_files(db_conn, photo_root):
 
     count_after = db_conn.execute("SELECT COUNT(*) FROM photos").fetchone()[0]
     assert count_after == 0
+
+
+def test_index_photos_persists_project_hint_and_project_id(db_conn, photo_root):
+    _seed_projects(db_conn)
+    _insert_station(db_conn, 1, "Bravo Station")
+
+    _write_file(photo_root / "unified" / "Lishui" / "Bravo Station" / "alpha.jpg", b"img")
+
+    stats = index_photos(db_conn, full_rebuild=True)
+    assert stats["matched"] == 1
+
+    row = db_conn.execute(
+        """
+        SELECT station_id, project_id, project_hint, match_status
+        FROM photos
+        WHERE filename = 'alpha.jpg'
+        """
+    ).fetchone()
+    assert row is not None
+    assert row["station_id"] == 1
+    assert row["project_hint"] == "unified"
+    assert row["project_id"] == 1
+    assert row["match_status"] == "matched"
+
+
+def test_manual_match_photo_backfills_project_id_from_unique_station_project(db_conn, photo_root):
+    _seed_projects(db_conn)
+    _enable_camera_project_fields(db_conn)
+    _insert_station(db_conn, 1, "Charlie Station")
+    db_conn.execute(
+        """
+        INSERT INTO cameras (
+            station_id, camera_index, area, location_desc, ip_address, channel_port, channel_number, project_id, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (1, "cam-1", "Area A", "North Gate", "10.0.0.1", 8000, 1, 2, "active"),
+    )
+    db_conn.commit()
+
+    _write_file(photo_root / "misc" / "Charlie Alias" / "manual.jpg", b"img")
+    index_photos(db_conn, full_rebuild=True)
+
+    photo = db_conn.execute(
+        "SELECT id, project_id, match_status FROM photos WHERE filename = 'manual.jpg'"
+    ).fetchone()
+    assert photo is not None
+    assert photo["project_id"] is None
+    assert photo["match_status"] == "unmatched"
+
+    manual_match_photo(db_conn, photo["id"], 1, alias_text="Charlie Alias")
+
+    matched = db_conn.execute(
+        """
+        SELECT station_id, project_id, project_hint, match_status, match_method
+        FROM photos
+        WHERE id = ?
+        """,
+        (photo["id"],),
+    ).fetchone()
+    assert matched is not None
+    assert matched["station_id"] == 1
+    assert matched["project_id"] == 2
+    assert matched["project_hint"] == ""
+    assert matched["match_status"] == "matched"
+    assert matched["match_method"] == "manual"

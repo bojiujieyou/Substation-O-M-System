@@ -1,11 +1,10 @@
 # migrate_photos.py — 一次性照片表结构迁移脚本
-import sqlite3
 from config import Config
+from utils import create_db_connection
 
 
 def migrate_photos_schema():
-    conn = sqlite3.connect(Config.DATABASE_PATH)
-    conn.execute("PRAGMA busy_timeout=30000")
+    conn = create_db_connection(Config.DATABASE_PATH)
     cursor = conn.cursor()
 
     cursor.execute("""

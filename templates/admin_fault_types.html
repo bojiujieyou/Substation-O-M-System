@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}故障类型版本管理 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">故障类型版本管理</h2>
+            <p class="text-muted mb-0">按项目维护故障类型草稿、差异审核和发布。</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="admin-section">
+                <h3 class="mb-3">新建草稿版本</h3>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="project-select">项目</label>
+                    <select id="project-select" class="form-select"></select>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="draft-description">版本说明</label>
+                    <input id="draft-description" class="form-input" placeholder="例如：2026 年 4 月巡检分类调整">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label mb-0">故障类型条目</label>
+                    <button class="btn btn-sm btn-secondary" type="button" onclick="addDraftRow()">新增条目</button>
+                </div>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>代码</th>
+                                <th>名称</th>
+                                <th>语义组</th>
+                                <th style="width:72px;">排序</th>
+                                <th style="width:56px;">启用</th>
+                                <th style="width:56px;">删除</th>
+                            </tr>
+                        </thead>
+                        <tbody id="draft-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="form-actions" style="justify-content:flex-start;">
+                    <button class="btn btn-primary" onclick="createDraftVersion()">创建草稿版本</button>
+                    <button class="btn btn-secondary" onclick="loadDraftFromCurrent()">重载当前发布版本</button>
+                </div>
+                <div id="draft-message" class="form-hint mt-3"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="admin-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">版本历史</h3>
+                    <button class="btn btn-sm btn-secondary" type="button" onclick="loadVersions()">刷新</button>
+                </div>
+                <div id="version-list" class="d-flex flex-column gap-3">
+                    <div class="text-muted">请选择项目后加载版本。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="publish-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="publish-modal-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="publish-modal-title">发布版本确认</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">发布前需要确认与上一发布版本的差异，并显式标注语义连续性。</p>
+                <div id="publish-diff-body"></div>
+                <div id="publish-message" class="form-hint mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="publish-confirm-btn" onclick="confirmPublish()">确认发布</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let faultTypeProjects = [];
+let currentProjectCode = '';
+let versionRows = [];
+let draftRows = [];
+let publishTargetVersion = null;
+let publishModal = null;
+
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
+function setDraftMessage(message, isError = false) {
+    const el = document.getElementById('draft-message');
+    el.className = isError ? 'text-danger' : 'text-success';
+    el.textContent = message || '';
+}
+
+function setPublishMessage(message, isError = false) {
+    const el = document.getElementById('publish-message');
+    el.className = isError ? 'text-danger' : 'text-success';
+    el.textContent = message || '';
+}
+
+async function fetchJson(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || '请求失败');
+    }
+    return data;
+}
+
+function blankDraftRow(sortOrder = 1) {
+    return {
+        type_code: '',
+        type_label: '',
+        semantic_group: '',
+        sort_order: sortOrder,
+        is_active: true,
+    };
+}
+
+function renderDraftRows() {
+    const tbody = document.getElementById('draft-table-body');
+    if (!draftRows.length) {
+        draftRows = [blankDraftRow(1)];
+    }
+    tbody.innerHTML = draftRows.map((row, index) => `
+        <tr>
+            <td><input class="form-input" value="${escapeHtml(row.type_code)}" onchange="updateDraftRow(${index}, 'type_code', this.value)"></td>
+            <td><input class="form-input" value="${escapeHtml(row.type_label)}" onchange="updateDraftRow(${index}, 'type_label', this.value)"></td>
+            <td><input class="form-input" value="${escapeHtml(row.semantic_group || '')}" onchange="updateDraftRow(${index}, 'semantic_group', this.value)"></td>
+            <td><input class="form-input" type="number" value="${escapeHtml(row.sort_order)}" onchange="updateDraftRow(${index}, 'sort_order', this.value)"></td>
+            <td class="text-center"><input type="checkbox" ${row.is_active ? 'checked' : ''} onchange="updateDraftRow(${index}, 'is_active', this.checked)"></td>
+            <td class="text-center"><button class="btn btn-sm btn-secondary" type="button" onclick="removeDraftRow(${index})">删</button></td>
+        </tr>
+    `).join('');
+}
+
+function updateDraftRow(index, field, value) {
+    if (field === 'sort_order') {
+        draftRows[index][field] = Number(value || 0);
+    } else {
+        draftRows[index][field] = value;
+    }
+}
+
+function addDraftRow() {
+    draftRows.push(blankDraftRow(draftRows.length + 1));
+    renderDraftRows();
+}
+
+function removeDraftRow(index) {
+    draftRows.splice(index, 1);
+    renderDraftRows();
+}
+
+async function loadProjects() {
+    const data = await fetchJson('/api/projects');
+    faultTypeProjects = data.projects || [];
+    const select = document.getElementById('project-select');
+    select.innerHTML = faultTypeProjects.map(project => `
+        <option value="${project.code}">${escapeHtml(project.name)}</option>
+    `).join('');
+    currentProjectCode = select.value || (faultTypeProjects[0] && faultTypeProjects[0].code) || '';
+    if (currentProjectCode) {
+        select.value = currentProjectCode;
+    }
+}
+
+function loadDraftFromCurrent() {
+    const publishedVersion = versionRows.find(version => version.is_published) || versionRows[0];
+    draftRows = publishedVersion
+        ? publishedVersion.types.map(item => ({
+            type_code: item.type_code,
+            type_label: item.type_label,
+            semantic_group: item.semantic_group || item.type_code,
+            sort_order: item.sort_order,
+            is_active: !!item.is_active,
+        }))
+        : [blankDraftRow(1)];
+    renderDraftRows();
+    setDraftMessage(publishedVersion ? `已加载版本 v${publishedVersion.version} 作为草稿基础。` : '当前项目暂无版本，已创建空白草稿。');
+}
+
+function diffSummaryText(version) {
+    if (!version.diff_summary) {
+        return '无差异数据';
+    }
+    return `新增 ${version.diff_summary.added} / 删除 ${version.diff_summary.removed} / 变更 ${version.diff_summary.changed}`;
+}
+
+function renderVersions() {
+    const container = document.getElementById('version-list');
+    if (!versionRows.length) {
+        container.innerHTML = '<div class="text-muted">当前项目还没有故障类型版本。</div>';
+        return;
+    }
+    container.innerHTML = versionRows.map(version => `
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h4 class="card-title mb-1">v${version.version} ${version.is_published ? '<span class="badge text-bg-success">当前发布</span>' : '<span class="badge text-bg-secondary">草稿</span>'}</h4>
+                        <div class="text-muted mb-2">${escapeHtml(version.description || '无说明')}</div>
+                        <div class="text-muted small">差异摘要：${escapeHtml(diffSummaryText(version))}</div>
+                    </div>
+                    ${version.editable ? `<button class="btn btn-sm btn-primary" onclick="openPublishModal(${version.id})">发布</button>` : ''}
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>代码</th>
+                                <th>名称</th>
+                                <th>语义组</th>
+                                <th>排序</th>
+                                <th>启用</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${version.types.map(item => `
+                                <tr>
+                                    <td>${escapeHtml(item.type_code)}</td>
+                                    <td>${escapeHtml(item.type_label)}</td>
+                                    <td>${escapeHtml(item.semantic_group || item.type_code)}</td>
+                                    <td>${escapeHtml(item.sort_order)}</td>
+                                    <td>${item.is_active ? '是' : '否'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadVersions() {
+    if (!currentProjectCode) {
+        return;
+    }
+    const data = await fetchJson(`/admin/projects/${encodeURIComponent(currentProjectCode)}/fault-type-versions`);
+    versionRows = data.versions || [];
+    renderVersions();
+    if (!document.getElementById('draft-table-body').children.length) {
+        loadDraftFromCurrent();
+    }
+}
+
+async function createDraftVersion() {
+    if (!currentProjectCode) {
+        setDraftMessage('请先选择项目。', true);
+        return;
+    }
+    const description = document.getElementById('draft-description').value.trim();
+    const faultTypes = draftRows.map((item, index) => ({
+        type_code: (item.type_code || '').trim(),
+        type_label: (item.type_label || '').trim(),
+        semantic_group: (item.semantic_group || '').trim(),
+        sort_order: Number(item.sort_order || index + 1),
+        is_active: !!item.is_active,
+    })).filter(item => item.type_code || item.type_label);
+
+    try {
+        const data = await fetchJson(`/admin/projects/${encodeURIComponent(currentProjectCode)}/fault-type-versions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description, fault_types: faultTypes }),
+        });
+        setDraftMessage(`已创建草稿版本 v${data.version.version}。`);
+        document.getElementById('draft-description').value = '';
+        await loadVersions();
+    } catch (error) {
+        setDraftMessage(error.message, true);
+    }
+}
+
+function openPublishModal(versionId) {
+    publishTargetVersion = versionRows.find(version => version.id === versionId) || null;
+    if (!publishTargetVersion) {
+        return;
+    }
+    const diffBody = document.getElementById('publish-diff-body');
+    const diffItems = publishTargetVersion.diff_items || [];
+    if (!diffItems.length) {
+        diffBody.innerHTML = '<p class="text-muted">该版本与上一发布版本没有差异，可直接发布。</p>';
+    } else {
+        diffBody.innerHTML = diffItems.map(item => {
+            const previousLabel = item.previous ? item.previous.type_label : '不存在';
+            const candidateLabel = item.candidate ? item.candidate.type_label : '已删除';
+            const selectOptions = item.allowed_decisions.map(decision => `
+                <option value="${decision}">${decision}</option>
+            `).join('');
+            return `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="fw-semibold">${escapeHtml(item.type_code)} · ${escapeHtml(item.change_type)}</div>
+                        <div class="text-muted small mb-2">之前：${escapeHtml(previousLabel)} ｜ 当前：${escapeHtml(candidateLabel)}</div>
+                        <label class="form-label">确认结果</label>
+                        <select class="form-select publish-confirmation" data-key="${escapeHtml(item.key)}">
+                            <option value="">请选择</option>
+                            ${selectOptions}
+                        </select>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    setPublishMessage('');
+    if (!publishModal) {
+        publishModal = new bootstrap.Modal(document.getElementById('publish-modal'));
+    }
+    publishModal.show();
+}
+
+async function confirmPublish() {
+    if (!publishTargetVersion) {
+        return;
+    }
+    const confirmations = {};
+    document.querySelectorAll('.publish-confirmation').forEach(select => {
+        if (select.value) {
+            confirmations[select.dataset.key] = select.value;
+        }
+    });
+    try {
+        await fetchJson(`/admin/projects/${encodeURIComponent(currentProjectCode)}/fault-type-versions/${publishTargetVersion.id}/publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ confirmations }),
+        });
+        setPublishMessage(`版本 v${publishTargetVersion.version} 已发布。`);
+        publishModal.hide();
+        await loadProjects();
+        await loadVersions();
+    } catch (error) {
+        setPublishMessage(error.message, true);
+    }
+}
+
+document.getElementById('project-select').addEventListener('change', async event => {
+    currentProjectCode = event.target.value;
+    draftRows = [];
+    renderDraftRows();
+    await loadVersions();
+    loadDraftFromCurrent();
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadProjects();
+        draftRows = [];
+        renderDraftRows();
+        await loadVersions();
+        loadDraftFromCurrent();
+    } catch (error) {
+        setDraftMessage(error.message, true);
+        document.getElementById('version-list').innerHTML = '<div class="text-danger">加载失败</div>';
+    }
+});
+</script>
+{% endblock %}

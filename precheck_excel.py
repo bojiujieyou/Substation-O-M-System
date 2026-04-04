@@ -13,14 +13,17 @@
 
 import os
 import sys
+import json
+import argparse
 from pathlib import Path
 
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent))
 
 from parse_excel import validate_excel_structure, ExcelParseError
+from config import Config
 
-DATA_SOURCE_PATH = r'e:\办公\图像监控\图像监控设备资料'
+DATA_SOURCE_PATH = Config.DATA_SOURCE_PATH
 
 # 县区目录
 COUNTIES = ['丽水', '云和', '庆元', '景宁', '松阳', '缙云', '遂昌', '青田', '龙泉']
@@ -87,7 +90,17 @@ def scan_excel_files():
     valid_results = [r for r in results if r['valid']]
     if not valid_results:
         print("没有有效的Excel文件可供分析")
-        return
+        return {
+            'total': len(results),
+            'valid': 0,
+            'errors': len(errors),
+            'format_differs': 0,
+            'mode_rows': None,
+            'row_count_distribution': {},
+            'details': results,
+            'error_details': errors,
+            'format_differs_details': [],
+        }
 
     row_counts = {}
     for r in valid_results:
@@ -136,9 +149,32 @@ def scan_excel_files():
         'valid': len(valid_results),
         'errors': len(errors),
         'format_differs': len(format_differs),
+        'mode_rows': mode_rows if row_counts else None,
+        'row_count_distribution': {
+            str(rows): len(files) for rows, files in sorted(row_counts.items())
+        },
         'details': results,
-        'error_details': errors
+        'error_details': errors,
+        'format_differs_details': format_differs,
     }
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='预检变电站 Excel 文件结构并生成统一报告')
+    parser.add_argument(
+        '--json-out',
+        help='可选：将预检结果输出为 JSON 报告文件'
+    )
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    scan_excel_files()
+    args = parse_args()
+    report = scan_excel_files()
+    if args.json_out and report is not None:
+        output_path = Path(args.json_out)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+        print(f"\n[报告] JSON 结果已写入: {output_path}")

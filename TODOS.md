@@ -127,9 +127,9 @@
 
 | 项目 | 成本 | 理由 |
 |------|------|------|
-| 导入前自动备份SQLite | ~10分钟 | 防止导入过程数据损坏 |
-| precheck报告格式不一致文件 | ~30分钟 | 提前发现71个Excel的格式差异 |
-| Docker健康检查 | ~15分钟 | 方便监控容器状态 |
+| 导入前自动备份SQLite | ✅ 已完成 | 已抽到公共备份 helper，并接入 `import_excel.py` / `import_faults.py` / `import_faults_worklog.py` / `full_import_worklog.py` / `import_coordinates.py` |
+| precheck报告格式不一致文件 | ✅ 已完成 | `precheck_excel.py` 现已输出统一结构化结果，并支持 `--json-out` 导出报告 |
+| Docker健康检查 | ✅ 已完成 | `Dockerfile` 与 `docker-compose.yml` 已配置健康检查 |
 
 ---
 

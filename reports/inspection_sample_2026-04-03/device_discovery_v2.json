@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-04-03T12:05:11Z",
+  "project": "inspection",
+  "source_type": "import_excel",
+  "timezone_default": "Asia/Shanghai",
+  "device_inventory": {
+    "files_scanned": 34,
+    "parse_errors": [
+      {
+        "file": "C:\\Users\\Administrator\\Desktop\\26.4.2\\设备台账.xlsx",
+        "error": "变电站名称为空: C:\\Users\\Administrator\\Desktop\\26.4.2\\设备台账.xlsx"
+      }
+    ],
+    "station_count": 33,
+    "camera_count": 2819,
+    "explicit_slot_code_count": 0,
+    "generated_slot_code_count": 2819,
+    "conflicting_slot_count": 0,
+    "conflicting_row_count": 0,
+    "slot_code_conflict_rate": 0.0,
+    "slot_code_threshold": {
+      "metric": "slot_code_conflict_rate",
+      "status": "pass",
+      "decision": "allow_phase_4",
+      "rate": 0.0
+    },
+    "field_coverage": {
+      "area": {
+        "non_empty_rows": 2728,
+        "coverage_rate": 0.9677
+      },
+      "camera_index": {
+        "non_empty_rows": 2622,
+        "coverage_rate": 0.9301
+      },
+      "channel_number": {
+        "non_empty_rows": 2622,
+        "coverage_rate": 0.9301
+      },
+      "device_model": {
+        "non_empty_rows": 1231,
+        "coverage_rate": 0.4367
+      },
+      "location": {
+        "non_empty_rows": 2819,
+        "coverage_rate": 1.0
+      },
+      "location_desc": {
+        "non_empty_rows": 2819,
+        "coverage_rate": 1.0
+      },
+      "project_camera_code": {
+        "non_empty_rows": 2819,
+        "coverage_rate": 1.0
+      }
+    },
+    "conflict_examples": []
+  },
+  "performance": {
+    "status": "skipped",
+    "reason": "database_not_provided"
+  },
+  "release_decision": {
+    "overall": "pass",
+    "thresholds": [
+      {
+        "metric": "slot_code_conflict_rate",
+        "status": "pass",
+        "decision": "allow_phase_4",
+        "rate": 0.0
+      }
+    ],
+    "reasons": []
+  }
+}

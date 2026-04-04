@@ -8,13 +8,13 @@ extract_camera_location.py — 从故障描述中提取摄像头位置信息
 """
 
 import re
-import sqlite3
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from config import Config
-from init_db import get_db_path, set_wal_mode
+from init_db import get_db_path
+from utils import create_db_connection
 
 
 def extract_camera_location(description):
@@ -59,9 +59,7 @@ def main():
     print("提取摄像头位置信息")
     print("=" * 60)
 
-    conn = sqlite3.connect(get_db_path())
-    conn.row_factory = sqlite3.Row
-    set_wal_mode(conn)
+    conn = create_db_connection(get_db_path(), row_factory=True, enable_wal=True)
     cursor = conn.cursor()
 
     # 获取未匹配且有摄像头关键词的记录

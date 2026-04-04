@@ -5,6 +5,25 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function withProject(path, extraParams) {
+    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
+        return window.AppProjectState.withProject(path, extraParams);
+    }
+    const url = new URL(path, window.location.origin);
+    if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function photoFileUrl(photoId) {
+    return withProject(`/photos/file/${photoId}`);
+}
+
 function statusText(status) {
     if (status === 'matched') return '已匹配';
     if (status === 'unmatched') return '未匹配';
@@ -17,6 +36,7 @@ function formatDate(value) {
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return value;
     return d.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit'
     });
@@ -24,7 +44,7 @@ function formatDate(value) {
 
 function photoCard(photo) {
     const imagePart = photo.is_image
-        ? `<img src="/photos/file/${photo.id}" alt="${escapeHtml(photo.filename)}" loading="lazy">`
+        ? `<img src="${photoFileUrl(photo.id)}" alt="${escapeHtml(photo.filename)}" loading="lazy">`
         : `<div class="photo-placeholder">非图片文件</div>`;
 
     return `
@@ -86,7 +106,7 @@ async function loadPhotoGroups() {
         if (keyword) params.set('keyword', keyword);
         params.set('limit_per_group', '120');
 
-        const response = await fetch(`/api/photos/groups?${params.toString()}`);
+        const response = await fetch(withProject('/api/photos/groups', Object.fromEntries(params.entries())));
         const data = await response.json();
 
         if (!response.ok) {
@@ -96,7 +116,11 @@ async function loadPhotoGroups() {
         groupsCache = data.groups || [];
         unmatchedCache = data.unmatched || [];
 
-        const flatResponse = await fetch(`/api/photos?${params.toString()}&page=1&page_size=500`);
+        const flatResponse = await fetch(withProject('/api/photos', {
+            ...Object.fromEntries(params.entries()),
+            page: 1,
+            page_size: 500
+        }));
         const flatData = await flatResponse.json();
         photosFlatCache = flatResponse.ok ? (flatData.photos || []) : [];
 
@@ -140,7 +164,7 @@ function openPreview(photoId) {
 
     document.getElementById('photo-preview-title').textContent = photo.filename || '照片预览';
     const img = document.getElementById('photo-preview-image');
-    img.src = `/photos/file/${photo.id}`;
+    img.src = photoFileUrl(photo.id);
 
     document.getElementById('photo-preview-meta').innerHTML = `
         <div class="detail-row"><span class="detail-label">文件名</span><span class="detail-value">${escapeHtml(photo.filename || '-')}</span></div>
@@ -169,4 +193,9 @@ document.getElementById('filter-keyword').addEventListener('keydown', (event) =>
     }
 });
 
-document.addEventListener('DOMContentLoaded', loadPhotoGroups);
+document.addEventListener('DOMContentLoaded', async () => {
+    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+        await window.AppProjectState.ready();
+    }
+    loadPhotoGroups();
+});

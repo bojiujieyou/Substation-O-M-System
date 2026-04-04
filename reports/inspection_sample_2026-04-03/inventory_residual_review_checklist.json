@@ -1,0 +1,670 @@
+{
+  "source_report": "reports\\inspection_sample_2026-04-03\\migration_rehearsal_v4\\import_excel_dry_run_report.json",
+  "generated_at": "2026-04-03T12:17:38.687484+00:00",
+  "summary": {
+    "station_count": 7,
+    "updated_total": 27,
+    "replaced_total": 0,
+    "retired_total": 0,
+    "high_priority_stations": 3,
+    "stations_with_duplicate_device_code": 1,
+    "stations_with_duplicate_slot_signature": 7,
+    "stations_with_location_collision": 0
+  },
+  "stations": [
+    {
+      "station": "220kV海口变电站",
+      "county": "丽丽枫运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽丽枫运检班\\220kV海口变电站.xlsx",
+      "camera_rows": 100,
+      "cameras_updated": 5,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "high",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 5,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "#1主变西南侧#46 | 球机/可见光 | CH46",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 63,
+                "project_camera_code": "B45-#1主变西南侧#46测温球机",
+                "location_desc": "#1主变西南侧#46",
+                "area": "球机/可见光",
+                "camera_index": "46",
+                "channel_number": 46
+              },
+              {
+                "excel_row": 68,
+                "project_camera_code": "B50-#1主变西南侧#46测温球机",
+                "location_desc": "#1主变西南侧#46",
+                "area": "球机/可见光",
+                "camera_index": "46",
+                "channel_number": 46
+              }
+            ]
+          },
+          {
+            "location_desc": "#2主变西南侧#45 | 球机/可见光 | CH45",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 62,
+                "project_camera_code": "B44-#2主变西南侧#45测温球机",
+                "location_desc": "#2主变西南侧#45",
+                "area": "球机/可见光",
+                "camera_index": "45",
+                "channel_number": 45
+              },
+              {
+                "excel_row": 67,
+                "project_camera_code": "B49-#2主变西南侧#45测温球机",
+                "location_desc": "#2主变西南侧#45",
+                "area": "球机/可见光",
+                "camera_index": "45",
+                "channel_number": 45
+              }
+            ]
+          },
+          {
+            "location_desc": "#3电抗器南侧#48 | 球机/可见光 | CH48",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 65,
+                "project_camera_code": "B47-#3电抗器南侧#48测温球机",
+                "location_desc": "#3电抗器南侧#48",
+                "area": "球机/可见光",
+                "camera_index": "48",
+                "channel_number": 48
+              },
+              {
+                "excel_row": 70,
+                "project_camera_code": "B52-#3电抗器南侧#48测温球机",
+                "location_desc": "#3电抗器南侧#48",
+                "area": "球机/可见光",
+                "camera_index": "48",
+                "channel_number": 48
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "220kV金亭变电站",
+      "county": "丽丽枫运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽丽枫运检班\\220kV金亭变电站.xlsx",
+      "camera_rows": 123,
+      "cameras_updated": 6,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "high",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 6,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "220kV金亭变#1主变北侧#02 | 球机/可见光 | CH2",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 100,
+                "project_camera_code": "C3-220kV金亭变#1主变北侧#02测温球机可见光",
+                "location_desc": "220kV金亭变#1主变北侧#02",
+                "area": "球机/可见光",
+                "camera_index": "02",
+                "channel_number": 2
+              },
+              {
+                "excel_row": 101,
+                "project_camera_code": "C4-220kV金亭变#1主变北侧#02测温球机热成像",
+                "location_desc": "220kV金亭变#1主变北侧#02",
+                "area": "球机/可见光",
+                "camera_index": "02",
+                "channel_number": 2
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV金亭变#1主变西侧#01 | 球机/可见光 | CH1",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 98,
+                "project_camera_code": "C1-220kV金亭变#1主变西侧#01测温球机可见光",
+                "location_desc": "220kV金亭变#1主变西侧#01",
+                "area": "球机/可见光",
+                "camera_index": "01",
+                "channel_number": 1
+              },
+              {
+                "excel_row": 99,
+                "project_camera_code": "C2-220kV金亭变#1主变西侧#01测温球机热成像",
+                "location_desc": "220kV金亭变#1主变西侧#01",
+                "area": "球机/可见光",
+                "camera_index": "01",
+                "channel_number": 1
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV金亭变#2主变南侧#03 | 球机/可见光 | CH3",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 102,
+                "project_camera_code": "C5-220kV金亭变#2主变南侧#03测温球机可见光",
+                "location_desc": "220kV金亭变#2主变南侧#03",
+                "area": "球机/可见光",
+                "camera_index": "03",
+                "channel_number": 3
+              },
+              {
+                "excel_row": 103,
+                "project_camera_code": "C6-220kV金亭变#2主变南侧#03测温球机热成像",
+                "location_desc": "220kV金亭变#2主变南侧#03",
+                "area": "球机/可见光",
+                "camera_index": "03",
+                "channel_number": 3
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "220kV青田变电站",
+      "county": "丽丽枫运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽丽枫运检班\\220kV青田变电站.xlsx",
+      "camera_rows": 194,
+      "cameras_updated": 4,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "medium",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 4,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "位置缺失 | 球机/可见光 | CH1",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 7,
+                "project_camera_code": "110kV区域田港1051线路避雷器旁#1球机",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "1",
+                "channel_number": 1
+              },
+              {
+                "excel_row": 152,
+                "project_camera_code": "#1电容器旁#1热成像球机-可见光",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "1",
+                "channel_number": 1
+              }
+            ]
+          },
+          {
+            "location_desc": "位置缺失 | 球机/可见光 | CH2",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 30,
+                "project_camera_code": "110kV区域青油1054线路避雷器旁#2球机",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "2",
+                "channel_number": 2
+              },
+              {
+                "excel_row": 172,
+                "project_camera_code": "#2电容器旁#2热成像球机-可见光",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "2",
+                "channel_number": 2
+              }
+            ]
+          },
+          {
+            "location_desc": "位置缺失 | 球机/可见光 | CH3",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 36,
+                "project_camera_code": "110kV区域青溪1052线路避雷器旁#3球机",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "3",
+                "channel_number": 3
+              },
+              {
+                "excel_row": 177,
+                "project_camera_code": "#3电容器旁#3热成像球机-可见光",
+                "location_desc": "-",
+                "area": "球机/可见光",
+                "camera_index": "3",
+                "channel_number": 3
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "220kV仙宫变电站",
+      "county": "丽宏山运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽宏山运检班\\220kV仙宫变电站.xlsx",
+      "camera_rows": 43,
+      "cameras_updated": 1,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "low",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 1,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "位置缺失 | 枪机/可见光 | CH-",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 29,
+                "project_camera_code": "1#蓄电池-西南-28#防爆枪机",
+                "location_desc": "-",
+                "area": "枪机/可见光",
+                "camera_index": "",
+                "channel_number": null
+              },
+              {
+                "excel_row": 30,
+                "project_camera_code": "1#蓄电池-西北-29#防爆枪机",
+                "location_desc": "-",
+                "area": "枪机/可见光",
+                "camera_index": "",
+                "channel_number": null
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "220kV宏山变电站",
+      "county": "丽宏山运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽宏山运检班\\220kV宏山变电站.xlsx",
+      "camera_rows": 111,
+      "cameras_updated": 6,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "high",
+      "issue_types": [
+        "duplicate_device_code",
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对样本内是否存在同设备编号重复台账行，必要时先在源文件去重。",
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 6,
+        "duplicate_slot_signature_groups": 6,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [
+          {
+            "project_camera_code": "220kV宏山变#1主变东侧#69测温球机",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 91,
+                "project_camera_code": "220kV宏山变#1主变东侧#69测温球机",
+                "location_desc": "220kV宏山变#1主变东侧#69",
+                "area": "球机/可见光",
+                "camera_index": "69",
+                "channel_number": 69
+              },
+              {
+                "excel_row": 92,
+                "project_camera_code": "220kV宏山变#1主变东侧#69测温球机",
+                "location_desc": "220kV宏山变#1主变东侧#69",
+                "area": "球机/可见光",
+                "camera_index": "69",
+                "channel_number": 69
+              }
+            ]
+          },
+          {
+            "project_camera_code": "220kV宏山变#1主变南侧#70测温球机",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 93,
+                "project_camera_code": "220kV宏山变#1主变南侧#70测温球机",
+                "location_desc": "220kV宏山变#1主变南侧#70",
+                "area": "球机/可见光",
+                "camera_index": "70",
+                "channel_number": 70
+              },
+              {
+                "excel_row": 94,
+                "project_camera_code": "220kV宏山变#1主变南侧#70测温球机",
+                "location_desc": "220kV宏山变#1主变南侧#70",
+                "area": "球机/可见光",
+                "camera_index": "70",
+                "channel_number": 70
+              }
+            ]
+          },
+          {
+            "project_camera_code": "220kV宏山变#1主变西侧#68测温球机",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 89,
+                "project_camera_code": "220kV宏山变#1主变西侧#68测温球机",
+                "location_desc": "220kV宏山变#1主变西侧#68",
+                "area": "球机/可见光",
+                "camera_index": "68",
+                "channel_number": 68
+              },
+              {
+                "excel_row": 90,
+                "project_camera_code": "220kV宏山变#1主变西侧#68测温球机",
+                "location_desc": "220kV宏山变#1主变西侧#68",
+                "area": "球机/可见光",
+                "camera_index": "68",
+                "channel_number": 68
+              }
+            ]
+          }
+        ],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "220kV宏山变#1主变东侧#69 | 球机/可见光 | CH69",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 91,
+                "project_camera_code": "220kV宏山变#1主变东侧#69测温球机",
+                "location_desc": "220kV宏山变#1主变东侧#69",
+                "area": "球机/可见光",
+                "camera_index": "69",
+                "channel_number": 69
+              },
+              {
+                "excel_row": 92,
+                "project_camera_code": "220kV宏山变#1主变东侧#69测温球机",
+                "location_desc": "220kV宏山变#1主变东侧#69",
+                "area": "球机/可见光",
+                "camera_index": "69",
+                "channel_number": 69
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV宏山变#1主变南侧#70 | 球机/可见光 | CH70",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 93,
+                "project_camera_code": "220kV宏山变#1主变南侧#70测温球机",
+                "location_desc": "220kV宏山变#1主变南侧#70",
+                "area": "球机/可见光",
+                "camera_index": "70",
+                "channel_number": 70
+              },
+              {
+                "excel_row": 94,
+                "project_camera_code": "220kV宏山变#1主变南侧#70测温球机",
+                "location_desc": "220kV宏山变#1主变南侧#70",
+                "area": "球机/可见光",
+                "camera_index": "70",
+                "channel_number": 70
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV宏山变#1主变西侧#68 | 球机/可见光 | CH68",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 89,
+                "project_camera_code": "220kV宏山变#1主变西侧#68测温球机",
+                "location_desc": "220kV宏山变#1主变西侧#68",
+                "area": "球机/可见光",
+                "camera_index": "68",
+                "channel_number": 68
+              },
+              {
+                "excel_row": 90,
+                "project_camera_code": "220kV宏山变#1主变西侧#68测温球机",
+                "location_desc": "220kV宏山变#1主变西侧#68",
+                "area": "球机/可见光",
+                "camera_index": "68",
+                "channel_number": 68
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "220kV濛洲变电站",
+      "county": "丽宏山运检班",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\丽宏山运检班\\220kV濛洲变电站.xlsx",
+      "camera_rows": 105,
+      "cameras_updated": 3,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "medium",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 3,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "220kV濛洲变#2主变东侧#08 | 球机/可见光 | CH8",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 98,
+                "project_camera_code": "B10-220kV濛洲变#2主变东侧#08测温球机可见光",
+                "location_desc": "220kV濛洲变#2主变东侧#08",
+                "area": "球机/可见光",
+                "camera_index": "08",
+                "channel_number": 8
+              },
+              {
+                "excel_row": 99,
+                "project_camera_code": "B11-220kV濛洲变#2主变东侧#08测温球机热成像",
+                "location_desc": "220kV濛洲变#2主变东侧#08",
+                "area": "球机/可见光",
+                "camera_index": "08",
+                "channel_number": 8
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV濛洲变#2主变东侧#09 | 球机/可见光 | CH9",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 100,
+                "project_camera_code": "B12-220kV濛洲变#2主变东侧#09测温球机可见光",
+                "location_desc": "220kV濛洲变#2主变东侧#09",
+                "area": "球机/可见光",
+                "camera_index": "09",
+                "channel_number": 9
+              },
+              {
+                "excel_row": 101,
+                "project_camera_code": "B13-220kV濛洲变#2主变东侧#09测温球机热成像",
+                "location_desc": "220kV濛洲变#2主变东侧#09",
+                "area": "球机/可见光",
+                "camera_index": "09",
+                "channel_number": 9
+              }
+            ]
+          },
+          {
+            "location_desc": "220kV濛洲变#2主变西侧#06 | 球机/可见光 | CH6",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 94,
+                "project_camera_code": "B6-220kV濛洲变#2主变西侧#06测温球机可见光",
+                "location_desc": "220kV濛洲变#2主变西侧#06",
+                "area": "球机/可见光",
+                "camera_index": "06",
+                "channel_number": 6
+              },
+              {
+                "excel_row": 95,
+                "project_camera_code": "B7-220kV濛洲变#2主变西侧#06测温球机热成像",
+                "location_desc": "220kV濛洲变#2主变西侧#06",
+                "area": "球机/可见光",
+                "camera_index": "06",
+                "channel_number": 6
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    },
+    {
+      "station": "110kV东亭变电站",
+      "county": "遂昌县供电公司",
+      "filepath": "C:\\Users\\Administrator\\Desktop\\26.4.2\\遂昌县供电公司\\110kV东亭变电站.xlsx",
+      "camera_rows": 59,
+      "cameras_updated": 2,
+      "cameras_replaced": 0,
+      "cameras_retired": 0,
+      "review_priority": "medium",
+      "issue_types": [
+        "duplicate_slot_signature"
+      ],
+      "suggested_actions": [
+        "核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。"
+      ],
+      "signals": {
+        "duplicate_device_code_groups": 0,
+        "duplicate_slot_signature_groups": 2,
+        "location_collision_groups": 0
+      },
+      "examples": {
+        "duplicate_device_code": [],
+        "duplicate_slot_signature": [
+          {
+            "location_desc": "#1主变-东南-37# | - | CH37",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 42,
+                "project_camera_code": "110kV东亭变-#1主变-东南-37#热成像",
+                "location_desc": "#1主变-东南-37#",
+                "area": "",
+                "camera_index": "37",
+                "channel_number": 37
+              },
+              {
+                "excel_row": 43,
+                "project_camera_code": "110kV东亭变-#1主变-东南-37#可见光",
+                "location_desc": "#1主变-东南-37#",
+                "area": "",
+                "camera_index": "37",
+                "channel_number": 37
+              }
+            ]
+          },
+          {
+            "location_desc": "#2主变-北侧-42# | - | CH42",
+            "count": 2,
+            "rows": [
+              {
+                "excel_row": 48,
+                "project_camera_code": "110kV东亭变-#2主变-北侧-42#热成像",
+                "location_desc": "#2主变-北侧-42#",
+                "area": "",
+                "camera_index": "42",
+                "channel_number": 42
+              },
+              {
+                "excel_row": 49,
+                "project_camera_code": "110kV东亭变-#2主变-北侧-42#可见光",
+                "location_desc": "#2主变-北侧-42#",
+                "area": "",
+                "camera_index": "42",
+                "channel_number": 42
+              }
+            ]
+          }
+        ],
+        "location_collision": []
+      }
+    }
+  ]
+}

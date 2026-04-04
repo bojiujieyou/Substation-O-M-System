@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}项目管理中心 - 变电站图像监控运维平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">项目管理中心</h2>
+    </div>
+
+    <section class="admin-section">
+        <h3>新增项目</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="project-code" class="form-label">项目编码</label>
+                    <input id="project-code" class="form-input" placeholder="例如 inspection_v2">
+                    <div class="form-hint">编码创建后不允许修改；如需改名，请新增项目并停用旧项目。</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="project-name" class="form-label">项目名称</label>
+                    <input id="project-name" class="form-input" placeholder="例如 智能巡视二期">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="project-short-name" class="form-label">短名称</label>
+                    <input id="project-short-name" class="form-input" placeholder="例如 巡视二期">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="project-color" class="form-label">主题色</label>
+                    <input id="project-color" class="form-input" value="#1a73e8" placeholder="#1a73e8">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="project-sort-order" class="form-label">排序</label>
+                    <input id="project-sort-order" class="form-input" type="number" min="0" placeholder="留空时自动排到最后">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">启用状态</label>
+                    <label class="form-hint" style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                        <input id="project-active" type="checkbox" checked>
+                        创建后立即启用
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions" style="justify-content:flex-start;">
+            <button class="btn btn-primary" id="project-create-btn" type="button">创建项目</button>
+        </div>
+        <div id="project-create-message" class="form-hint"></div>
+    </section>
+
+    <section class="admin-section">
+        <h3>项目列表</h3>
+        <p class="form-hint">停用后项目不会出现在前台默认切换器中，但历史数据仍可按显式项目参数查看。</p>
+        <table class="data-table table-cards">
+            <thead>
+                <tr>
+                    <th>项目编码</th>
+                    <th>项目名称</th>
+                    <th>短名称</th>
+                    <th>排序</th>
+                    <th>主题色</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="project-table-body">
+                <tr><td colspan="7" class="text-muted">加载中...</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let adminProjects = [];
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+async function fetchJson(url, options) {
+    const response = await fetch(url, options);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(payload.error || '请求失败');
+    }
+    return payload;
+}
+
+function setMessage(id, message, isError = false) {
+    const el = document.getElementById(id);
+    el.className = isError ? 'text-danger' : 'form-hint';
+    el.textContent = message || '';
+}
+
+function renderProjects() {
+    const tbody = document.getElementById('project-table-body');
+    if (!adminProjects.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted">暂无项目</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = adminProjects.map(project => `
+        <tr>
+            <td data-label="项目编码" class="mono">${escapeHtml(project.code)}</td>
+            <td data-label="项目名称">${escapeHtml(project.name)}</td>
+            <td data-label="短名称">${escapeHtml(project.short_name)}</td>
+            <td data-label="排序">${project.sort_order ?? 0}</td>
+            <td data-label="主题色">
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                    <span style="display:inline-block;width:14px;height:14px;border-radius:999px;background:${escapeHtml(project.color || '#1a73e8')};border:1px solid rgba(0,0,0,0.12);"></span>
+                    ${escapeHtml(project.color || '#1a73e8')}
+                </span>
+            </td>
+            <td data-label="状态">${project.is_active ? '启用' : '停用'}</td>
+            <td data-label="操作">
+                <div class="table-action-group">
+                    <button class="btn btn-sm btn-secondary" type="button" onclick="toggleProject('${project.code}', ${project.is_active ? 'false' : 'true'})">
+                        ${project.is_active ? '停用' : '启用'}
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function loadProjects() {
+    const data = await fetchJson('/admin/projects');
+    adminProjects = data.projects || [];
+    renderProjects();
+}
+
+async function createProject() {
+    const button = document.getElementById('project-create-btn');
+    button.disabled = true;
+    setMessage('project-create-message', '');
+
+    try {
+        await fetchJson('/admin/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: document.getElementById('project-code').value.trim(),
+                name: document.getElementById('project-name').value.trim(),
+                short_name: document.getElementById('project-short-name').value.trim(),
+                color: document.getElementById('project-color').value.trim(),
+                sort_order: document.getElementById('project-sort-order').value.trim() || null,
+                is_active: document.getElementById('project-active').checked,
+            }),
+        });
+        setMessage('project-create-message', '项目已创建。');
+        document.getElementById('project-code').value = '';
+        document.getElementById('project-name').value = '';
+        document.getElementById('project-short-name').value = '';
+        document.getElementById('project-color').value = '#1a73e8';
+        document.getElementById('project-sort-order').value = '';
+        document.getElementById('project-active').checked = true;
+        await loadProjects();
+    } catch (error) {
+        setMessage('project-create-message', error.message, true);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function toggleProject(projectCode, active) {
+    try {
+        await fetchJson(`/admin/projects/${encodeURIComponent(projectCode)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: active }),
+        });
+        await loadProjects();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+document.getElementById('project-create-btn').addEventListener('click', createProject);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadProjects();
+    } catch (error) {
+        setMessage('project-create-message', error.message, true);
+        document.getElementById('project-table-body').innerHTML = '<tr><td colspan="7" class="text-danger">加载失败</td></tr>';
+    }
+});
+</script>
+{% endblock %}
