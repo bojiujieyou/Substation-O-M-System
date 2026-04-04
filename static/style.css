@@ -115,10 +115,29 @@ body {
     line-height: 1.5;
 }
 
+/* Global focus-visible for keyboard navigation */
+*:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 /* Override Bootstrap user-agent Times New Roman leak */
 h1, h2, h3, h4, h5, h6,
 th, td, blockquote, pre, code {
     font-family: var(--font-sans) !important;
+}
+
+/* Visually hidden utility for accessibility */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .container {
@@ -1834,5 +1853,45 @@ textarea.form-input {
     .slot-history-meta {
         flex-direction: column;
         gap: 4px;
+    }
+}
+
+/* ============================================================
+   Mobile-specific adjustments
+   ============================================================ */
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 var(--space-md);
+    }
+
+    /* Touch-friendly button heights on mobile */
+    .btn {
+        min-height: 44px;
+        height: auto;
+    }
+
+    .btn-sm {
+        min-height: 44px;
+        height: auto;
+    }
+
+    .btn-lg {
+        min-height: 48px;
+    }
+}
+
+/* ============================================================
+   Accessibility - Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
