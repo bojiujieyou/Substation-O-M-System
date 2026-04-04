@@ -222,8 +222,11 @@ th, td, blockquote, pre, code {
     font-size: 14px;
     font-weight: 600;
     transition: color var(--transition-micro), background var(--transition-micro);
-    padding: 6px 10px;
+    padding: 11px 10px;
     border-radius: var(--radius-sm);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link:hover {
