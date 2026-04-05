@@ -38,6 +38,7 @@ from utils import get_db, close_db, init_app
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 # 本地HTTP调试默认关闭Secure；生产HTTPS可通过环境变量 SESSION_COOKIE_SECURE=true 开启
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
 app.config['SESSION_COOKIE_HTTPONLY'] = True

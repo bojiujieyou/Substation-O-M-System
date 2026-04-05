@@ -167,6 +167,7 @@ th, td, blockquote, pre, code {
 .page-actions {
     display: flex;
     gap: var(--space-sm);
+    flex-wrap: wrap;
 }
 
 .page-header-actions {
@@ -628,26 +629,27 @@ th, td, blockquote, pre, code {
 }
 
 .data-table thead {
-    background: var(--color-bg);
+    background: var(--color-bg-elevated);
 }
 
 .data-table th {
     text-align: left;
     padding: 12px 16px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-text-secondary);
-    border-bottom: 1px solid var(--color-border);
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .data-table td {
-    padding: 12px 16px;
+    padding: 14px 16px;
     font-size: 14px;
     border-bottom: 1px solid var(--color-border);
 }
 
 .data-table tbody tr:hover td {
-    background: var(--color-bg);
+    background: var(--color-bg-elevated);
 }
 
 .data-table tbody tr:last-child td {
@@ -1882,6 +1884,355 @@ textarea.form-input {
 }
 
 /* ============================================================
+   Homepage - Status Strip
+   ============================================================ */
+
+.ops-status-strip {
+    margin-top: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.ops-status-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.ops-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-success);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.ops-status-dot.is-ok {
+    background: var(--color-success);
+}
+
+.ops-status-dot.is-warn {
+    background: var(--color-warning);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.ops-status-text {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.ops-status-time {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   Homepage - Statistics Grid
+   ============================================================ */
+
+.stats-section {
+    margin-top: var(--space-lg);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+}
+
+.stat-card {
+    background: linear-gradient(180deg, var(--color-surface), var(--color-surface-strong));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-lg);
+    text-align: center;
+    transition: transform var(--transition-short), box-shadow var(--transition-short);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--color-primary);
+    margin-bottom: var(--space-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+/* ============================================================
+   Homepage - Charts
+   ============================================================ */
+
+.home-chart-row {
+    margin-top: var(--space-lg);
+}
+
+.home-chart-wrap {
+    position: relative;
+    height: 280px;
+}
+
+.home-recent-card {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+/* ============================================================
+   Data Table - Mobile Card Layout
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .home-chart-row {
+        display: block;
+    }
+
+    .home-chart-row .col-md-6 {
+        margin-bottom: var(--space-md);
+    }
+
+    .home-chart-row .col-md-6:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Table to card layout on mobile */
+    .data-table.table-cards thead {
+        display: none;
+    }
+
+    .data-table.table-cards tbody {
+        display: grid;
+        gap: var(--space-sm);
+    }
+
+    .data-table.table-cards tbody tr {
+        background: linear-gradient(180deg, var(--color-surface), var(--color-surface-strong));
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        padding: var(--space-sm) var(--space-md);
+        display: grid;
+        gap: var(--space-xs);
+    }
+
+    .data-table.table-cards td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .data-table.table-cards td:last-child {
+        border-bottom: none;
+    }
+
+    .data-table.table-cards td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        font-size: 12px;
+    }
+}
+
+/* ============================================================
+   Modal / Dialog - Bootstrap Enhancement
+   ============================================================ */
+
+/* Bootstrap modal backdrop enhancement */
+.modal-backdrop {
+    background: rgba(26, 35, 64, 0.5);
+}
+
+/* Bootstrap modal dialog size override */
+.modal-dialog {
+    max-width: 700px;
+}
+
+/* Bootstrap modal content styling */
+.modal-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: none;
+}
+
+/* Bootstrap modal header styling */
+.modal-header {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Bootstrap modal title styling */
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+/* Bootstrap close button enhancement */
+.btn-close {
+    width: 32px;
+    height: 32px;
+    opacity: 1;
+    background: transparent;
+}
+
+.btn-close:hover {
+    background: var(--color-bg-elevated);
+    opacity: 1;
+}
+
+/* Bootstrap modal body styling */
+.modal-body {
+    padding: var(--space-lg);
+}
+
+/* Bootstrap modal footer styling */
+.modal-footer {
+    padding: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    gap: var(--space-sm);
+}
+
+/* ============================================================
+   Detail Sections
+   ============================================================ */
+
+.detail-section {
+    margin-bottom: var(--space-lg);
+}
+
+.detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.detail-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detail-row {
+    display: flex;
+    padding: var(--space-sm) 0;
+    gap: var(--space-md);
+}
+
+.detail-label {
+    flex: 0 0 100px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.detail-value {
+    flex: 1;
+    color: var(--color-text);
+}
+
+/* ============================================================
+   Loading & Empty States
+   ============================================================ */
+
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    color: var(--color-text-secondary);
+    gap: var(--space-md);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   Table Action Group
+   ============================================================ */
+
+.table-action-group {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   Responsive - Modal & Detail
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .detail-row {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+
+    .detail-label {
+        flex: none;
+    }
+
+    .table-action-group {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        max-width: 100%;
+    }
+}
+
+/* ============================================================
    Accessibility - Reduced Motion
    ============================================================ */
 
@@ -1893,5 +2244,361 @@ textarea.form-input {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+}
+
+/* ============================================================
+   Faults Page Enhancements (Design System Alignment)
+   ============================================================ */
+
+/* Enhanced form-select with custom dropdown arrow */
+.form-select {
+    height: 36px;
+    padding: 0 32px 0 12px;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color var(--transition-short);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234f5b7a' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 140px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    border-width: 2px;
+    padding: 0 31px 0 11px;
+}
+
+.form-select-sm {
+    height: 36px;
+}
+
+/* Enhanced buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-short);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--color-border-strong);
+}
+
+.btn-secondary:hover {
+    background: var(--color-info-bg);
+}
+
+.btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.btn-link {
+    background: transparent;
+    color: var(--color-primary);
+    border: none;
+    padding: 0;
+    height: auto;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: var(--color-primary-hover);
+}
+
+/* Enhanced status badges */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-open {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.badge-handling {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+}
+
+.badge-closed {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+/* Monospace for fault IDs */
+.mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Fault list wrapper */
+.fault-list {
+    margin-top: var(--space-md);
+}
+
+/* ============================================================
+   Fault Report Page (fault_new.html)
+   ============================================================ */
+
+/* Section cards */
+.quick-search-section,
+.report-form-section {
+    margin-bottom: var(--space-lg);
+}
+
+.card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+}
+
+.card-body {
+    padding: var(--space-lg);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
+}
+
+/* Search form */
+.search-form {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.search-form .form-input {
+    flex: 1;
+}
+
+.search-result {
+    margin-top: var(--space-md);
+}
+
+.search-result-success {
+    padding: var(--space-md);
+    background: var(--color-success-bg);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--color-success);
+}
+
+.search-result-success p {
+    margin: var(--space-xs) 0;
+}
+
+.search-result-success .btn {
+    margin-top: var(--space-sm);
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: var(--space-md);
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 6px;
+}
+
+.required {
+    color: var(--color-danger);
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color var(--transition-short);
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    border-width: 2px;
+    padding: 0 11px;
+}
+
+textarea.form-input {
+    height: auto;
+    min-height: 80px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+textarea.form-input:focus {
+    padding: 9px 11px;
+}
+
+.form-hint {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+.form-input.error,
+.form-select.error {
+    border-color: var(--color-danger);
+}
+
+.form-error {
+    font-size: 13px;
+    color: var(--color-danger);
+    margin-top: 4px;
+}
+
+/* Form actions */
+.form-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Confirm modal content */
+.confirm-info {
+    padding: var(--space-sm) 0;
+}
+
+.confirm-row {
+    display: flex;
+    padding: var(--space-sm) 0;
+    gap: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.confirm-row:last-child {
+    border-bottom: none;
+}
+
+.confirm-label {
+    flex: 0 0 80px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.confirm-value {
+    flex: 1;
+    color: var(--color-text);
+}
+
+/* Success modal content */
+.success-content {
+    text-align: center;
+    padding: var(--space-lg) 0;
+}
+
+.success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    border-radius: 50%;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+}
+
+.success-content p {
+    margin: var(--space-xs) 0;
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+/* Spinner */
+.spinner-sm {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Modal size variants */
+.modal-sm .modal-dialog {
+    max-width: 500px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
     }
 }
