@@ -4,7 +4,7 @@
 
 ---
 
-### [~] 建立设计系统（设计token）
+### [x] 建立设计系统（设计token）
 **What:** 通过design-consultation生成DESIGN.md，定义色彩+字体+间距+阴影+圆角+动效token
 
 **Why:** 当前计划缺少基础设计规范，实现者会随机做决定（卡片阴影/表格行高/按钮hover效果等）
@@ -13,11 +13,11 @@
 
 **Cons:** 需要额外时间投入
 
-**Context:** 设计评审（/plan-design-review）发现：CEO-PLAN无DESIGN.md，所有设计token缺失
+**Context:** 设计评审（/plan-design-review）发现：CEO-PLAN无DESIGN.md，所有设计token缺失；2026-04-06 已按 `static/design_variants/style2.css` 完整同步实际实现
 
 **Depends on:** 无
 
-**Status:** ✅ COMPLETED — DESIGN.md已生成（2026-03-25）
+**Status:** ✅ COMPLETED — DESIGN.md已生成（2026-03-25），并于2026-04-06完成与 style2 当前实现的二次对齐
 
 ---
 
@@ -38,7 +38,7 @@
 
 ---
 
-### [ ] Phase A移动端响应式支持
+### [~] Phase A移动端响应式支持
 **What:** 在Phase A就支持移动端布局，而非推迟到Phase B
 
 **Why:** 运维人员可能用手机快速报故障，这是核心场景。手机是"5秒完成报故障"的关键设备
@@ -51,7 +51,7 @@
 
 **Depends on:** 设计系统（DESIGN.md）
 
-**Status:** ❌ NOT DONE — 响应式规范已在DESIGN.md定义，但未在HTML中实现
+**Status:** ⚠️ PARTIAL — 响应式规范已在DESIGN.md定义，并已完成首页、登录页、统计页、照片页、管理后台等核心页面的移动端适配；其余页面仍需继续补齐
 
 ---
 
@@ -145,4 +145,4 @@
 
 ---
 
-*最后更新：2026-03-25（设计评审后：补充ARIA无障碍实现TODO）*
+*最后更新：2026-04-06（补记近期UI优化进展：响应式支持已部分落地）*

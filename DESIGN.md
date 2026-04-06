@@ -25,145 +25,130 @@
 
 ## Typography
 
-- **Display/Hero:** `Noto Sans SC` Bold — 无需额外Display字体，Body字体加粗即可
-- **Body/UI:** `Noto Sans SC` (400/500/600) — 思源黑体，中文完整，商业免费，Professional
+- **Display/Hero:** `Inter` Bold — 首页Hero、页面大标题使用更紧凑的英文化无衬线，强调现代仪表盘感
+- **Body/UI:** `Inter` (400/500/600/700) — 当前实现已统一采用 Inter，中文回退系统 sans-serif
 - **Data/Tables:** `JetBrains Mono` (400/500) — 数字/IP/时间戳等宽对齐，必须支持 tabular-nums
 - **Code:** `JetBrains Mono`
-- **加载：** Google Fonts CDN（国内可用）
+- **加载：** Google Fonts CDN（Inter + JetBrains Mono）
 - **Scale:**
 
 | Level | Size | Weight | Usage |
 |-------|------|--------|-------|
-| Page Title | 20px | 700 | 页面大标题 |
-| Card Title | 16px | 600 | 卡片/弹窗标题 |
+| Page Title | 28px | 700 | 顶栏页面标题 |
+| Card Title | 18px | 700 | 卡片标题 |
 | Body | 14px | 400 | 正文、表格内容 |
 | Secondary | 13px | 400 | 辅助说明 |
-| Label | 12px | 500 | 表单标签、次要信息 |
-| Micro | 11px | 400 | 极小标签 |
+| Label | 12px | 600 | 表头、小标签、辅助控件 |
+| Micro | 11px | 600 | 侧栏分组标题、极小标识 |
 
 ---
 
 ## Color
 
-- **Approach:** 克制 — 主色 + 语义色，色彩是功能工具而非装饰
-
-### Primary
-
-| Token | HEX | Usage |
-|-------|-----|-------|
-| `--color-primary` | `#1a73e8` | 主按钮、链接、激活状态 |
-| `--color-primary-hover` | `#1557b0` | 主色Hover |
-| `--color-secondary` | `#1fb6b9` | 次要强调色 |
-| `--color-accent` | `#7b61ff` | 特殊强调色（紫色） |
+- **Approach:** 白底专业工具风格，颜色用于操作优先级、状态区分和少量强调
 
 ### Background & Surface
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-bg` | `#f3f6fc` | 页面背景 |
-| `--color-bg-elevated` | `#e9eefc` | 提升区块背景 |
-| `--color-surface` | `#ffffff` | 卡片、表格、弹窗背景 |
-| `--color-surface-strong` | `#f8faff` | 卡片内区块背景 |
+| `--bg-primary` | `#F7F9FC` | 页面背景、hover浅底 |
+| `--bg-secondary` | `#FFFFFF` | 基础白底、按钮hover背景 |
+| `--bg-elevated` | `#FFFFFF` | 提升层背景 |
+| `--bg-card` | `#FFFFFF` | 卡片、表格、弹窗背景 |
+| `--bg-sidebar` | `#FFFFFF` | 侧栏背景 |
+
+### Accent
+
+| Token | HEX | Usage |
+|-------|-----|-------|
+| `--accent-primary` | `#FF6B35` | 主按钮、主操作、激活强调 |
+| `--accent-secondary` | `#F7931E` | 主按钮 hover、次级强调 |
+| `--accent-success` | `#34C759` | 成功状态 |
+| `--accent-warning` | `#FF9500` | 告警、处理中 |
+| `--accent-danger` | `#FF3B30` | 错误、删除、紧急 |
+| `--accent-info` | `#007AFF` | 信息提示 |
 
 ### Text
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-text` | `#1a2340` | 主文字（高对比度） |
-| `--color-text-secondary` | `#4f5b7a` | 次要文字 |
-| `--color-text-muted` | `#7b86a8` | 占位符、禁用文字 |
-
-### Semantic — Status Colors
-
-| Token | HEX | BG | Usage |
-|-------|-----|-----|-------|
-| Success | `#157347` | `#dcf7e6` | 正常状态、已归档 |
-| Danger | `#c42a32` | `#fee9eb` | 故障、紧急、错误 |
-| Warning | `#b7791f` | `#fff4dc` | 处理中、告警 |
-| Info | `#1a73e8` | `#eaf0ff` | 提示、未关联 |
+| `--text-primary` | `#1C1C1E` | 主文字 |
+| `--text-secondary` | `#8E8E93` | 次要文字 |
+| `--text-muted` | `#C7C7CC` | 占位、弱化说明 |
+| `--text-inverse` | `#FFFFFF` | 深色/强调底上的文字 |
 
 ### Border
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--color-border` | `#d8e0f3` | 默认边框、分割线 |
-| `--color-border-strong` | `#7f8bb2` | 强调边框 |
-
-### Header/Nav
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-header-bg` | `linear-gradient(105deg, #112a62 0%, #223f86 45%, #1a73e8 100%)` | 导航栏背景 |
-| `--color-header-text` | `#f4f7ff` | 导航栏主文字 |
-| `--color-header-text-muted` | `rgba(244, 247, 255, 0.84)` | 导航栏次要文字 |
+| `--border-color` | `#E5E5EA` | 默认边框、分割线 |
+| `--border-strong` | `#D1D1D6` | hover/选中后的强化边框 |
 
 ---
 
 ## Spacing
 
-- **Base unit:** 4px（电网SCADA传统是紧凑间距，符合数据密集型工具）
+- **Base unit:** 4px（仍保持紧凑工具密度）
 - **Density:** 紧凑 (Compact)
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--space-2xs` | 2px | 元素内部填充 |
-| `--space-xs` | 4px | 紧密相关元素 |
-| `--space-sm` | 8px | 相关组件之间 |
-| `--space-md` | 16px | 组件之间（主要间距） |
-| `--space-lg` | 24px | 区块之间 |
-| `--space-xl` | 32px | 大区块之间 |
-| `--space-2xl` | 48px | 页面边距 |
+| `--space-xs` | 4px | 紧密元素 |
+| `--space-sm` | 8px | 按钮内图标间距、短距离组合 |
+| `--space-md` | 16px | 表单项、普通组件间距 |
+| `--space-lg` | 24px | 卡片内外主间距 |
+| `--space-xl` | 32px | 页面区块 |
+| `--space-2xl` | 48px | 大区块、空状态留白 |
 
-**表格行高：** 44px（桌面+触控友好）
-**页面边距：** 桌面24px，移动16px
+**表格行高：** 48px 左右（含 16px 单元格 padding）
+**页面边距：** 桌面 32px 主内容 padding，移动端 16px
 
 ---
 
 ## Shadow
 
-- **Approach:** 极轻阴影 — 信息密度优先，卡片不需要厚重阴影
+- **Approach:** 极轻阴影 — 白底卡片和弹窗只做层级区分，不做厚重悬浮感
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--shadow-sm` | `0 2px 8px rgba(26, 35, 64, 0.08)` | 默认卡片 |
-| `--shadow-md` | `0 8px 20px rgba(26, 35, 64, 0.12)` | Hover/交互反馈 |
-| `--shadow-lg` | `0 16px 34px rgba(17, 42, 98, 0.18)` | 弹窗 |
+| `--shadow-sm` | `0 1px 3px rgba(0, 0, 0, 0.06)` | 默认卡片、普通容器 |
+| `--shadow-md` | `0 4px 12px rgba(0, 0, 0, 0.08)` | Hover、按钮抬升、图片卡片 |
+| `--shadow-lg` | `0 10px 30px rgba(0, 0, 0, 0.1)` | 弹窗 |
 
 ---
 
 ## Border Radius
 
-- **Approach:** 克制 — 工业感不喜欢过度圆润
+- **Approach:** 比旧稿更圆一些，但仍保持工具感，不做夸张胶囊化
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--radius-sm` | 4px | 按钮、输入框、徽章 |
-| `--radius-md` | 6px | 卡片、下拉 |
-| `--radius-lg` | 8px | 弹窗 |
+| `--radius-sm` | 6px | 小按钮、紧凑输入框 |
+| `--radius-md` | 10px | 常规按钮、筛选器、列表项 |
+| `--radius-lg` | 14px | 卡片、弹窗 |
+| `--radius-xl` | 20px | 大块容器、统计卡片 |
 | `--radius-full` | 9999px | 标签/胶囊 |
 
 ---
 
 ## Motion
 
-- **Approach:** 最小功能动效 — 状态清晰 > 动画美观
+- **Approach:** 最小功能动效 — 统一用 `0.2s ease` 做 hover / 焦点 / 卡片反馈
 
-| Token | Duration | Usage |
-|-------|---------|-------|
-| `--transition-micro` | 100ms | Hover状态 |
-| `--transition-short` | 150ms | 展开/收起 |
-| `--transition-medium` | 250ms | 弹窗 |
-
-**Easing:** `cubic-bezier(0.4, 0, 0.2, 1)` (Material标准缓动)
+- **Current usage:**
+  - 按钮 hover：背景切换 + 轻微上浮
+  - 卡片 hover：阴影增强
+  - 侧栏/布局切换：移动端抽屉过渡
 
 ---
 
 ## Layout
 
-- **Approach:** Grid-disciplined — 严格列布局，可预测对齐
-- **Grid:** 12列，桌面12/平板8/手机4
-- **Max content width:** 1200px
-- **Page margin:** 桌面24px，移动16px
+- **Approach:** Grid-disciplined — 以卡片和固定间距组织信息，桌面两列、移动单列
+- **Stats grid:** 4列（≤1200px 时 2列，≤768px 时 1列）
+- **Charts grid:** 2列（≤768px 时 1列）
+- **Sidebar width:** 256px，移动端抽屉式收起
+- **Main content padding:** 桌面 32px，移动端 16px
 
 ---
 
@@ -173,34 +158,94 @@
 
 ```css
 .btn {
-  height: 36px;           /* 桌面 */
-  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  transition: all 150ms cubic-bezier(0.4,0,0.2,1);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
-.btn-primary { background: var(--color-primary); color: white; }
-.btn-primary:hover { background: var(--color-primary-hover); }
-.btn-secondary { background: white; color: var(--color-primary); border: 1px solid var(--color-primary); }
-.btn-secondary:hover { background: var(--color-info-bg); }
-.btn-ghost { background: transparent; color: var(--color-primary); border: none; }
-.btn-ghost:hover { background: var(--color-info-bg); }
-.btn-danger { background: var(--color-danger); color: white; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--accent-primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-strong);
+}
+.btn-outline-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+.btn-outline-secondary:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.btn-ghost {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.btn-ghost:hover {
+  background: var(--bg-primary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+.btn-danger {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--accent-danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #DC2626;
+  transform: translateY(-1px);
+}
+.btn-secondary.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.btn-secondary.btn-md {
+  padding: 8px 16px;
+  font-size: 13px;
+}
 ```
 
-**Mobile:** 触控目标最小 44px
+**Mobile:** 触控目标最小 44px；导航按钮、汉堡按钮和关键操作按钮优先满足
 
 ### Card
 
 ```css
 .card {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-color);
 }
 ```
 
@@ -208,48 +253,51 @@
 
 ```css
 table { width: 100%; border-collapse: collapse; }
-thead { background: var(--color-bg); }
+thead { background: transparent; }
 th {
   text-align: left;
   padding: 12px 16px;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
 }
 td {
-  padding: 12px 16px;
+  padding: 16px;
   font-size: 14px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--border-color);
 }
-/* 无斑马纹 — 数据密集时斑马纹反而干扰 */
-tr:hover td { background: var(--color-bg); }
+/* 无斑马纹，hover 仅用浅底色提示 */
+tr:hover td { background: var(--bg-primary); }
 ```
 
 ### Modal
 
 ```css
-.modal {
-  background: white;
+.modal-content {
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  max-width: 800px; /* 详情弹窗 */
+  border: 1px solid var(--border-color);
 }
-.modal-sm { max-width: 500px; } /* 确认弹窗 */
+.modal-dialog { max-width: 800px; }
+.modal-lg { max-width: 960px; }
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--border-color);
 }
 .modal-body { padding: 20px; }
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--border-color);
 }
 ```
 
@@ -263,47 +311,43 @@ tr:hover td { background: var(--color-bg); }
 ### Form
 
 ```css
-.form-input {
+.form-input,
+.form-input-compact {
   width: 100%;
-  height: 36px;
-  padding: 0 12px;
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   font-size: 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-family: var(--font-sans);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: white;
-  color: var(--color-text);
-  transition: border-color 150ms;
+  box-sizing: border-box;
 }
-.form-input:focus {
+.form-input:focus,
+.form-input-compact:focus {
   outline: none;
-  border-color: var(--color-primary);
-  border-width: 2px;
-  padding: 0 11px;
-}
-.form-input::placeholder { color: var(--color-text-muted); }
-.form-input.error { border-color: var(--color-danger); }
-.form-error {
-  font-size: 12px;
-  color: var(--color-danger);
-  margin-top: 4px;
-}
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text);
-  margin-bottom: 6px;
+  border-color: var(--accent-primary);
 }
 .form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,...");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  cursor: pointer;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
 }
-textarea.form-input { height: auto; min-height: 80px; padding: 10px 12px; resize: vertical; }
+.form-select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+}
+textarea.form-input-modal {
+  resize: vertical;
+  min-height: 88px;
+}
 ```
 
 ### Badge/Status
@@ -312,15 +356,27 @@ textarea.form-input { height: auto; min-height: 80px; padding: 10px 12px; resize
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
-.badge-processing { background: var(--color-warning-bg); color: #7d4e00; }
-.badge-closed { background: var(--color-success); color: white; }
-.badge-urgent { background: var(--color-danger); color: white; }
-.badge-info { background: var(--color-info-bg); color: var(--color-primary); }
+.badge-success {
+  background: rgba(52, 199, 89, 0.1);
+  color: var(--accent-success);
+}
+.badge-warning {
+  background: rgba(255, 149, 0, 0.1);
+  color: var(--accent-warning);
+}
+.badge-danger {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--accent-danger);
+}
+.badge-info {
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--accent-info);
+}
 ```
 
 ---
@@ -328,19 +384,22 @@ textarea.form-input { height: auto; min-height: 80px; padding: 10px 12px; resize
 ## Responsive
 
 - **断点:** 576px（手机）/ 768px（平板）/ 992px（桌面）
-- **手机布局:** 统计卡片改为2x2网格，表格改为卡片列表
+- **当前进展:** 首页、登录页、统计页、照片页、管理后台已完成主要响应式适配，其余页面继续补齐
+- **手机布局:** 统计卡片可改为单列或 2x2，表格在必要时转为卡片式或横向滚动
 - **表单:** 全宽输入框，下拉选择器适配触控
-- **触控目标:** 所有可点击元素最小 44px x 44px
+- **弹窗:** 移动端宽度 = 屏幕宽度 - 32px
+- **触控目标:** 所有可点击元素最小 44px x 44px，导航按钮与汉堡按钮需优先满足
 
 ---
 
 ## Accessibility
 
-- **ARIA地标:** `<main>`、`<nav>`、`<header>`、`<footer>`
-- **表单标签:** 所有 input/select 必须有 `<label>` 关联
-- **颜色对比度:** 文本≥4.5:1，大文本≥3:1
-- **键盘导航:** Tab焦点可见（`outline: 2px solid var(--color-primary)`）
+- **ARIA地标:** `<main>`、`<nav>`、`<header>`、`<footer>`，基础模板已落地
+- **表单标签:** 关键表单默认保留 `<label>`；登录页等极简场景允许改为 placeholder，但必须保持可理解性
+- **颜色对比度:** 深色正文在白底上保持高对比，状态色主要用于强调而不是大面积铺底
+- **键盘导航:** Tab焦点必须可见；当前主要输入/选择控件依赖边框高亮与 `box-shadow` 焦点环，后续可继续补强 `:focus-visible` 统一样式
 - **错误提示:** 表单验证错误必须用文字说明，不只是颜色
+- **装饰图标:** 纯装饰性 SVG 应加 `aria-hidden="true"`
 
 ---
 
@@ -363,44 +422,61 @@ textarea.form-input { height: auto; min-height: 80px; padding: 10px 12px; resize
 
 ```css
 :root {
-  --color-primary: #1a73e8;
-  --color-primary-hover: #1557b0;
-  --color-bg: #f8f9fa;
-  --color-surface: #ffffff;
-  --color-text: #202124;
-  --color-text-secondary: #5f6368;
-  --color-text-muted: #9aa0a6;
-  --color-success: #1e8e3e;
-  --color-success-bg: #e6f4ea;
-  --color-danger: #d93025;
-  --color-danger-bg: #fce8e6;
-  --color-warning: #f9ab00;
-  --color-warning-bg: #fef7e0;
-  --color-info: #1a73e8;
-  --color-info-bg: #e8f0fe;
-  --color-border: #dadce0;
-  --color-border-strong: #5f6368;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.10);
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --bg-primary: #F7F9FC;
+  --bg-secondary: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #FFFFFF;
+
+  --accent-primary: #FF6B35;
+  --accent-secondary: #F7931E;
+  --accent-success: #34C759;
+  --accent-warning: #FF9500;
+  --accent-danger: #FF3B30;
+  --accent-info: #007AFF;
+
+  --text-primary: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --text-muted: #C7C7CC;
+  --text-inverse: #FFFFFF;
+
+  --border-color: #E5E5EA;
+  --border-strong: #D1D1D6;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
-  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --space-2xs: 2px;
+
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  --transition-micro: 100ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-short: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-medium: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 ```
+
+---
+
+## 当前实现基线（2026-04-06）
+
+- **唯一生效样式文件：** `static/design_variants/style2.css`，`static/style.css` 不再作为当前设计稿基线
+- **基础模板：** `templates/base.html`
+- **全局工具：** `static/utils.js`（`escapeHtml`、`withProject`、`fetchJson`、`AppProjectState`）
+- **全局反馈：** 使用 `showToast(message, type)` 代替原生 `alert()`
+- **项目切换：** 顶栏 `#global-project-select` + 链接 `data-project-link` 联动
+- **页面范围：** 首页、登录页、统计页、照片页、管理后台、故障记录页等均已按 style2 风格持续演进
+- **关键布局基线：** 侧栏 256px，顶栏 sticky，主内容区 `padding: var(--space-xl)`
+- **当前反馈组件：** toast 容器 + `showToast(message, type)` 已作为全局提示基线
 
 ---
 
@@ -409,3 +485,4 @@ textarea.form-input { height: auto; min-height: 80px; padding: 10px 12px; resize
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-03-25 | Initial design system created | Created by /design-consultation based on industrial operations tool context |
+| 2026-04-06 | Design doc fully re-synced to style2 tokens and component examples | 颜色、间距、圆角、按钮、表单、表格、布局说明已按当前实现修正 |
