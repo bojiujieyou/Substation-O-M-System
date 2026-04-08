@@ -2,6 +2,8 @@
 
 {% block title %}用户项目授权 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}用户项目授权{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -17,7 +19,7 @@
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="admin-section">
-                <h3 class="mb-3">创建用户</h3>
+                <h3 class="admin-section-title">创建用户</h3>
                 <div class="form-group mb-3">
                     <label class="form-label" for="new-username">用户名</label>
                     <input id="new-username" class="form-input" placeholder="例如：operator2">
@@ -33,7 +35,7 @@
                         <option value="admin">admin</option>
                     </select>
                 </div>
-                <div class="form-actions" style="justify-content:flex-start;">
+                <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" onclick="createUser()">创建用户</button>
                 </div>
                 <div id="user-create-message" class="form-hint mt-3"></div>
@@ -42,11 +44,11 @@
 
         <div class="col-lg-8">
             <div class="admin-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">用户与项目权限</h3>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-header-title">用户与项目权限</h3>
                     <button class="btn btn-sm btn-secondary" onclick="loadUsers()">刷新</button>
                 </div>
-                <div id="user-list" class="d-flex flex-column gap-3">
+                <div id="user-list" class="admin-section-stack">
                     <div class="text-muted">加载中...</div>
                 </div>
             </div>
@@ -60,25 +62,8 @@
 let userRows = [];
 let projectCache = {};
 
-function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = value == null ? '' : String(value);
-    return div.innerHTML;
-}
-
 function setCreateMessage(message, isError = false) {
-    const el = document.getElementById('user-create-message');
-    el.className = isError ? 'text-danger' : 'text-success';
-    el.textContent = message || '';
-}
-
-async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data.error || '请求失败');
-    }
-    return data;
+    setInlineMessage('user-create-message', message, isError, 'text-success');
 }
 
 async function loadUsers() {
@@ -100,14 +85,14 @@ async function loadUserProjects(userId) {
 function renderUsers() {
     const container = document.getElementById('user-list');
     if (!userRows.length) {
-        container.innerHTML = '<div class="text-muted">当前没有用户。</div>';
+        renderBlockMessage(container, '当前没有用户。');
         return;
     }
     container.innerHTML = userRows.map(user => {
         const scopeData = projectCache[user.id] || { projects: [] };
         const projects = scopeData.projects || [];
         const projectCheckboxes = projects.map(project => `
-            <div class="border rounded p-2 mb-2">
+            <div class="user-access-scope-card">
                 <div class="form-check">
                     <input
                         class="form-check-input"
@@ -120,7 +105,7 @@ function renderUsers() {
                         ${escapeHtml(project.name)} ${project.is_active ? '' : '<span class="text-muted">(已停用)</span>'}
                     </label>
                 </div>
-                <div class="form-check mt-1">
+                <div class="form-check user-access-write-check">
                     <input
                         class="form-check-input"
                         type="checkbox"
@@ -223,7 +208,7 @@ async function saveUserProjects(userId) {
 }
 
 async function deleteUser(userId, username) {
-    if (!window.confirm(`确认删除用户 ${username} 吗？`)) {
+    if (!confirm(`确认删除用户 ${username} 吗？`)) {
         return;
     }
     try {
@@ -240,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadUsers();
     } catch (error) {
         setCreateMessage(error.message, true);
-        document.getElementById('user-list').innerHTML = '<div class="text-danger">加载失败</div>';
+        renderBlockMessage('user-list', '加载失败', true);
     }
 });
 </script>

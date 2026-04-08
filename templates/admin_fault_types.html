@@ -2,6 +2,8 @@
 
 {% block title %}故障类型版本管理 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}故障类型版本管理{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -17,7 +19,7 @@
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="admin-section">
-                <h3 class="mb-3">新建草稿版本</h3>
+                <h3 class="admin-section-title">新建草稿版本</h3>
                 <div class="form-group mb-3">
                     <label class="form-label" for="project-select">项目</label>
                     <select id="project-select" class="form-select"></select>
@@ -37,15 +39,15 @@
                                 <th>代码</th>
                                 <th>名称</th>
                                 <th>语义组</th>
-                                <th style="width:72px;">排序</th>
-                                <th style="width:56px;">启用</th>
-                                <th style="width:56px;">删除</th>
+                                <th class="fault-type-sort-col">排序</th>
+                                <th class="fault-type-toggle-col">启用</th>
+                                <th class="fault-type-toggle-col">删除</th>
                             </tr>
                         </thead>
                         <tbody id="draft-table-body"></tbody>
                     </table>
                 </div>
-                <div class="form-actions" style="justify-content:flex-start;">
+                <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" onclick="createDraftVersion()">创建草稿版本</button>
                     <button class="btn btn-secondary" onclick="loadDraftFromCurrent()">重载当前发布版本</button>
                 </div>
@@ -55,11 +57,11 @@
 
         <div class="col-lg-7">
             <div class="admin-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">版本历史</h3>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-header-title">版本历史</h3>
                     <button class="btn btn-sm btn-secondary" type="button" onclick="loadVersions()">刷新</button>
                 </div>
-                <div id="version-list" class="d-flex flex-column gap-3">
+                <div id="version-list" class="admin-section-stack">
                     <div class="text-muted">请选择项目后加载版本。</div>
                 </div>
             </div>
@@ -97,31 +99,12 @@ let draftRows = [];
 let publishTargetVersion = null;
 let publishModal = null;
 
-function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = value == null ? '' : String(value);
-    return div.innerHTML;
-}
-
 function setDraftMessage(message, isError = false) {
-    const el = document.getElementById('draft-message');
-    el.className = isError ? 'text-danger' : 'text-success';
-    el.textContent = message || '';
+    setInlineMessage('draft-message', message, isError, 'text-success');
 }
 
 function setPublishMessage(message, isError = false) {
-    const el = document.getElementById('publish-message');
-    el.className = isError ? 'text-danger' : 'text-success';
-    el.textContent = message || '';
-}
-
-async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data.error || '请求失败');
-    }
-    return data;
+    setInlineMessage('publish-message', message, isError, 'text-success');
 }
 
 function blankDraftRow(sortOrder = 1) {
@@ -207,7 +190,7 @@ function diffSummaryText(version) {
 function renderVersions() {
     const container = document.getElementById('version-list');
     if (!versionRows.length) {
-        container.innerHTML = '<div class="text-muted">当前项目还没有故障类型版本。</div>';
+        renderBlockMessage(container, '当前项目还没有故障类型版本。');
         return;
     }
     container.innerHTML = versionRows.map(version => `
@@ -298,7 +281,7 @@ function openPublishModal(versionId) {
     const diffBody = document.getElementById('publish-diff-body');
     const diffItems = publishTargetVersion.diff_items || [];
     if (!diffItems.length) {
-        diffBody.innerHTML = '<p class="text-muted">该版本与上一发布版本没有差异，可直接发布。</p>';
+        renderBlockMessage(diffBody, '该版本与上一发布版本没有差异，可直接发布。');
     } else {
         diffBody.innerHTML = diffItems.map(item => {
             const previousLabel = item.previous ? item.previous.type_label : '不存在';
@@ -370,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadDraftFromCurrent();
     } catch (error) {
         setDraftMessage(error.message, true);
-        document.getElementById('version-list').innerHTML = '<div class="text-danger">加载失败</div>';
+        renderBlockMessage('version-list', '加载失败', true);
     }
 });
 </script>

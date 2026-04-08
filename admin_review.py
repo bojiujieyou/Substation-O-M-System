@@ -2,6 +2,7 @@ import json
 
 from flask import Blueprint, jsonify, render_template, request, session
 
+from ai_fault_analysis import ensure_ai_runtime_schema
 from admin import require_admin
 from import_review_support import get_columns, normalize_station_name
 from project_access import table_exists
@@ -46,6 +47,8 @@ def _json_response_row(row):
         payload["raw_payload"] = _parse_json_text(payload["raw_payload_json"])
     if "raw_context_json" in payload:
         payload["raw_context"] = _parse_json_text(payload["raw_context_json"])
+    if "ai_suggestion_json" in payload:
+        payload["ai_suggestion"] = _parse_json_text(payload["ai_suggestion_json"])
     return payload
 
 
@@ -161,6 +164,17 @@ def _resolve_review_slot_id(db, item, raw_payload, station_id):
 
 def _create_fault_from_review_item(db, item, raw_payload, station_id):
     fault_report_columns = get_columns(db, "fault_reports")
+    ai_suggestion = _parse_json_text(item["ai_suggestion_json"]) if "ai_suggestion_json" in item.keys() else None
+    queue_ai_confidence = (
+        item["ai_confidence"]
+        if "ai_confidence" in item.keys() and item["ai_confidence"] is not None
+        else (raw_payload or {}).get("ai_confidence")
+    )
+    queue_ai_reason = (
+        item["ai_reason"]
+        if "ai_reason" in item.keys() and item["ai_reason"]
+        else (raw_payload or {}).get("ai_reason")
+    )
     source_record_key = item["source_record_key_candidate"]
     if "source_record_key" in fault_report_columns and source_record_key:
         duplicate = db.execute(
@@ -195,6 +209,12 @@ def _create_fault_from_review_item(db, item, raw_payload, station_id):
     fault_type_code = str((raw_payload or {}).get("fault_type_code") or "").strip() or None
     fault_type_version_id = _coerce_optional_int((raw_payload or {}).get("fault_type_version_id"))
     project_device_code = str((raw_payload or {}).get("project_device_code") or "").strip() or None
+    camera_location_text = (
+        str((raw_payload or {}).get("camera_location_text") or "").strip()
+        or str((raw_payload or {}).get("location") or "").strip()
+        or str((ai_suggestion or {}).get("camera_location_text") or "").strip()
+        or None
+    )
     fault_type = _infer_fault_type(raw_payload)
     fault_type_label_snapshot = (
         str((raw_payload or {}).get("fault_type_label_snapshot") or "").strip()
@@ -236,6 +256,19 @@ def _create_fault_from_review_item(db, item, raw_payload, station_id):
         ("fault_type_label_snapshot", fault_type),
         ("source_time_raw", (raw_payload or {}).get("raw_time")),
         ("source_timezone", (raw_payload or {}).get("source_timezone") or "Asia/Shanghai"),
+        ("camera_location_text", camera_location_text),
+        ("ai_confidence", queue_ai_confidence),
+        (
+            "ai_trace_json",
+            json.dumps(
+                {
+                    "review_queue_item_id": item["id"],
+                    "ai_suggestion": ai_suggestion,
+                    "ai_reason": queue_ai_reason,
+                },
+                ensure_ascii=False,
+            ) if ai_suggestion or queue_ai_reason else None,
+        ),
     ]
     optional_fields = [
         (
@@ -571,6 +604,7 @@ def batch_approve_station_name_proposals():
 @require_admin
 def list_import_review_queue():
     db = get_db()
+    ensure_ai_runtime_schema(db)
     feature_error = _require_tables(db, "fault_import_review_queue", "import_batches")
     if feature_error:
         return feature_error
@@ -620,6 +654,7 @@ def list_import_review_queue():
 @require_admin
 def get_import_review_item_detail(item_id):
     db = get_db()
+    ensure_ai_runtime_schema(db)
     feature_error = _require_tables(db, "fault_import_review_queue", "import_batches")
     if feature_error:
         return feature_error
@@ -645,6 +680,7 @@ def get_import_review_item_detail(item_id):
 @require_admin
 def approve_import_review_item(item_id):
     db = get_db()
+    ensure_ai_runtime_schema(db)
     feature_error = _require_tables(db, "fault_import_review_queue", "fault_reports")
     if feature_error:
         return feature_error

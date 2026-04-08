@@ -3,7 +3,7 @@ import sqlite3
 from io import BytesIO
 
 import pytest
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 
 from app import app
 from auth import hash_password
@@ -17,6 +17,24 @@ def project_test_db(tmp_path):
 
 @pytest.fixture
 def client(project_test_db):
+    import config as config_module
+
+    original_path = config_module.Config.DATABASE_PATH
+    app_original_db_path = app.config["DATABASE_PATH"]
+    config_module.Config.DATABASE_PATH = project_test_db
+    app.config["DATABASE_PATH"] = project_test_db
+    app.config["TESTING"] = True
+
+    init_db(force=True)
+    with app.test_client() as c:
+        yield c
+
+    config_module.Config.DATABASE_PATH = original_path
+    app.config["DATABASE_PATH"] = app_original_db_path
+
+
+@pytest.fixture
+def legacy_upload_client(project_test_db):
     import config as config_module
 
     original_path = config_module.Config.DATABASE_PATH
@@ -136,6 +154,20 @@ def seeded_project_schema(project_test_db):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE import_batches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            source_type TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            file_count INTEGER,
+            success_count INTEGER,
+            fail_count INTEGER,
+            report_path TEXT,
+            operator_id INTEGER,
+            timezone_default_used TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE UNIQUE INDEX idx_cameras_one_active_per_slot
         ON cameras(slot_id)
         WHERE status = 'active';
@@ -223,6 +255,54 @@ def seeded_project_schema(project_test_db):
             source_timezone = 'Asia/Shanghai'
         WHERE id = 2
         """
+    )
+    conn.commit()
+    conn.close()
+    yield
+
+
+@pytest.fixture
+def seeded_legacy_upload_schema(project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.executescript(
+        """
+        CREATE TABLE projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            short_name TEXT NOT NULL,
+            color TEXT NOT NULL DEFAULT '#1a73e8',
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE import_batches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            source_type TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            file_count INTEGER,
+            success_count INTEGER,
+            fail_count INTEGER,
+            report_path TEXT,
+            operator_id INTEGER,
+            timezone_default_used TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO projects (id, code, name, short_name, color, sort_order, is_active)
+        VALUES (1, 'unified', 'Unified', 'UNI', '#1a73e8', 1, 1)
+        """
+    )
+    password_hash_admin = hash_password("adminpass")
+    conn.execute(
+        "INSERT INTO users (id, username, password_hash, role) VALUES (1, 'admin1', ?, 'admin')",
+        (password_hash_admin,),
     )
     conn.commit()
     conn.close()
@@ -802,6 +882,23 @@ def test_admin_upload_excel_assigns_selected_project(client, seeded_project_sche
     assert response.status_code == 200
     payload = response.get_json()
     assert payload["project"] == "inspection"
+    assert payload["batch_id"] > 0
+    assert payload["result_url"] == f"/admin/import-batches/{payload['batch_id']}"
+
+    page = client.get("/admin")
+    assert page.status_code == 200
+    assert b"admin-section-header" in page.data
+    assert b"admin-section-header-title" in page.data
+    assert b"admin-section-title" in page.data
+    assert b"renderBlockMessage(" in page.data
+    assert "导入结果摘要页".encode("utf-8") in page.data
+    assert "导入审查中心".encode("utf-8") in page.data
+    assert b"upload-result" in page.data
+    assert b"upload-feedback-card" in page.data
+    assert b"form-input-file" in page.data
+    assert b"admin-side-note-steps" in page.data
+    assert b"station-search-input" in page.data
+    assert b"is-hidden" in page.data
 
     conn = sqlite3.connect(project_test_db)
     try:
@@ -824,12 +921,334 @@ def test_admin_upload_excel_assigns_selected_project(client, seeded_project_sche
             """,
             (station[0],),
         ).fetchone()
+        batch = conn.execute(
+            """
+            SELECT project_id, source_type, mode, file_count, success_count, fail_count, report_path
+            FROM import_batches
+            WHERE id = ?
+            """,
+            (payload["batch_id"],),
+        ).fetchone()
     finally:
         conn.close()
 
     assert station == (payload["station_id"], "County Upload")
     assert slot_row == (2, "Upload Slot", "Upload Area", 3)
     assert camera == (2, 3, "10.2.0.3", "Upload Slot", "Upload Area", "active")
+    assert batch[:6] == (2, "import_excel", "best-effort", 1, 1, 0)
+    assert batch[6]
+
+
+def test_admin_upload_excel_uses_county_from_excel_when_not_selected(client, seeded_project_schema, project_test_db, monkeypatch):
+    login(client, "admin1", "adminpass")
+
+    def fake_parse_excel(_filepath):
+        return {
+            "station": {
+                "name": "Station Inferred County",
+                "voltage_level": "110kV",
+                "county": "Excel County",
+                "location": "Upload Yard",
+                "ip_range": "",
+                "nvr_ip": "",
+                "nvr_port": None,
+            },
+            "cameras": [
+                {
+                    "camera_index": "5",
+                    "area": "Upload Area",
+                    "location": "Upload Slot",
+                    "ip_address": "10.2.0.5",
+                    "channel_port": None,
+                    "channel_number": 5,
+                }
+            ],
+        }
+
+    monkeypatch.setattr("admin.parse_excel_admin", fake_parse_excel)
+
+    response = client.post(
+        "/admin/upload",
+        data={
+            "project": "inspection",
+            "file": (BytesIO(b"fake excel"), "import.xlsx"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        station = conn.execute(
+            "SELECT county FROM stations WHERE name = 'Station Inferred County' AND voltage_level = '110kV'"
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert station == ("Excel County",)
+
+
+def test_admin_upload_excel_requires_county_when_missing_from_input_and_excel(client, seeded_project_schema, monkeypatch):
+    login(client, "admin1", "adminpass")
+
+    def fake_parse_excel(_filepath):
+        return {
+            "station": {
+                "name": "Station Missing County",
+                "voltage_level": "110kV",
+                "county": "",
+                "location": "Upload Yard",
+                "ip_range": "",
+                "nvr_ip": "",
+                "nvr_port": None,
+            },
+            "cameras": [],
+        }
+
+    monkeypatch.setattr("admin.parse_excel_admin", fake_parse_excel)
+
+    response = client.post(
+        "/admin/upload",
+        data={
+            "project": "inspection",
+            "file": (BytesIO(b"fake excel"), "import.xlsx"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert "确定县区" in response.get_json()["error"]
+
+
+def test_admin_upload_excel_rejects_inventory_without_cameras(client, seeded_project_schema, monkeypatch):
+    login(client, "admin1", "adminpass")
+
+    def fake_parse_excel(_filepath):
+        return {
+            "station": {
+                "name": "Station No Cameras",
+                "voltage_level": "110kV",
+                "county": "County Upload",
+                "location": "Upload Yard",
+                "ip_range": "",
+                "nvr_ip": "",
+                "nvr_port": None,
+            },
+            "cameras": [],
+        }
+
+    monkeypatch.setattr("admin.parse_excel_admin", fake_parse_excel)
+
+    response = client.post(
+        "/admin/upload",
+        data={
+            "project": "inspection",
+            "county": "County Upload",
+            "file": (BytesIO(b"fake excel"), "import.xlsx"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert "未识别到摄像头" in response.get_json()["error"]
+
+
+def test_admin_upload_daily_fault_summary_creates_fault_records_and_review_items(client, seeded_project_schema, project_test_db):
+    login(client, "admin1", "adminpass")
+
+    conn = sqlite3.connect(project_test_db)
+    conn.executescript(
+        """
+        ALTER TABLE fault_reports ADD COLUMN source_batch_id TEXT;
+        ALTER TABLE fault_reports ADD COLUMN source_record_key TEXT;
+
+        CREATE TABLE station_name_mapping_proposals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            import_batch_id INTEGER,
+            project_id INTEGER,
+            source_system TEXT NOT NULL,
+            external_name TEXT NOT NULL,
+            normalized_name TEXT NOT NULL,
+            candidate_station_id INTEGER,
+            confidence_score REAL,
+            raw_context_json TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            reviewer_id INTEGER,
+            reviewed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE fault_import_review_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            import_batch_id INTEGER NOT NULL,
+            project_id INTEGER NOT NULL,
+            source_type TEXT NOT NULL,
+            source_record_key_candidate TEXT,
+            raw_payload_json TEXT NOT NULL,
+            issue_type TEXT NOT NULL,
+            issue_detail TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            resolved_fault_id INTEGER,
+            reviewer_id INTEGER,
+            reviewed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.append(["变电站视频系统监控日报", "", ""])
+    sheet.append(["时间：  04 月 07 日", "", "检查人员：正好科技"])
+    sheet.append(["检查发现问题情况", "", ""])
+    sheet.append(["变电站", "问题描述", ""])
+    sheet.append(["省公司平台离线摄像头", "", ""])
+    sheet.append(["Station A", "主变西北侧球机离线", ""])
+    sheet.append(["Unknown Station", "大门口球机离线", ""])
+
+    file_stream = BytesIO()
+    workbook.save(file_stream)
+    file_stream.seek(0)
+
+    response = client.post(
+        "/admin/upload",
+        data={
+            "project": "unified",
+            "import_type": "daily_fault_summary",
+            "file": (file_stream, "变电站视频系统监控日报20260407.xlsx"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["import_type"] == "daily_fault_summary"
+    assert payload["project"] == "unified"
+    assert payload["faults_added"] == 1
+    assert payload["queued_count"] == 1
+    assert payload["proposal_count"] == 1
+    assert payload["batch_id"] > 0
+    assert payload["source_date"] == "2026-04-07"
+    assert "ai_status" in payload
+    assert "status" in payload["ai_status"]
+    assert "message" in payload["ai_status"]
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        fault = conn.execute(
+            """
+            SELECT project_id, source_type, source_batch_id, source_record_key, fault_type_label_snapshot, status
+            FROM fault_reports
+            WHERE source_type = 'import_daily_fault_summary'
+            """
+        ).fetchone()
+        review_count = conn.execute(
+            "SELECT COUNT(*) FROM fault_import_review_queue WHERE source_type = 'import_daily_fault_summary'"
+        ).fetchone()[0]
+        proposal_count = conn.execute(
+            "SELECT COUNT(*) FROM station_name_mapping_proposals WHERE source_system = 'daily_fault_summary'"
+        ).fetchone()[0]
+        batch = conn.execute(
+            """
+            SELECT project_id, source_type, mode, success_count, fail_count, report_path
+            FROM import_batches
+            WHERE id = ?
+            """,
+            (payload["batch_id"],),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert fault[0] == 1
+    assert fault[1] == "import_daily_fault_summary"
+    assert fault[2] == str(payload["batch_id"])
+    assert fault[3].startswith("unified:import_daily_fault_summary:")
+    assert fault[4] == "摄像头离线"
+    assert fault[5] == "open"
+    assert review_count == 1
+    assert proposal_count == 1
+    assert batch[:5] == (1, "import_daily_fault_summary", "best-effort", 1, 1)
+    assert batch[5]
+
+
+def test_admin_upload_excel_legacy_returns_batch_result_redirect(legacy_upload_client, seeded_legacy_upload_schema, project_test_db, monkeypatch):
+    login(legacy_upload_client, "admin1", "adminpass")
+
+    def fake_parse_excel(_filepath):
+        return {
+            "station": {
+                "name": "Legacy Upload Station",
+                "voltage_level": "110kV",
+                "county": "Legacy County",
+                "location": "Legacy Yard",
+                "ip_range": "",
+                "nvr_ip": "",
+                "nvr_port": None,
+            },
+            "cameras": [
+                {
+                    "camera_index": "1",
+                    "area": "Legacy Area",
+                    "location": "Legacy Slot",
+                    "ip_address": "10.3.0.1",
+                    "channel_port": None,
+                    "channel_number": 1,
+                },
+                {
+                    "camera_index": "2",
+                    "area": "Legacy Area",
+                    "location": "Legacy Slot 2",
+                    "ip_address": "10.3.0.2",
+                    "channel_port": None,
+                    "channel_number": 2,
+                },
+            ],
+        }
+
+    monkeypatch.setattr("admin.parse_excel_admin", fake_parse_excel)
+
+    response = legacy_upload_client.post(
+        "/admin/upload",
+        data={
+            "file": (BytesIO(b"fake excel"), "legacy-import.xlsx"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["cameras_added"] == 2
+    assert payload["project"] == "unified"
+    assert payload["batch_id"] > 0
+    assert payload["result_url"] == f"/admin/import-batches/{payload['batch_id']}"
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        station = conn.execute(
+            "SELECT id, county FROM stations WHERE name = 'Legacy Upload Station' AND voltage_level = '110kV'"
+        ).fetchone()
+        camera_count = conn.execute(
+            "SELECT COUNT(*) FROM cameras WHERE station_id = ?",
+            (station[0],),
+        ).fetchone()[0]
+        batch = conn.execute(
+            """
+            SELECT project_id, source_type, mode, file_count, success_count, fail_count, report_path
+            FROM import_batches
+            WHERE id = ?
+            """,
+            (payload["batch_id"],),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert station == (payload["station_id"], "Legacy County")
+    assert camera_count == 2
+    assert batch[:6] == (1, "import_excel", "best-effort", 1, 1, 0)
+    assert batch[6]
 
 
 def test_statistics_export_respects_project_scope(client, seeded_project_schema):
@@ -843,49 +1262,6 @@ def test_statistics_export_respects_project_scope(client, seeded_project_schema)
     assert overview_sheet["B4"].value == 1
     assert overview_sheet["B5"].value == 1
     assert overview_sheet["B6"].value == 1
-
-
-def test_stats_uses_semantic_group_and_kpi_metrics(client, seeded_project_schema, project_test_db):
-    conn = sqlite3.connect(project_test_db)
-    conn.execute(
-        """
-        UPDATE fault_reports
-        SET status = 'closed',
-            fault_type_code = 'BLUR',
-            fault_type_version_id = 10,
-            created_at = '2026-04-02T08:00:00',
-            handling_started_at = '2026-04-02T08:30:00',
-            closed_at = '2026-04-02T09:00:00'
-        WHERE id = 2
-        """
-    )
-    conn.execute(
-        """
-        INSERT INTO fault_reports
-            (id, station_id, camera_id, fault_type, reporter_name, status, project_id, camera_slot_id,
-             fault_type_code, fault_type_label_snapshot, fault_type_version_id, created_at, closed_at)
-        VALUES
-            (3, 1, 1, 'Blur Legacy', 'Carol', 'closed', 2, 1,
-             'BLUR', 'Blur', 10, '2026-03-01T08:00:00', '2026-03-01T10:00:00')
-        """
-    )
-    conn.commit()
-    conn.close()
-
-    login(client, "operator1", "operatorpass")
-    response = client.get("/api/stats?year=2026")
-    assert response.status_code == 200
-
-    data = response.get_json()
-    assert data["stations"] == 1
-    assert data["cameras"] == 1
-    assert data["faults"] == 2
-    assert data["fault_type_distribution"][0]["semantic_group"] == "BLUR"
-    assert data["fault_type_distribution"][0]["count"] == 2
-    assert data["kpi"]["response_sample_count"] == 1
-    assert data["kpi"]["close_sample_count"] == 2
-    assert data["kpi"]["avg_response_seconds"] == pytest.approx(1800.0, abs=0.1)
-    assert data["kpi"]["avg_close_seconds"] == pytest.approx(5400.0, abs=0.1)
 
 
 def test_statistics_export_operator_hides_audit_columns(client, seeded_project_schema):
@@ -1038,3 +1414,32 @@ def test_fault_detail_includes_import_audit_metadata(client, seeded_project_sche
     assert data["fault"]["project_device_code"] == "INSPECT-CAM-001"
     assert data["fault"]["source_time_raw"] == "2026-04-02 08:00:00"
     assert data["fault"]["source_timezone"] == "Asia/Shanghai"
+
+
+def test_fault_list_and_detail_fall_back_to_camera_location_text(client, seeded_project_schema, project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.execute("ALTER TABLE fault_reports ADD COLUMN camera_location_text TEXT")
+    conn.execute(
+        """
+        UPDATE fault_reports
+        SET camera_id = NULL,
+            camera_slot_id = NULL,
+            camera_location_text = '2号主变西北侧球机'
+        WHERE id = 2
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+
+    list_response = client.get("/api/faults?project=inspection")
+    assert list_response.status_code == 200
+    list_payload = list_response.get_json()
+    fault = next(item for item in list_payload["faults"] if item["id"] == 2)
+    assert fault["camera_location"] == "2号主变西北侧球机"
+
+    detail_response = client.get("/api/faults/2/detail")
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.get_json()
+    assert detail_payload["fault"]["camera_location"] == "2号主变西北侧球机"

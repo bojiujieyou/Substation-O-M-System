@@ -184,6 +184,14 @@ def test_notification_center_page_renders(client, seeded_notification_schema):
 
     assert response.status_code == 200
     assert "项目通知配置".encode("utf-8") in response.data
+    assert b"form-actions-start" in response.data
+    assert b"notification-actions-col" in response.data
+    assert b"admin-section-title" in response.data
+    assert b"admin-section-header" in response.data
+    assert b"admin-section-header-title" in response.data
+    assert b"admin-section-header-actions" in response.data
+    assert b"setInlineMessage(" in response.data
+    assert b"renderTableMessage(" in response.data
 
 
 def test_list_project_notifications_returns_policies_and_configs(client, seeded_notification_schema):

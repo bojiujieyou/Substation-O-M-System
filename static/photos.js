@@ -1,25 +1,3 @@
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function withProject(path, extraParams) {
-    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
-        return window.AppProjectState.withProject(path, extraParams);
-    }
-    const url = new URL(path, window.location.origin);
-    if (extraParams) {
-        Object.entries(extraParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, value);
-            }
-        });
-    }
-    return `${url.pathname}${url.search}${url.hash}`;
-}
-
 function photoFileUrl(photoId) {
     return withProject(`/photos/file/${photoId}`);
 }

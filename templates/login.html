@@ -11,13 +11,11 @@
 
         <form id="login-form">
             <div class="form-group">
-                <label for="username" class="form-label">用户名</label>
-                <input type="text" id="username" class="form-input" required placeholder="请输入用户名" autocomplete="username">
+                <input type="text" id="username" class="form-input" required placeholder="用户名" autocomplete="username">
             </div>
             <div class="form-group">
-                <label for="password" class="form-label">密码</label>
                 <div class="password-input-wrap">
-                    <input type="password" id="password" class="form-input" required placeholder="请输入密码" autocomplete="current-password">
+                    <input type="password" id="password" class="form-input" required placeholder="密码" autocomplete="current-password">
                     <button type="button" id="toggle-password" class="password-toggle-btn" title="显示密码">
                         <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -30,39 +28,13 @@
                     </button>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="login-btn">登录</button>
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 12px 20px; font-size: 16px;" id="login-btn">登录</button>
         </form>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<style>
-.password-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.password-input-wrap .form-input {
-    padding-right: 44px;
-    flex: 1;
-}
-.password-toggle-btn {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6b7280;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.password-toggle-btn:hover {
-    color: #374151;
-}
-</style>
 <script>
 document.getElementById('toggle-password').addEventListener('click', function() {
     const pwd = document.getElementById('password');

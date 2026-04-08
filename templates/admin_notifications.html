@@ -2,6 +2,8 @@
 
 {% block title %}项目通知配置 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}项目通知配置{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -17,7 +19,7 @@
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="admin-section">
-                <h3 class="mb-3">策略配置</h3>
+                <h3 class="admin-section-title">策略配置</h3>
                 <div class="form-group mb-3">
                     <label class="form-label" for="notification-project-select">项目</label>
                     <select id="notification-project-select" class="form-select"></select>
@@ -56,7 +58,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-actions" style="justify-content:flex-start;">
+                <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" onclick="saveNotificationPolicy()">保存策略</button>
                 </div>
                 <div id="notification-policy-message" class="form-hint mt-3"></div>
@@ -65,8 +67,8 @@
 
         <div class="col-lg-7">
             <div class="admin-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">通知目标</h3>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-header-title">通知目标</h3>
                     <button class="btn btn-sm btn-secondary" onclick="loadNotificationData()">刷新</button>
                 </div>
 
@@ -92,7 +94,7 @@
                     <input class="form-check-input" type="checkbox" id="config-active" checked>
                     <label class="form-check-label" for="config-active">新建目标时启用</label>
                 </div>
-                <div class="form-actions mb-3" style="justify-content:flex-start;">
+                <div class="form-actions mb-3 form-actions-start">
                     <button class="btn btn-primary" onclick="createNotificationConfig()">新增通知目标</button>
                 </div>
                 <div id="notification-config-message" class="form-hint mb-3"></div>
@@ -106,7 +108,7 @@
                                 <th>目标</th>
                                 <th>去重</th>
                                 <th>状态</th>
-                                <th style="width:160px;">操作</th>
+                                <th class="notification-actions-col">操作</th>
                             </tr>
                         </thead>
                         <tbody id="notification-config-table">
@@ -117,12 +119,12 @@
             </div>
 
             <div class="admin-section mt-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="admin-section-header">
                     <div>
-                        <h3 class="mb-1">最近派发计划</h3>
+                        <h3 class="admin-section-header-title">最近派发计划</h3>
                         <p class="text-muted mb-0">展示当前项目的通知计划日志，并支持手动执行一次升级巡检。</p>
                     </div>
-                    <div class="d-flex gap-2 flex-wrap">
+                    <div class="admin-section-header-actions">
                         <button class="btn btn-sm btn-secondary" onclick="runNotificationMaintenance(false)">预演升级巡检</button>
                         <button class="btn btn-sm btn-primary" onclick="runNotificationMaintenance(true)">执行升级巡检</button>
                         <button class="btn btn-sm btn-secondary" onclick="loadNotificationLogs()">刷新日志</button>
@@ -163,25 +165,8 @@ let allowedEventTypes = [];
 let allowedChannels = [];
 let currentNotificationProjectCode = '';
 
-function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = value == null ? '' : String(value);
-    return div.innerHTML;
-}
-
 function setNotificationMessage(targetId, message, isError = false) {
-    const el = document.getElementById(targetId);
-    el.className = isError ? 'text-danger' : 'text-success';
-    el.textContent = message || '';
-}
-
-async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data.error || '请求失败');
-    }
-    return data;
+    setInlineMessage(targetId, message, isError, 'text-success');
 }
 
 function currentPolicy() {
@@ -239,7 +224,7 @@ function renderConfigs() {
     const tbody = document.getElementById('notification-config-table');
     const configs = currentConfigs();
     if (!configs.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-muted">当前项目还没有通知目标。</td></tr>';
+        renderTableMessage(tbody, 6, '当前项目还没有通知目标。');
         return;
     }
     tbody.innerHTML = configs.map(item => `
@@ -262,7 +247,7 @@ function renderConfigs() {
 function renderNotificationLogs() {
     const tbody = document.getElementById('notification-log-table');
     if (!notificationDispatchLogs.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-muted">当前项目还没有通知派发计划。</td></tr>';
+        renderTableMessage(tbody, 6, '当前项目还没有通知派发计划。');
         return;
     }
 
@@ -393,7 +378,7 @@ async function toggleNotificationConfig(configId, active) {
 }
 
 async function deleteNotificationConfig(configId) {
-    if (!window.confirm(`确认停用通知目标 #${configId} 吗？`)) {
+    if (!confirm(`确认停用通知目标 #${configId} 吗？`)) {
         return;
     }
     try {
@@ -438,8 +423,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadNotificationData();
     } catch (error) {
         setNotificationMessage('notification-policy-message', error.message, true);
-        document.getElementById('notification-config-table').innerHTML = '<tr><td colspan="6" class="text-danger">加载失败</td></tr>';
-        document.getElementById('notification-log-table').innerHTML = '<tr><td colspan="6" class="text-danger">加载失败</td></tr>';
+        renderTableMessage('notification-config-table', 6, '加载失败', true);
+        renderTableMessage('notification-log-table', 6, '加载失败', true);
     }
 });
 </script>

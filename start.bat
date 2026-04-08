@@ -1,45 +1,62 @@
 @echo off
+setlocal EnableDelayedExpansion
 chcp 65001 >nul
+
 echo ========================================
-echo 变电站图像监控运维平台 - 启动脚本
+echo Station Monitor Platform - Startup
 echo ========================================
 echo.
 
-REM 检查 Python 是否安装
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo [错误] 未找到 Python，请先安装 Python 3.8+
+    echo [Error] Python 3.8+ is required.
     pause
     exit /b 1
 )
 
-REM 检查是否已经在运行
-tasklist /FI "IMAGENAME eq python.exe" /FI "WINDOWTITLE eq 变电站监控*" 2>nul | find /I "python.exe" >nul
+tasklist /FI "IMAGENAME eq python.exe" /FI "WINDOWTITLE eq Station Monitor*" 2>nul | find /I "python.exe" >nul
 if not errorlevel 1 (
-    echo [警告] 应用可能已在运行
+    echo [Warn] The application may already be running.
     echo.
 )
 
-REM 切换到项目目录
 cd /d "%~dp0"
+call :load_env_file
 
-REM 检查数据库文件
 if not exist "station_monitor.db" (
-    echo [警告] 数据库文件不存在，首次运行请先执行 init_db.py
+    echo [Warn] station_monitor.db was not found.
+    echo [Hint] Run python init_db.py first if this is a new setup.
     echo.
 )
 
-REM 启动 Flask 应用
-echo [启动] 正在启动 Flask 应用...
-echo [信息] 访问地址: http://localhost:5000
-echo [信息] 按 Ctrl+C 停止服务
-echo.
-echo ========================================
+echo [Start] Launching Flask application...
+echo [URL] http://localhost:5000
 echo.
 
-start "变电站监控运维平台" python app.py
+start "Station Monitor" python app.py
 
-echo [完成] 应用已在新窗口启动
-echo [提示] 关闭窗口或使用 stop.bat 停止服务
+echo [Done] Started in a new window.
 echo.
 pause
+goto :eof
+
+:load_env_file
+if not exist ".env" (
+    echo [Info] .env not found, using system environment.
+    goto :eof
+)
+
+echo [Info] Loaded .env configuration.
+for /f "usebackq tokens=* delims=" %%L in (".env") do (
+    set "line=%%L"
+    if defined line (
+        if not "!line:~0,1!"=="#" (
+            for /f "tokens=1* delims==" %%A in ("!line!") do (
+                if not "%%A"=="" (
+                    set "%%A=%%B"
+                )
+            )
+        )
+    )
+)
+goto :eof

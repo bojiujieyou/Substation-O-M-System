@@ -205,6 +205,7 @@ def _load_station_reference_data(conn, source_system):
 
 def resolve_station_match(conn, external_name, *, source_system=None):
     normalized = normalize_station_name(external_name)
+    raw_name = str(external_name or "").strip().lower()
     if not normalized:
         return {
             "matched": False,
@@ -217,6 +218,19 @@ def resolve_station_match(conn, external_name, *, source_system=None):
         }
 
     station_rows, alias_map, external_map = _load_station_reference_data(conn, source_system)
+
+    literal_matches = [row for row in station_rows if str(row["name"] or "").strip().lower() == raw_name]
+    if len(literal_matches) == 1:
+        match = literal_matches[0]
+        return {
+            "matched": True,
+            "station_id": match["id"],
+            "station_name": match["name"],
+            "confidence_score": 1.0,
+            "match_source": "stations_literal",
+            "should_create_proposal": False,
+            "proposal_candidate_station_id": match["id"],
+        }
 
     if normalized in external_map:
         station_ids = sorted(external_map[normalized])
@@ -362,6 +376,9 @@ def enqueue_fault_review_item(
     raw_payload,
     issue_type,
     issue_detail,
+    ai_suggestion=None,
+    ai_confidence=None,
+    ai_reason=None,
 ):
     if not table_exists(conn, "fault_import_review_queue"):
         return None
@@ -394,23 +411,46 @@ def enqueue_fault_review_item(
     if existing:
         return existing[0] if not hasattr(existing, "keys") else existing["id"]
 
+    columns = get_columns(conn, "fault_import_review_queue")
+    insert_columns = [
+        "import_batch_id",
+        "project_id",
+        "source_type",
+        "source_record_key_candidate",
+        "raw_payload_json",
+        "issue_type",
+        "issue_detail",
+        "status",
+    ]
+    values = [
+        import_batch_id,
+        project_id,
+        source_type,
+        source_record_key_candidate,
+        json.dumps(raw_payload, ensure_ascii=False),
+        issue_type,
+        issue_detail,
+        "pending",
+    ]
+    optional_values = [
+        ("ai_suggestion_json", json.dumps(ai_suggestion, ensure_ascii=False) if ai_suggestion else None),
+        ("ai_confidence", ai_confidence),
+        ("ai_reason", ai_reason),
+    ]
+    for column_name, value in optional_values:
+        if column_name in columns:
+            insert_columns.append(column_name)
+            values.append(value)
+
+    placeholders = ", ".join(["?"] * len(insert_columns))
     cursor = conn.execute(
-        """
+        f"""
         INSERT INTO fault_import_review_queue (
-            import_batch_id, project_id, source_type, source_record_key_candidate,
-            raw_payload_json, issue_type, issue_detail, status
+            {", ".join(insert_columns)}
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+        VALUES ({placeholders})
         """,
-        (
-            import_batch_id,
-            project_id,
-            source_type,
-            source_record_key_candidate,
-            json.dumps(raw_payload, ensure_ascii=False),
-            issue_type,
-            issue_detail,
-        ),
+        values,
     )
     return cursor.lastrowid
 

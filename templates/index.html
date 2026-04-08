@@ -2,96 +2,210 @@
 
 {% block title %}首页 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}项目首页{% endblock %}
+
 {% block content %}
-<div class="container">
-    <section class="card ops-status-strip">
-        <div class="ops-status-main">
-            <span id="ops-status-dot" class="ops-status-dot"></span>
-            <span id="ops-status-text" class="ops-status-text">加载中...</span>
-            <span class="ops-status-time">最后刷新 <strong id="last-refresh">-</strong></span>
-            <span class="ops-status-time">每 60 秒自动刷新（后台暂停）</span>
+<section class="card dashboard-hero">
+    <div class="dashboard-hero-body">
+        <p id="hero-kicker" class="dashboard-hero-kicker">变电站图像监控运维平台</p>
+        <h2 id="hero-title" class="dashboard-hero-title">监控运维总览</h2>
+        <p id="hero-subtitle" class="dashboard-hero-subtitle">统一查看变电站、摄像头、故障记录与统计分析，快速定位异常并推进处理。</p>
+        <div class="dashboard-hero-actions">
+            <a href="{{ url_for('admin_page') }}" class="hero-btn hero-btn-solid" data-project-link>导入数据</a>
+            <a href="{{ url_for('design_variant_faults', style='style2') }}" class="hero-btn hero-btn-ghost" data-project-link>查看故障记录</a>
+            <a href="{{ url_for('design_variant_stations', style='style2') }}" class="hero-btn hero-btn-ghost" data-project-link>查看变电站</a>
         </div>
-        <button id="manual-refresh" class="btn btn-secondary btn-sm" type="button">手动刷新</button>
-    </section>
-
-    <section class="stats-section home-kpi-section">
-        <div class="stats-grid home-stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="stat-stations">-</div>
-                <div class="stat-label">变电站</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-cameras">-</div>
-                <div class="stat-label">摄像头</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-faults">-</div>
-                <div class="stat-label">故障总数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-faults-month">-</div>
-                <div class="stat-label">本月故障</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-fault-open">-</div>
-                <div class="stat-label">待处理</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-fault-handling">-</div>
-                <div class="stat-label">处理中</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-fault-closed">-</div>
-                <div class="stat-label">已关闭</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-fault-year">-</div>
-                <div class="stat-label">本年故障</div>
-            </div>
+    </div>
+    <div class="dashboard-hero-aside" aria-hidden="true">
+        <div class="dashboard-hero-status-card">
+            <div class="dashboard-hero-status-label">值班重点</div>
+            <div class="dashboard-hero-status-value" id="hero-open-count">-</div>
+            <div class="dashboard-hero-status-text">待处理故障</div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <h2 class="visually-hidden">数据可视化</h2>
-    <section class="row home-chart-row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title">故障状态分布</h3>
-                    <div class="home-chart-wrap">
-                        <canvas id="statusChart"></canvas>
-                    </div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" id="stat-stations">-</div>
+        <div class="stat-label">变电站总数</div>
+        <div class="stat-trend up">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                <path d="M6 2L2 6h8L6 2z"/>
+            </svg>
+            <span>运行中</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" id="stat-cameras">-</div>
+        <div class="stat-label">摄像头总数</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value stat-value-danger" id="stat-fault-open">-</div>
+        <div class="stat-label">待处理故障</div>
+        <div class="stat-trend down" id="stat-open-trend" style="display: none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                <path d="M6 10L2 6h8L6 10z"/>
+            </svg>
+            <span>需关注</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value stat-value-success" id="stat-fault-closed">-</div>
+        <div class="stat-label">已关闭故障</div>
+    </div>
+</div>
+
+<section class="card dashboard-summary-card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">运维概览</h3>
+            <p class="card-subtitle">全量故障与本月新增情况</p>
+        </div>
+        <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-md" data-project-link>查看统计</a>
+    </div>
+    <div class="dashboard-summary-grid overview-grid">
+        <div class="dashboard-summary-item">
+            <div class="dashboard-summary-head">
+                <div class="dashboard-summary-marker">总</div>
+                <div>
+                    <div class="dashboard-summary-label">故障总数</div>
+                    <div class="dashboard-summary-value" id="stat-faults">-</div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title">县区故障 Top5</h3>
-                    <div class="home-chart-wrap">
-                        <canvas id="countyChart"></canvas>
-                    </div>
-                </div>
+            <div class="dashboard-progress-track">
+                <div id="total-fault-progress" class="dashboard-progress-fill dashboard-progress-fill-primary"></div>
             </div>
         </div>
-    </section>
-
-    <section class="card home-recent-card">
-        <div class="card-body">
-            <h3 class="card-title">最近告警 Top 5</h3>
-            <table class="data-table table-cards home-recent-table">
-                <thead>
-                    <tr>
-                        <th>站点</th>
-                        <th>类型</th>
-                        <th>状态</th>
-                        <th>时间</th>
-                    </tr>
-                </thead>
-                <tbody id="recent-faults-body">
-                    <tr><td colspan="4" class="text-muted">加载中...</td></tr>
-                </tbody>
-            </table>
+        <div class="dashboard-summary-item">
+            <div class="dashboard-summary-head">
+                <div class="dashboard-summary-marker dashboard-summary-marker-info">月</div>
+                <div>
+                    <div class="dashboard-summary-label">本月新增</div>
+                    <div class="dashboard-summary-value" id="stat-faults-month">-</div>
+                </div>
+            </div>
+            <div class="dashboard-progress-track">
+                <div id="month-fault-progress" class="dashboard-progress-fill dashboard-progress-fill-info"></div>
+            </div>
         </div>
+    </div>
+</section>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">故障状态分布</h3>
+                <p class="card-subtitle">待处理、处理中、已关闭</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">区县故障分布</h3>
+                <p class="card-subtitle">按区县统计故障数量</p>
+            </div>
+            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看报表</a>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="countyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-bottom-grid faults-shortcuts-grid">
+    <div class="table-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">最新故障</h3>
+                <p class="card-subtitle">最近 5 条故障记录</p>
+            </div>
+            <a href="{{ url_for('design_variant_faults', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看全部</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>站点</th>
+                    <th>类型</th>
+                    <th>上报时间</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="recent-faults-body">
+                <tr>
+                    <td colspan="4" class="dashboard-table-empty">加载中...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <section class="card dashboard-shortcuts-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">快捷入口</h3>
+                <p class="card-subtitle">常用功能快速跳转</p>
+            </div>
+        </div>
+        <div class="dashboard-shortcuts-list">
+            <a href="{{ url_for('admin_page') }}" class="dashboard-shortcut-item dashboard-shortcut-item-priority" data-project-link>
+                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-primary">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h6a1 1 0 01.707.293l3 3A1 1 0 0115 7v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm7 1V3.414L13.586 7H11a1 1 0 01-1-1zm-1 4a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2v-2z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="dashboard-shortcut-content">
+                    <div class="dashboard-shortcut-title">导入数据</div>
+                    <div class="dashboard-shortcut-subtitle">上传台账或批量故障数据，进入统一导入流程</div>
+                </div>
+                <div class="dashboard-shortcut-badge dashboard-shortcut-badge-primary">优先</div>
+            </a>
+            <a href="{{ url_for('design_variant_stations', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
+                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-info">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                    </svg>
+                </div>
+                <div class="dashboard-shortcut-content">
+                    <div class="dashboard-shortcut-title">站点巡检</div>
+                    <div class="dashboard-shortcut-subtitle">查看站点清单与设备信息</div>
+                </div>
+                <div class="dashboard-shortcut-badge">进入</div>
+            </a>
+            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
+                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-success">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                        <path d="M3 14a1 1 0 011-1h1a1 1 0 011 1v2H3v-2zM8 10a1 1 0 011-1h1a1 1 0 011 1v6H8v-6zM13 6a1 1 0 011-1h1a1 1 0 011 1v10h-3V6z"/>
+                    </svg>
+                </div>
+                <div class="dashboard-shortcut-content">
+                    <div class="dashboard-shortcut-title">统计分析</div>
+                    <div class="dashboard-shortcut-subtitle">查看状态分布与区县统计</div>
+                </div>
+                <div class="dashboard-shortcut-badge">进入</div>
+            </a>
+            <a href="{{ url_for('design_variant_fault_new', style='style2') }}" class="dashboard-shortcut-item dashboard-shortcut-item-muted" data-project-link>
+                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-muted">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                    </svg>
+                </div>
+                <div class="dashboard-shortcut-content">
+                    <div class="dashboard-shortcut-title">新建报修</div>
+                    <div class="dashboard-shortcut-subtitle">保留手工入口，优先级低于导入流程</div>
+                </div>
+                <div class="dashboard-shortcut-badge">备用</div>
+            </a>
+        </div>
+        <a href="{{ url_for('design_variant_faults', style='style2') }}" class="btn btn-secondary dashboard-shortcuts-footer-link" data-project-link>打开故障记录</a>
     </section>
 </div>
 {% endblock %}
@@ -99,32 +213,29 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
 <script>
-let refreshTimer = null;
 let statusChart = null;
 let countyChart = null;
-let loading = false;
 
-function withProject(path, extraParams) {
-    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
-        return window.AppProjectState.withProject(path, extraParams);
+const HOME_PROJECT_COPY = {
+    unified: {
+        pageTitle: '统一平台首页',
+        kicker: '统一平台 · SUBSTATION OPS',
+        title: '统一平台运维总览',
+        subtitle: '聚合查看各类站点、摄像头、故障与统计数据，适合做全局运行态势总览。'
+    },
+    inspection: {
+        pageTitle: '智慧巡视首页',
+        kicker: '智慧巡视 · INSPECTION OPS',
+        title: '智慧巡视项目总览',
+        subtitle: '聚焦智慧巡视项目的站点设备、巡检故障和趋势变化，便于快速排查巡视异常。'
+    },
+    auxiliary: {
+        pageTitle: '辅控系统首页',
+        kicker: '辅控系统 · AUXILIARY OPS',
+        title: '辅控系统项目总览',
+        subtitle: '查看辅控系统项目的运行数据、故障处理与分布情况，支撑辅控链路日常运维。'
     }
-    const url = new URL(path, window.location.origin);
-    if (extraParams) {
-        Object.entries(extraParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, value);
-            }
-        });
-    }
-    return `${url.pathname}${url.search}${url.hash}`;
-}
-
-function escapeHtml(text) {
-    if (text === null || text === undefined) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
-}
+};
 
 function formatTime(value) {
     if (!value) return '-';
@@ -133,7 +244,7 @@ function formatTime(value) {
     return d.toLocaleString('zh-CN', {
         timeZone: 'Asia/Shanghai',
         month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
+        hour: '2-digit', minute: '2-digit'
     });
 }
 
@@ -154,34 +265,31 @@ function statusLabel(status) {
     return status || '-';
 }
 
-function setRunStatus(level, message) {
-    const dot = document.getElementById('ops-status-dot');
-    const text = document.getElementById('ops-status-text');
-    dot.classList.remove('is-ok', 'is-warn');
-    dot.classList.add(level === 'ok' ? 'is-ok' : 'is-warn');
-    text.textContent = message;
-}
-
-function setManualRefreshLoading(isLoading) {
-    const btn = document.getElementById('manual-refresh');
-    if (!btn) return;
-    btn.disabled = isLoading;
-    btn.textContent = isLoading ? '刷新中...' : '手动刷新';
+function statusBadgeClass(status) {
+    if (status === 'open') return 'badge-danger';
+    if (status === 'handling') return 'badge-warning';
+    if (status === 'closed') return 'badge-success';
+    return 'badge-info';
 }
 
 function renderRecentFaults(faults) {
     const tbody = document.getElementById('recent-faults-body');
     if (!faults.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无告警记录</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="dashboard-table-empty">暂无记录</td></tr>';
         return;
     }
 
-    tbody.innerHTML = faults.map(f => `
+    tbody.innerHTML = faults.slice(0, 5).map((f) => `
         <tr>
-            <td data-label="站点">${escapeHtml(f.station_name || '-')}</td>
-            <td data-label="类型">${escapeHtml(f.fault_type || '-')}</td>
-            <td data-label="状态"><span class="badge badge-${escapeHtml(f.status || '')}">${statusLabel(f.status)}</span></td>
-            <td data-label="时间">${formatTime(f.created_at)}</td>
+            <td>
+                <div class="dashboard-recent-station">
+                    <div class="dashboard-recent-station-name">${escapeHtml(f.station_name || '-')}</div>
+                    <div class="dashboard-recent-station-status">${statusLabel(f.status)}</div>
+                </div>
+            </td>
+            <td>${escapeHtml(f.fault_type || '-')}</td>
+            <td class="dashboard-recent-time">${formatTime(f.created_at)}</td>
+            <td><span class="badge ${statusBadgeClass(f.status)}">${statusLabel(f.status)}</span></td>
         </tr>
     `).join('');
 }
@@ -191,20 +299,29 @@ function renderStatusChart(openCount, handlingCount, closedCount) {
     if (!ctx || typeof Chart === 'undefined') return;
 
     if (statusChart) statusChart.destroy();
+
     statusChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['待处理', '处理中', '已关闭'],
             datasets: [{
                 data: [openCount, handlingCount, closedCount],
-                backgroundColor: ['#d93025', '#f9ab00', '#1e8e3e']
+                backgroundColor: ['#FF3B30', '#FF9500', '#34C759'],
+                borderWidth: 0,
+                hoverOffset: 6
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 10
+                    }
+                }
             }
         }
     });
@@ -215,6 +332,7 @@ function renderCountyChart(labels, values) {
     if (!ctx || typeof Chart === 'undefined') return;
 
     if (countyChart) countyChart.destroy();
+
     countyChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -222,30 +340,49 @@ function renderCountyChart(labels, values) {
             datasets: [{
                 label: '故障数',
                 data: values,
-                backgroundColor: '#1a73e8'
+                backgroundColor: '#FF6B35',
+                borderRadius: 8,
+                maxBarThickness: 36
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            indexAxis: 'y'
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 }
 
 async function loadDashboardData() {
-    if (loading) return;
-    loading = true;
-
     try {
+        const projectCode = window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function'
+            ? window.AppProjectState.getProjectCode()
+            : '';
         const [statsRes, faultsRes, stationsRes] = await Promise.allSettled([
-            fetch(withProject('/api/stats')),
-            fetch(withProject('/api/faults')),
-            fetch(withProject('/api/stations'))
+            fetch(withProject('/api/stats', projectCode ? { project: projectCode } : {})),
+            fetch(withProject('/api/faults', projectCode ? { project: projectCode } : {})),
+            fetch(withProject('/api/stations', projectCode ? { project: projectCode } : {}))
         ]);
-
-        let failCount = 0;
 
         if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
             const stats = await statsRes.value.json();
@@ -253,32 +390,41 @@ async function loadDashboardData() {
             updateStat('stat-cameras', stats.cameras || 0);
             updateStat('stat-faults', stats.faults || 0);
             updateStat('stat-faults-month', stats.faults_this_month || 0);
-            updateStat('stat-fault-year', stats.faults_this_year || 0);
-        } else {
-            failCount++;
-            ['stat-stations', 'stat-cameras', 'stat-faults', 'stat-faults-month', 'stat-fault-year'].forEach(id => updateStat(id, '!'));
+
+            const totalFaults = stats.faults || 0;
+            const monthFaults = stats.faults_this_month || 0;
+            const totalProgress = document.getElementById('total-fault-progress');
+            const monthProgress = document.getElementById('month-fault-progress');
+            if (totalProgress && totalFaults > 0) {
+                totalProgress.style.width = Math.min(100, totalFaults) + '%';
+            }
+            if (monthProgress && totalFaults > 0) {
+                monthProgress.style.width = Math.min(100, Math.round(monthFaults / totalFaults * 100)) + '%';
+            }
         }
 
         let faults = [];
         if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
             const faultData = await faultsRes.value.json();
             faults = faultData.faults || [];
-        } else {
-            failCount++;
         }
 
         const statusCounts = { open: 0, handling: 0, closed: 0 };
-        const recentFaults = [...faults]
-            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-            .slice(0, 5);
-
         faults.forEach(f => {
             if (f.status in statusCounts) statusCounts[f.status] += 1;
         });
 
         updateStat('stat-fault-open', statusCounts.open);
-        updateStat('stat-fault-handling', statusCounts.handling);
         updateStat('stat-fault-closed', statusCounts.closed);
+        updateStat('hero-open-count', statusCounts.open);
+
+        if (statusCounts.open > 0) {
+            document.getElementById('stat-open-trend').style.display = 'inline-flex';
+        }
+
+        const recentFaults = [...faults]
+            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
         renderRecentFaults(recentFaults);
         renderStatusChart(statusCounts.open, statusCounts.handling, statusCounts.closed);
 
@@ -289,8 +435,6 @@ async function loadDashboardData() {
             stations.forEach(s => {
                 countyMap[s.id] = s.county || '未知';
             });
-        } else {
-            failCount++;
         }
 
         const countyCounts = {};
@@ -301,64 +445,41 @@ async function loadDashboardData() {
 
         const topCounty = Object.entries(countyCounts)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
+            .slice(0, 7);
 
         renderCountyChart(
             topCounty.length ? topCounty.map(i => i[0]) : ['暂无数据'],
             topCounty.length ? topCounty.map(i => i[1]) : [0]
         );
-
-        document.getElementById('last-refresh').textContent = formatTime(new Date().toISOString());
-        setRunStatus(failCount === 0 ? 'ok' : 'warn', failCount === 0 ? '运行正常' : '部分数据异常');
     } catch (error) {
-        console.error('首页数据刷新失败:', error);
-        setRunStatus('warn', '数据刷新失败');
-    } finally {
-        loading = false;
+        console.error('数据加载失败:', error);
     }
 }
 
-function stopRefreshTimer() {
-    if (!refreshTimer) return;
-    clearInterval(refreshTimer);
-    refreshTimer = null;
+function updateHomepageProjectCopy() {
+    const currentProject = window.AppProjectState && typeof window.AppProjectState.getCurrentProject === 'function'
+        ? window.AppProjectState.getCurrentProject()
+        : null;
+    const projectCode = currentProject?.code || 'unified';
+    const copy = HOME_PROJECT_COPY[projectCode] || HOME_PROJECT_COPY.unified;
+
+    const pageTitle = document.querySelector('.page-title');
+    const kicker = document.getElementById('hero-kicker');
+    const heroTitle = document.getElementById('hero-title');
+    const heroSubtitle = document.getElementById('hero-subtitle');
+
+    if (pageTitle) pageTitle.textContent = copy.pageTitle;
+    if (kicker) kicker.textContent = copy.kicker;
+    if (heroTitle) heroTitle.textContent = copy.title;
+    if (heroSubtitle) heroSubtitle.textContent = copy.subtitle;
 }
-
-function startRefreshTimer() {
-    stopRefreshTimer();
-    if (document.hidden) return;
-    refreshTimer = setInterval(() => {
-        loadDashboardData();
-    }, 60000);
-}
-
-document.getElementById('manual-refresh').addEventListener('click', async () => {
-    setManualRefreshLoading(true);
-    try {
-        await loadDashboardData();
-    } finally {
-        setManualRefreshLoading(false);
-        startRefreshTimer();
-    }
-});
-
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        stopRefreshTimer();
-        return;
-    }
-    loadDashboardData();
-    startRefreshTimer();
-});
-
-document.addEventListener('pagehide', stopRefreshTimer);
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
     }
-    await loadDashboardData();
-    startRefreshTimer();
+    updateHomepageProjectCopy();
+    loadDashboardData();
 });
 </script>
 {% endblock %}

@@ -3,299 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}变电站图像监控运维平台{% endblock %}</title>
+    <title>{% block title %}变电站图像监控运维平台 - 风格2（金融应用）{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-5.3.3.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=20260405-4">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='design_variants/style2.css') }}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    {% set current_endpoint = request.endpoint or '' %}
-    {% set requested_project_code = request.args.get('project', '') %}
-    <a href="#main-content" class="skip-link">跳到主要内容</a>
-
-    <header class="app-header" role="banner">
-        <div class="container">
-            <div class="header-content">
-                <h1 class="app-title">变电站图像监控运维平台</h1>
-
-                <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-hidden="true">
-                <label for="nav-toggle" class="nav-toggle-label" aria-label="切换导航">
-                    <span></span><span></span><span></span>
-                </label>
-
-                <div class="header-right">
-                    <nav class="app-nav" role="navigation" aria-label="主导航">
-                        <a
-                            href="{{ url_for('index', project=requested_project_code) if requested_project_code else url_for('index') }}"
-                            class="nav-link {% if current_endpoint == 'index' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'index' %}aria-current="page"{% endif %}
-                        >首页</a>
-                        <a
-                            href="{{ url_for('stations', project=requested_project_code) if requested_project_code else url_for('stations') }}"
-                            class="nav-link {% if current_endpoint == 'stations' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'stations' %}aria-current="page"{% endif %}
-                        >变电站</a>
-                        <a
-                            href="{{ url_for('fault_new', project=requested_project_code) if requested_project_code else url_for('fault_new') }}"
-                            class="nav-link {% if current_endpoint == 'fault_new' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'fault_new' %}aria-current="page"{% endif %}
-                        >报故障</a>
-                        <a
-                            href="{{ url_for('faults', project=requested_project_code) if requested_project_code else url_for('faults') }}"
-                            class="nav-link {% if current_endpoint == 'faults' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'faults' %}aria-current="page"{% endif %}
-                        >故障记录</a>
-                        <a
-                            href="{{ url_for('statistics', project=requested_project_code) if requested_project_code else url_for('statistics') }}"
-                            class="nav-link {% if current_endpoint == 'statistics' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'statistics' %}aria-current="page"{% endif %}
-                        >统计</a>
-                        <a
-                            href="{{ url_for('map_page', project=requested_project_code) if requested_project_code else url_for('map_page') }}"
-                            class="nav-link {% if current_endpoint == 'map_page' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'map_page' %}aria-current="page"{% endif %}
-                        >地图</a>
-                        <a
-                            href="{{ url_for('photos_page', project=requested_project_code) if requested_project_code else url_for('photos_page') }}"
-                            class="nav-link {% if current_endpoint == 'photos_page' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'photos_page' %}aria-current="page"{% endif %}
-                        >照片</a>
-                        <a
-                            href="{{ url_for('admin_page', project=requested_project_code) if requested_project_code else url_for('admin_page') }}"
-                            class="nav-link {% if current_endpoint == 'admin_page' %}nav-link-primary{% endif %}"
-                            data-project-link
-                            {% if current_endpoint == 'admin_page' %}aria-current="page"{% endif %}
-                        >管理</a>
-                        {% if session.get('user_id') %}
-                        <a href="#" class="nav-link" onclick="logout(); return false;">退出</a>
-                        {% else %}
-                        <a
-                            href="{{ url_for('login_page') }}"
-                            class="nav-link {% if current_endpoint == 'login_page' %}nav-link-primary{% endif %}"
-                            {% if current_endpoint == 'login_page' %}aria-current="page"{% endif %}
-                        >登录</a>
-                        {% endif %}
-                    </nav>
-
-                    <div id="global-project-switcher" class="project-switcher" hidden>
-                        <label for="global-project-select" class="project-switcher-label">当前项目</label>
-                        <select id="global-project-select" class="project-switcher-select" aria-label="切换项目">
-                            <option value="">加载中...</option>
-                        </select>
-                    </div>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                        <rect width="36" height="36" rx="8" fill="#FF6B35"/>
+                        <path d="M18 10L22 14H20V22H16V14H14L18 10Z" fill="white"/>
+                        <rect x="12" y="24" width="12" height="2" rx="1" fill="white"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <div class="logo-title">监控平台</div>
+                    <div class="logo-subtitle">图像运维系统</div>
                 </div>
             </div>
-        </div>
-    </header>
 
-    <main class="app-main" id="main-content" role="main">
-        {% block content %}{% endblock %}
-    </main>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <a href="{{ url_for('design_variant_index', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                        </svg>
+                        <span>首页</span>
+                    </a>
+                </div>
 
-    <footer class="app-footer">
-        <div class="container">
-            <p>变电站图像监控运维平台 &copy; 2024</p>
+                <div class="nav-section">
+                    <div class="nav-section-title">运维管理</div>
+                    <a href="{{ url_for('design_variant_stations', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>变电站</span>
+                    </a>
+                    <a href="{{ url_for('design_variant_fault_new', style='style2') }}" class="nav-item nav-item-nested" data-project-link>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 110-2h4V3a1 1 0 011-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>报故障</span>
+                    </a>
+                    <a href="{{ url_for('design_variant_faults', style='style2') }}" class="nav-item nav-item-nested" data-project-link>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1a1 1 0 01-1 1H3a1 1 0 01-1-1V3z"/>
+                            <path fill-rule="evenodd" d="M2 7a1 1 0 011-1h10a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V7zm3 2a1 1 0 100 2h4a1 1 0 100-2H5z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>故障记录</span>
+                    </a>
+                    <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="nav-item nav-item-nested" data-project-link>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M2 12a1 1 0 011-1h1a1 1 0 011 1v2H2v-2zm5-4a1 1 0 011-1h1a1 1 0 011 1v6H7V8zm5-4a1 1 0 011-1h1a1 1 0 011 1v10h-3V4z"/>
+                        </svg>
+                        <span>统计报表</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">数据分析</div>
+                    <a href="{{ url_for('design_variant_map', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>地图</span>
+                    </a>
+                    <a href="{{ url_for('design_variant_photos', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>照片</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('admin_page') }}" class="nav-item">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>管理后台</span>
+                </a>
+                <a href="{{ url_for('login_page') }}" class="nav-item" id="sidebar-logout-link" data-logout-url="{{ url_for('auth.logout') }}">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>退出</span>
+                </a>
+
+                <div class="user-profile">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23FF6B35'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='16' font-weight='600'%3E{{ session.get('username', 'U')[0].upper() }}%3C/text%3E%3C/svg%3E" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('username', '未登录') }}</div>
+                        <div class="user-email">{{ session.get('role', 'user') }}</div>
+                    </div>
+                    <button class="user-menu-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M4 6l4 4 4-4H4z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="btn-icon hamburger-btn" id="hamburger-btn" aria-label="打开菜单">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                    <h2 class="page-title">{% block page_title %}首页{% endblock %}</h2>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-box">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                        </svg>
+                        <input type="text" placeholder="搜索站点或故障..." id="global-search-input">
+                    </div>
+                    <a href="{{ url_for('admin_page') }}" class="btn btn-primary top-import-entry" id="top-import-entry" data-project-link>
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h6a1 1 0 01.707.293l3 3A1 1 0 0115 7v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm7 1V3.414L13.586 7H11a1 1 0 01-1-1zm-1 4a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2v-2z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>导入数据</span>
+                    </a>
+                    <select id="global-project-select" class="top-project-select" aria-label="切换项目">
+                        <option value="">加载项目...</option>
+                    </select>
+                    <button class="btn-icon" id="notification-btn" title="通知">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-2zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast 通知容器 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 搜索结果覆盖层 -->
+    <div id="search-overlay" class="search-overlay" style="display:none;">
+        <div class="search-overlay-content">
+            <div class="search-overlay-header">
+                <span>搜索结果</span>
+                <button class="btn-icon" id="search-overlay-close" aria-label="关闭">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="search-results" class="search-results-list"></div>
         </div>
-    </footer>
+    </div>
 
     <script src="{{ url_for('static', filename='bootstrap-5.3.3.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='utils.js') }}"></script>
     <script>
-    async function logout() {
-        try {
-            await fetch('/auth/logout', { method: 'POST' });
-        } finally {
-            window.location.href = '/login';
-        }
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+        const logoutLink = document.getElementById('sidebar-logout-link');
 
-    (function() {
-        const requestedProjectCode = {{ requested_project_code|tojson }};
-        const switcherEl = document.getElementById('global-project-switcher');
-        const switcherSelect = document.getElementById('global-project-select');
-
-        function setExtraParams(url, extraParams) {
-            if (!extraParams) {
-                return;
-            }
-            Object.entries(extraParams).forEach(([key, value]) => {
-                if (value === undefined || value === null || value === '') {
-                    url.searchParams.delete(key);
-                    return;
+        // 导航高亮
+        navItems.forEach(item => {
+            item.classList.remove('active');
+            const href = item.getAttribute('href');
+            if (href && href !== '#') {
+                const linkPath = new URL(href, window.location.origin).pathname;
+                if (currentPath === linkPath || currentPath.startsWith(linkPath + '/')) {
+                    item.classList.add('active');
                 }
-                url.searchParams.set(key, value);
+            }
+        });
+
+        // 退出登录
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const logoutUrl = logoutLink.dataset.logoutUrl;
+                const fallbackUrl = logoutLink.getAttribute('href');
+                try {
+                    await fetch(logoutUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } catch (error) {
+                    console.error('Logout failed, redirecting to login anyway.', error);
+                }
+                window.location.href = fallbackUrl;
             });
         }
 
-        const projectState = {
-            projectCode: requestedProjectCode || '',
-            projects: [],
-            multiProjectEnabled: false,
-            defaultProjectCode: '',
-            readyPromise: null,
-            getProjectCode() {
-                return this.projectCode || new URLSearchParams(window.location.search).get('project') || '';
-            },
-            withProject(pathOrUrl, extraParams) {
-                const url = new URL(pathOrUrl, window.location.origin);
-                if (url.origin !== window.location.origin) {
-                    return url.toString();
+        // 汉堡菜单
+        const hamburger = document.getElementById('hamburger-btn');
+        const sidebar = document.querySelector('.sidebar');
+        if (hamburger && sidebar) {
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+            document.addEventListener('click', function(e) {
+                if (sidebar.classList.contains('open') &&
+                    !sidebar.contains(e.target) &&
+                    !hamburger.contains(e.target)) {
+                    sidebar.classList.remove('open');
                 }
+            });
+        }
 
-                const activeProject = this.getProjectCode();
-                if (activeProject) {
-                    url.searchParams.set('project', activeProject);
-                } else {
-                    url.searchParams.delete('project');
-                }
+        // 全局搜索
+        const searchInput = document.getElementById('global-search-input');
+        const searchOverlay = document.getElementById('search-overlay');
+        const searchResults = document.getElementById('search-results');
+        const searchClose = document.getElementById('search-overlay-close');
+        let searchTimer = null;
 
-                setExtraParams(url, extraParams);
-                return `${url.pathname}${url.search}${url.hash}`;
-            },
-            syncProjectLinks(root) {
-                const scope = root || document;
-                scope.querySelectorAll('[data-project-link]').forEach((link) => {
-                    const currentHref = link.getAttribute('href') || '';
-                    if (!currentHref || currentHref.startsWith('#') || currentHref.startsWith('javascript:')) {
-                        return;
-                    }
-                    if (!link.dataset.baseHref) {
-                        link.dataset.baseHref = currentHref;
-                    }
-                    link.setAttribute('href', this.withProject(link.dataset.baseHref));
-                });
-            },
-            renderSwitcher() {
-                if (!this.multiProjectEnabled || this.projects.length === 0) {
-                    switcherEl.hidden = true;
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                const q = this.value.trim();
+                if (q.length < 1) {
+                    searchOverlay.style.display = 'none';
                     return;
                 }
-
-                const activeProject = this.getProjectCode() || this.defaultProjectCode || this.projects[0].code;
-                switcherSelect.innerHTML = this.projects.map((project) => {
-                    const selected = project.code === activeProject ? ' selected' : '';
-                    return `<option value="${project.code}"${selected}>${project.short_name || project.name}</option>`;
-                }).join('');
-                switcherEl.hidden = false;
-            },
-            navigate(nextProjectCode) {
-                const nextUrl = new URL(window.location.href);
-                if (nextProjectCode) {
-                    nextUrl.searchParams.set('project', nextProjectCode);
-                } else {
-                    nextUrl.searchParams.delete('project');
+                searchTimer = setTimeout(() => performSearch(q), 300);
+            });
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    searchOverlay.style.display = 'none';
                 }
-                window.location.href = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
-            },
-            async init() {
-                const response = await fetch('/api/projects', { credentials: 'same-origin' });
-                if (!response.ok) {
-                    throw new Error('加载项目列表失败');
-                }
+            });
+        }
+        if (searchClose) {
+            searchClose.addEventListener('click', function() {
+                searchOverlay.style.display = 'none';
+            });
+        }
 
-                const data = await response.json();
-                this.projects = Array.isArray(data.projects) ? data.projects : [];
-                this.multiProjectEnabled = !!data.multi_project_enabled;
-                this.defaultProjectCode = data.default_project_code || (this.projects[0] && this.projects[0].code) || '';
-
-                if (this.multiProjectEnabled && !this.projectCode && this.defaultProjectCode) {
-                    const nextUrl = new URL(window.location.href);
-                    nextUrl.searchParams.set('project', this.defaultProjectCode);
-                    this.projectCode = this.defaultProjectCode;
-                    window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
-                } else {
-                    this.projectCode = this.getProjectCode();
-                }
-
-                this.syncProjectLinks(document);
-                this.renderSwitcher();
-
-                document.dispatchEvent(new CustomEvent('app:project-ready', {
-                    detail: {
-                        projectCode: this.getProjectCode(),
-                        projects: this.projects,
-                        defaultProjectCode: this.defaultProjectCode,
-                        multiProjectEnabled: this.multiProjectEnabled
-                    }
-                }));
-
-                return this;
-            },
-            ready() {
-                if (!this.readyPromise) {
-                    this.readyPromise = this.init().catch((error) => {
-                        console.error('初始化项目上下文失败:', error);
-                        this.syncProjectLinks(document);
-                        return this;
+        async function performSearch(query) {
+            try {
+                const [stationsRes, faultsRes] = await Promise.allSettled([
+                    fetch(withProject('/api/stations')),
+                    fetch(withProject('/api/faults'))
+                ]);
+                const results = [];
+                if (stationsRes.status === 'fulfilled' && stationsRes.value.ok) {
+                    const data = await stationsRes.value.json();
+                    (data.stations || []).forEach(s => {
+                        const text = (s.name + ' ' + (s.county || '') + ' ' + (s.location || '')).toLowerCase();
+                        if (text.includes(query.toLowerCase())) {
+                            results.push({
+                                type: 'station',
+                                title: s.name,
+                                subtitle: (s.county || '') + ' · ' + (s.voltage_level || ''),
+                                url: withProject('/design/style2/stations')
+                            });
+                        }
                     });
                 }
-                return this.readyPromise;
+                if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
+                    const data = await faultsRes.value.json();
+                    (data.faults || []).forEach(f => {
+                        const text = (f.station_name + ' ' + (f.fault_type || '') + ' ' + (f.description || '') + ' #' + f.id).toLowerCase();
+                        if (text.includes(query.toLowerCase())) {
+                            results.push({
+                                type: 'fault',
+                                title: '#' + f.id + ' ' + (f.station_name || '-'),
+                                subtitle: (f.fault_type || '-') + ' · ' + ({open:'待处理',handling:'处理中',closed:'已关闭'}[f.status] || f.status),
+                                url: withProject('/design/style2/faults')
+                            });
+                        }
+                    });
+                }
+                if (!results.length) {
+                    searchResults.innerHTML = '<div class="search-empty">未找到匹配结果</div>';
+                } else {
+                    searchResults.innerHTML = results.slice(0, 10).map(r => `
+                        <a href="${r.url}" class="search-result-item">
+                            <span class="search-result-type ${r.type}">${r.type === 'station' ? '站' : '障'}</span>
+                            <div class="search-result-info">
+                                <div class="search-result-title">${escapeHtml(r.title)}</div>
+                                <div class="search-result-subtitle">${escapeHtml(r.subtitle)}</div>
+                            </div>
+                        </a>
+                    `).join('');
+                }
+                searchOverlay.style.display = 'flex';
+            } catch (err) {
+                console.error('搜索失败:', err);
             }
+        }
+    });
+
+    // 全局 Toast 工具
+    function showToast(message, type) {
+        type = type || 'info';
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast-item toast-' + type;
+        const icons = {
+            success: '<svg width="18" height="18" viewBox="0 0 20 20" fill="#34C759"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>',
+            error: '<svg width="18" height="18" viewBox="0 0 20 20" fill="#FF3B30"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>',
+            warning: '<svg width="18" height="18" viewBox="0 0 20 20" fill="#FF9500"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>',
+            info: '<svg width="18" height="18" viewBox="0 0 20 20" fill="#007AFF"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>'
         };
-
-        window.AppProjectState = projectState;
-
-        switcherSelect.addEventListener('change', (event) => {
-            projectState.navigate(event.target.value);
-        });
-
-        document.addEventListener('click', (event) => {
-            if (
-                event.defaultPrevented ||
-                event.button !== 0 ||
-                event.metaKey ||
-                event.ctrlKey ||
-                event.shiftKey ||
-                event.altKey
-            ) {
-                return;
-            }
-
-            const link = event.target.closest('a[href]');
-            if (!link || link.dataset.projectIgnore === 'true' || link.target === '_blank') {
-                return;
-            }
-
-            const href = link.getAttribute('href') || '';
-            if (!href || href.startsWith('#') || href.startsWith('javascript:')) {
-                return;
-            }
-
-            const resolved = new URL(link.href, window.location.origin);
-            if (resolved.origin !== window.location.origin) {
-                return;
-            }
-            if (resolved.pathname.startsWith('/login') || resolved.pathname.startsWith('/auth/')) {
-                return;
-            }
-
-            const activeProject = projectState.getProjectCode();
-            if (!activeProject) {
-                return;
-            }
-
-            link.setAttribute('href', projectState.withProject(link.href));
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            projectState.syncProjectLinks(document);
-            projectState.ready();
-        });
-    })();
+        toast.innerHTML = (icons[type] || icons.info) + '<span>' + message + '</span>';
+        container.appendChild(toast);
+        requestAnimationFrame(function() { toast.classList.add('toast-show'); });
+        setTimeout(function() {
+            toast.classList.remove('toast-show');
+            toast.classList.add('toast-hide');
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 3000);
+    }
     </script>
-
     {% block scripts %}{% endblock %}
 </body>
 </html>

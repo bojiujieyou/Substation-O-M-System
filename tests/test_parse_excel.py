@@ -1,12 +1,14 @@
 # test_parse_excel.py — Excel解析模块测试
 import os
 import sys
+from types import SimpleNamespace
 import pytest
 import tempfile
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import parse_excel as parse_excel_module
 from parse_excel import (
     parse_station_excel,
     validate_excel_structure,
@@ -293,3 +295,100 @@ class TestParseStationExcelFull:
         result = validate_excel_structure(str(filepath))
         assert result['valid'] is True
         assert result['errors'] == []
+
+    def test_parse_valid_legacy_xls(self, tmp_path, monkeypatch):
+        class FakeSheet:
+            def __init__(self, rows):
+                self._rows = rows
+                self.nrows = len(rows)
+
+            def row_values(self, index):
+                return self._rows[index]
+
+        class FakeBook:
+            def __init__(self, rows):
+                self._sheet = FakeSheet(rows)
+                self.released = False
+
+            def sheet_by_index(self, index):
+                assert index == 0
+                return self._sheet
+
+            def release_resources(self):
+                self.released = True
+
+        rows = [
+            ['测试旧版变电站'],
+            ['220kV变电站设备清单'],
+            [],
+            ['序号', '位置', '通道', 'IP地址'],
+            ['通道1', '主变北侧', '', '192.168.10.1'],
+            ['通道2', '主变南侧', '', '192.168.10.2'],
+        ]
+        workbook = FakeBook(rows)
+        filepath = tmp_path / 'legacy_station.xls'
+        filepath.write_bytes(b'legacy-xls')
+
+        monkeypatch.setattr(
+            parse_excel_module,
+            'xlrd',
+            SimpleNamespace(open_workbook=lambda _path, on_demand=True: workbook),
+        )
+
+        result = parse_station_excel(str(filepath))
+
+        assert result['station']['name'] == '测试旧版变电站'
+        assert result['station']['voltage_level'] == '220kV'
+        assert len(result['cameras']) == 2
+        assert result['cameras'][0]['ip_address'] == '192.168.10.1'
+        assert result['cameras'][1]['camera_index'] == '2'
+        assert workbook.released is True
+
+    def test_validate_legacy_xls_structure(self, tmp_path, monkeypatch):
+        class FakeSheet:
+            def __init__(self, rows):
+                self._rows = rows
+                self.nrows = len(rows)
+
+            def row_values(self, index):
+                return self._rows[index]
+
+        class FakeBook:
+            def __init__(self, rows):
+                self._sheet = FakeSheet(rows)
+
+            def sheet_by_index(self, index):
+                assert index == 0
+                return self._sheet
+
+            def release_resources(self):
+                return None
+
+        rows = [
+            ['序号', '变电站', '设备名称'],
+            ['1', '220kV演练变电站', '演练变1-主变东-球机-1'],
+        ]
+        filepath = tmp_path / 'legacy_inventory.xls'
+        filepath.write_bytes(b'legacy-inventory')
+
+        monkeypatch.setattr(
+            parse_excel_module,
+            'xlrd',
+            SimpleNamespace(open_workbook=lambda _path, on_demand=True: FakeBook(rows)),
+        )
+
+        result = validate_excel_structure(str(filepath))
+
+        assert result['valid'] is True
+        assert result['rows'] == 2
+        assert result['errors'] == []
+
+    def test_parse_legacy_xls_requires_xlrd(self, tmp_path, monkeypatch):
+        filepath = tmp_path / 'missing-xlrd.xls'
+        filepath.write_bytes(b'legacy-xls')
+        monkeypatch.setattr(parse_excel_module, 'xlrd', None)
+
+        with pytest.raises(ExcelParseError) as exc_info:
+            parse_station_excel(str(filepath))
+
+        assert '未安装xlrd' in str(exc_info.value)

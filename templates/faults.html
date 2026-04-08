@@ -2,66 +2,114 @@
 
 {% block title %}故障记录 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}故障记录{% endblock %}
+
+{% block extra_head %}
+<style>
+.fault-toolbar {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.fault-toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tag-editor .btn-primary {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .fault-toolbar-filters {
+        width: 100%;
+    }
+
+    .fault-toolbar-filters .form-select-filter {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h2 class="page-title">故障记录</h2>
-        <div class="page-actions" style="gap:12px; flex-wrap:wrap;">
-            <select id="project-filter" class="form-select form-select-sm">
-                <option value="">加载项目中...</option>
-            </select>
-            <select id="status-filter" class="form-select form-select-sm">
-                <option value="">全部状态</option>
-                <option value="open">待处理</option>
-                <option value="handling">处理中</option>
-                <option value="closed">已关闭</option>
-            </select>
-            <select id="source-filter" class="form-select form-select-sm">
-                <option value="">全部来源</option>
-                <option value="manual">手工</option>
-                <option value="import_worklog">工单导入</option>
-                <option value="import_excel">Excel导入</option>
-                <option value="migration">迁移</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="loading" class="loading-state">
-        <div class="spinner"></div>
-        <span>加载中...</span>
-    </div>
-
-    <div id="error" class="error-state" style="display:none;">
-        <span class="error-icon">!</span>
-        <span>加载失败</span>
-        <button class="btn btn-sm btn-secondary" onclick="loadFaults()">重试</button>
-    </div>
-
-    <div id="empty" class="empty-state" style="display:none;">
-        <p>当前筛选条件下没有故障记录</p>
-    </div>
-
-    <div id="fault-list" class="fault-list" style="display:none;">
-        <table class="data-table table-cards">
-            <thead>
-                <tr>
-                    <th>单号</th>
-                    <th>项目</th>
-                    <th>变电站</th>
-                    <th>摄像头位置</th>
-                    <th>故障类型</th>
-                    <th>状态</th>
-                    <th>报修时间</th>
-                    <th>报修人</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="fault-tbody"></tbody>
-        </table>
+<div class="fault-toolbar">
+    <div class="fault-toolbar-filters">
+        <select id="project-filter" class="form-select-filter">
+            <option value="">加载项目中...</option>
+        </select>
+        <select id="status-filter" class="form-select-filter">
+            <option value="">全部状态</option>
+            <option value="open">待处理</option>
+            <option value="handling">处理中</option>
+            <option value="closed">已关闭</option>
+        </select>
+        <select id="source-filter" class="form-select-filter">
+            <option value="">全部来源</option>
+            <option value="manual">手工</option>
+            <option value="import_worklog">工单导入</option>
+            <option value="import_excel">Excel导入</option>
+            <option value="import_daily_fault_summary">每日故障汇总导入</option>
+            <option value="migration">迁移</option>
+        </select>
     </div>
 </div>
 
-<div class="modal" id="handle-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handle-modal-title">
+<div id="loading" class="loading-state">
+    <div class="spinner"></div>
+    <span>加载中...</span>
+</div>
+
+<div id="error" class="error-state" style="display:none;">
+    <span class="error-icon">!</span>
+    <span>加载失败</span>
+    <button class="btn-secondary" onclick="loadFaults()">重试</button>
+</div>
+
+<div id="empty" class="empty-state" style="display:none;">
+    <p>当前筛选条件下没有故障记录</p>
+</div>
+
+<div id="fault-list" class="table-card" style="display:none;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>单号</th>
+                <th>项目</th>
+                <th>变电站</th>
+                <th>摄像头位置</th>
+                <th>故障类型</th>
+                <th>状态</th>
+                <th>报修时间</th>
+                <th>报修人</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="fault-tbody"></tbody>
+    </table>
+    <div class="pagination-bar" id="pagination-bar">
+        <div class="pagination-info">
+            <span id="pagination-info-text">共 0 条</span>
+            <select id="page-size-select" class="pagination-select">
+                <option value="10">10 条/页</option>
+                <option value="20">20 条/页</option>
+                <option value="50">50 条/页</option>
+            </select>
+        </div>
+        <div class="pagination-controls" id="pagination-controls"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="handle-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handle-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -79,31 +127,31 @@
                 <form id="handle-form">
                     <div class="form-group">
                         <label for="handler-name" class="form-label">处理人姓名 <span class="required">*</span></label>
-                        <input type="text" id="handler-name" class="form-input" required placeholder="请输入处理人姓名">
+                        <input type="text" id="handler-name" class="form-input-modal" required placeholder="请输入处理人姓名">
                     </div>
                     <div class="form-group">
                         <label for="handler-note" class="form-label">处理备注 <span class="required">*</span></label>
-                        <textarea id="handler-note" class="form-input" rows="3" required placeholder="请输入处理方法和结果"></textarea>
+                        <textarea id="handler-note" class="form-input-modal" rows="3" required placeholder="请输入处理方法和结果"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="equipment-type" class="form-label">更换设备类型</label>
-                        <input type="text" id="equipment-type" class="form-input" placeholder="例如：摄像头、交换机">
+                        <input type="text" id="equipment-type" class="form-input-modal" placeholder="例如：摄像头、交换机">
                     </div>
                     <div class="form-group">
                         <label for="equipment-quantity" class="form-label">更换设备数量</label>
-                        <input type="number" id="equipment-quantity" class="form-input" min="0" placeholder="请输入数量">
+                        <input type="number" id="equipment-quantity" class="form-input-modal" min="0" placeholder="请输入数量">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="confirm-handle-btn">确认关闭</button>
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn-primary" id="confirm-handle-btn">确认关闭</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal" id="detail-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+<div class="modal fade" id="detail-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -114,7 +162,7 @@
                 <div class="detail-info" id="detail-content"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
@@ -131,27 +179,9 @@ let tagSuggestions = [];
 const is_admin = {{ is_admin | tojson }};
 const can_edit_tags = {{ can_edit_tags | tojson }};
 
-function withProject(path, extraParams) {
-    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
-        return window.AppProjectState.withProject(path, extraParams);
-    }
-    const url = new URL(path, window.location.origin);
-    if (extraParams) {
-        Object.entries(extraParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, value);
-            }
-        });
-    }
-    return `${url.pathname}${url.search}${url.hash}`;
-}
-
-function escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
-}
+// 分页状态
+let currentPage = 1;
+let pageSize = 10;
 
 function getUrlProjectCode() {
     return new URLSearchParams(window.location.search).get('project') || '';
@@ -183,6 +213,7 @@ function sourceTypeText(sourceType) {
         manual: '手工',
         import_worklog: '工单导入',
         import_excel: 'Excel导入',
+        import_daily_fault_summary: '每日故障汇总导入',
         migration: '迁移'
     }[sourceType] || (sourceType || '-');
 }
@@ -273,17 +304,18 @@ function injectImportAuditDetailRows(fault) {
 
 function buildFaultDetailHtml(fault) {
     const tags = Array.isArray(fault.tags) ? fault.tags : [];
+    const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
     const tagEditor = can_edit_tags ? `
         <div class="tag-editor">
             <input
                 type="text"
                 id="fault-tags-input"
-                class="form-input"
+                class="form-input-modal"
                 list="fault-tag-suggestions"
                 placeholder="多个标签用逗号分隔"
                 value="${escapeHtml(tags.join(', '))}"
             >
-            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
+            <button type="button" class="btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
         </div>
         <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
         <datalist id="fault-tag-suggestions">
@@ -299,7 +331,13 @@ function buildFaultDetailHtml(fault) {
             <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
+            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
+        </div>
+        <div class="detail-section">
+            <h6 class="detail-section-title">同槽位历史</h6>
+            ${renderSlotHistory(slotHistory)}
         </div>
         <div class="detail-section">
             <h6 class="detail-section-title">标签</h6>
@@ -388,8 +426,14 @@ async function loadFaults() {
 }
 
 function renderFaults(faults) {
+    const totalPages = Math.max(1, Math.ceil(faults.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * pageSize;
+    const pageFaults = faults.slice(start, start + pageSize);
+
     const tbody = document.getElementById('fault-tbody');
-    tbody.innerHTML = faults.map(fault => `
+    tbody.innerHTML = pageFaults.map(fault => `
         <tr>
             <td class="mono" data-label="单号">${fault.id}</td>
             <td data-label="项目">${escapeHtml(projectNameById(fault.project_id))}</td>
@@ -401,13 +445,54 @@ function renderFaults(faults) {
             <td data-label="报修人">${escapeHtml(fault.reporter_name || '-')}</td>
             <td data-label="操作">
                 <div class="table-action-group">
-                    <button class="btn btn-sm btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
-                    ${fault.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
-                    ${is_admin ? `<button class="btn btn-sm btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
+                    <button class="btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
+                    ${fault.status !== 'closed' ? `<button class="btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
+                    ${is_admin ? `<button class="btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
                 </div>
             </td>
         </tr>
     `).join('');
+
+    renderPagination(faults.length, totalPages);
+}
+
+function renderPagination(totalItems, totalPages) {
+    const infoText = document.getElementById('pagination-info-text');
+    const controls = document.getElementById('pagination-controls');
+    if (!infoText || !controls) return;
+
+    infoText.textContent = `共 ${totalItems} 条，第 ${currentPage}/${totalPages} 页`;
+
+    let html = '';
+    html += `<button ${currentPage <= 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">上一页</button>`;
+
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<button disabled>...</button>`;
+    }
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    }
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<button disabled>...</button>`;
+        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    html += `<button ${currentPage >= totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">下一页</button>`;
+    controls.innerHTML = html;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    renderFaults(allFaults);
+    document.getElementById('fault-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function showHandleModal(faultId) {
@@ -431,41 +516,6 @@ async function showDetailModal(faultId) {
         const response = await fetch(withProject(`/api/faults/${faultId}/detail`));
         if (!response.ok) throw new Error('加载失败');
         const data = await response.json();
-        const fault = data.fault;
-        document.getElementById('detail-content').innerHTML = `
-            <div class="detail-section">
-                <h6 class="detail-section-title">基本信息</h6>
-                <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
-                <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
-                <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
-                <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
-            </div>
-            <div class="detail-section">
-                <h6 class="detail-section-title">报修信息</h6>
-                <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
-            </div>
-            <div class="detail-section">
-                <h6 class="detail-section-title">处理信息</h6>
-                <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
-            </div>
-        `;
-        new bootstrap.Modal(document.getElementById('detail-modal')).show();
-    } catch (error) {
-        alert('加载详情失败: ' + error.message);
-    }
-}
-
-async function showDetailModal(faultId) {
-    try {
-        const response = await fetch(withProject(`/api/faults/${faultId}/detail`));
-        if (!response.ok) throw new Error('加载失败');
-        const data = await response.json();
         const projectCode = projectCodeById(data.fault.project_id) || getUrlProjectCode();
         await loadTagSuggestions(projectCode);
         currentDetailFault = data.fault;
@@ -474,60 +524,8 @@ async function showDetailModal(faultId) {
         injectAssignmentDetailRows(currentDetailFault);
         new bootstrap.Modal(document.getElementById('detail-modal')).show();
     } catch (error) {
-        alert('加载详情失败: ' + error.message);
+        showToast('加载详情失败: ' + error.message, 'error');
     }
-}
-
-function buildFaultDetailHtml(fault) {
-    const tags = Array.isArray(fault.tags) ? fault.tags : [];
-    const tagEditor = can_edit_tags ? `
-        <div class="tag-editor">
-            <input
-                type="text"
-                id="fault-tags-input"
-                class="form-input"
-                list="fault-tag-suggestions"
-                placeholder="多个标签用逗号分隔"
-                value="${escapeHtml(tags.join(', '))}"
-            >
-            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
-        </div>
-        <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
-        <datalist id="fault-tag-suggestions">
-            ${tagSuggestions.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join('')}
-        </datalist>
-    ` : '';
-
-    return `
-        <div class="detail-section">
-            <h6 class="detail-section-title">基本信息</h6>
-            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
-            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
-            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
-            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
-            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">标签</h6>
-            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
-            ${tagEditor}
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">报修信息</h6>
-            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">处理信息</h6>
-            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
-        </div>
-    `;
 }
 
 function renderSlotHistory(historyItems) {
@@ -549,63 +547,6 @@ function renderSlotHistory(historyItems) {
                     </div>
                 </div>
             `).join('')}
-        </div>
-    `;
-}
-
-function buildFaultDetailHtml(fault) {
-    const tags = Array.isArray(fault.tags) ? fault.tags : [];
-    const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
-    const tagEditor = can_edit_tags ? `
-        <div class="tag-editor">
-            <input
-                type="text"
-                id="fault-tags-input"
-                class="form-input"
-                list="fault-tag-suggestions"
-                placeholder="多个标签用逗号分隔"
-                value="${escapeHtml(tags.join(', '))}"
-            >
-            <button type="button" class="btn btn-sm btn-primary" onclick="saveFaultTags(${fault.id})">保存标签</button>
-        </div>
-        <div class="form-hint">可输入自由标签，系统会对已有标签自动补全。</div>
-        <datalist id="fault-tag-suggestions">
-            ${tagSuggestions.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join('')}
-        </datalist>
-    ` : '';
-
-    return `
-        <div class="detail-section">
-            <h6 class="detail-section-title">基本信息</h6>
-            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
-            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
-            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
-            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
-            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">同槽位历史</h6>
-            ${renderSlotHistory(slotHistory)}
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">标签</h6>
-            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
-            ${tagEditor}
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">报修信息</h6>
-            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">处理信息</h6>
-            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
         </div>
     `;
 }
@@ -650,7 +591,7 @@ async function saveFaultTags(faultId) {
         injectImportAuditDetailRows(currentDetailFault);
         injectAssignmentDetailRows(currentDetailFault);
     } catch (error) {
-        alert('保存标签失败: ' + error.message);
+        showToast('保存标签失败: ' + error.message, 'error');
     } finally {
         if (saveButton) {
             saveButton.disabled = false;
@@ -669,7 +610,7 @@ async function deleteFault(faultId) {
         if (!response.ok) throw new Error(data.error || '删除失败');
         await loadFaults();
     } catch (error) {
-        alert('删除失败: ' + error.message);
+        showToast('删除失败: ' + error.message, 'error');
     }
 }
 
@@ -680,7 +621,7 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
     const equipmentQuantity = parseInt(document.getElementById('equipment-quantity').value || '0', 10) || 0;
 
     if (!handlerName || !handlerNote) {
-        alert('请填写处理人姓名和处理备注');
+        showToast('请填写处理人姓名和处理备注', 'warning');
         return;
     }
 
@@ -712,7 +653,7 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
         bootstrap.Modal.getInstance(document.getElementById('handle-modal')).hide();
         await loadFaults();
     } catch (error) {
-        alert('处理失败: ' + error.message);
+        showToast('处理失败: ' + error.message, 'error');
     } finally {
         this.disabled = false;
         this.textContent = '确认关闭';
@@ -721,11 +662,23 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
 
 document.getElementById('project-filter').addEventListener('change', function() {
     updateUrlProject(this.value);
+    currentPage = 1;
     loadFaults();
 });
 
-document.getElementById('status-filter').addEventListener('change', loadFaults);
-document.getElementById('source-filter').addEventListener('change', loadFaults);
+document.getElementById('status-filter').addEventListener('change', function() {
+    currentPage = 1;
+    loadFaults();
+});
+document.getElementById('source-filter').addEventListener('change', function() {
+    currentPage = 1;
+    loadFaults();
+});
+document.getElementById('page-size-select').addEventListener('change', function() {
+    pageSize = parseInt(this.value, 10);
+    currentPage = 1;
+    renderFaults(allFaults);
+});
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {

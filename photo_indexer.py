@@ -220,6 +220,20 @@ def _infer_project_id(conn, station_id, project_hint):
     return None
 
 
+def _resolve_project_filter(conn, project_code):
+    project_code = (project_code or "").strip()
+    if not project_code or not _table_exists(conn, "projects"):
+        return None, ""
+
+    row = conn.execute(
+        "SELECT id, code FROM projects WHERE code = ? AND is_active = 1",
+        (project_code,),
+    ).fetchone()
+    if not row:
+        return None, project_code
+    return row["id"], row["code"]
+
+
 def _iter_photo_files(root_path):
     for base, _, files in os.walk(root_path):
         for filename in files:
@@ -458,16 +472,31 @@ def index_photos(conn, full_rebuild=False):
     return stats
 
 
-def get_photo_stats(conn):
-    row = conn.execute(
+def get_photo_stats(conn, project_code=None):
+    project_id, normalized_code = _resolve_project_filter(conn, project_code)
+    params = []
+    where_clause = ""
+
+    if normalized_code:
+        where_clause = """
+        WHERE (
+            project_id = ?
+            OR (project_id IS NULL AND project_hint = ?)
+        )
         """
+        params.extend([project_id, normalized_code])
+
+    row = conn.execute(
+        f"""
         SELECT
             COUNT(*) AS total,
             SUM(CASE WHEN match_status='matched' THEN 1 ELSE 0 END) AS matched,
             SUM(CASE WHEN match_status='unmatched' THEN 1 ELSE 0 END) AS unmatched,
             SUM(CASE WHEN match_status='ignored' THEN 1 ELSE 0 END) AS ignored
         FROM photos
-        """
+        {where_clause}
+        """,
+        params,
     ).fetchone()
     return {
         "total": row["total"] or 0,
@@ -477,21 +506,34 @@ def get_photo_stats(conn):
     }
 
 
-def list_unmatched(conn, limit=100, offset=0):
-    rows = conn.execute(
+def list_unmatched(conn, limit=100, offset=0, project_code=None):
+    project_id, normalized_code = _resolve_project_filter(conn, project_code)
+    params = []
+    where_clause = "WHERE match_status = 'unmatched'"
+
+    if normalized_code:
+        where_clause += """
+          AND (
+            project_id = ?
+            OR (project_id IS NULL AND project_hint = ?)
+          )
         """
-        SELECT id, rel_path, filename, ext, county_hint, station_hint, unmatched_reason, file_mtime
+        params.extend([project_id, normalized_code])
+
+    rows = conn.execute(
+        f"""
+        SELECT id, rel_path, filename, ext, county_hint, station_hint, unmatched_reason, file_mtime, project_hint
         FROM photos
-        WHERE match_status = 'unmatched'
+        {where_clause}
         ORDER BY updated_at DESC
         LIMIT ? OFFSET ?
         """,
-        (limit, offset),
+        (*params, limit, offset),
     ).fetchall()
     return [dict(row) for row in rows]
 
 
-def manual_match_photo(conn, photo_id, station_id, alias_text=None):
+def manual_match_photo(conn, photo_id, station_id, alias_text=None, project_code=None):
     station = conn.execute("SELECT id FROM stations WHERE id = ?", (station_id,)).fetchone()
     if not station:
         raise ValueError("变电站不存在")
@@ -505,19 +547,21 @@ def manual_match_photo(conn, photo_id, station_id, alias_text=None):
 
     photo_columns = _get_columns(conn, "photos")
     if {"project_id", "project_hint"}.issubset(photo_columns):
-        project_id = _infer_project_id(conn, station_id, photo["project_hint"])
+        scoped_project_id, scoped_project_code = _resolve_project_filter(conn, project_code)
+        project_id = scoped_project_id if scoped_project_code else _infer_project_id(conn, station_id, photo["project_hint"])
         conn.execute(
             """
             UPDATE photos
             SET station_id = ?,
                 project_id = ?,
+                project_hint = COALESCE(?, project_hint),
                 match_status = 'matched',
                 match_method = 'manual',
                 unmatched_reason = NULL,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
             """,
-            (station_id, project_id, photo_id),
+            (station_id, project_id, scoped_project_code or None, photo_id),
         )
     else:
         conn.execute(

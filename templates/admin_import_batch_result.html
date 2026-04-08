@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+
+{% block title %}导入结果摘要 - 变电站图像监控运维平台{% endblock %}
+
+{% block page_title %}导入结果摘要{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">导入结果摘要</h2>
+            <p class="text-muted mb-0" id="batch-subtitle">正在加载批次信息...</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
+            <a href="{{ url_for('admin_page') }}" class="btn btn-primary" id="primary-cta" data-project-link>处理中...</a>
+        </div>
+    </div>
+
+    <div id="result-flash" class="form-hint mb-3"></div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="summary-stat-card">
+                <div class="summary-stat-label">成功数</div>
+                <div class="summary-stat-value" id="summary-success-count">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="summary-stat-card">
+                <div class="summary-stat-label">失败数</div>
+                <div class="summary-stat-value" id="summary-fail-count">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="summary-stat-card">
+                <div class="summary-stat-label">待审查记录</div>
+                <div class="summary-stat-value" id="summary-pending-review-count">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="summary-stat-card">
+                <div class="summary-stat-label">站名提议</div>
+                <div class="summary-stat-value" id="summary-pending-proposal-count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="admin-section h-100">
+                <h3 class="admin-section-title">批次摘要</h3>
+                <div class="batch-summary-hero">
+                    <div class="batch-summary-meta">批次 #<span id="detail-batch-id">-</span></div>
+                    <div class="batch-summary-title" id="detail-project">-</div>
+                    <div class="batch-summary-subtitle"><span id="detail-source-type">-</span> · <span id="detail-mode">-</span></div>
+                </div>
+                <div class="detail-row"><span class="detail-label">文件数</span><span class="detail-value" id="detail-file-count">0</span></div>
+                <div class="detail-row"><span class="detail-label">成功数</span><span class="detail-value" id="detail-success-count">0</span></div>
+                <div class="detail-row"><span class="detail-label">失败数</span><span class="detail-value" id="detail-fail-count">0</span></div>
+                <div class="detail-row"><span class="detail-label">创建时间</span><span class="detail-value" id="detail-created-at">-</span></div>
+                <div class="detail-row"><span class="detail-label">报告状态</span><span class="detail-value"><span class="badge badge-info" id="detail-report-status">未生成</span></span></div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="admin-section h-100">
+                <h3 class="admin-section-title">页面状态</h3>
+                <div class="status-hero" id="page-status-hero">
+                    <div class="status-hero-badge badge badge-info" id="page-status-badge">加载中</div>
+                    <div class="status-hero-title" id="page-status-title">正在分析本批次结果</div>
+                    <p class="form-hint mb-0 status-hero-note" id="page-status-note">结果加载后会在这里提示下一步动作。</p>
+                </div>
+                <div class="detail-row"><span class="detail-label">当前状态</span><span class="detail-value" id="page-status-label">-</span></div>
+                <div class="detail-row"><span class="detail-label">待审查记录</span><span class="detail-value" id="pending-review-count">0</span></div>
+                <div class="detail-row"><span class="detail-label">站名提议</span><span class="detail-value" id="pending-proposal-count">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="admin-section">
+                <h3 class="admin-section-title">来源摘要</h3>
+                <div id="source-summary-empty" class="text-muted">导入报告生成后，会在这里显示来源侧的处理摘要。</div>
+                <div id="source-summary-content" class="source-summary-content is-hidden">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-station"><span class="detail-label">站点处理数</span><span class="detail-value" id="source-station-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-camera"><span class="detail-label">摄像头处理数</span><span class="detail-value" id="source-camera-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-inserted"><span class="detail-label">写入故障数</span><span class="detail-value" id="source-inserted-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-queued"><span class="detail-label">待审查数</span><span class="detail-value" id="source-queued-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-proposals"><span class="detail-label">站名提议数</span><span class="detail-value" id="source-proposals-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-duplicates"><span class="detail-label">去重跳过数</span><span class="detail-value" id="source-duplicates-count">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row"><span class="detail-label">文件结果数</span><span class="detail-value" id="source-file-results">-</span></div></div>
+                        <div class="col-md-4"><div class="detail-row"><span class="detail-label">行结果数</span><span class="detail-value" id="source-row-results">-</span></div></div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-6">
+                            <div class="source-preview-header">
+                                <h4 class="mb-2">最近文件结果</h4>
+                                <span class="badge badge-warning is-hidden" id="source-file-focus-badge">优先关注</span>
+                            </div>
+                            <div id="source-file-preview-empty" class="text-muted">暂无文件级结果预览。</div>
+                            <ul id="source-file-preview-list" class="preview-list mb-0 ps-0 is-hidden"></ul>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="source-preview-header">
+                                <h4 class="mb-2">最近行结果</h4>
+                                <span class="badge badge-warning is-hidden" id="source-row-focus-badge">优先关注</span>
+                            </div>
+                            <div id="source-row-preview-empty" class="text-muted">暂无行级结果预览。</div>
+                            <ul id="source-row-preview-list" class="preview-list mb-0 ps-0 is-hidden"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="admin-section">
+                <h3 class="admin-section-title">下一步动作</h3>
+                <div id="next-steps-empty" class="text-muted">结果加载后会给出建议动作。</div>
+                <div id="next-step-primary" class="next-step-primary next-step-primary-emphasis is-hidden">
+                    <div class="next-step-primary-label">优先处理</div>
+                    <div class="next-step-primary-text" id="next-step-primary-text">-</div>
+                </div>
+                <div id="next-steps-secondary" class="review-secondary-steps next-steps-secondary is-hidden"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const batchId = {{ batch_id|tojson }};
+
+function setResultFlash(message, isError = false) {
+    setInlineMessage('result-flash', message, isError, 'form-hint mb-3');
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = value == null || value === '' ? '-' : String(value);
+    }
+}
+
+function formatBreakdown(breakdown) {
+    const entries = Object.entries(breakdown || {});
+    if (!entries.length) return '-';
+    return entries.map(([key, value]) => `${key}: ${value}`).join(' / ');
+}
+
+function resolveStatCardClass(kind, summary, batch) {
+    const pendingReview = Number(summary.pending_review_count || 0);
+    const pendingProposal = Number(summary.pending_proposal_count || 0);
+    const failCount = Number(batch.fail_count || 0);
+    const successCount = Number(batch.success_count || 0);
+
+    if (kind === 'pending-review' && pendingReview > 0) return 'summary-stat-card summary-stat-card-warning';
+    if (kind === 'pending-proposal' && pendingProposal > 0) return 'summary-stat-card summary-stat-card-warning';
+    if (kind === 'fail' && failCount > 0) return 'summary-stat-card summary-stat-card-danger';
+    if (kind === 'success' && successCount > 0 && failCount === 0 && pendingReview === 0 && pendingProposal === 0) {
+        return 'summary-stat-card summary-stat-card-success';
+    }
+    return 'summary-stat-card';
+}
+
+function resolvePrimaryCtaClass(summary) {
+    if (summary.page_status === 'pending_conflicts') {
+        return 'btn btn-warning';
+    }
+    if (summary.page_status === 'failed') {
+        return 'btn btn-danger';
+    }
+    if (summary.page_status === 'partial_success') {
+        return 'btn btn-warning';
+    }
+    return 'btn btn-primary';
+}
+
+function formatDateTime(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function resolveSourceTypeLabel(sourceType) {
+    return {
+        import_excel: '台账导入',
+        import_faults: '故障导入',
+        import_daily_fault_summary: '每日故障汇总导入',
+        import_worklog: '工单导入',
+    }[sourceType] || sourceType || '-';
+}
+
+function isFaultLikeSource(sourceType) {
+    return ['import_faults', 'import_daily_fault_summary', 'import_worklog'].includes(sourceType);
+}
+
+function resolveModeLabel(mode) {
+    return {
+        'best-effort': '尽力导入',
+        strict: '严格校验',
+    }[mode] || mode || '-';
+}
+
+function resolveStatusLabel(status) {
+    return {
+        success: '成功',
+        partial_success: '部分成功',
+        pending_conflicts: '待处理冲突',
+        failed: '失败',
+    }[status] || status || '-';
+}
+
+function resolveStatusNote(summary, batch) {
+    const isExcel = batch.source_type === 'import_excel';
+    const stationCount = Number(summary.source_summary?.station_count || 0);
+    const cameraCount = Number(summary.source_summary?.camera_count || 0);
+
+    if (isExcel && stationCount > 0 && cameraCount <= 0) {
+        return '这次是台账导入，只会更新站点和摄像头；当前没有写入任何摄像头，所以故障列表不会变化。';
+    }
+    if (summary.page_status === 'pending_conflicts') {
+        return '当前批次仍有待确认项，先处理冲突，再判断是否真正完成。';
+    }
+    if (summary.page_status === 'partial_success') {
+        return '当前批次已部分写入，仍需关注失败项和后续补录。';
+    }
+    if (summary.page_status === 'failed') {
+        return '当前批次未成功完成，请先检查导入报告和输入数据。';
+    }
+    if (isExcel) {
+        return '这次是台账导入，结果会更新站点和摄像头，不会直接出现在故障列表。';
+    }
+    if (isFaultLikeSource(batch.source_type)) {
+        return '这次是故障导入，结果应出现在故障列表中，建议立即抽查几条新记录。';
+    }
+    return '当前批次已完成，可以返回管理后台继续后续工作。';
+}
+
+function renderReportStatus(reportAvailable) {
+    const el = document.getElementById('detail-report-status');
+    if (!el) return;
+
+    el.textContent = reportAvailable ? '已生成' : '未生成';
+    el.className = reportAvailable ? 'badge badge-success' : 'badge badge-info';
+}
+
+function resolvePreviewEmptyMessage(batch, kind) {
+    if (batch.source_type === 'import_excel') {
+        return kind === 'file' ? '本次台账导入没有可展示的文件级结果。' : '本次台账导入没有可展示的行级结果。';
+    }
+    if (isFaultLikeSource(batch.source_type)) {
+        return kind === 'file' ? '本次故障导入没有可展示的文件级结果。' : '本次故障导入没有可展示的行级结果。';
+    }
+    return kind === 'file' ? '当前没有文件级结果预览。' : '当前没有行级结果预览。';
+}
+
+function resolvePreviewToneLabel(tone) {
+    return {
+        success: '成功',
+        warning: '待处理',
+        danger: '失败',
+        info: '信息',
+    }[tone] || '信息';
+}
+
+function resolvePreviewBadgeClass(tone) {
+    return {
+        success: 'badge badge-success',
+        warning: 'badge badge-warning',
+        danger: 'badge badge-danger',
+        info: 'badge badge-info',
+    }[tone] || 'badge badge-info';
+}
+
+function setSourceMetricMuted(id, muted) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('source-metric-muted', Boolean(muted));
+}
+
+function resolveStatusHero(summary, batch) {
+    const isExcel = batch.source_type === 'import_excel';
+    const stationCount = Number(summary.source_summary?.station_count || 0);
+    const cameraCount = Number(summary.source_summary?.camera_count || 0);
+
+    if (isExcel && stationCount > 0 && cameraCount <= 0) {
+        return {
+            badgeClass: 'badge badge-warning',
+            badgeText: '结果异常',
+            title: '文件已受理，但没有写入摄像头',
+        };
+    }
+    if (summary.page_status === 'pending_conflicts') {
+        return {
+            badgeClass: 'badge badge-warning',
+            badgeText: '待处理冲突',
+            title: '这批数据还没真正结束',
+        };
+    }
+    if (summary.page_status === 'partial_success') {
+        return {
+            badgeClass: 'badge badge-warning',
+            badgeText: '部分成功',
+            title: '已经写入一部分，但还需要补录和复核',
+        };
+    }
+    if (summary.page_status === 'failed') {
+        return {
+            badgeClass: 'badge badge-danger',
+            badgeText: '失败',
+            title: '这批导入没有成功落库',
+        };
+    }
+    if (isExcel) {
+        return {
+            badgeClass: 'badge badge-success',
+            badgeText: '台账完成',
+            title: '台账导入已完成，结果已写入站点和摄像头',
+        };
+    }
+    if (isFaultLikeSource(batch.source_type)) {
+        return {
+            badgeClass: 'badge badge-success',
+            badgeText: '故障完成',
+            title: '故障导入已完成，可前往故障列表复核',
+        };
+    }
+    return {
+        badgeClass: 'badge badge-success',
+        badgeText: '成功',
+        title: '这批导入已经完成',
+    };
+}
+
+function renderPageStatus(summary, batch) {
+    const hero = document.getElementById('page-status-hero');
+    const badge = document.getElementById('page-status-badge');
+    const title = document.getElementById('page-status-title');
+    if (!hero || !badge || !title) return;
+
+    const statusHero = resolveStatusHero(summary, batch);
+    hero.className = 'status-hero';
+    if (summary.page_status) {
+        hero.classList.add(`status-hero-${summary.page_status}`);
+    }
+    badge.className = statusHero.badgeClass;
+    badge.textContent = statusHero.badgeText;
+    title.textContent = statusHero.title;
+}
+
+function renderPreviewList(items, emptyId, listId, emptyMessage = '') {
+    const emptyEl = document.getElementById(emptyId);
+    const listEl = document.getElementById(listId);
+    if (!emptyEl || !listEl) return;
+
+    if (!Array.isArray(items) || !items.length) {
+        emptyEl.classList.remove('is-hidden');
+        if (emptyMessage) {
+            emptyEl.textContent = emptyMessage;
+        }
+        listEl.classList.add('is-hidden');
+        listEl.innerHTML = '';
+        return;
+    }
+
+    emptyEl.classList.add('is-hidden');
+    listEl.classList.remove('is-hidden');
+    listEl.innerHTML = items.map((item) => {
+        const text = typeof item === 'string' ? item : (item?.text || '');
+        const tone = typeof item === 'string' ? 'info' : (item?.tone || 'info');
+        return `<li class="preview-list-item"><span class="${resolvePreviewBadgeClass(tone)}">${escapeHtml(resolvePreviewToneLabel(tone))}</span><span class="preview-list-text">${escapeHtml(text)}</span></li>`;
+    }).join('');
+}
+
+function renderSourcePreviewFocus(summary, batch, sourceSummary) {
+    const fileBadge = document.getElementById('source-file-focus-badge');
+    const rowBadge = document.getElementById('source-row-focus-badge');
+    if (!fileBadge || !rowBadge) return;
+
+    const hasFilePreview = Array.isArray(sourceSummary?.file_result_preview) && sourceSummary.file_result_preview.length > 0;
+    const hasRowPreview = Array.isArray(sourceSummary?.row_result_preview) && sourceSummary.row_result_preview.length > 0;
+
+    const highlightRows = summary.page_status === 'pending_conflicts' || summary.page_status === 'partial_success';
+    const highlightFiles = summary.page_status === 'failed';
+
+    fileBadge.classList.toggle('is-hidden', !(highlightFiles && hasFilePreview));
+    rowBadge.classList.toggle('is-hidden', !(highlightRows && hasRowPreview));
+
+    if (summary.page_status === 'pending_conflicts' && hasRowPreview) {
+        rowBadge.textContent = '优先处理';
+    } else if (summary.page_status === 'partial_success' && hasRowPreview) {
+        rowBadge.textContent = '优先复核';
+    } else {
+        rowBadge.textContent = '优先关注';
+    }
+
+    if (summary.page_status === 'failed' && hasFilePreview) {
+        fileBadge.textContent = '优先检查';
+    } else {
+        fileBadge.textContent = '优先关注';
+    }
+}
+
+function renderSourceSummary(batch, sourceSummary, summary) {
+    const emptyEl = document.getElementById('source-summary-empty');
+    const contentEl = document.getElementById('source-summary-content');
+    if (!sourceSummary || !sourceSummary.report_generated) {
+        emptyEl.classList.remove('is-hidden');
+        contentEl.classList.add('is-hidden');
+        renderPreviewList([], 'source-file-preview-empty', 'source-file-preview-list', resolvePreviewEmptyMessage(batch, 'file'));
+        renderPreviewList([], 'source-row-preview-empty', 'source-row-preview-list', resolvePreviewEmptyMessage(batch, 'row'));
+        renderSourcePreviewFocus(summary || {}, batch, sourceSummary || {});
+        return;
+    }
+
+    emptyEl.classList.add('is-hidden');
+    contentEl.classList.remove('is-hidden');
+
+    const isExcel = batch.source_type === 'import_excel';
+    const isFaults = isFaultLikeSource(batch.source_type);
+    setText('source-station-count', isExcel ? (sourceSummary.station_count || 0) : '-');
+    setText('source-camera-count', isExcel ? (sourceSummary.camera_count || 0) : '-');
+    setText('source-inserted-count', isFaults ? (sourceSummary.inserted || 0) : '-');
+    setText('source-queued-count', isFaults ? (sourceSummary.queued || 0) : '-');
+    setText('source-proposals-count', isFaults ? (sourceSummary.proposals || 0) : '-');
+    setText('source-duplicates-count', isFaults ? (sourceSummary.duplicates_skipped || 0) : '-');
+    setText('source-file-results', Array.isArray(sourceSummary.file_results) ? sourceSummary.file_results.length : '-');
+    setText('source-row-results', Array.isArray(sourceSummary.row_results) ? sourceSummary.row_results.length : '-');
+
+    setSourceMetricMuted('source-metric-station', !isExcel);
+    setSourceMetricMuted('source-metric-camera', !isExcel);
+    setSourceMetricMuted('source-metric-inserted', !isFaults);
+    setSourceMetricMuted('source-metric-queued', !isFaults);
+    setSourceMetricMuted('source-metric-proposals', !isFaults);
+    setSourceMetricMuted('source-metric-duplicates', !isFaults);
+
+    renderPreviewList(sourceSummary.file_result_preview, 'source-file-preview-empty', 'source-file-preview-list', resolvePreviewEmptyMessage(batch, 'file'));
+    renderPreviewList(sourceSummary.row_result_preview, 'source-row-preview-empty', 'source-row-preview-list', resolvePreviewEmptyMessage(batch, 'row'));
+    renderSourcePreviewFocus(summary || {}, batch, sourceSummary || {});
+}
+
+function renderNextSteps(steps) {
+    const emptyEl = document.getElementById('next-steps-empty');
+    const listEl = document.getElementById('next-steps-secondary');
+    const primaryEl = document.getElementById('next-step-primary');
+    const primaryTextEl = document.getElementById('next-step-primary-text');
+    if (!Array.isArray(steps) || !steps.length) {
+        emptyEl.classList.remove('is-hidden');
+        listEl.classList.add('is-hidden');
+        listEl.innerHTML = '';
+        if (primaryEl) primaryEl.classList.add('is-hidden');
+        if (primaryTextEl) primaryTextEl.textContent = '';
+        return;
+    }
+
+    emptyEl.classList.add('is-hidden');
+    if (primaryEl && primaryTextEl) {
+        primaryEl.classList.remove('is-hidden');
+        primaryTextEl.textContent = steps[0] || '';
+    }
+
+    const remainingSteps = steps.slice(1);
+    if (!remainingSteps.length) {
+        listEl.classList.add('is-hidden');
+        listEl.innerHTML = '';
+        return;
+    }
+
+    listEl.classList.remove('is-hidden');
+    listEl.innerHTML = remainingSteps.map((step, index) => `
+        <div class="review-secondary-step next-step-secondary-item">
+            <div class="next-step-secondary-index">步骤 ${index + 2}</div>
+            <div class="next-step-secondary-text">${escapeHtml(step)}</div>
+        </div>
+    `).join('');
+}
+
+function renderSummary(summary) {
+    const batch = summary.batch || {};
+    setText('batch-subtitle', `${batch.project_name || batch.project_code || '未指定项目'} · 已生成批次结果与后续动作建议`);
+    setText('detail-batch-id', batch.id);
+    setText('detail-project', batch.project_name || batch.project_code || '-');
+    setText('detail-source-type', resolveSourceTypeLabel(batch.source_type));
+    setText('detail-mode', resolveModeLabel(batch.mode));
+    setText('detail-file-count', batch.file_count || 0);
+    setText('detail-success-count', batch.success_count || 0);
+    setText('detail-fail-count', batch.fail_count || 0);
+    setText('summary-success-count', batch.success_count || 0);
+    setText('summary-fail-count', batch.fail_count || 0);
+    setText('summary-pending-review-count', summary.pending_review_count || 0);
+    setText('summary-pending-proposal-count', summary.pending_proposal_count || 0);
+    const successCard = document.getElementById('summary-success-count')?.closest('.summary-stat-card');
+    const failCard = document.getElementById('summary-fail-count')?.closest('.summary-stat-card');
+    const pendingReviewCard = document.getElementById('summary-pending-review-count')?.closest('.summary-stat-card');
+    const pendingProposalCard = document.getElementById('summary-pending-proposal-count')?.closest('.summary-stat-card');
+
+    if (successCard) {
+        successCard.className = resolveStatCardClass('success', summary, batch);
+    }
+    if (failCard) {
+        failCard.className = resolveStatCardClass('fail', summary, batch);
+    }
+    if (pendingReviewCard) {
+        pendingReviewCard.className = resolveStatCardClass('pending-review', summary, batch);
+    }
+    if (pendingProposalCard) {
+        pendingProposalCard.className = resolveStatCardClass('pending-proposal', summary, batch);
+    }
+    setText('detail-created-at', formatDateTime(batch.created_at));
+    renderReportStatus(summary.report_available);
+
+    setText('page-status-label', resolveStatusLabel(summary.page_status));
+    setText('pending-review-count', summary.pending_review_count || 0);
+    setText('pending-proposal-count', summary.pending_proposal_count || 0);
+    setText('page-status-note', resolveStatusNote(summary, batch));
+    renderPageStatus(summary, batch);
+
+    setText('summary-fault-rows', summary.summary?.fault_rows || 0);
+    setText('summary-review-rows', summary.summary?.review_queue_rows || 0);
+    setText('summary-proposal-rows', summary.summary?.station_name_proposals || 0);
+    setText('summary-fault-breakdown', formatBreakdown(summary.summary?.fault_status_breakdown));
+    setText('summary-issue-breakdown', formatBreakdown(summary.summary?.review_issue_type_breakdown));
+    setText('summary-proposal-breakdown', formatBreakdown(summary.summary?.proposal_status_breakdown));
+
+    const cta = document.getElementById('primary-cta');
+    cta.textContent = summary.primary_cta || '返回管理后台';
+    cta.className = resolvePrimaryCtaClass(summary);
+    cta.setAttribute('href', withProject(summary.primary_cta_url || '/admin', { project: summary.project_code || '' }));
+
+    renderSourceSummary(batch, summary.source_summary, summary);
+    renderNextSteps(summary.next_steps);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+            await window.AppProjectState.ready();
+        }
+        const summary = await fetchJson(`/admin/import-batches/${batchId}/summary`);
+        renderSummary(summary);
+        setResultFlash('');
+    } catch (error) {
+        setResultFlash(error.message || '加载失败', true);
+        showToast(error.message || '加载失败', 'error');
+    }
+});
+</script>
+{% endblock %}

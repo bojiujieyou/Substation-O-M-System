@@ -2,119 +2,124 @@
 
 {% block title %}统计报表 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}统计报表{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h2 class="page-title">统计报表</h2>
-        <div class="page-header-actions">
-            <select id="year-filter" class="form-select">
-                <option value="">全部年份</option>
-            </select>
-            <button id="export-btn" class="btn btn-secondary btn-sm" type="button" onclick="exportStats()">
-                导出 Excel
-            </button>
-        </div>
+<div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <select id="year-filter" class="form-select-filter">
+            <option value="">全部年份</option>
+        </select>
     </div>
+    <button id="export-btn" class="btn-secondary" type="button" onclick="exportStats()">
+        导出 Excel
+    </button>
+</div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="total-stations">-</div>
-            <div class="stat-label">变电站总数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="total-cameras">-</div>
-            <div class="stat-label">当前设备总数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="total-faults">-</div>
-            <div class="stat-label">故障总数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="fault-rate">-</div>
-            <div class="stat-label">故障率</div>
-        </div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" id="total-stations">-</div>
+        <div class="stat-label">变电站总数</div>
     </div>
-
-    <div class="stats-grid kpi-grid">
-        <div class="stat-card stat-card-soft">
-            <div class="stat-value stat-small" id="open-count">-</div>
-            <div class="stat-label">打开中</div>
-        </div>
-        <div class="stat-card stat-card-soft">
-            <div class="stat-value stat-small" id="handling-count">-</div>
-            <div class="stat-label">处理中</div>
-        </div>
-        <div class="stat-card stat-card-soft">
-            <div class="stat-value stat-small" id="closed-count">-</div>
-            <div class="stat-label">已关闭</div>
-        </div>
-        <div class="stat-card stat-card-soft">
-            <div class="stat-value stat-small" id="avg-response">-</div>
-            <div class="stat-label">平均响应时长</div>
-        </div>
-        <div class="stat-card stat-card-soft">
-            <div class="stat-value stat-small" id="avg-close">-</div>
-            <div class="stat-label">平均关闭时长</div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-value" id="total-cameras">-</div>
+        <div class="stat-label">当前设备总数</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-value" id="total-faults">-</div>
+        <div class="stat-label">故障总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="fault-rate">-</div>
+        <div class="stat-label">故障率</div>
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-section">
-                <h3>月度故障趋势</h3>
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="chart-section">
-                <h3>故障语义分组</h3>
-                <div class="chart-container">
-                    <canvas id="faultTypeChart"></canvas>
-                </div>
+<div class="stats-grid kpi-grid">
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="open-count">-</div>
+        <div class="stat-label">打开中</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="handling-count">-</div>
+        <div class="stat-label">处理中</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="closed-count">-</div>
+        <div class="stat-label">已关闭</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="avg-response">-</div>
+        <div class="stat-label">平均响应时长</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="avg-close">-</div>
+        <div class="stat-label">平均关闭时长</div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <h3>月度故障趋势</h3>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-section">
-                <h3>各县区故障统计</h3>
-                <div class="chart-container">
-                    <canvas id="countyChart"></canvas>
-                </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>摄像头故障排行 Top 5</h3>
+                <div class="chart-subtitle">按当前筛选范围统计</div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="chart-section">
-                <h3>各电压等级统计</h3>
-                <div class="chart-container">
-                    <canvas id="voltageChart"></canvas>
+            <div class="chart-container chart-container-table">
+                <div class="table-card">
+                    <table class="data-table" id="camera-ranking-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>摄像头位置</th>
+                                <th>变电站</th>
+                                <th>故障次数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="camera-ranking-body">
+                            <tr><td colspan="4" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="chart-section">
-        <div class="chart-header">
-            <h3>摄像头故障排行 Top 5</h3>
-            <div class="chart-subtitle">按当前筛选范围统计</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <h3>各县区故障统计</h3>
+            <div class="chart-container">
+                <canvas id="countyChart"></canvas>
+            </div>
         </div>
-        <div class="chart-container chart-container-table">
-            <table class="data-table table-cards" id="camera-ranking-table">
-                <thead>
-                    <tr>
-                        <th>排名</th>
-                        <th>摄像头位置</th>
-                        <th>变电站</th>
-                        <th>故障次数</th>
-                    </tr>
-                </thead>
-                <tbody id="camera-ranking-body">
-                    <tr><td colspan="4" class="text-muted">加载中...</td></tr>
-                </tbody>
-            </table>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <h3>各电压等级统计</h3>
+            <div class="chart-container">
+                <canvas id="voltageChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <h3>故障语义分组</h3>
+            <div class="chart-container">
+                <canvas id="faultTypeChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -186,28 +191,6 @@ let faultTypeChart;
 let countyChart;
 let voltageChart;
 let currentYear = '';
-
-function withProject(path, extraParams) {
-    if (window.AppProjectState && typeof window.AppProjectState.withProject === 'function') {
-        return window.AppProjectState.withProject(path, extraParams);
-    }
-    const url = new URL(path, window.location.origin);
-    if (extraParams) {
-        Object.entries(extraParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, value);
-            }
-        });
-    }
-    return `${url.pathname}${url.search}${url.hash}`;
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
 
 function formatDuration(seconds) {
     if (seconds === null || seconds === undefined) {
@@ -361,6 +344,7 @@ async function loadStats() {
         renderCameraRanking(payload.camera_ranking || []);
     } catch (error) {
         console.error('加载统计失败:', error);
+        showToast('加载统计数据失败，请刷新重试', 'error');
     }
 }
 

@@ -2,6 +2,8 @@
 
 {% block title %}项目管理中心 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}项目管理中心{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -9,7 +11,7 @@
     </div>
 
     <section class="admin-section">
-        <h3>新增项目</h3>
+        <h3 class="admin-section-title">新增项目</h3>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
@@ -45,21 +47,21 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">启用状态</label>
-                    <label class="form-hint" style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                    <label class="form-hint project-active-hint">
                         <input id="project-active" type="checkbox" checked>
                         创建后立即启用
                     </label>
                 </div>
             </div>
         </div>
-        <div class="form-actions" style="justify-content:flex-start;">
+        <div class="form-actions form-actions-start">
             <button class="btn btn-primary" id="project-create-btn" type="button">创建项目</button>
         </div>
         <div id="project-create-message" class="form-hint"></div>
     </section>
 
     <section class="admin-section">
-        <h3>项目列表</h3>
+        <h3 class="admin-section-title">项目列表</h3>
         <p class="form-hint">停用后项目不会出现在前台默认切换器中，但历史数据仍可按显式项目参数查看。</p>
         <table class="data-table table-cards">
             <thead>
@@ -85,32 +87,20 @@
 <script>
 let adminProjects = [];
 
-function escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
-}
-
-async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(payload.error || '请求失败');
-    }
-    return payload;
-}
-
 function setMessage(id, message, isError = false) {
-    const el = document.getElementById(id);
-    el.className = isError ? 'text-danger' : 'form-hint';
-    el.textContent = message || '';
+    setInlineMessage(id, message, isError, 'form-hint');
+}
+
+function applyProjectColorSwatches() {
+    document.querySelectorAll('[data-project-color]').forEach((el) => {
+        el.style.background = el.dataset.projectColor || '#1a73e8';
+    });
 }
 
 function renderProjects() {
     const tbody = document.getElementById('project-table-body');
     if (!adminProjects.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-muted">暂无项目</td></tr>';
+        renderTableMessage(tbody, 7, '暂无项目');
         return;
     }
 
@@ -121,8 +111,8 @@ function renderProjects() {
             <td data-label="短名称">${escapeHtml(project.short_name)}</td>
             <td data-label="排序">${project.sort_order ?? 0}</td>
             <td data-label="主题色">
-                <span style="display:inline-flex;align-items:center;gap:8px;">
-                    <span style="display:inline-block;width:14px;height:14px;border-radius:999px;background:${escapeHtml(project.color || '#1a73e8')};border:1px solid rgba(0,0,0,0.12);"></span>
+                <span class="project-color-chip">
+                    <span class="project-color-swatch" data-project-color="${escapeHtml(project.color || '#1a73e8')}"></span>
                     ${escapeHtml(project.color || '#1a73e8')}
                 </span>
             </td>
@@ -136,6 +126,7 @@ function renderProjects() {
             </td>
         </tr>
     `).join('');
+    applyProjectColorSwatches();
 }
 
 async function loadProjects() {
@@ -186,7 +177,7 @@ async function toggleProject(projectCode, active) {
         });
         await loadProjects();
     } catch (error) {
-        alert(error.message);
+        showToast(error.message, 'error');
     }
 }
 
@@ -196,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadProjects();
     } catch (error) {
         setMessage('project-create-message', error.message, true);
-        document.getElementById('project-table-body').innerHTML = '<tr><td colspan="7" class="text-danger">加载失败</td></tr>';
+        renderTableMessage('project-table-body', 7, '加载失败', true);
     }
 });
 </script>

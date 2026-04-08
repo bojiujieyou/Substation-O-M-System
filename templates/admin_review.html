@@ -2,6 +2,8 @@
 
 {% block title %}导入审查中心 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}导入审查中心{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -14,18 +16,46 @@
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="admin-section h-100">
-                <div class="detail-row"><span class="detail-label">站名提议</span><span class="detail-value" id="proposal-count">0</span></div>
-                <div class="detail-row"><span class="detail-label">待确认队列</span><span class="detail-value" id="queue-count">0</span></div>
-                <div class="detail-row"><span class="detail-label">可指派站点</span><span class="detail-value" id="station-count">0</span></div>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="summary-stat-card" id="review-stat-proposals-card">
+                <div class="summary-stat-label">站名提议</div>
+                <div class="summary-stat-value" id="proposal-count">0</div>
             </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-sm-6 col-xl-4">
+            <div class="summary-stat-card" id="review-stat-queue-card">
+                <div class="summary-stat-label">待确认队列</div>
+                <div class="summary-stat-value" id="queue-count">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="summary-stat-card" id="review-stat-station-card">
+                <div class="summary-stat-label">可指派站点</div>
+                <div class="summary-stat-value" id="station-count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
             <div class="admin-section h-100">
-                <h3 class="mb-2">处理建议</h3>
-                <p class="text-muted mb-2">先处理站名提议，建立稳定映射；再批量给待确认记录指派站点、套用映射，最后决定导入、并单或驳回。</p>
+                <h3 class="admin-section-title">当前重点</h3>
+                <div class="status-hero" id="review-status-hero">
+                    <div class="status-hero-badge badge badge-info" id="review-status-badge">加载中</div>
+                    <div class="status-hero-title" id="review-status-title">正在分析审查工作量</div>
+                    <p class="form-hint mb-0 status-hero-note" id="review-status-note">加载后会给出当前应优先处理的事项。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="admin-section h-100">
+                <h3 class="admin-section-title">处理建议</h3>
+                <div id="review-primary-step" class="next-step-primary is-hidden">
+                    <div class="next-step-primary-label">优先处理</div>
+                    <div class="next-step-primary-text" id="review-primary-step-text">-</div>
+                </div>
+                <div id="review-secondary-steps" class="review-secondary-steps is-hidden"></div>
                 <div id="review-flash" class="form-hint"></div>
             </div>
         </div>
@@ -34,13 +64,13 @@
     <div class="row g-4">
         <div class="col-xl-5">
             <div class="admin-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">站名映射提议</h3>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-header-title">站名映射提议</h3>
                     <button class="btn btn-sm btn-secondary" onclick="loadProposals()">刷新</button>
                 </div>
 
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
+                <div class="row g-2 mb-3 review-filter-grid review-filter-grid-proposals">
+                    <div class="col-md-4 review-filter-col">
                         <label class="form-label" for="proposal-status">状态</label>
                         <select id="proposal-status" class="form-select">
                             <option value="pending">待处理</option>
@@ -50,13 +80,13 @@
                             <option value="expired">已过期</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 review-filter-col">
                         <label class="form-label" for="proposal-project">项目</label>
                         <select id="proposal-project" class="form-select">
                             <option value="">全部项目</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 review-filter-col">
                         <label class="form-label" for="proposal-station-id">批量归属站点</label>
                         <select id="proposal-station-id" class="form-select">
                             <option value="">优先使用候选站点</option>
@@ -64,19 +94,23 @@
                     </div>
                 </div>
 
-                <div class="form-actions mb-3" style="justify-content:flex-start;">
-                    <button class="btn btn-primary btn-sm" onclick="batchApproveProposals()">批量通过</button>
-                    <button class="btn btn-secondary btn-sm" onclick="batchRejectProposals()">批量驳回</button>
+                <div class="review-action-group mb-3">
+                    <div class="review-action-group-label">批量处理提议</div>
+                    <div class="form-actions mb-2 form-actions-start">
+                        <button class="btn btn-primary btn-sm" onclick="batchApproveProposals()">批量通过</button>
+                        <button class="btn btn-secondary btn-sm" onclick="batchRejectProposals()">批量驳回</button>
+                    </div>
+                    <div class="form-hint mb-0">适合先清理高置信度提议，再回头处理剩余人工判断项。</div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                <div class="table-responsive review-table-shell">
+                    <table class="table table-sm align-middle review-table">
                         <thead>
                             <tr>
-                                <th style="width:36px;"><input type="checkbox" id="proposal-select-all"></th>
+                                <th class="review-checkbox-col"><input type="checkbox" id="proposal-select-all"></th>
                                 <th>外部站名</th>
                                 <th>候选站点</th>
-                                <th style="width:140px;">操作</th>
+                                <th class="review-actions-col">操作</th>
                             </tr>
                         </thead>
                         <tbody id="proposal-table-body">
@@ -89,13 +123,13 @@
 
         <div class="col-xl-7">
             <div class="admin-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">导入待确认队列</h3>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-header-title">导入待确认队列</h3>
                     <button class="btn btn-sm btn-secondary" onclick="loadQueue()">刷新</button>
                 </div>
 
-                <div class="row g-2 mb-3">
-                    <div class="col-md-3">
+                <div class="row g-2 mb-3 review-filter-grid review-filter-grid-queue">
+                    <div class="col-md-3 review-filter-col">
                         <label class="form-label" for="queue-status">状态</label>
                         <select id="queue-status" class="form-select">
                             <option value="pending">待处理</option>
@@ -105,13 +139,13 @@
                             <option value="expired">已过期</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 review-filter-col">
                         <label class="form-label" for="queue-project">项目</label>
                         <select id="queue-project" class="form-select">
                             <option value="">全部项目</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 review-filter-col">
                         <label class="form-label" for="queue-issue-type">问题类型</label>
                         <select id="queue-issue-type" class="form-select">
                             <option value="">全部类型</option>
@@ -119,7 +153,7 @@
                             <option value="insert_failed">写入失败</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 review-filter-col">
                         <label class="form-label" for="queue-station-id">批量指派站点</label>
                         <select id="queue-station-id" class="form-select">
                             <option value="">请选择站点</option>
@@ -127,20 +161,24 @@
                     </div>
                 </div>
 
-                <div class="form-actions mb-3" style="justify-content:flex-start; flex-wrap:wrap;">
-                    <button class="btn btn-primary btn-sm" onclick="batchAssignStation()">批量指派站点</button>
-                    <button class="btn btn-secondary btn-sm" onclick="batchApplyMapping()">批量套用映射</button>
-                    <button class="btn btn-secondary btn-sm" onclick="batchRejectQueue()">批量驳回</button>
+                <div class="review-action-group mb-3">
+                    <div class="review-action-group-label">批量处理队列</div>
+                    <div class="form-actions mb-2 form-actions-start form-actions-wrap">
+                        <button class="btn btn-primary btn-sm" onclick="batchAssignStation()">批量指派站点</button>
+                        <button class="btn btn-secondary btn-sm" onclick="batchApplyMapping()">批量套用映射</button>
+                        <button class="btn btn-secondary btn-sm" onclick="batchRejectQueue()">批量驳回</button>
+                    </div>
+                    <div class="form-hint mb-0">先批量指派或套用映射，再对确认为无效的数据统一驳回。</div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                <div class="table-responsive review-table-shell">
+                    <table class="table table-sm align-middle review-table">
                         <thead>
                             <tr>
-                                <th style="width:36px;"><input type="checkbox" id="queue-select-all"></th>
+                                <th class="review-checkbox-col"><input type="checkbox" id="queue-select-all"></th>
                                 <th>来源记录</th>
                                 <th>问题</th>
-                                <th style="width:220px;">操作</th>
+                                <th class="review-actions-col review-actions-col-wide">操作</th>
                             </tr>
                         </thead>
                         <tbody id="queue-table-body">
@@ -161,16 +199,8 @@ let reviewProjects = [];
 let proposalRows = [];
 let queueRows = [];
 
-function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = value == null ? '' : String(value);
-    return div.innerHTML;
-}
-
 function setFlash(message, isError = false) {
-    const el = document.getElementById('review-flash');
-    el.className = isError ? 'text-danger' : 'text-success';
-    el.textContent = message || '';
+    setInlineMessage('review-flash', message, isError, 'text-success');
 }
 
 function checkedValues(name) {
@@ -196,15 +226,6 @@ function fillSelectOptions(selectId, options, placeholder) {
     }
 }
 
-async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data.error || '请求失败');
-    }
-    return data;
-}
-
 async function loadReferenceData() {
     const [stationResp, projectResp] = await Promise.all([
         fetchJson('/admin/stations'),
@@ -228,13 +249,112 @@ async function loadReferenceData() {
     fillSelectOptions('queue-project', projectOptions, '全部项目');
 
     document.getElementById('station-count').textContent = reviewStations.length;
+    renderReviewOverview();
+}
+
+function updateReviewSummaryCards() {
+    const proposalCount = proposalRows.length;
+    const queueCount = queueRows.length;
+    const proposalCard = document.getElementById('review-stat-proposals-card');
+    const queueCard = document.getElementById('review-stat-queue-card');
+    const stationCard = document.getElementById('review-stat-station-card');
+
+    if (proposalCard) {
+        proposalCard.className = proposalCount > 0
+            ? 'summary-stat-card summary-stat-card-warning'
+            : 'summary-stat-card';
+    }
+    if (queueCard) {
+        queueCard.className = queueCount > 0
+            ? 'summary-stat-card summary-stat-card-warning'
+            : 'summary-stat-card';
+    }
+    if (stationCard) {
+        stationCard.className = reviewStations.length > 0
+            ? 'summary-stat-card summary-stat-card-success'
+            : 'summary-stat-card';
+    }
+}
+
+function renderReviewOverview() {
+    const badge = document.getElementById('review-status-badge');
+    const title = document.getElementById('review-status-title');
+    const note = document.getElementById('review-status-note');
+    const primary = document.getElementById('review-primary-step');
+    const primaryText = document.getElementById('review-primary-step-text');
+    const secondary = document.getElementById('review-secondary-steps');
+    const hero = document.getElementById('review-status-hero');
+    if (!badge || !title || !note || !primary || !primaryText || !secondary || !hero) return;
+
+    hero.className = 'status-hero';
+    const steps = [];
+    if (proposalRows.length > 0) {
+        badge.className = 'badge badge-warning';
+        badge.textContent = '优先处理提议';
+        title.textContent = '先清理站名映射提议，再处理待确认队列';
+        note.textContent = `当前有 ${proposalRows.length} 条站名提议等待确认。`;
+        hero.classList.add('status-hero-pending_conflicts');
+        steps.push(`先处理 ${proposalRows.length} 条站名提议，建立稳定映射。`);
+        if (queueRows.length > 0) {
+            steps.push(`再处理 ${queueRows.length} 条待确认记录，减少人工回看成本。`);
+        }
+    } else if (queueRows.length > 0) {
+        badge.className = 'badge badge-warning';
+        badge.textContent = '优先处理队列';
+        title.textContent = '当前重点是尽快清空待确认队列';
+        note.textContent = `当前有 ${queueRows.length} 条待确认记录等待处理。`;
+        hero.classList.add('status-hero-pending_conflicts');
+        steps.push(`先给 ${queueRows.length} 条待确认记录指派站点或直接完成导入。`);
+        steps.push('确认无需保留的异常记录后，再批量驳回。');
+    } else {
+        badge.className = 'badge badge-success';
+        badge.textContent = '已清空';
+        title.textContent = '当前没有待处理的审查事项';
+        note.textContent = '可以返回管理后台继续导入，或等待下一批数据进入审查中心。';
+        hero.classList.add('status-hero-success');
+        steps.push('当前审查中心已收口，无需额外处理。');
+    }
+
+    primary.classList.remove('is-hidden');
+    primaryText.textContent = steps[0] || '';
+    if (steps.length > 1) {
+        secondary.classList.remove('is-hidden');
+        secondary.innerHTML = steps.slice(1).map((step) => `<div class="review-secondary-step">${escapeHtml(step)}</div>`).join('');
+    } else {
+        secondary.classList.add('is-hidden');
+        secondary.innerHTML = '';
+    }
+
+    updateReviewSummaryCards();
+}
+
+function renderReviewLoadError(message) {
+    const badge = document.getElementById('review-status-badge');
+    const title = document.getElementById('review-status-title');
+    const note = document.getElementById('review-status-note');
+    const primary = document.getElementById('review-primary-step');
+    const primaryText = document.getElementById('review-primary-step-text');
+    const secondary = document.getElementById('review-secondary-steps');
+    const hero = document.getElementById('review-status-hero');
+    if (!badge || !title || !note || !primary || !primaryText || !secondary || !hero) return;
+
+    badge.className = 'badge badge-danger';
+    badge.textContent = '加载失败';
+    title.textContent = '审查中心数据暂时不可用';
+    note.textContent = message || '请稍后重试，或检查导入审查相关数据表和接口状态。';
+    hero.className = 'status-hero';
+    primary.classList.add('is-hidden');
+    primaryText.textContent = '';
+    secondary.classList.add('is-hidden');
+    secondary.innerHTML = '';
 }
 
 function renderProposals() {
     const tbody = document.getElementById('proposal-table-body');
     document.getElementById('proposal-count').textContent = proposalRows.length;
+    renderReviewOverview();
     if (!proposalRows.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">当前没有符合条件的站名提议。</td></tr>';
+        renderTableMessage(tbody, 4, '当前没有符合条件的站名提议。');
         return;
     }
 
@@ -245,12 +365,14 @@ function renderProposals() {
             <tr>
                 <td><input type="checkbox" name="proposal-item" value="${row.id}"></td>
                 <td>
-                    <div class="fw-semibold">${escapeHtml(row.external_name)}</div>
-                    <div class="text-muted small">${escapeHtml(row.project_name || row.project_code || '未指定项目')} · ${escapeHtml(row.source_system || '-')} · 置信度 ${confidence}</div>
+                    <div class="review-table-primary">${escapeHtml(row.external_name)}</div>
+                    <div class="review-table-meta">${escapeHtml(row.project_name || row.project_code || '未指定项目')} · ${escapeHtml(row.source_system || '-')} · 置信度 ${confidence}</div>
                 </td>
                 <td>
-                    <div>${escapeHtml(candidate)}</div>
-                    <div class="text-muted small">${escapeHtml(row.status)}</div>
+                    <div class="review-table-primary">${escapeHtml(candidate)}</div>
+                    <div class="review-inline-badges">
+                        <span class="badge badge-light">${escapeHtml(row.status)}</span>
+                    </div>
                 </td>
                 <td>
                     <div class="d-flex gap-2 flex-wrap">
@@ -266,28 +388,41 @@ function renderProposals() {
 function renderQueue() {
     const tbody = document.getElementById('queue-table-body');
     document.getElementById('queue-count').textContent = queueRows.length;
+    renderReviewOverview();
     if (!queueRows.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">当前没有符合条件的待确认记录。</td></tr>';
+        renderTableMessage(tbody, 4, '当前没有符合条件的待确认记录。');
         return;
     }
 
     tbody.innerHTML = queueRows.map(row => {
         const payload = row.raw_payload || {};
+        const signals = getQueueAiSignals(row);
+        const aiReason = row.ai_reason || payload.ai_reason || signals.aiSuggestion.reason || '';
         const stationToken = payload.station_token || payload.station_text || payload.external_name || '-';
-        const assignedStation = payload.assigned_station_name || payload.assigned_station_id || '未指派';
         const description = payload.description || payload.content || '';
         return `
             <tr>
                 <td><input type="checkbox" name="queue-item" value="${row.id}"></td>
                 <td>
-                    <div class="fw-semibold">${escapeHtml(stationToken)}</div>
-                    <div class="text-muted small">${escapeHtml(row.project_name || row.project_code || '未指定项目')} · ${escapeHtml(row.source_type || '-')}</div>
-                    <div class="text-muted small">指派站点: ${escapeHtml(assignedStation)}</div>
-                    <div class="text-muted small">${escapeHtml(description)}</div>
+                    <div class="review-table-primary">${escapeHtml(stationToken)}</div>
+                    <div class="review-table-meta">${escapeHtml(row.project_name || row.project_code || '未指定项目')} · ${escapeHtml(row.source_type || '-')}</div>
+                    <div class="review-inline-badges">
+                        <span class="badge badge-light">指派站点: ${escapeHtml(signals.assignedStation)}</span>
+                        ${signals.stationConflict ? '<span class="badge badge-warning">AI站名与当前指派不一致</span>' : ''}
+                        ${signals.cameraConflict ? '<span class="badge badge-warning">AI摄像头建议与当前记录不一致</span>' : ''}
+                        ${signals.hasConflict ? '<span class="badge badge-danger">优先复核</span>' : ''}
+                    </div>
+                    <div class="review-table-note">${escapeHtml(description || '无附加描述')}</div>
+                    ${signals.aiStationSuggestion ? `<div class="review-table-note">AI站名建议: ${escapeHtml(signals.aiStationSuggestion)}</div>` : ''}
+                    ${signals.aiCameraSuggestion ? `<div class="review-table-note">AI摄像头建议: ${escapeHtml(signals.aiCameraSuggestion)}</div>` : ''}
+                    ${signals.currentCameraText ? `<div class="review-table-note">当前记录摄像头: ${escapeHtml(signals.currentCameraText)}</div>` : ''}
+                    ${signals.aiFaultSuggestion ? `<div class="review-table-note">AI故障类型建议: ${escapeHtml(signals.aiFaultSuggestion)}</div>` : ''}
+                    ${signals.aiMeta ? `<div class="review-table-note">${escapeHtml(signals.aiMeta)}</div>` : ''}
+                    ${aiReason ? `<div class="review-table-note">${escapeHtml(aiReason)}</div>` : ''}
                 </td>
                 <td>
-                    <div>${escapeHtml(row.issue_type)}</div>
-                    <div class="text-muted small">${escapeHtml(row.issue_detail || '-')}</div>
+                    <div class="review-table-primary">${escapeHtml(row.issue_type)}</div>
+                    <div class="review-table-note">${escapeHtml(row.issue_detail || '-')}</div>
                 </td>
                 <td>
                     <div class="d-flex gap-2 flex-wrap">
@@ -299,6 +434,54 @@ function renderQueue() {
             </tr>
         `;
     }).join('');
+}
+
+function getQueueAiSignals(row) {
+    const payload = row.raw_payload || {};
+    const aiSuggestion = row.ai_suggestion || payload.ai_suggestion || {};
+    const aiConfidence = row.ai_confidence ?? payload.ai_confidence;
+    const assignedStation = payload.assigned_station_name || payload.assigned_station_id || '未指派';
+    const aiStationSuggestion = aiSuggestion.normalized_station_name || aiSuggestion.station_name || '';
+    const aiCameraSuggestion = aiSuggestion.camera_location_text || '';
+    const aiFaultSuggestion = aiSuggestion.fault_type || '';
+    const aiMeta = aiConfidence == null ? '' : `AI置信度 ${Number(aiConfidence).toFixed(2)}`;
+    const currentCameraText = payload.location || payload.camera_location_text || '';
+    const hasAssignedStation = assignedStation && assignedStation !== '未指派';
+    const stationConflict = Boolean(hasAssignedStation && aiStationSuggestion && aiStationSuggestion !== assignedStation);
+    const cameraConflict = Boolean(currentCameraText && aiCameraSuggestion && aiCameraSuggestion !== currentCameraText);
+    return {
+        payload,
+        aiSuggestion,
+        assignedStation,
+        aiStationSuggestion,
+        aiCameraSuggestion,
+        aiFaultSuggestion,
+        aiMeta,
+        currentCameraText,
+        stationConflict,
+        cameraConflict,
+        hasConflict: stationConflict || cameraConflict,
+        hasAiSuggestion: Boolean(aiStationSuggestion || aiCameraSuggestion || aiFaultSuggestion || aiMeta),
+    };
+}
+
+function sortQueueRowsForReview(rows) {
+    return [...rows].sort((left, right) => {
+        const leftSignals = getQueueAiSignals(left);
+        const rightSignals = getQueueAiSignals(right);
+        if (leftSignals.hasConflict !== rightSignals.hasConflict) {
+            return leftSignals.hasConflict ? -1 : 1;
+        }
+        if (leftSignals.hasAiSuggestion !== rightSignals.hasAiSuggestion) {
+            return leftSignals.hasAiSuggestion ? -1 : 1;
+        }
+        const leftCreated = Date.parse(left.created_at || '') || 0;
+        const rightCreated = Date.parse(right.created_at || '') || 0;
+        if (leftCreated !== rightCreated) {
+            return rightCreated - leftCreated;
+        }
+        return (right.id || 0) - (left.id || 0);
+    });
 }
 
 async function loadProposals() {
@@ -326,7 +509,7 @@ async function loadQueue() {
         params.set('issue_type', document.getElementById('queue-issue-type').value);
     }
     const data = await fetchJson(`/admin/import-review-queue?${params.toString()}`);
-    queueRows = data.items || [];
+    queueRows = sortQueueRowsForReview(data.items || []);
     renderQueue();
 }
 
@@ -414,7 +597,7 @@ async function approveQueueItem(itemId) {
 }
 
 async function mergeQueueItem(itemId) {
-    const faultId = window.prompt('请输入要并入的现有故障 ID');
+    const faultId = prompt('请输入要并入的现有故障 ID');
     if (!faultId) {
         return;
     }
@@ -513,11 +696,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await loadReferenceData();
         await Promise.all([loadProposals(), loadQueue()]);
-        setFlash('审查中心已就绪。');
+        setFlash('');
     } catch (error) {
         setFlash(error.message, true);
-        document.getElementById('proposal-table-body').innerHTML = '<tr><td colspan="4" class="text-danger">加载失败</td></tr>';
-        document.getElementById('queue-table-body').innerHTML = '<tr><td colspan="4" class="text-danger">加载失败</td></tr>';
+        renderReviewLoadError(error.message);
+        renderTableMessage('proposal-table-body', 4, '加载失败', true);
+        renderTableMessage('queue-table-body', 4, '加载失败', true);
     }
 });
 </script>

@@ -1,3 +1,4 @@
+import json
 import sqlite3
 
 import pytest
@@ -155,6 +156,22 @@ def test_review_center_page_renders_for_admin(client, seeded_review_schema):
 
     assert response.status_code == 200
     assert "导入审查中心".encode("utf-8") in response.data
+    assert b"review-status-hero" in response.data
+    assert b"admin-section-title" in response.data
+    assert b"review-table-shell" in response.data
+    assert b"admin-section-header" in response.data
+    assert b"admin-section-header-title" in response.data
+    assert b"review-filter-grid" in response.data
+    assert b"review-checkbox-col" in response.data
+    assert b"review-actions-col" in response.data
+    assert b"form-actions-start" in response.data
+    assert b"setInlineMessage(" in response.data
+    assert b"renderTableMessage(" in response.data
+    assert b"renderReviewLoadError(" in response.data
+    assert b"is-hidden" in response.data
+    assert "批量处理提议".encode("utf-8") in response.data
+    assert "批量处理队列".encode("utf-8") in response.data
+    assert b"?.className =" not in response.data
 
 
 def test_station_name_proposal_can_be_listed_and_approved(client, seeded_review_schema, review_db):
@@ -300,15 +317,26 @@ def test_station_name_proposal_detail_and_batch_approve(client, seeded_review_sc
 
 def test_import_review_queue_can_be_listed_and_rejected(client, seeded_review_schema, review_db):
     conn = sqlite3.connect(review_db)
+    conn.executescript(
+        """
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_suggestion_json TEXT;
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_confidence REAL;
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_reason TEXT;
+        """
+    )
     conn.execute(
         """
         INSERT INTO fault_import_review_queue (
             id, import_batch_id, project_id, source_type, source_record_key_candidate,
-            raw_payload_json, issue_type, issue_detail, status
+            raw_payload_json, issue_type, issue_detail, status,
+            ai_suggestion_json, ai_confidence, ai_reason
         )
         VALUES (
             1, 1, 1, 'import_excel', 'inspection:import_excel:abc',
-            '{"station_name": "External Station"}', 'ambiguous_station', 'needs review', 'pending'
+            '{"station_name": "External Station"}', 'ambiguous_station', 'needs review', 'pending',
+            '{"station_name":"Station Alpha","camera_location_text":"Main Gate Camera","fault_type":"摄像头离线"}',
+            0.86,
+            'matched by AI'
         )
         """
     )
@@ -323,6 +351,9 @@ def test_import_review_queue_can_be_listed_and_rejected(client, seeded_review_sc
     assert data["total"] == 1
     assert data["items"][0]["project_code"] == "inspection"
     assert data["items"][0]["raw_payload"]["station_name"] == "External Station"
+    assert data["items"][0]["ai_suggestion"]["station_name"] == "Station Alpha"
+    assert data["items"][0]["ai_suggestion"]["camera_location_text"] == "Main Gate Camera"
+    assert data["items"][0]["ai_confidence"] == 0.86
 
     reject = client.post(
         "/admin/import-review-queue/1/reject",
@@ -440,10 +471,16 @@ def test_import_review_approve_preserves_richer_import_metadata(client, seeded_r
     conn.executescript(
         """
         ALTER TABLE fault_reports ADD COLUMN camera_slot_id INTEGER;
+        ALTER TABLE fault_reports ADD COLUMN camera_location_text TEXT;
         ALTER TABLE fault_reports ADD COLUMN fault_type_code TEXT;
         ALTER TABLE fault_reports ADD COLUMN fault_type_version_id INTEGER;
         ALTER TABLE fault_reports ADD COLUMN project_device_code TEXT;
         ALTER TABLE fault_reports ADD COLUMN handling_started_at TIMESTAMP;
+        ALTER TABLE fault_reports ADD COLUMN ai_confidence REAL;
+        ALTER TABLE fault_reports ADD COLUMN ai_trace_json TEXT;
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_suggestion_json TEXT;
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_confidence REAL;
+        ALTER TABLE fault_import_review_queue ADD COLUMN ai_reason TEXT;
 
         CREATE TABLE camera_slots (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -460,12 +497,16 @@ def test_import_review_approve_preserves_richer_import_metadata(client, seeded_r
         """
         INSERT INTO fault_import_review_queue (
             id, import_batch_id, project_id, source_type, source_record_key_candidate,
-            raw_payload_json, issue_type, issue_detail, status
+            raw_payload_json, issue_type, issue_detail, status,
+            ai_suggestion_json, ai_confidence, ai_reason
         )
         VALUES (
             2, 1, 1, 'import_excel', 'inspection:import_excel:key-rich',
             '{"reporter_name":"Alice","status":"handling","parsed_time":"2025-01-05T08:00:00Z","handling_started_at":"2025-01-05T08:10:00Z","raw_time":"2025-01-05 16:00:00","source_timezone":"Asia/Shanghai","fault_type":"Blur","fault_type_label_snapshot":"Blur Snapshot","fault_type_code":"BLUR","fault_type_version_id":10,"project_device_code":"DEV-9","slot_id":8,"station_id":1}',
-            'slot_not_resolved', 'needs station', 'pending'
+            'slot_not_resolved', 'needs station', 'pending',
+            '{"camera_location_text":"West transformer north camera","fault_type":"Blur Snapshot","reason":"camera text extracted"}',
+            0.88,
+            'camera text extracted'
         )
         """
     )
@@ -487,7 +528,8 @@ def test_import_review_approve_preserves_richer_import_metadata(client, seeded_r
             """
             SELECT reporter_name, status, handling_started_at, camera_slot_id,
                    fault_type, fault_type_label_snapshot, fault_type_code,
-                   fault_type_version_id, project_device_code, source_time_raw, source_timezone
+                   fault_type_version_id, project_device_code, source_time_raw, source_timezone,
+                   camera_location_text, ai_confidence, ai_trace_json
             FROM fault_reports
             WHERE id = ?
             """,
@@ -496,7 +538,7 @@ def test_import_review_approve_preserves_richer_import_metadata(client, seeded_r
     finally:
         conn.close()
 
-    assert fault == (
+    assert fault[:13] == (
         "Alice",
         "handling",
         "2025-01-05T08:10:00Z",
@@ -508,7 +550,13 @@ def test_import_review_approve_preserves_richer_import_metadata(client, seeded_r
         "DEV-9",
         "2025-01-05 16:00:00",
         "Asia/Shanghai",
+        "West transformer north camera",
+        0.88,
     )
+    trace = json.loads(fault[13])
+    assert trace["review_queue_item_id"] == 2
+    assert trace["ai_reason"] == "camera text extracted"
+    assert trace["ai_suggestion"]["camera_location_text"] == "West transformer north camera"
 
 
 def test_import_review_item_can_merge_existing_and_apply_mapping(client, seeded_review_schema, review_db):

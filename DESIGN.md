@@ -45,13 +45,13 @@
 
 ## Color
 
-- **Approach:** 白底专业工具风格，颜色用于操作优先级、状态区分和少量强调
+- **Approach:** 浅暖灰 / 微冷白底的专业工具风格，页面底使用轻微染色背景承托白色卡片与侧栏；颜色用于操作优先级、状态区分和少量强调
 
 ### Background & Surface
 
 | Token | HEX | Usage |
 |-------|-----|-------|
-| `--bg-primary` | `#F7F9FC` | 页面背景、hover浅底 |
+| `--bg-primary` | `#F7F9FC` | 浅染页面底、hover 浅底、弱分组底色 |
 | `--bg-secondary` | `#FFFFFF` | 基础白底、按钮hover背景 |
 | `--bg-elevated` | `#FFFFFF` | 提升层背景 |
 | `--bg-card` | `#FFFFFF` | 卡片、表格、弹窗背景 |
@@ -467,16 +467,50 @@ textarea.form-input-modal {
 
 ---
 
-## 当前实现基线（2026-04-06）
+## 当前实现基线（2026-04-07）
 
 - **唯一生效样式文件：** `static/design_variants/style2.css`，`static/style.css` 不再作为当前设计稿基线
 - **基础模板：** `templates/base.html`
-- **全局工具：** `static/utils.js`（`escapeHtml`、`withProject`、`fetchJson`、`AppProjectState`）
-- **全局反馈：** 使用 `showToast(message, type)` 代替原生 `alert()`
-- **项目切换：** 顶栏 `#global-project-select` + 链接 `data-project-link` 联动
+- **首页模板：** `templates/index.html`
+- **全局工具：** `static/utils.js`（`escapeHtml`、`withProject`、`fetchJson`、`AppProjectState`、共享消息渲染 helper）
+- **全局反馈：** 使用 toast 容器 + `showToast(message, type)`；页内提示统一走 `setInlineMessage()`
+- **项目切换：** 顶栏 `#global-project-select` + 链接 `data-project-link` 联动，项目上下文以 URL `?project=<code>` 为准
+- **导入入口优先级：** 顶栏右侧常驻 `导入数据` 主按钮；首页 Hero 第一主操作和快捷入口第一项也都优先导向导入流程
 - **页面范围：** 首页、登录页、统计页、照片页、管理后台、故障记录页等均已按 style2 风格持续演进
 - **关键布局基线：** 侧栏 256px，顶栏 sticky，主内容区 `padding: var(--space-xl)`
-- **当前反馈组件：** toast 容器 + `showToast(message, type)` 已作为全局提示基线
+- **后台共享模式：** 管理页统一复用 `admin-section`、`admin-section-header`、`admin-section-header-title`、`admin-section-header-actions`、`admin-section-stack`、`admin-section-title`
+- **当前反馈组件：** toast 容器 + `showToast(message, type)` 作为全局提示；表格/区块空态与错误态优先使用共享 helper 渲染
+
+### 当前 UI 风格补充
+
+#### 1. 顶层导航
+- 左侧固定白底侧栏，使用轻边框分隔，不做深色运营后台风格
+- 顶栏右侧保留 4 个高频元素：搜索、导入数据、项目切换、通知
+- “导入数据”是当前最高优先级主 CTA，视觉上必须持续强于普通导航按钮
+
+#### 2. 首页信息架构
+- 首页不是营销页，而是“项目总览 + 快速分流页”
+- Hero 使用暖橙渐变强化主任务，但正文区仍回到白底卡片体系
+- Hero CTA 顺序固定为：导入数据 → 查看故障记录 → 查看变电站
+- 快捷入口顺序固定为：导入数据 → 站点巡检 → 统计分析 → 新建报修
+- “新建报修”保留但优先级低于导入流程，文案和视觉都应体现这是备用入口
+
+#### 3. 后台页面风格
+- 后台页统一采用“页面头部 + 双列/多列卡片区块 + 局部表格/表单”的组织方式
+- 区块标题、刷新按钮、批量操作区需尽量使用共享类，不再为单页重复写一套布局
+- 空态、加载失败、行内反馈走统一 helper，减少每页各自拼接 HTML 的做法
+- 风格目标是“运营控制台”，不是“表单堆砌页”或“弹窗驱动页”
+
+#### 4. 视觉语义
+- 主色继续使用暖橙系，承担主操作、关键引导和少量重点数据强调
+- 蓝色用于信息性入口与次主路径，绿色用于成功/完成，红色用于风险/待处理
+- 白底、浅灰分隔、轻阴影仍是默认表面语言，避免大面积重色块堆叠
+- 图标只承担识别作用，不应成为装饰主体
+
+#### 5. 实现约束
+- 新页面优先复用现有 token 和共享类，先对齐 style2，再考虑局部增强
+- 除首页等少数既有区域外，不再新增大量模板内联样式作为常规方案
+- 任何新后台页都应默认接入项目上下文联动和统一消息机制
 
 ---
 
@@ -486,3 +520,4 @@ textarea.form-input-modal {
 |------|----------|-----------|
 | 2026-03-25 | Initial design system created | Created by /design-consultation based on industrial operations tool context |
 | 2026-04-06 | Design doc fully re-synced to style2 tokens and component examples | 颜色、间距、圆角、按钮、表单、表格、布局说明已按当前实现修正 |
+| 2026-04-07 | Design doc updated to reflect current navigation, import-first homepage IA, and shared admin UI primitives | 文档补齐了当前顶栏导入主入口、首页快捷分流顺序，以及后台共享区块/header/stack/title 基线 |

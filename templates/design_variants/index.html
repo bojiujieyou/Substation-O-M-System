@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设计风格预览 - 变电站图像监控运维平台</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .style-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .style-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .style-preview {
+            height: 240px;
+            background: #f5f5f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .style-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .style-content {
+            padding: 24px;
+        }
+
+        .style-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .style-description {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .style-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .feature-tag {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .view-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .view-button:hover {
+            transform: translateX(4px);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
+            opacity: 0.9;
+        }
+
+        .footer a:hover {
+            opacity: 1;
+        }
+
+        /* 风格特定的预览背景 */
+        .style-preview.style1 {
+            background: linear-gradient(135deg, #E5DDD5 0%, #F5F1ED 100%);
+        }
+
+        .style-preview.style2 {
+            background: linear-gradient(135deg, #F7F9FC 0%, #FFFFFF 100%);
+        }
+
+        .style-preview.style3 {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .styles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 设计风格预览</h1>
+            <p>选择一种风格查看完整的首页效果</p>
+        </div>
+
+        <div class="styles-grid">
+            <!-- 风格1：健身应用风格 -->
+            <a href="/design/style1" class="style-card">
+                <div class="style-preview style1">
+                    <div class="style-badge">风格 1</div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FF6B35, #F7931E); border-radius: 24px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="white">
+                                <path d="M30 10L40 20H35V40H25V20H20L30 10Z"/>
+                                <rect x="15" y="45" width="30" height="4" rx="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="style-content">
+                    <h3 class="style-title">健身应用风格</h3>
+                    <p class="style-description">温暖的米色系配色，圆润的卡片设计，适合长时间使用，给人舒适放松的感觉。</p>
+                    <div class="style-features">
+                        <span class="feature-tag">🎨 米色温暖</span>
+                        <span class="feature-tag">🔄 圆角卡片</span>
+                        <span class="feature-tag">📊 渐变图标</span>
+                    </div>
+                    <div class="view-button">
+                        查看效果
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 2l6 6-6 6V2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 风格2：金融应用风格 -->
+            <a href="/design/style2" class="style-card">
+                <div class="style-preview style2">
+                    <div class="style-badge">风格 2</div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                        <div style="width: 120px; height: 120px; background: white; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); border: 1px solid #E5E5EA;">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="#FF6B35">
+                                <path d="M30 10L40 20H35V40H25V20H20L30 10Z"/>
+                                <rect x="15" y="45" width="30" height="4" rx="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="style-content">
+                    <h3 class="style-title">金融应用风格</h3>
+                    <p class="style-description">清爽的白色系，橙色强调，专业简洁，适合数据展示和商务场景。</p>
+                    <div class="style-features">
+                        <span class="feature-tag">⚪ 白色专业</span>
+                        <span class="feature-tag">🟠 橙色强调</span>
+                        <span class="feature-tag">📈 数据密集</span>
+                    </div>
+                    <div class="view-button">
+                        查看效果
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 2l6 6-6 6V2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 风格3：分析仪表盘风格 -->
+            <a href="/design/style3" class="style-card">
+                <div class="style-preview style3">
+                    <div class="style-badge">风格 3</div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                        <div style="width: 120px; height: 120px; background: #1F2937; border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="white">
+                                <path d="M30 10L40 20H35V40H25V20H20L30 10Z"/>
+                                <rect x="15" y="45" width="30" height="4" rx="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="style-content">
+                    <h3 class="style-title">分析仪表盘风格</h3>
+                    <p class="style-description">深色侧边栏，数据密集型布局，适合专业分析和监控场景。</p>
+                    <div class="style-features">
+                        <span class="feature-tag">⚫ 深色侧栏</span>
+                        <span class="feature-tag">📊 数据分析</span>
+                        <span class="feature-tag">🔴 红色强调</span>
+                    </div>
+                    <div class="view-button">
+                        查看效果
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 2l6 6-6 6V2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>查看完效果后，<a href="/">返回原版首页</a></p>
+        </div>
+    </div>
+</body>
+</html>

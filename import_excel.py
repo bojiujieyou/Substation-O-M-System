@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from admin import _multi_project_camera_schema_enabled, _sync_station_project_cameras
 from config import Config
 from init_db import get_db_path
-from parse_excel import ExcelParseError, parse_station_excel
+from parse_excel import ExcelParseError, parse_station_excel, validate_station_inventory_data
 from project_access import get_project_by_code, projects_enabled, table_exists
 from utils import backup_sqlite_database, create_db_connection
 
@@ -86,6 +86,7 @@ def upsert_camera_legacy(cursor, station_id, camera_data):
 def import_excel_file(filepath, county):
     try:
         data = parse_station_excel(filepath)
+        validate_station_inventory_data(data, filepath)
         data['station']['county'] = county
         return data, None
     except ExcelParseError as exc:

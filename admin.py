@@ -11,17 +11,22 @@ import json
 import hashlib
 from datetime import datetime
 from functools import wraps
-from flask import Blueprint, request, jsonify, session, current_app
+from pathlib import Path
+from flask import Blueprint, request, jsonify, session, current_app, render_template
 from werkzeug.utils import secure_filename
+from ai_fault_analysis import get_ai_runtime_status, probe_nvidia_health
 from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
 from project_access import get_project_by_code, projects_enabled, table_exists
 from utils import get_db
+from import_batch_summary import build_import_batch_summary
 
 logger = logging.getLogger('station_monitor')
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+IMPORT_TYPE_INVENTORY = 'inventory'
+IMPORT_TYPE_DAILY_FAULT_SUMMARY = 'daily_fault_summary'
 
 def require_admin(f):
     """管理员权限检查装饰器"""
@@ -35,16 +40,111 @@ def require_admin(f):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def _normalize_admin_import_type(value):
+    normalized = (value or '').strip().lower()
+    if normalized == IMPORT_TYPE_DAILY_FAULT_SUMMARY:
+        return IMPORT_TYPE_DAILY_FAULT_SUMMARY
+    return IMPORT_TYPE_INVENTORY
+
+
+def _resolve_upload_project(db):
+    if projects_enabled(db):
+        return _resolve_admin_project(db, request.form.get('project'))
+    legacy_project = get_project_by_code(db, 'unified', include_inactive=False)
+    if legacy_project:
+        return legacy_project, None
+    return None, (jsonify({'error': '未找到可用项目'}), 400)
+
+
+def _upload_daily_fault_summary():
+    from import_daily_fault_summary import DailyFaultSummaryParseError, import_daily_fault_summary_file
+
+    db = get_db()
+    if 'file' not in request.files:
+        return jsonify({'error': '没有文件'}), 400
+
+    file = request.files['file']
+    project, error = _resolve_upload_project(db)
+    if error:
+        return error
+
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'error': '只支持xlsx/xls格式'}), 400
+
+    filename = secure_filename(file.filename)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
+    file.save(filepath)
+
+    try:
+        report = import_daily_fault_summary_file(
+            filepath,
+            project_code=project['code'],
+            database_path=current_app.config['DATABASE_PATH'],
+        )
+        summary = report.get('summary') or {}
+        payload = {
+            'message': '每日故障汇总导入完成',
+            'import_type': IMPORT_TYPE_DAILY_FAULT_SUMMARY,
+            'project': project['code'],
+            'batch_id': report.get('batch_id'),
+            'result_url': f"/admin/import-batches/{report['batch_id']}" if report.get('batch_id') else None,
+            'faults_added': int(summary.get('inserted') or 0),
+            'queued_count': int(summary.get('queue_items_created') or 0),
+            'proposal_count': int(summary.get('station_proposals_created') or 0),
+            'duplicates_skipped': int(summary.get('duplicates_skipped') or 0),
+            'source_date': report.get('source_date'),
+            'ai_status': get_ai_runtime_status(),
+        }
+        return jsonify(payload)
+    except Exception as e:
+        logger.exception('upload_daily_fault_summary failed')
+        status_code = 400 if isinstance(e, DailyFaultSummaryParseError) else 500
+        return jsonify({'error': f'解析失败: {str(e)}'}), status_code
+    finally:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+
 def parse_excel_admin(filepath):
     """解析Excel文件，返回标准化数据"""
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from parse_excel import parse_station_excel
-    return parse_station_excel(filepath)
+    from parse_excel import parse_station_excel, validate_station_inventory_data
+    data = parse_station_excel(filepath)
+    validate_station_inventory_data(data, filepath)
+    return data
 
-# ============================================================
-# 文件上传
-# ============================================================
+
+@admin_bp.route('/ai-status', methods=['GET'])
+@require_admin
+def admin_ai_status():
+    return jsonify(probe_nvidia_health())
+
+
+def _validate_inventory_upload(data, filepath):
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from parse_excel import validate_station_inventory_data
+    return validate_station_inventory_data(data, filepath)
+
+
+def _create_excel_import_batch(cursor, project_id: int, file_count: int) -> int:
+    cursor.execute(
+        """
+        INSERT INTO import_batches (project_id, source_type, mode, file_count, success_count, fail_count)
+        VALUES (?, 'import_excel', 'best-effort', ?, 0, 0)
+        """,
+        (project_id, file_count),
+    )
+    return cursor.lastrowid
+
+
 
 @admin_bp.route('/upload', methods=['POST'])
 @require_admin
@@ -54,7 +154,7 @@ def upload_excel():
         return jsonify({'error': '没有文件'}), 400
 
     file = request.files['file']
-    county = request.form.get('county', '')
+    county = (request.form.get('county') or '').strip()
 
     if file.filename == '':
         return jsonify({'error': '没有选择文件'}), 400
@@ -62,10 +162,6 @@ def upload_excel():
     if not allowed_file(file.filename):
         return jsonify({'error': '只支持xlsx/xls格式'}), 400
 
-    if not county:
-        return jsonify({'error': '请选择县区'}), 400
-
-    # 保存上传文件
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
@@ -73,20 +169,26 @@ def upload_excel():
     filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
     file.save(filepath)
 
+    db = None
+    batch_id = None
+    report_path = None
+
     try:
-        # 解析Excel
         data = parse_excel_admin(filepath)
-        data['station']['county'] = county
+        _validate_inventory_upload(data, filepath)
+        station_county = county or data['station'].get('county', '')
 
         db = get_db()
         cursor = db.cursor()
 
-        # Upsert变电站
         cursor.execute("""
             INSERT INTO stations (name, voltage_level, county, location, ip_range, nvr_ip, nvr_port)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(name, voltage_level) DO UPDATE SET
-                county = excluded.county,
+                county = CASE
+                    WHEN excluded.county IS NOT NULL AND TRIM(excluded.county) <> '' THEN excluded.county
+                    ELSE stations.county
+                END,
                 location = excluded.location,
                 ip_range = excluded.ip_range,
                 nvr_ip = excluded.nvr_ip,
@@ -95,22 +197,21 @@ def upload_excel():
         """, (
             data['station']['name'],
             data['station']['voltage_level'],
-            data['station']['county'],
+            station_county,
             data['station']['location'],
             data['station']['ip_range'],
             data['station']['nvr_ip'],
             data['station']['nvr_port'],
         ))
 
-        # 获取station_id
-        cursor.execute("SELECT id FROM stations WHERE name = ? AND voltage_level = ?",
-                       (data['station']['name'], data['station']['voltage_level']))
+        cursor.execute(
+            "SELECT id FROM stations WHERE name = ? AND voltage_level = ?",
+            (data['station']['name'], data['station']['voltage_level'])
+        )
         station_id = cursor.fetchone()[0]
 
-        # 删除旧摄像头
         cursor.execute("DELETE FROM cameras WHERE station_id = ?", (station_id,))
 
-        # 插入新摄像头
         cameras_added = 0
         for camera in data['cameras']:
             cursor.execute("""
@@ -127,20 +228,75 @@ def upload_excel():
             ))
             cameras_added += 1
 
-        db.commit()
-        logger.info(f"Excel imported: station={data['station']['name']}, cameras={cameras_added}, county={county}")
+        legacy_project = get_project_by_code(db, 'unified', include_inactive=False) if projects_enabled(db) else None
+        if legacy_project and table_exists(db, 'import_batches'):
+            batch_id = _create_excel_import_batch(cursor, legacy_project['id'], 1)
+            report_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'import_reports')
+            os.makedirs(report_dir, exist_ok=True)
+            report_path = os.path.join(report_dir, f'import_excel_batch_{batch_id}.json')
+            cursor.execute(
+                """
+                UPDATE import_batches
+                SET success_count = 1, fail_count = 0, report_path = ?
+                WHERE id = ?
+                """,
+                (report_path, batch_id),
+            )
 
-        return jsonify({
+        db.commit()
+
+        if batch_id is not None and report_path:
+            report_payload = {
+                'project': legacy_project['code'],
+                'mode': 'best-effort',
+                'dry_run': False,
+                'file_count': 1,
+                'station_count': 1,
+                'camera_count': cameras_added,
+                'success_count': 1,
+                'fail_count': 0,
+                'rows': [
+                    {
+                        'county': station_county,
+                        'file': filename,
+                        'filepath': filepath,
+                        'status': 'imported',
+                        'station_id': station_id,
+                        'station': data['station']['name'],
+                        'camera_rows': len(data['cameras']),
+                        'cameras_added': cameras_added,
+                    }
+                ],
+                'aborted': False,
+            }
+            Path(report_path).write_text(json.dumps(report_payload, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        logger.info(f"Excel imported: station={data['station']['name']}, cameras={cameras_added}, county={station_county}")
+
+        payload = {
             'message': '导入成功',
+            'import_type': IMPORT_TYPE_INVENTORY,
             'station': data['station']['name'],
             'station_id': station_id,
-            'cameras_added': cameras_added
-        })
+            'cameras_added': cameras_added,
+        }
+        if batch_id is not None and legacy_project:
+            payload['project'] = legacy_project['code']
+            payload['batch_id'] = batch_id
+            payload['result_url'] = f"/admin/import-batches/{batch_id}"
+        return jsonify(payload)
 
     except Exception as e:
-        return jsonify({'error': f'解析失败: {str(e)}'}), 500
+        if db is not None:
+            db.rollback()
+        if report_path and os.path.exists(report_path):
+            os.remove(report_path)
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from parse_excel import ExcelParseError
+        status_code = 400 if isinstance(e, ExcelParseError) else 500
+        return jsonify({'error': f'解析失败: {str(e)}'}), status_code
     finally:
-        # 清理上传文件
         if os.path.exists(filepath):
             os.remove(filepath)
 
@@ -154,17 +310,55 @@ def list_stations():
     """获取所有变电站（带摄像头数量）"""
     db = get_db()
     cursor = db.cursor()
+    project_code = (request.args.get('project') or '').strip()
 
-    cursor.execute("""
-        SELECT s.*,
-               COUNT(c.id) as camera_count
-        FROM stations s
-        LEFT JOIN cameras c ON c.station_id = s.id
-        GROUP BY s.id
-        ORDER BY s.county, s.name
-    """)
+    if _multi_project_camera_schema_enabled(db) and project_code and project_code != 'all':
+        project, error = _resolve_admin_project(db, project_code)
+        if error:
+            return error
 
-    stations = [dict(row) for row in cursor.fetchall()]
+        rows = cursor.execute(
+            """
+            SELECT
+                s.*,
+                (
+                    SELECT COUNT(*)
+                    FROM cameras c
+                    WHERE c.station_id = s.id
+                      AND c.project_id = ?
+                      AND c.status = 'active'
+                ) AS camera_count
+            FROM stations s
+            WHERE EXISTS (
+                SELECT 1
+                FROM cameras c
+                WHERE c.station_id = s.id
+                  AND c.project_id = ?
+                  AND c.status = 'active'
+            )
+               OR EXISTS (
+                SELECT 1
+                FROM fault_reports f
+                WHERE f.station_id = s.id
+                  AND f.project_id = ?
+            )
+            ORDER BY s.county, s.name
+            """,
+            (project['id'], project['id'], project['id']),
+        ).fetchall()
+    else:
+        rows = cursor.execute(
+            """
+            SELECT s.*,
+                   COUNT(c.id) as camera_count
+            FROM stations s
+            LEFT JOIN cameras c ON c.station_id = s.id
+            GROUP BY s.id
+            ORDER BY s.county, s.name
+            """
+        ).fetchall()
+
+    stations = [dict(row) for row in rows]
     return jsonify({'stations': stations})
 
 @admin_bp.route('/stations', methods=['POST'])
@@ -574,25 +768,27 @@ def _sync_station_project_cameras(db, station_id, project, cameras):
 
 
 def upload_excel_scoped():
+    import_type = _normalize_admin_import_type(request.form.get('import_type'))
+    if import_type == IMPORT_TYPE_DAILY_FAULT_SUMMARY:
+        return _upload_daily_fault_summary()
+
     db = get_db()
     if not _multi_project_camera_schema_enabled(db):
         return upload_excel()
 
     if 'file' not in request.files:
-        return jsonify({'error': '娌℃湁鏂囦欢'}), 400
+        return jsonify({'error': '没有文件'}), 400
 
     file = request.files['file']
-    county = request.form.get('county', '')
+    county = (request.form.get('county') or '').strip()
     project, error = _resolve_admin_project(db, request.form.get('project'))
     if error:
         return error
 
     if file.filename == '':
-        return jsonify({'error': '娌℃湁閫夋嫨鏂囦欢'}), 400
+        return jsonify({'error': '没有选择文件'}), 400
     if not allowed_file(file.filename):
-        return jsonify({'error': '鍙敮鎸亁lsx/xls鏍煎紡'}), 400
-    if not county:
-        return jsonify({'error': '璇烽€夋嫨鍘垮尯'}), 400
+        return jsonify({'error': '只支持xlsx/xls格式'}), 400
 
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -601,16 +797,24 @@ def upload_excel_scoped():
     filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
     file.save(filepath)
 
+    report_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'import_reports')
+    batch_id = None
+    report_path = None
+
     try:
         data = parse_excel_admin(filepath)
-        data['station']['county'] = county
+        _validate_inventory_upload(data, filepath)
+        station_county = county or data['station'].get('county', '')
         cursor = db.cursor()
         cursor.execute(
             """
             INSERT INTO stations (name, voltage_level, county, location, ip_range, nvr_ip, nvr_port)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(name, voltage_level) DO UPDATE SET
-                county = excluded.county,
+                county = CASE
+                    WHEN excluded.county IS NOT NULL AND TRIM(excluded.county) <> '' THEN excluded.county
+                    ELSE stations.county
+                END,
                 location = excluded.location,
                 ip_range = excluded.ip_range,
                 nvr_ip = excluded.nvr_ip,
@@ -620,7 +824,7 @@ def upload_excel_scoped():
             (
                 data['station']['name'],
                 data['station']['voltage_level'],
-                data['station']['county'],
+                station_county,
                 data['station']['location'],
                 data['station']['ip_range'],
                 data['station']['nvr_ip'],
@@ -633,18 +837,70 @@ def upload_excel_scoped():
         )
         station_id = cursor.fetchone()[0]
         metrics = _sync_station_project_cameras(db, station_id, project, data['cameras'])
+
+        if table_exists(db, 'import_batches'):
+            batch_id = _create_excel_import_batch(cursor, project['id'], 1)
+            os.makedirs(report_dir, exist_ok=True)
+            report_path = os.path.join(report_dir, f'import_excel_batch_{batch_id}.json')
+            cursor.execute(
+                """
+                UPDATE import_batches
+                SET success_count = 1, fail_count = 0, report_path = ?
+                WHERE id = ?
+                """,
+                (report_path, batch_id),
+            )
+
         db.commit()
-        return jsonify({
-            'message': '瀵煎叆鎴愬姛',
+
+        if batch_id is not None and report_path:
+            report_payload = {
+                'project': project['code'],
+                'mode': 'best-effort',
+                'dry_run': False,
+                'file_count': 1,
+                'station_count': 1,
+                'camera_count': metrics.get('cameras_added', 0) + metrics.get('cameras_updated', 0) + metrics.get('cameras_replaced', 0),
+                'success_count': 1,
+                'fail_count': 0,
+                'rows': [
+                    {
+                        'county': station_county,
+                        'file': filename,
+                        'filepath': filepath,
+                        'status': 'imported',
+                        'station_id': station_id,
+                        'station': data['station']['name'],
+                        'camera_rows': len(data['cameras']),
+                        **metrics,
+                    }
+                ],
+                'aborted': False,
+            }
+            Path(report_path).write_text(json.dumps(report_payload, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        payload = {
+            'message': '导入成功',
+            'import_type': IMPORT_TYPE_INVENTORY,
             'station': data['station']['name'],
             'station_id': station_id,
             'project': project['code'],
             **metrics,
-        })
+        }
+        if batch_id is not None:
+            payload['batch_id'] = batch_id
+            payload['result_url'] = f"/admin/import-batches/{batch_id}"
+        return jsonify(payload)
     except Exception as e:
         db.rollback()
+        if report_path and os.path.exists(report_path):
+            os.remove(report_path)
         logger.exception('upload_excel_scoped failed')
-        return jsonify({'error': f'瑙ｆ瀽澶辫触: {str(e)}'}), 500
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from parse_excel import ExcelParseError
+        status_code = 400 if isinstance(e, ExcelParseError) else 500
+        return jsonify({'error': f'解析失败: {str(e)}'}), status_code
     finally:
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -819,6 +1075,28 @@ admin_bp.view_functions['upload_excel'] = upload_excel_scoped
 admin_bp.view_functions['delete_camera'] = delete_camera_scoped
 admin_bp.view_functions['add_camera'] = add_camera_scoped
 
+@admin_bp.route('/import-batches/<int:batch_id>', methods=['GET'])
+@require_admin
+def import_batch_result_page(batch_id):
+    return render_template('admin_import_batch_result.html', batch_id=batch_id)
+
+
+@admin_bp.route('/import-batches/<int:batch_id>/summary', methods=['GET'])
+@require_admin
+def import_batch_result_summary(batch_id):
+    try:
+        summary = build_import_batch_summary(
+            database=current_app.config['DATABASE_PATH'],
+            batch_id=batch_id,
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+        if 'not found' in message:
+            return jsonify({'error': '导入批次不存在'}), 404
+        return jsonify({'error': message}), 409
+    return jsonify(summary)
+
+
 @admin_bp.route('/backup', methods=['POST'])
 @require_admin
 def backup_db():
@@ -844,6 +1122,7 @@ def photo_reindex():
     """照片索引重建/增量刷新"""
     data = request.get_json(silent=True) or {}
     mode = data.get('mode', 'incremental')
+    project_code = request.args.get('project', '')
 
     try:
         if mode == 'full':
@@ -853,7 +1132,7 @@ def photo_reindex():
             stats = run_incremental_index(current_app.config['DATABASE_PATH'])
 
         db = get_db()
-        summary = get_photo_stats(db)
+        summary = get_photo_stats(db, project_code=project_code)
 
         return jsonify({
             'message': f'照片索引{ "全量重建" if mode == "full" else "增量刷新" }完成',
@@ -875,8 +1154,9 @@ def photo_reindex():
 def photo_stats():
     """获取照片索引统计"""
     db = get_db()
+    project_code = request.args.get('project', '')
     try:
-        stats = get_photo_stats(db)
+        stats = get_photo_stats(db, project_code=project_code)
         return jsonify({
             'stats': stats,
             'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),
@@ -897,10 +1177,11 @@ def photo_unmatched():
     db = get_db()
     limit = request.args.get('limit', default=100, type=int)
     offset = request.args.get('offset', default=0, type=int)
+    project_code = request.args.get('project', '')
     limit = min(max(limit, 1), 300)
     offset = max(offset, 0)
 
-    rows = list_unmatched(db, limit=limit, offset=offset)
+    rows = list_unmatched(db, limit=limit, offset=offset, project_code=project_code)
     return jsonify({'photos': rows, 'limit': limit, 'offset': offset})
 
 
@@ -911,13 +1192,14 @@ def photo_manual_match(photo_id):
     data = request.get_json(silent=True) or {}
     station_id = data.get('station_id')
     alias = data.get('alias', '')
+    project_code = request.args.get('project', '')
 
     if not station_id:
         return jsonify({'error': '缺少 station_id'}), 400
 
     db = get_db()
     try:
-        manual_match_photo(db, photo_id, int(station_id), alias)
+        manual_match_photo(db, photo_id, int(station_id), alias, project_code=project_code)
         return jsonify({'message': '手动关联成功'})
     except ValueError as e:
         return jsonify({'error': str(e)}), 404

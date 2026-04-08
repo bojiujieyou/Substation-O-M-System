@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from functools import wraps
 from flask import Flask, request, jsonify, g, current_app, session, redirect, render_template, send_file
+from ai_fault_analysis import ensure_ai_runtime_schema
 from config import Config
 from admin import (
     admin_bp,
@@ -72,6 +73,41 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger('station_monitor')
+
+
+def _build_map_tile_providers():
+    providers = []
+
+    primary = {
+        'name': 'primary',
+        'url': Config.MAP_TILE_URL,
+        'attribution': Config.MAP_TILE_ATTRIBUTION,
+        'subdomains': Config.MAP_TILE_SUBDOMAINS,
+        'maxZoom': Config.MAP_TILE_MAX_ZOOM,
+    }
+    if primary['url']:
+        providers.append(primary)
+
+    fallback_url = (Config.MAP_TILE_FALLBACK_URL or '').strip()
+    if fallback_url and fallback_url != primary['url']:
+        providers.append(
+            {
+                'name': 'fallback',
+                'url': fallback_url,
+                'attribution': Config.MAP_TILE_FALLBACK_ATTRIBUTION,
+                'subdomains': Config.MAP_TILE_FALLBACK_SUBDOMAINS,
+                'maxZoom': Config.MAP_TILE_FALLBACK_MAX_ZOOM,
+            }
+        )
+
+    return providers
+
+
+@app.context_processor
+def inject_map_tile_config():
+    return {
+        'map_tile_providers': _build_map_tile_providers(),
+    }
 
 
 def _safe_dispatch_fault_notification(db, fault_id: int, event_type: str):
@@ -1497,6 +1533,7 @@ def get_faults():
     db = get_db()
 
     # 支持筛选
+    ensure_ai_runtime_schema(db)
     status = request.args.get('status')
     station_id = request.args.get('station_id', type=int)
     year = request.args.get('year', type=int)
@@ -1562,10 +1599,12 @@ def get_faults():
     # 主查询
     query = f"""
         SELECT f.*, s.name as station_name, s.voltage_level,
-               c.area as camera_area, c.location_desc as camera_location
+               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
+               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
+        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
         {where_clause}
         ORDER BY f.created_at DESC
         LIMIT ? OFFSET ?
@@ -1689,13 +1728,17 @@ def delete_fault(fault_id):
 def get_fault_detail(fault_id):
     """获取故障完整详情"""
     db = get_db()
+    ensure_ai_runtime_schema(db)
     fault = db.execute("""
         SELECT f.*, s.name as station_name,
-               c.camera_index, c.area as camera_area, c.location_desc as camera_location,
+               c.camera_index,
+               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
+               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location,
                c.ip_address as camera_ip
         FROM fault_reports f
         LEFT JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
+        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
         WHERE f.id = ?
     """, (fault_id,)).fetchone()
 
@@ -2135,6 +2178,7 @@ def create_fault_scoped():
 
 def get_faults_scoped():
     db = get_db()
+    ensure_ai_runtime_schema(db)
     status = request.args.get('status')
     station_id = request.args.get('station_id', type=int)
     year = request.args.get('year', type=int)
@@ -2182,10 +2226,12 @@ def get_faults_scoped():
 
     query = f"""
         SELECT f.*, s.name as station_name, s.voltage_level,
-               c.area as camera_area, c.location_desc as camera_location
+               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
+               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
+        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
         {where_clause}
         ORDER BY f.created_at DESC
         LIMIT ? OFFSET ?
@@ -2277,6 +2323,7 @@ def update_fault_status_scoped(fault_id):
 
 def get_fault_detail_scoped(fault_id):
     db = get_db()
+    ensure_ai_runtime_schema(db)
     fault_report_columns = get_table_columns(db, "fault_reports")
     assigned_user_select = ""
     assigned_user_join = ""
@@ -2286,12 +2333,15 @@ def get_fault_detail_scoped(fault_id):
     fault = db.execute(
         f"""
         SELECT f.*, s.name as station_name,
-               c.camera_index, c.area as camera_area, c.location_desc as camera_location,
+               c.camera_index,
+               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
+               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location,
                c.ip_address as camera_ip
                {assigned_user_select}
         FROM fault_reports f
         LEFT JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
+        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
         {assigned_user_join}
         WHERE f.id = ?
         """,
@@ -3001,6 +3051,76 @@ def admin_page():
     if session.get('role') != 'admin':
         return redirect('/login')
     return render_template('admin.html')
+
+# ============================================================
+# 设计变体路由
+# ============================================================
+
+@app.route('/design')
+def design_variants():
+    """设计变体选择页"""
+    return render_template('design_variants/index.html')
+
+@app.route('/design/<style>')
+def design_variant_index(style):
+    """设计变体首页 - 三种风格预览"""
+    valid_styles = ['style1', 'style2', 'style3']
+    if style not in valid_styles:
+        return "Invalid style", 404
+
+    template_map = {
+        'style1': 'design_variants/index_style1.html',
+        'style2': 'index.html',
+        'style3': 'design_variants/index_style3.html'
+    }
+
+    return render_template(template_map[style])
+
+@app.route('/design/<style>/stations')
+def design_variant_stations(style):
+    """设计变体 - 变电站列表页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template('stations.html')
+
+@app.route('/design/<style>/fault/new')
+def design_variant_fault_new(style):
+    """设计变体 - 故障报修页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template('fault_new.html')
+
+@app.route('/design/<style>/faults')
+def design_variant_faults(style):
+    """设计变体 - 故障记录页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template(
+        'faults.html',
+        is_admin=session.get('role') == 'admin',
+        can_edit_tags=bool(session.get('user_id')),
+    )
+
+@app.route('/design/<style>/statistics')
+def design_variant_statistics(style):
+    """设计变体 - 统计报表页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template('statistics.html')
+
+@app.route('/design/<style>/map')
+def design_variant_map(style):
+    """设计变体 - 地图页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template('map.html')
+
+@app.route('/design/<style>/photos')
+def design_variant_photos(style):
+    """设计变体 - 照片页"""
+    if style not in ['style1', 'style2', 'style3']:
+        return "Invalid style", 404
+    return render_template('photos.html')
 
 # ============================================================
 # 启动

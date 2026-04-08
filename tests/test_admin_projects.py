@@ -78,6 +78,15 @@ def test_project_center_page_renders(client, seeded_project_admin_schema):
 
     assert response.status_code == 200
     assert "项目管理中心".encode("utf-8") in response.data
+    assert b"project-active-hint" in response.data
+    assert b"admin-section-title" in response.data
+    assert b"project-color-chip" in response.data
+    assert b"project-color-swatch" in response.data
+    assert b"data-project-color" in response.data
+    assert b"applyProjectColorSwatches(" in response.data
+    assert b"form-actions-start" in response.data
+    assert b"setInlineMessage(" in response.data
+    assert b"renderTableMessage(" in response.data
 
 
 def test_list_projects_returns_inactive_projects_for_admin(client, seeded_project_admin_schema):

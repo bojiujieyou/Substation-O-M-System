@@ -117,6 +117,16 @@ def test_fault_type_center_page_renders(client, seeded_fault_type_schema):
 
     assert response.status_code == 200
     assert "故障类型版本管理".encode("utf-8") in response.data
+    assert b"admin-section-title" in response.data
+    assert b"fault-type-sort-col" in response.data
+    assert b"fault-type-toggle-col" in response.data
+    assert b"admin-section-header" in response.data
+    assert b"admin-section-header-title" in response.data
+    assert b"admin-section-stack" in response.data
+    assert b"form-actions-start" in response.data
+    assert b"setInlineMessage(" in response.data
+    assert b"renderBlockMessage(" in response.data
+    assert "该版本与上一发布版本没有差异，可直接发布。".encode("utf-8") in response.data
 
 
 def test_list_fault_type_versions_returns_types_and_diff_summary(client, seeded_fault_type_schema):

@@ -2,6 +2,8 @@
 
 {% block title %}管理后台 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}管理后台{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -10,7 +12,6 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h2 class="page-title">管理后台</h2>
         <div class="page-actions">
             <a href="{{ url_for('admin_projects.project_center_page') }}" class="btn btn-primary" data-project-link>项目管理中心</a>
             <a href="{{ url_for('admin_notifications.notification_center_page') }}" class="btn btn-primary" data-project-link>项目通知配置</a>
@@ -21,16 +22,65 @@
         </div>
     </div>
 
-    <div class="admin-section">
-        <h3>上传Excel导入</h3>
+    <div class="admin-section admin-import-section">
+        <div class="admin-section-header admin-section-header-compact">
+            <div>
+                <h3 class="admin-section-header-title">上传导入</h3>
+                <p class="card-subtitle mb-0">先确认项目和导入类型，再上传 Excel；导入完成后会自动跳转到结果摘要页。</p>
+            </div>
+        </div>
         <div class="row">
-            <div class="col-md-6">
-                <div class="upload-zone" id="upload-zone">
+            <div class="col-md-7">
+                <div class="upload-zone upload-zone-primary" id="upload-zone">
+                    <div class="import-context-card" id="import-context-card">
+                        <div class="import-context-row">
+                            <span class="import-context-label">当前项目</span>
+                            <span class="import-context-value" id="import-project-name">未选择项目</span>
+                        </div>
+                        <div class="import-context-row">
+                            <span class="import-context-label">导入类型</span>
+                            <span class="import-context-value" id="import-type-preview">台账导入</span>
+                        </div>
+                        <div class="import-context-row">
+                            <span class="import-context-label">县区归属</span>
+                            <span class="import-context-value" id="import-county-preview">未选择，可按需补充</span>
+                        </div>
+                        <div class="import-context-row">
+                            <span class="import-context-label">文件要求</span>
+                            <span class="import-context-value" id="import-file-status">支持 .xlsx / .xls</span>
+                        </div>
+                        <div class="import-context-row">
+                            <span class="import-context-label">导入结果</span>
+                            <span class="import-context-value">完成后自动跳转结果摘要页</span>
+                        </div>
+                    </div>
+                    <div class="import-steps-card">
+                        <div class="import-steps-title">导入步骤</div>
+                        <div class="import-steps-list">
+                            <div class="import-step-item">1. 确认当前项目</div>
+                            <div class="import-step-item">2. 选择导入类型并上传 Excel 文件</div>
+                            <div class="import-step-item">3. 如需补充归属，再选择县区</div>
+                            <div class="import-step-item">4. 跳转结果摘要页查看导入状态</div>
+                        </div>
+                    </div>
                     <form id="upload-form" enctype="multipart/form-data">
                         <div class="form-group mb-3">
-                            <label for="county-select" class="form-label">县区</label>
-                            <select id="county-select" class="form-select" required>
-                                <option value="">选择县区</option>
+                            <label for="upload-project-select" class="form-label">项目</label>
+                            <select id="upload-project-select" class="form-select" required>
+                                <option value="">加载项目中...</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="import-type-select" class="form-label">导入类型</label>
+                            <select id="import-type-select" class="form-select">
+                                <option value="inventory">台账导入</option>
+                                <option value="daily_fault_summary">每日故障汇总导入</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="county-select" class="form-label">县区（补充确认）</label>
+                            <select id="county-select" class="form-select">
+                                <option value="">未选择，按需补充</option>
                                 <option value="丽水">丽水</option>
                                 <option value="云和">云和</option>
                                 <option value="庆元">庆元</option>
@@ -42,27 +92,51 @@
                                 <option value="龙泉">龙泉</option>
                             </select>
                         </div>
-                        <div class="form-group mb-3">
-                            <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input" style="height:auto;padding:8px;" required>
+                        <div class="form-group mb-2">
+                            <label for="excel-file" class="form-label">Excel 文件</label>
+                            <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input form-input-file" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
+                        <div id="upload-readiness" class="form-hint import-readiness-hint">请选择项目、导入类型并上传 Excel 文件，县区可在需要补充归属时再选择。</div>
+                        <div class="import-form-actions">
+                            <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
+                            <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-secondary" data-project-link>查看导入审查中心</a>
+                        </div>
                     </form>
-                    <div id="upload-result" class="mt-3"></div>
+                    <div id="ai-status-banner" class="mt-3 form-hint"></div>
+                    <div id="upload-result" class="mt-3 form-hint"></div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <p class="text-muted" style="font-size:13px;">
-                    <strong>说明：</strong><br>
-                    • 上传Excel将覆盖该变电站摄像头数据（先删后增）<br>
-                    • 变电站不存在则新建，存在则更新<br>
-                    • 支持xlsx/xls格式
-                </p>
+            <div class="col-md-5">
+                <div class="admin-side-note-card admin-import-note-card">
+                    <h4 class="card-subtitle mb-2">导入规则与后续处理</h4>
+                    <div class="import-note-group">
+                        <div class="import-note-title">导入影响</div>
+                        <div class="review-secondary-steps admin-side-note-steps">
+                            <div class="review-secondary-step">台账导入会更新目标站点和摄像头数据，请先确认项目归属正确。</div>
+                            <div class="review-secondary-step">每日故障汇总导入会直接生成故障记录，无法自动识别的会进入导入审查中心。</div>
+                        </div>
+                    </div>
+                    <div class="import-note-group">
+                        <div class="import-note-title">更新规则</div>
+                        <div class="review-secondary-steps admin-side-note-steps">
+                            <div class="review-secondary-step">台账导入遇到不存在的变电站会新建，已存在则按导入内容更新。</div>
+                            <div class="review-secondary-step">每日故障汇总不自带县区字段，县区选择仅用于补充归属确认；仅支持 xlsx / xls。</div>
+                        </div>
+                    </div>
+                    <div class="import-note-group">
+                        <div class="import-note-title">导入后处理</div>
+                        <div class="review-secondary-steps admin-side-note-steps">
+                            <div class="review-secondary-step">导入完成后自动跳转结果摘要页，先看批次状态与异常项。</div>
+                            <div class="review-secondary-step">如有待确认冲突或异常记录，再进入导入审查中心继续处理。</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="admin-section">
-        <h3>照片索引管理</h3>
+        <h3 class="admin-section-title">照片索引管理</h3>
         <div class="row">
             <div class="col-md-6">
                 <div class="detail-info">
@@ -73,7 +147,7 @@
                     <div class="detail-row"><span class="detail-label">未匹配</span><span class="detail-value" id="photo-unmatched">0</span></div>
                     <div class="detail-row"><span class="detail-label">非图片</span><span class="detail-value" id="photo-ignored">0</span></div>
                 </div>
-                <div class="form-actions" style="justify-content:flex-start;">
+                <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" id="photo-index-incremental">手动增量刷新</button>
                     <button class="btn btn-secondary" id="photo-index-full">全量重建索引</button>
                 </div>
@@ -98,7 +172,7 @@
                     <label for="match-alias-input" class="form-label">别名（可选）</label>
                     <input id="match-alias-input" class="form-input" placeholder="例如：桃园变电站简称">
                 </div>
-                <div class="form-actions" style="justify-content:flex-start;">
+                <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" id="manual-match-btn">手动关联</button>
                 </div>
                 <div id="manual-match-result" class="form-hint"></div>
@@ -107,19 +181,19 @@
     </div>
 
     <div class="admin-section">
-        <h3>变电站管理</h3>
+        <h3 class="admin-section-title">变电站管理</h3>
         <div class="mb-3">
-            <input type="text" id="search-station" class="form-input" placeholder="搜索变电站..." style="max-width:300px;">
+            <input type="text" id="search-station" class="form-input station-search-input" placeholder="搜索变电站...">
         </div>
         <div id="loading" class="loading-state">
             <div class="spinner"></div>
             <span>加载中...</span>
         </div>
-        <div id="station-list" class="station-list" style="display:none;"></div>
+        <div id="station-list" class="station-list is-hidden"></div>
     </div>
 </div>
 
-<div class="modal" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+<div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -136,6 +210,7 @@
                     <div class="form-group">
                         <label for="edit-voltage" class="form-label">电压等级</label>
                         <select id="edit-voltage" class="form-select">
+                            <option value="500kV">500kV</option>
                             <option value="220kV">220kV</option>
                             <option value="110kV">110kV</option>
                             <option value="35kV">35kV</option>
@@ -169,7 +244,7 @@
     </div>
 </div>
 
-<div class="modal" id="camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="camera-modal-title">
+<div class="modal fade" id="camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="camera-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -205,7 +280,7 @@
     </div>
 </div>
 
-<div class="modal" id="replace-camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="replace-camera-modal-title">
+<div class="modal fade" id="replace-camera-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="replace-camera-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -256,7 +331,7 @@
     </div>
 </div>
 
-<div class="modal" id="coord-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="coord-modal-title">
+<div class="modal fade" id="coord-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="coord-modal-title">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -265,7 +340,8 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-2">点击地图选择位置，或直接输入经纬度</p>
-                <div id="coord-map" style="height: 400px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                <div id="coord-map-warning" class="alert alert-warning" style="display: none; margin-bottom: 12px;"></div>
+                <div id="coord-map" class="coord-map-panel"></div>
                 <div class="coord-inputs mt-3">
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -298,13 +374,6 @@ let unmatchedPhotos = [];
 let availableProjects = [];
 let replaceStationCameras = [];
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 function getCurrentProjectCode() {
     if (window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function') {
         return window.AppProjectState.getProjectCode();
@@ -316,26 +385,107 @@ function getDefaultProjectCode() {
     return getCurrentProjectCode() || (availableProjects[0] && availableProjects[0].code) || '';
 }
 
-function ensureAdminProjectSelectors() {
-    const uploadForm = document.getElementById('upload-form');
-    if (uploadForm && !document.getElementById('upload-project-select')) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'form-group mb-3';
-        wrapper.innerHTML = `
-            <label for="upload-project-select" class="form-label">项目</label>
-            <select id="upload-project-select" class="form-select" required>
-                <option value="">加载项目中...</option>
-            </select>
-        `;
-        const fileInput = document.getElementById('excel-file');
-        const fileGroup = fileInput ? fileInput.closest('.form-group') : null;
-        if (fileGroup) {
-            uploadForm.insertBefore(wrapper, fileGroup);
-        } else {
-            uploadForm.appendChild(wrapper);
-        }
-    }
+function renderUploadResult(state, options = {}) {
+    const resultDiv = document.getElementById('upload-result');
+    if (!resultDiv) return;
 
+    const titleMap = {
+        loading: '正在上传并生成导入结果',
+        success: '导入完成',
+        error: '导入失败',
+    };
+    const badgeMap = {
+        loading: '<span class="badge badge-warning">处理中</span>',
+        success: '<span class="badge badge-success">完成</span>',
+        error: '<span class="badge badge-danger">失败</span>',
+    };
+    const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
+    const actions = Array.isArray(options.actions) ? options.actions.filter(Boolean) : [];
+
+    resultDiv.className = `mt-3 upload-feedback-card upload-feedback-${state}`;
+    resultDiv.innerHTML = `
+        <div class="upload-feedback-header">
+            <div>
+                <div class="upload-feedback-title-row">
+                    ${badgeMap[state] || ''}
+                    <strong>${escapeHtml(options.title || titleMap[state] || '')}</strong>
+                </div>
+                ${options.message ? `<div class="upload-feedback-message">${escapeHtml(options.message)}</div>` : ''}
+            </div>
+        </div>
+        ${details.length ? `<div class="review-secondary-steps upload-feedback-details">${details.map((detail) => `<div class="review-secondary-step">${escapeHtml(detail)}</div>`).join('')}</div>` : ''}
+        ${actions.length ? `<div class="upload-feedback-actions">${actions.map((action) => `<a class="btn btn-sm ${action.variant || 'btn-secondary'}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`).join('')}</div>` : ''}
+    `;
+}
+
+function buildAiStatusLines(status) {
+    if (!status) return [];
+    const lines = [];
+    if (status.model) {
+        lines.push(`模型: ${status.model}`);
+    }
+    if (status.last_method && status.last_endpoint) {
+        const operationLabelMap = {
+            health_probe: '最近探测',
+            chat_completion: '最近生成',
+        };
+        const operationLabel = operationLabelMap[status.last_operation] || '最近调用';
+        lines.push(`${operationLabel}: ${status.last_method} ${status.last_endpoint}`);
+    }
+    if (status.message) {
+        lines.push(status.message);
+    }
+    if (status.last_error) {
+        lines.push(`最近错误: ${status.last_error}`);
+    }
+    return lines;
+}
+
+function renderAiStatus(status) {
+    const banner = document.getElementById('ai-status-banner');
+    if (!banner) return;
+
+    const normalizedStatus = status?.status || 'unknown';
+    const isHealthy = normalizedStatus === 'ready';
+    const title = isHealthy ? 'AI 分析可用' : 'AI 已回退到规则模式';
+    const badge = isHealthy
+        ? '<span class="badge badge-success">AI 可用</span>'
+        : '<span class="badge badge-warning">AI 回退</span>';
+    const details = buildAiStatusLines(status);
+
+    banner.className = `mt-3 upload-feedback-card ${isHealthy ? 'upload-feedback-success' : 'upload-feedback-error'}`;
+    banner.innerHTML = `
+        <div class="upload-feedback-header">
+            <div>
+                <div class="upload-feedback-title-row">
+                    ${badge}
+                    <strong>${escapeHtml(title)}</strong>
+                </div>
+                ${details.length ? `<div class="upload-feedback-message">${escapeHtml(details[0])}</div>` : ''}
+            </div>
+        </div>
+        ${details.length > 1 ? `<div class="review-secondary-steps upload-feedback-details">${details.slice(1).map((detail) => `<div class="review-secondary-step">${escapeHtml(detail)}</div>`).join('')}</div>` : ''}
+    `;
+}
+
+async function loadAiStatus() {
+    try {
+        const response = await fetch('/admin/ai-status');
+        if (!response.ok) {
+            throw new Error('AI 状态获取失败');
+        }
+        const data = await response.json();
+        renderAiStatus(data);
+    } catch (error) {
+        renderAiStatus({
+            status: 'error',
+            message: '无法获取 AI 状态，当前建议按规则导入看待。',
+            last_error: error.message,
+        });
+    }
+}
+
+function ensureAdminProjectSelectors() {
     const cameraForm = document.getElementById('camera-form');
     if (cameraForm && !document.getElementById('camera-project')) {
         const wrapper = document.createElement('div');
@@ -355,6 +505,159 @@ function ensureAdminProjectSelectors() {
     }
 }
 
+function getAdminImportTypeConfig(importType) {
+    return {
+        inventory: {
+            label: '台账导入',
+            readinessBase: '请选择项目并上传台账 Excel 文件，县区可在需要补充归属时再选择。',
+            readinessReady: '已准备导入台账。若需补充归属可再选择县区，否则可直接提交。',
+        },
+        daily_fault_summary: {
+            label: '每日故障汇总导入',
+            readinessBase: '请选择项目并上传每日故障汇总 Excel，导入后会自动生成故障记录。',
+            readinessReady: '已准备导入每日故障汇总，县区可留空，系统会直接生成故障记录或待确认项。',
+        },
+    }[importType] || {
+        label: '台账导入',
+        readinessBase: '请选择项目并上传 Excel 文件，县区可在需要补充归属时再选择。',
+        readinessReady: '已准备导入，可以直接提交。',
+    };
+}
+
+function buildBatchRedirectDetails(importType, data) {
+    const aiStatus = data.ai_status || null;
+    const aiEndpointText = aiStatus && aiStatus.last_method && aiStatus.last_endpoint
+        ? `（${aiStatus.last_method} ${aiStatus.last_endpoint}）`
+        : '';
+    const aiLine = aiStatus
+        ? (aiStatus.status === 'ready'
+            ? `AI状态：可用（${aiStatus.model || '未指定模型'}）${aiEndpointText}`
+            : `AI状态：已回退，${aiStatus.message || '当前使用规则导入'}${aiEndpointText}`)
+        : '';
+    if (importType === 'daily_fault_summary') {
+        return [
+            data.source_date ? `日报日期：${data.source_date}` : '日报日期：未识别',
+            `写入故障：${data.faults_added ?? 0} 条`,
+            `待确认：${data.queued_count ?? 0} 条`,
+            aiLine,
+            '已生成导入结果摘要页，正在跳转查看详情。',
+        ].filter(Boolean);
+    }
+    return [
+        `变电站：${data.station || '-'}`,
+        `批次 ID：${data.batch_id}`,
+        aiLine,
+        '已生成导入结果摘要页，正在跳转查看详情。',
+    ].filter(Boolean);
+}
+
+function updateImportContext() {
+    const projectSelect = document.getElementById('upload-project-select');
+    const importTypeSelect = document.getElementById('import-type-select');
+    const countySelect = document.getElementById('county-select');
+    const fileInput = document.getElementById('excel-file');
+    const projectNameEl = document.getElementById('import-project-name');
+    const importTypePreviewEl = document.getElementById('import-type-preview');
+    const countyPreviewEl = document.getElementById('import-county-preview');
+    const fileStatusEl = document.getElementById('import-file-status');
+    const readinessEl = document.getElementById('upload-readiness');
+
+    const projectText = projectSelect && projectSelect.selectedOptions && projectSelect.selectedOptions[0]
+        ? projectSelect.selectedOptions[0].textContent.trim()
+        : '未选择项目';
+    const projectValue = projectSelect ? projectSelect.value : '';
+    const importType = importTypeSelect ? importTypeSelect.value : 'inventory';
+    const importTypeConfig = getAdminImportTypeConfig(importType);
+    const countyValue = countySelect ? countySelect.value : '';
+    const fileName = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0].name : '';
+
+    if (projectNameEl) {
+        projectNameEl.textContent = projectValue ? projectText : '未选择项目';
+    }
+    if (importTypePreviewEl) {
+        importTypePreviewEl.textContent = importTypeConfig.label;
+    }
+    if (countyPreviewEl) {
+        countyPreviewEl.textContent = countyValue || '未选择，可按需补充';
+    }
+    if (fileStatusEl) {
+        fileStatusEl.textContent = fileName ? `已选择：${fileName}` : '支持 .xlsx / .xls';
+    }
+    if (readinessEl) {
+        if (!projectValue && !fileName) {
+            readinessEl.textContent = importTypeConfig.readinessBase;
+        } else if (!projectValue) {
+            readinessEl.textContent = '还需选择项目，文件已就绪后即可导入。';
+        } else if (!fileName) {
+            readinessEl.textContent = importType === 'daily_fault_summary'
+                ? '项目和导入类型已确认，请上传每日故障汇总 Excel 文件。'
+                : (countyValue
+                    ? '项目已确认，可直接上传台账 Excel 文件开始导入。'
+                    : '项目已确认，请上传台账 Excel 文件；如需补充归属可再选择县区。');
+        } else if (!countyValue) {
+            readinessEl.textContent = importTypeConfig.readinessReady;
+        } else {
+            readinessEl.textContent = importType === 'daily_fault_summary'
+                ? '项目、文件和补充信息已就绪，可以开始导入每日故障汇总。'
+                : '项目、文件和补充归属信息已就绪，可以开始导入台账。';
+        }
+    }
+}
+
+function bindImportContextEvents() {
+    const importTypeSelect = document.getElementById('import-type-select');
+    const countySelect = document.getElementById('county-select');
+    const fileInput = document.getElementById('excel-file');
+    const uploadForm = document.getElementById('upload-form');
+
+    if (importTypeSelect && !importTypeSelect.dataset.importContextBound) {
+        importTypeSelect.addEventListener('change', updateImportContext);
+        importTypeSelect.dataset.importContextBound = 'true';
+    }
+
+    if (countySelect && !countySelect.dataset.importContextBound) {
+        countySelect.addEventListener('change', updateImportContext);
+        countySelect.dataset.importContextBound = 'true';
+    }
+
+    if (fileInput && !fileInput.dataset.importContextBound) {
+        fileInput.addEventListener('change', updateImportContext);
+        fileInput.dataset.importContextBound = 'true';
+    }
+
+    if (uploadForm && !uploadForm.dataset.importProjectObserverBound) {
+        uploadForm.addEventListener('change', (event) => {
+            if (event.target && event.target.id === 'upload-project-select') {
+                updateImportContext();
+            }
+        });
+        uploadForm.dataset.importProjectObserverBound = 'true';
+    }
+
+    updateImportContext();
+}
+
+function buildImportErrorState(errorMessage, projectValue, countyValue) {
+    const normalized = String(errorMessage || '').trim();
+    if (normalized.includes('未能从文件或输入中确定县区')) {
+        return {
+            message: '当前文件里没有识别到县区信息，请在上方补充选择县区后重新导入。',
+            details: [
+                `项目：${projectValue || '未选择'}`,
+                countyValue ? `当前县区补充：${countyValue}` : '当前县区补充：未选择',
+                '处理建议：先在导入区选择县区，再重新提交该 Excel。',
+            ],
+        };
+    }
+    return {
+        message: normalized || '导入失败',
+        details: [
+            `项目：${projectValue || '未选择'}`,
+            countyValue ? `县区补充：${countyValue}` : '县区补充：未选择',
+        ],
+    };
+}
+
 function populateAdminProjectSelects(defaultProjectCode) {
     ['upload-project-select', 'camera-project']
         .map((id) => document.getElementById(id))
@@ -366,6 +669,7 @@ function populateAdminProjectSelects(defaultProjectCode) {
                 `).join('');
             select.value = defaultProjectCode || '';
         });
+    updateImportContext();
 }
 
 async function loadAdminProjects() {
@@ -384,25 +688,26 @@ async function loadStations() {
     const list = document.getElementById('station-list');
 
     loading.style.display = 'flex';
-    list.style.display = 'none';
+    list.classList.add('is-hidden');
 
     try {
-        const response = await fetch('/admin/stations');
+        const response = await fetch(withProject('/admin/stations'));
+        if (!response.ok) throw new Error('加载变电站列表失败');
         const data = await response.json();
         stations = data.stations || [];
         renderStations(stations);
         populateMatchStationSelect();
         loading.style.display = 'none';
-        list.style.display = 'block';
+        list.classList.remove('is-hidden');
     } catch (error) {
-        loading.innerHTML = '<span class="text-danger">加载失败</span>';
+        renderBlockMessage(loading, '加载失败', true);
     }
 }
 
 function renderStations(stationsToRender) {
     const list = document.getElementById('station-list');
     if (!stationsToRender.length) {
-        list.innerHTML = '<p class="text-muted">暂无变电站</p>';
+        renderBlockMessage(list, '暂无变电站');
         return;
     }
 
@@ -446,41 +751,91 @@ document.getElementById('upload-form').addEventListener('submit', async function
 
     const fileInput = document.getElementById('excel-file');
     if (!fileInput.files || !fileInput.files[0]) {
-        alert('请选择Excel文件');
+        showToast('请选择Excel文件', 'warning');
         return;
     }
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
-    formData.append('county', document.getElementById('county-select').value);
+    const importType = document.getElementById('import-type-select')?.value || 'inventory';
+    const countyValue = document.getElementById('county-select').value;
+    formData.append('county', countyValue);
+    formData.append('import_type', importType);
     formData.append('project', document.getElementById('upload-project-select')?.value || '');
     if (!formData.get('project')) {
-        alert('璇烽€夋嫨椤圭洰');
-        return;
-    }
-
-    if (!formData.get('county')) {
-        alert('请选择县区');
+        showToast('请选择项目', 'warning');
         return;
     }
 
     const btn = document.getElementById('upload-btn');
-    const resultDiv = document.getElementById('upload-result');
 
     btn.disabled = true;
     btn.textContent = '上传中...';
+    renderUploadResult('loading', {
+        message: '文件已提交，正在执行导入并整理批次摘要。',
+        details: [
+            `导入类型：${getAdminImportTypeConfig(importType).label}`,
+            `项目：${formData.get('project')}`,
+            countyValue ? `县区补充：${countyValue}` : '县区补充：未选择',
+            `文件：${fileInput.files[0].name}`,
+        ],
+    });
 
     try {
         const response = await fetch('/admin/upload', { method: 'POST', body: formData });
         const data = await response.json();
         if (response.ok) {
-            resultDiv.innerHTML = `<p class="text-success">✓ ${data.message}<br>变电站: ${escapeHtml(data.station)}<br>摄像头: ${data.cameras_added}个</p>`;
+            if (data.ai_status) {
+                renderAiStatus(data.ai_status);
+            }
+            if (data.batch_id && data.result_url) {
+                renderUploadResult('success', {
+                    message: data.message,
+                    details: buildBatchRedirectDetails(importType, data),
+                    actions: [
+                        {
+                            label: '打开导入结果摘要页',
+                            href: withProject(data.result_url, { project: data.project || formData.get('project') || '' }),
+                            variant: 'btn-primary',
+                        },
+                    ],
+                });
+                window.location.href = withProject(data.result_url, { project: data.project || formData.get('project') || '' });
+                return;
+            }
+            renderUploadResult('success', {
+                message: data.message,
+                details: [
+                    `变电站：${data.station || '-'}`,
+                    `新增摄像头：${data.cameras_added ?? 0} 个`,
+                ],
+                actions: [
+                    {
+                        label: '前往导入审查中心',
+                        href: withProject('/admin/review-center', { project: formData.get('project') || '' }),
+                        variant: 'btn-secondary',
+                    },
+                ],
+            });
             await loadStations();
         } else {
-            resultDiv.innerHTML = `<p class="text-danger">✗ ${escapeHtml(data.error || '导入失败')}</p>`;
+            const errorState = buildImportErrorState(data.error || '导入失败', formData.get('project'), countyValue);
+            renderUploadResult('error', errorState);
         }
     } catch (error) {
-        resultDiv.innerHTML = `<p class="text-danger">✗ 上传失败: ${escapeHtml(error.message)}</p>`;
+        renderAiStatus({
+            status: 'error',
+            message: '导入请求失败，无法确认 AI 是否可用。',
+            last_error: error.message,
+        });
+        renderUploadResult('error', {
+            message: `上传失败: ${error.message}`,
+            details: [
+                `导入类型：${getAdminImportTypeConfig(importType).label}`,
+                `项目：${formData.get('project')}`,
+                countyValue ? `县区补充：${countyValue}` : '县区补充：未选择',
+            ],
+        });
     } finally {
         btn.disabled = false;
         btn.textContent = '上传并导入';
@@ -521,10 +876,10 @@ async function saveStation() {
             await loadStations();
         } else {
             const resp = await response.json();
-            alert(resp.error || '保存失败');
+            showToast(resp.error || '保存失败', 'error');
         }
     } catch (error) {
-        alert('保存失败: ' + error.message);
+        showToast('保存失败: ' + error.message, 'error');
     }
 }
 
@@ -542,10 +897,10 @@ async function deleteStation(stationId) {
             await loadStations();
         } else {
             const resp = await response.json();
-            alert(resp.error || '删除失败');
+            showToast(resp.error || '删除失败', 'error');
         }
     } catch (error) {
-        alert('删除失败: ' + error.message);
+        showToast('删除失败: ' + error.message, 'error');
     }
 }
 
@@ -601,7 +956,7 @@ function fillReplaceCameraFields() {
 async function showReplaceCameraModal(stationId) {
     const projectCode = getDefaultProjectCode();
     if (!projectCode) {
-        alert('请先选择项目');
+        showToast('请先选择项目', 'warning');
         return;
     }
 
@@ -624,7 +979,7 @@ async function showReplaceCameraModal(stationId) {
 
         replaceStationCameras = payload.cameras || [];
         if (!replaceStationCameras.length) {
-            alert('当前项目下没有可替换的在用设备');
+        showToast('当前项目下没有可替换的在用设备', 'warning');
             return;
         }
 
@@ -633,20 +988,20 @@ async function showReplaceCameraModal(stationId) {
         fillReplaceCameraFields();
         new bootstrap.Modal(document.getElementById('replace-camera-modal')).show();
     } catch (error) {
-        alert(error.message);
+        showToast(error.message, 'error');
     }
 }
 
 async function replaceCamera() {
     const currentId = parseInt(document.getElementById('replace-camera-current').value, 10);
     if (!currentId) {
-        alert('请选择当前设备');
+        showToast('请选择当前设备', 'warning');
         return;
     }
 
     const projectCode = getDefaultProjectCode();
     if (!projectCode) {
-        alert('请先选择项目');
+        showToast('请先选择项目', 'warning');
         return;
     }
 
@@ -668,7 +1023,7 @@ async function replaceCamera() {
     };
 
     if (!payload.ip_address) {
-        alert('请输入新设备 IP');
+        showToast('请输入新设备 IP', 'warning');
         return;
     }
 
@@ -692,7 +1047,7 @@ async function replaceCamera() {
         if (resultEl) {
             resultEl.textContent = error.message;
         } else {
-            alert(error.message);
+            showToast(error.message, 'error');
         }
     }
 }
@@ -709,11 +1064,11 @@ async function addCamera() {
     };
 
     if (!data.project) {
-        alert('璇烽€夋嫨椤圭洰');
+        showToast('请选择项目', 'warning');
         return;
     }
     if (!data.ip_address) {
-        alert('请输入IP地址');
+        showToast('请输入IP地址', 'warning');
         return;
     }
 
@@ -729,10 +1084,10 @@ async function addCamera() {
             await loadStations();
         } else {
             const resp = await response.json();
-            alert(resp.error || '添加失败');
+            showToast(resp.error || '添加失败', 'error');
         }
     } catch (error) {
-        alert('添加失败: ' + error.message);
+        showToast('添加失败: ' + error.message, 'error');
     }
 }
 
@@ -741,12 +1096,12 @@ async function backupDb() {
         const response = await fetch('/admin/backup', { method: 'POST' });
         const data = await response.json();
         if (response.ok) {
-            alert('✓ 备份成功\n备份文件: ' + data.backup);
+            showToast('备份成功: ' + data.backup, 'success');
         } else {
-            alert('✗ ' + (data.error || '备份失败'));
+            showToast(data.error || '备份失败', 'error');
         }
     } catch (error) {
-        alert('备份失败: ' + error.message);
+        showToast('备份失败: ' + error.message, 'error');
     }
 }
 
@@ -760,7 +1115,7 @@ function populateMatchStationSelect() {
 
 async function loadPhotoStats() {
     try {
-        const response = await fetch('/admin/photos/stats');
+        const response = await fetch(withProject('/admin/photos/stats'));
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || '加载照片统计失败');
 
@@ -778,7 +1133,7 @@ async function loadPhotoStats() {
 
 async function loadUnmatchedPhotos() {
     try {
-        const response = await fetch('/admin/photos/unmatched?limit=200&offset=0');
+        const response = await fetch(withProject('/admin/photos/unmatched', { limit: 200, offset: 0 }));
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || '加载未匹配照片失败');
 
@@ -796,7 +1151,7 @@ async function runPhotoIndex(mode) {
     resultEl.textContent = mode === 'full' ? '全量索引执行中...' : '增量刷新执行中...';
 
     try {
-        const response = await fetch('/admin/photos/reindex', {
+        const response = await fetch(withProject('/admin/photos/reindex'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mode })
@@ -832,7 +1187,7 @@ async function manualMatchPhoto() {
     resultEl.textContent = '提交关联中...';
 
     try {
-        const response = await fetch(`/admin/photos/${photoId}/match`, {
+        const response = await fetch(withProject(`/admin/photos/${photoId}/match`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ station_id: parseInt(stationId, 10), alias })
@@ -860,13 +1215,19 @@ document.getElementById('manual-match-btn').addEventListener('click', manualMatc
 document.getElementById('replace-camera-current').addEventListener('change', fillReplaceCameraFields);
 
 document.addEventListener('DOMContentLoaded', async () => {
+    bindImportContextEvents();
+
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
     }
     await loadAdminProjects();
+    await loadAiStatus();
     await loadStations();
     await loadPhotoStats();
     await loadUnmatchedPhotos();
+    document.getElementById('upload-result').textContent = '';
+    document.getElementById('photo-index-result').textContent = '';
+    document.getElementById('manual-match-result').textContent = '';
 });
 
 // ============================================================
@@ -876,6 +1237,77 @@ document.addEventListener('DOMContentLoaded', async () => {
 let coordMap = null;
 let currentStationId = null;
 let coordMarker = null;
+let coordTileLayer = null;
+let coordTileProviderIndex = 0;
+const MAP_TILE_PROVIDERS = {{ map_tile_providers | tojson }};
+
+function getCoordMapWarningElement() {
+    return document.getElementById('coord-map-warning');
+}
+
+function hideCoordMapWarning() {
+    const el = getCoordMapWarningElement();
+    if (!el) return;
+    el.style.display = 'none';
+    el.textContent = '';
+}
+
+function showCoordMapWarning(message) {
+    const el = getCoordMapWarningElement();
+    if (!el) return;
+    el.textContent = message;
+    el.style.display = 'block';
+}
+
+function buildCoordTileLayer(providerIndex) {
+    const provider = MAP_TILE_PROVIDERS[providerIndex];
+    if (!provider || !provider.url) {
+        return null;
+    }
+
+    const layer = L.tileLayer(provider.url, {
+        attribution: provider.attribution || '',
+        maxZoom: provider.maxZoom || 18,
+        subdomains: provider.subdomains && provider.subdomains.length ? provider.subdomains : undefined,
+        crossOrigin: true,
+    });
+
+    let handledFailure = false;
+    layer.on('load', hideCoordMapWarning);
+    layer.on('tileerror', () => {
+        if (handledFailure || coordTileProviderIndex !== providerIndex) {
+            return;
+        }
+        handledFailure = true;
+
+        const nextIndex = providerIndex + 1;
+        if (MAP_TILE_PROVIDERS[nextIndex] && MAP_TILE_PROVIDERS[nextIndex].url) {
+            showCoordMapWarning('地图底图加载失败，正在切换备用底图。');
+            switchCoordTileProvider(nextIndex);
+            return;
+        }
+
+        showCoordMapWarning('地图底图加载失败，但仍可手动输入经纬度保存坐标。');
+    });
+
+    return layer;
+}
+
+function switchCoordTileProvider(providerIndex) {
+    const nextLayer = buildCoordTileLayer(providerIndex);
+    if (!nextLayer) {
+        showCoordMapWarning('未配置可用的地图底图服务。');
+        return;
+    }
+
+    if (coordTileLayer && coordMap) {
+        coordMap.removeLayer(coordTileLayer);
+    }
+
+    coordTileProviderIndex = providerIndex;
+    coordTileLayer = nextLayer;
+    coordTileLayer.addTo(coordMap);
+}
 
 // 模态框完全展开后再初始化地图
 document.getElementById('coord-modal').addEventListener('shown.bs.modal', function () {
@@ -935,6 +1367,42 @@ function initCoordMap() {
 }
 
 // 更新经纬度输入框
+document.getElementById('coord-modal').addEventListener('hidden.bs.modal', function () {
+    coordTileLayer = null;
+    coordTileProviderIndex = 0;
+    hideCoordMapWarning();
+});
+
+function initCoordMap() {
+    const mapDiv = document.getElementById('coord-map');
+    if (!mapDiv) return;
+
+    if (coordMap) {
+        coordMap.remove();
+        coordMap = null;
+    }
+
+    hideCoordMapWarning();
+    coordMap = L.map('coord-map').setView([28.3, 119.6], 10);
+    coordTileLayer = null;
+    coordTileProviderIndex = 0;
+    switchCoordTileProvider(0);
+
+    coordMap.on('click', function(e) {
+        updateCoordInputs(e.latlng.lat, e.latlng.lng);
+        updateMarker(e.latlng);
+    });
+
+    const station = stations.find(s => s.id === currentStationId);
+    if (station && station.latitude && station.longitude) {
+        const lat = parseFloat(station.latitude);
+        const lng = parseFloat(station.longitude);
+        updateCoordInputs(lat, lng);
+        updateMarker(L.latLng(lat, lng));
+        coordMap.setView([lat, lng], 14);
+    }
+}
+
 function updateCoordInputs(lat, lng) {
     document.getElementById('coord-lat').value = lat.toFixed(6);
     document.getElementById('coord-lng').value = lng.toFixed(6);
@@ -997,13 +1465,13 @@ async function saveCoord() {
                 station.longitude = lngStr || null;
             }
             bootstrap.Modal.getInstance(document.getElementById('coord-modal')).hide();
-            alert('坐标已保存');
+            showToast('坐标已保存', 'success');
         } else {
             const data = await resp.json();
-            alert(data.error || '保存失败');
+            showToast(data.error || '保存失败', 'error');
         }
     } catch (e) {
-        alert('保存失败: ' + e.message);
+        showToast('保存失败: ' + e.message, 'error');
     }
 }
 

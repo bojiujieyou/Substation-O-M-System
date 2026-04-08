@@ -4,10 +4,84 @@ import re
 from pathlib import Path
 
 from openpyxl import load_workbook
+try:
+    import xlrd
+except ImportError:  # pragma: no cover - production dependency, exercised via explicit error path
+    xlrd = None
 
 class ExcelParseError(Exception):
     """Excel解析异常"""
     pass
+
+
+def validate_station_inventory_data(data, filepath=''):
+    cameras = data.get('cameras') if isinstance(data, dict) else None
+    if isinstance(cameras, list) and cameras:
+        return data
+
+    prefix = f"{filepath}: " if filepath else ''
+    raise ExcelParseError(f"{prefix}未识别到摄像头，请确认上传的是摄像头台账而不是监控日报或其他报表")
+
+
+def _load_xlsx_rows(filepath):
+    try:
+        workbook = load_workbook(filepath, read_only=True, data_only=True)
+    except Exception as exc:
+        raise ExcelParseError(f"无法打开Excel文件: {filepath}, 错误: {exc}") from exc
+
+    try:
+        worksheet = workbook.active
+    except Exception as exc:
+        workbook.close()
+        raise ExcelParseError(f"无法读取工作表: {filepath}, 错误: {exc}") from exc
+
+    try:
+        rows = list(worksheet.iter_rows(values_only=True))
+        if not rows:
+            raise ExcelParseError(f"Excel文件为空: {filepath}")
+        return rows
+    except ExcelParseError:
+        raise
+    except Exception as exc:
+        raise ExcelParseError(f"解析Excel失败: {filepath}, 错误: {exc}") from exc
+    finally:
+        workbook.close()
+
+
+def _load_xls_rows(filepath):
+    if xlrd is None:
+        raise ExcelParseError(f"无法打开Excel文件: {filepath}, 错误: 当前环境未安装xlrd，无法读取.xls文件")
+
+    try:
+        workbook = xlrd.open_workbook(filepath, on_demand=True)
+    except Exception as exc:
+        raise ExcelParseError(f"无法打开Excel文件: {filepath}, 错误: {exc}") from exc
+
+    try:
+        worksheet = workbook.sheet_by_index(0)
+    except Exception as exc:
+        raise ExcelParseError(f"无法读取工作表: {filepath}, 错误: {exc}") from exc
+
+    try:
+        rows = [worksheet.row_values(index) for index in range(worksheet.nrows)]
+        if not rows:
+            raise ExcelParseError(f"Excel文件为空: {filepath}")
+        return rows
+    except ExcelParseError:
+        raise
+    except Exception as exc:
+        raise ExcelParseError(f"解析Excel失败: {filepath}, 错误: {exc}") from exc
+    finally:
+        release_resources = getattr(workbook, 'release_resources', None)
+        if callable(release_resources):
+            release_resources()
+
+
+def _load_excel_rows(filepath):
+    suffix = Path(filepath).suffix.lower()
+    if suffix == '.xls':
+        return _load_xls_rows(filepath)
+    return _load_xlsx_rows(filepath)
 
 
 def _normalize_header_value(value):
@@ -203,20 +277,7 @@ def parse_station_excel(filepath):
         raise ExcelParseError(f"文件不存在: {filepath}")
 
     try:
-        wb = load_workbook(filepath, read_only=True, data_only=True)
-    except Exception as e:
-        raise ExcelParseError(f"无法打开Excel文件: {filepath}, 错误: {e}")
-
-    try:
-        ws = wb.active
-    except Exception as e:
-        raise ExcelParseError(f"无法读取工作表: {filepath}, 错误: {e}")
-
-    try:
-        # 获取所有行
-        rows = list(ws.iter_rows(values_only=True))
-        if not rows:
-            raise ExcelParseError(f"Excel文件为空: {filepath}")
+        rows = _load_excel_rows(filepath)
 
         if _is_flat_inventory_format(rows):
             return _parse_flat_inventory_rows(rows, filepath)
@@ -252,8 +313,6 @@ def parse_station_excel(filepath):
         raise
     except Exception as e:
         raise ExcelParseError(f"解析Excel失败: {filepath}, 错误: {e}")
-    finally:
-        wb.close()
 
 def extract_voltage_from_content(rows):
     """从内容中提取电压等级"""
@@ -448,11 +507,8 @@ def validate_excel_structure(filepath):
     result = {'valid': True, 'rows': 0, 'errors': []}
 
     try:
-        wb = load_workbook(filepath, read_only=True, data_only=True)
-        ws = wb.active
-        rows = list(ws.iter_rows(values_only=True))
+        rows = _load_excel_rows(filepath)
         result['rows'] = len(rows)
-        wb.close()
 
         if _is_flat_inventory_format(rows):
             station_values = [

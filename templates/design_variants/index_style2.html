@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 风格2（金融应用）{% endblock %}
+
+{% block page_title %}Hello, Alex{% endblock %}
+
+{% block content %}
+<!-- 欢迎卡片 -->
+<div class="card" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); color: white; margin-bottom: 32px; position: relative; overflow: hidden;">
+    <div style="position: relative; z-index: 1;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">$7.99</h2>
+        <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px;">Choose the best plan for you</p>
+        <div style="display: flex; gap: 12px;">
+            <button style="background: white; color: #FF6B35; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">←</button>
+            <button style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">→</button>
+        </div>
+    </div>
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Ccircle cx='100' cy='100' r='80' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E" style="position: absolute; right: -40px; top: -40px; opacity: 0.3;">
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" id="stat-stations">-</div>
+        <div class="stat-label">变电站总数</div>
+        <div class="stat-trend up">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 2L2 6h8L6 2z"/>
+            </svg>
+            <span>运行中</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" id="stat-cameras">-</div>
+        <div class="stat-label">摄像头总数</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" id="stat-fault-open" style="color: #FF3B30;">-</div>
+        <div class="stat-label">待处理故障</div>
+        <div class="stat-trend down" id="stat-open-trend" style="display: none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 10L2 6h8L6 10z"/>
+            </svg>
+            <span>需关注</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value" id="stat-fault-closed" style="color: #34C759;">-</div>
+        <div class="stat-label">已关闭故障</div>
+    </div>
+</div>
+
+<!-- 交易概览 -->
+<div class="card" style="margin-bottom: 32px;">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Transaction overview</h3>
+        </div>
+        <button class="btn-secondary" style="padding: 8px 16px; font-size: 13px;">See details</button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #FF6B35, #F7931E); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">150</div>
+                <div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">Automatic transactions</div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);" id="stat-faults">-</div>
+                </div>
+            </div>
+            <div style="height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; background: linear-gradient(90deg, #FF6B35, #F7931E); width: 75%;"></div>
+            </div>
+        </div>
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #007AFF, #5AC8FA); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">26</div>
+                <div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">Manual transactions</div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);" id="stat-faults-month">-</div>
+                </div>
+            </div>
+            <div style="height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; background: linear-gradient(90deg, #007AFF, #5AC8FA); width: 35%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Credit line</h3>
+                <p class="card-subtitle">Balance used • Limit</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Spend overview</h3>
+                <p class="card-subtitle">Monthly comparison</p>
+            </div>
+            <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Filter</button>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="countyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- 请求列表 -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    <div class="table-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Requests</h3>
+                <p class="card-subtitle">Recent fault records</p>
+            </div>
+            <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Filter</button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>站点</th>
+                    <th>类型</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="recent-faults-body">
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">加载中...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Missing receipts</h3>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-primary); border-radius: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #FF6B35, #F7931E); display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                    </svg>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">Miracle Saris</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Sales</div>
+                </div>
+                <div style="font-weight: 600; color: var(--text-primary);">1</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-primary); border-radius: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #007AFF, #5AC8FA); display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                    </svg>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">Tiana Saris</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Sales</div>
+                </div>
+                <div style="font-weight: 600; color: var(--text-primary);">2</div>
+            </div>
+        </div>
+        <button class="btn-secondary" style="width: 100%; margin-top: 16px; justify-content: center;">Transactions</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
+<script>
+let statusChart = null;
+let countyChart = null;
+
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function formatTime(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function updateStat(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (typeof value === 'number') {
+        el.textContent = value.toLocaleString();
+    } else {
+        el.textContent = value ?? '-';
+    }
+}
+
+function statusLabel(status) {
+    if (status === 'open') return 'Card';
+    if (status === 'handling') return 'Reimbursement';
+    if (status === 'closed') return 'Invoice';
+    return status || '-';
+}
+
+function statusBadgeClass(status) {
+    if (status === 'open') return 'badge-danger';
+    if (status === 'handling') return 'badge-warning';
+    if (status === 'closed') return 'badge-success';
+    return 'badge-info';
+}
+
+function renderRecentFaults(faults) {
+    const tbody = document.getElementById('recent-faults-body');
+    if (!faults.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">暂无记录</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = faults.slice(0, 5).map((f, i) => `
+        <tr>
+            <td>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: ${i % 2 === 0 ? 'linear-gradient(135deg, #FF6B35, #F7931E)' : 'linear-gradient(135deg, #007AFF, #5AC8FA)'}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">${escapeHtml(f.station_name || '-').substring(0, 2)}</div>
+                    <div>
+                        <div style="font-weight: 600;">${escapeHtml(f.station_name || '-')}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">${statusLabel(f.status)}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${escapeHtml(f.fault_type || '-')}</td>
+            <td style="font-family: var(--font-mono); font-weight: 600;">$${Math.floor(Math.random() * 500 + 50)}</td>
+            <td><span class="badge ${statusBadgeClass(f.status)}">${statusLabel(f.status)}</span></td>
+        </tr>
+    `).join('');
+}
+
+function renderStatusChart(openCount, handlingCount, closedCount) {
+    const ctx = document.getElementById('statusChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    if (statusChart) statusChart.destroy();
+
+    const months = ['Apr', 'May', 'Jun'];
+    statusChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Balance used',
+                data: [openCount * 10, handlingCount * 15, closedCount * 8],
+                borderColor: '#FF6B35',
+                backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Limit',
+                data: [closedCount * 12, openCount * 8, handlingCount * 10],
+                borderColor: '#007AFF',
+                backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderCountyChart(labels, values) {
+    const ctx = document.getElementById('countyChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    if (countyChart) countyChart.destroy();
+
+    const months = ['Jun', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+    const data1 = values.slice(0, 7).map(v => v * 10);
+    const data2 = values.slice(0, 7).map(v => v * 8);
+
+    countyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Spend',
+                data: data1.length ? data1 : [20, 35, 30, 45, 40, 50, 45],
+                borderColor: '#FF6B35',
+                backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Limit',
+                data: data2.length ? data2 : [15, 25, 35, 30, 45, 40, 35],
+                borderColor: '#1C1C1E',
+                backgroundColor: 'rgba(28, 28, 30, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function loadDashboardData() {
+    try {
+        const [stats, faultData, stationsData] = await Promise.all([
+            fetchJson(withProject('/api/stats')),
+            fetchJson(withProject('/api/faults')),
+            fetchJson(withProject('/api/stations'))
+        ]);
+
+        updateStat('stat-stations', stats.stations || 0);
+        updateStat('stat-cameras', stats.cameras || 0);
+        updateStat('stat-faults', stats.faults || 0);
+        updateStat('stat-faults-month', stats.faults_this_month || 0);
+
+        const faults = faultData.faults || [];
+        const statusCounts = { open: 0, handling: 0, closed: 0 };
+        faults.forEach(f => {
+            if (f.status in statusCounts) statusCounts[f.status] += 1;
+        });
+
+        updateStat('stat-fault-open', statusCounts.open);
+        updateStat('stat-fault-closed', statusCounts.closed);
+
+        const openTrend = document.getElementById('stat-open-trend');
+        if (openTrend) {
+            openTrend.style.display = statusCounts.open > 0 ? 'inline-flex' : 'none';
+        }
+
+        const recentFaults = [...faults]
+            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        renderRecentFaults(recentFaults);
+        renderStatusChart(statusCounts.open, statusCounts.handling, statusCounts.closed);
+
+        const countyMap = {};
+        const stations = stationsData.stations || [];
+        stations.forEach(s => {
+            countyMap[s.id] = s.county || '未知';
+        });
+
+        const countyCounts = {};
+        faults.forEach(f => {
+            const county = countyMap[f.station_id] || '未知';
+            countyCounts[county] = (countyCounts[county] || 0) + 1;
+        });
+
+        const topCounty = Object.entries(countyCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 7);
+
+        renderCountyChart(
+            topCounty.length ? topCounty.map(i => i[0]) : ['暂无数据'],
+            topCounty.length ? topCounty.map(i => i[1]) : [0]
+        );
+    } catch (error) {
+        console.error('数据加载失败:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+});
+</script>
+{% endblock %}

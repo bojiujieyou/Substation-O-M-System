@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 title Station Monitor Control Panel
 
@@ -56,6 +57,7 @@ if "%APP_RUNNING%"=="1" (
 )
 
 cd /d "%~dp0"
+call :load_env_file
 
 if not exist "station_monitor.db" (
     echo [Warning] Database not found
@@ -109,6 +111,7 @@ if "%APP_RUNNING%"=="1" (
 )
 
 cd /d "%~dp0"
+call :load_env_file
 echo [2/2] Starting...
 start "Station Monitor" python app.py
 timeout /t 2 >nul
@@ -157,3 +160,24 @@ echo Thank you!
 echo.
 timeout /t 1 >nul
 exit
+
+:load_env_file
+if not exist ".env" (
+    echo [Info] .env not found, using system environment
+    goto :eof
+)
+
+echo [Info] Loaded .env configuration
+for /f "usebackq tokens=* delims=" %%L in (".env") do (
+    set "line=%%L"
+    if defined line (
+        if not "!line:~0,1!"=="#" (
+            for /f "tokens=1* delims==" %%A in ("!line!") do (
+                if not "%%A"=="" (
+                    set "%%A=%%B"
+                )
+            )
+        )
+    )
+)
+goto :eof

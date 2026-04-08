@@ -2,85 +2,90 @@
 
 {% block title %}故障报修 - 变电站图像监控运维平台{% endblock %}
 
+{% block page_title %}故障报修{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h2 class="page-title">故障报修</h2>
-    </div>
-
-    <section class="quick-search-section card">
-        <div class="card-body">
+<!-- IP快速定位卡片 -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <div>
             <h3 class="card-title">按 IP 快速定位</h3>
-            <div class="search-form">
-                <input type="text" id="ip-search" class="form-input" placeholder="输入摄像头 IP，例如 192.168.1.100">
-                <button type="button" class="btn btn-primary" onclick="searchByIp()">查询</button>
-            </div>
-            <div id="ip-search-result" class="search-result"></div>
+            <p class="card-subtitle">输入摄像头IP地址快速查找</p>
         </div>
-    </section>
-
-    <section class="report-form-section card">
-        <div class="card-body">
-            <h3 class="card-title">按项目上报故障</h3>
-
-            <form id="fault-form">
-                <div class="form-group">
-                    <label for="project-select" class="form-label">项目 <span class="required">*</span></label>
-                    <select id="project-select" class="form-select" required>
-                        <option value="">加载中...</option>
-                    </select>
-                    <div id="project-help" class="form-hint"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="station-select" class="form-label">变电站 <span class="required">*</span></label>
-                    <select id="station-select" class="form-select" required>
-                        <option value="">请先选择项目</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="camera-select" class="form-label">摄像头</label>
-                    <select id="camera-select" class="form-select">
-                        <option value="">请先选择变电站</option>
-                    </select>
-                    <div id="camera-loading" class="form-hint" style="display:none;">加载摄像头中...</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="fault-type" class="form-label">故障类型 <span class="required">*</span></label>
-                    <select id="fault-type" class="form-select" required>
-                        <option value="">请先选择项目</option>
-                    </select>
-                    <div id="fault-type-help" class="form-hint"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="description" class="form-label">故障描述</label>
-                    <textarea id="description" class="form-input" rows="3" placeholder="可补充位置、现象、时间段等信息"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="reporter-name" class="form-label">报修人姓名 <span class="required">*</span></label>
-                    <input type="text" id="reporter-name" class="form-input" required placeholder="请输入报修人姓名">
-                </div>
-
-                <div class="form-group">
-                    <label for="reporter-contact" class="form-label">联系方式</label>
-                    <input type="text" id="reporter-contact" class="form-input" placeholder="手机号码或短号">
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">重置</button>
-                    <button type="submit" class="btn btn-primary" id="submit-btn">提交报修</button>
-                </div>
-            </form>
-        </div>
-    </section>
+    </div>
+    <div class="inline-input-row">
+        <input type="text" id="ip-search" class="form-input-modal" placeholder="输入摄像头 IP，例如 192.168.1.100">
+        <button type="button" class="btn-primary" onclick="searchByIp()">查询</button>
+    </div>
+    <div id="ip-search-result"></div>
 </div>
 
-<div class="modal" id="confirm-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
-    <div class="modal-dialog modal-sm">
+<!-- 报修表单卡片 -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">按项目上报故障</h3>
+            <p class="card-subtitle">填写完整信息提交报修</p>
+        </div>
+    </div>
+
+    <form id="fault-form">
+        <div class="form-field-lg">
+            <label class="form-label-strong">项目 <span class="required">*</span></label>
+            <select id="project-select" class="form-select-input" required>
+                <option value="">加载中...</option>
+            </select>
+            <div id="project-help" class="field-note"></div>
+        </div>
+
+        <div class="form-field-lg">
+            <label class="form-label-strong">变电站 <span class="required">*</span></label>
+            <select id="station-select" class="form-select-input" required>
+                <option value="">请先选择项目</option>
+            </select>
+        </div>
+
+        <div class="form-field-lg">
+            <label class="form-label-strong">摄像头</label>
+            <select id="camera-select" class="form-select-input">
+                <option value="">请先选择变电站</option>
+            </select>
+            <div id="camera-loading" class="field-note" style="display:none;">加载摄像头中...</div>
+        </div>
+
+        <div class="form-field-lg">
+            <label class="form-label-strong">故障类型 <span class="required">*</span></label>
+            <select id="fault-type" class="form-select-input" required>
+                <option value="">请先选择项目</option>
+            </select>
+            <div id="fault-type-help" class="field-note"></div>
+        </div>
+
+        <div class="form-field-lg">
+            <label class="form-label-strong">故障描述</label>
+            <textarea id="description" class="form-input-modal" rows="4" placeholder="可补充位置、现象、时间段等信息"></textarea>
+        </div>
+
+        <div class="form-field-lg">
+            <label class="form-label-strong">报修人姓名 <span class="required">*</span></label>
+            <input type="text" id="reporter-name" class="form-input-modal" required placeholder="请输入报修人姓名">
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label class="form-label-strong">联系方式</label>
+            <input type="text" id="reporter-contact" class="form-input-modal" placeholder="手机号码或短号">
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn-secondary" onclick="resetForm()">重置</button>
+            <button type="submit" class="btn-primary" id="submit-btn">提交报修</button>
+        </div>
+    </form>
+</div>
+
+<!-- 确认模态框 -->
+<div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="confirm-modal-title">确认报修信息</h5>
@@ -88,30 +93,31 @@
             </div>
             <div class="modal-body" id="confirm-body"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">返回修改</button>
-                <button type="button" class="btn btn-primary" id="confirm-submit">确认提交</button>
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">返回修改</button>
+                <button type="button" class="btn-primary" id="confirm-submit">确认提交</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal" id="success-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">
-    <div class="modal-dialog modal-sm">
+<!-- 成功模态框 -->
+<div class="modal fade" id="success-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="success-modal-title">提交成功</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
             <div class="modal-body">
-                <div class="success-content">
-                    <span class="success-icon">✓</span>
-                    <p>故障报修已提交</p>
-                    <p class="text-muted" id="fault-id-display"></p>
+                <div style="text-align: center; padding: 24px 0;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(52, 199, 89, 0.1); color: var(--accent-success); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; margin: 0 auto 16px;">✓</div>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">故障报修已提交</p>
+                    <p style="color: var(--text-secondary); font-size: 14px;" id="fault-id-display"></p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="resetForm()">继续报修</button>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary" data-project-link>返回首页</a>
+                <button type="button" class="btn-primary" data-bs-dismiss="modal" onclick="resetForm()">继续报修</button>
+                <a href="{{ url_for('index') }}" class="btn-secondary" data-project-link>返回首页</a>
             </div>
         </div>
     </div>
@@ -135,13 +141,6 @@ let selectedCamera = null;
 let currentProjectCode = '';
 let multiProjectEnabled = false;
 let currentFaultTypes = [];
-
-function escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
-}
 
 function getUrlProjectCode() {
     return new URLSearchParams(window.location.search).get('project') || '';
@@ -175,13 +174,13 @@ function updateUrlState({ project = currentProjectCode, stationId = document.get
 
 function setFaultTypeHelp(message, isError = false) {
     const el = document.getElementById('fault-type-help');
-    el.className = isError ? 'text-danger' : 'form-hint';
+    el.style.color = isError ? 'var(--accent-danger)' : 'var(--text-secondary)';
     el.textContent = message || '';
 }
 
 function setProjectHelp(message, isError = false) {
     const el = document.getElementById('project-help');
-    el.className = isError ? 'text-danger' : 'form-hint';
+    el.style.color = isError ? 'var(--accent-danger)' : 'var(--text-secondary)';
     el.textContent = message || '';
 }
 
@@ -328,16 +327,16 @@ async function searchByIp() {
     const resultDiv = document.getElementById('ip-search-result');
     const ip = ipInput.value.trim();
     if (!ip) {
-        resultDiv.innerHTML = '<p class="text-muted">请输入 IP 地址</p>';
+        resultDiv.innerHTML = '<p style="color: var(--text-muted);">请输入 IP 地址</p>';
         return;
     }
 
-    resultDiv.innerHTML = '<div class="spinner-sm"></div> 查询中...';
+    resultDiv.innerHTML = '<div class="spinner"></div> 查询中...';
     try {
         const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}&project=${encodeURIComponent(currentProjectCode)}`);
         const data = await response.json();
         if (response.status === 404) {
-            resultDiv.innerHTML = `<p class="text-warning">${escapeHtml(data.error || '未找到摄像头')}</p>`;
+            resultDiv.innerHTML = `<p style="color: var(--accent-warning);">${escapeHtml(data.error || '未找到摄像头')}</p>`;
             selectedCamera = null;
             return;
         }
@@ -346,10 +345,10 @@ async function searchByIp() {
         const camera = data.camera;
         selectedCamera = camera;
         resultDiv.innerHTML = `
-            <div class="search-result-success">
-                <p><strong>${escapeHtml(camera.station_name)}</strong> - ${escapeHtml(camera.location_desc || camera.area || '-')}</p>
-                <p class="text-muted">IP: ${escapeHtml(camera.ip_address || '-')}</p>
-                <button type="button" class="btn btn-sm btn-primary" onclick="selectFoundCamera()">选择此摄像头</button>
+            <div style="padding: 16px; background: rgba(52, 199, 89, 0.1); border-radius: 10px; border-left: 3px solid var(--accent-success);">
+                <p style="font-weight: 600; margin-bottom: 4px;"><strong>${escapeHtml(camera.station_name)}</strong> - ${escapeHtml(camera.location_desc || camera.area || '-')}</p>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">IP: ${escapeHtml(camera.ip_address || '-')}</p>
+                <button type="button" class="btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="selectFoundCamera()">选择此摄像头</button>
             </div>
         `;
 
@@ -357,7 +356,7 @@ async function searchByIp() {
         await loadCameras(camera.station_id);
         document.getElementById('camera-select').value = camera.id;
     } catch (error) {
-        resultDiv.innerHTML = `<p class="text-danger">${escapeHtml(error.message)}</p>`;
+        resultDiv.innerHTML = `<p style="color: var(--accent-danger);">${escapeHtml(error.message)}</p>`;
     }
 }
 
@@ -380,19 +379,16 @@ function resetForm() {
 }
 
 function clearFieldErrors() {
-    document.querySelectorAll('.form-input.error, .form-select.error').forEach(element => {
-        element.classList.remove('error');
-    });
-    document.querySelectorAll('.form-error[data-field]').forEach(element => element.remove());
+    document.querySelectorAll('[data-field-error]').forEach(el => el.remove());
 }
 
 function showFieldError(fieldId, message) {
     const field = document.getElementById(fieldId);
     if (!field) return;
-    field.classList.add('error');
+    field.style.borderColor = 'var(--accent-danger)';
     const errorEl = document.createElement('div');
-    errorEl.className = 'form-error';
-    errorEl.setAttribute('data-field', fieldId);
+    errorEl.setAttribute('data-field-error', fieldId);
+    errorEl.style.cssText = 'margin-top: 6px; font-size: 13px; color: var(--accent-danger);';
     errorEl.textContent = message;
     field.parentNode.appendChild(errorEl);
 }
@@ -440,12 +436,27 @@ document.getElementById('fault-form').addEventListener('submit', function(event)
     const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue;
 
     document.getElementById('confirm-body').innerHTML = `
-        <div class="confirm-info">
-            <div class="confirm-row"><span class="confirm-label">项目</span><span class="confirm-value">${escapeHtml(projectName)}</span></div>
-            <div class="confirm-row"><span class="confirm-label">变电站</span><span class="confirm-value">${escapeHtml(stationName)}</span></div>
-            <div class="confirm-row"><span class="confirm-label">摄像头</span><span class="confirm-value">${escapeHtml(cameraName)}</span></div>
-            <div class="confirm-row"><span class="confirm-label">故障类型</span><span class="confirm-value">${escapeHtml(faultTypeLabel)}</span></div>
-            <div class="confirm-row"><span class="confirm-label">报修人</span><span class="confirm-value">${escapeHtml(reporterName)}</span></div>
+        <div>
+            <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">项目</span>
+                <span style="font-weight: 600;">${escapeHtml(projectName)}</span>
+            </div>
+            <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">变电站</span>
+                <span style="font-weight: 600;">${escapeHtml(stationName)}</span>
+            </div>
+            <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">摄像头</span>
+                <span style="font-weight: 600;">${escapeHtml(cameraName)}</span>
+            </div>
+            <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">故障类型</span>
+                <span style="font-weight: 600;">${escapeHtml(faultTypeLabel)}</span>
+            </div>
+            <div style="display: flex; padding: 12px 0;">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">报修人</span>
+                <span style="font-weight: 600;">${escapeHtml(reporterName)}</span>
+            </div>
         </div>
     `;
 
@@ -482,7 +493,7 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
         });
         const data = await response.json();
         if (response.status === 409) {
-            alert(data.error);
+            showToast(data.error, 'warning');
             bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
             return;
         }
@@ -494,7 +505,7 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
         bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
         new bootstrap.Modal(document.getElementById('success-modal')).show();
     } catch (error) {
-        alert('提交失败: ' + error.message);
+        showToast('提交失败: ' + error.message, 'error');
     } finally {
         btn.disabled = false;
         submitBtn.disabled = false;

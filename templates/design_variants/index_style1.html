@@ -1,0 +1,353 @@
+{% extends "design_variants/base_style1.html" %}
+
+{% block title %}首页 - 风格1（健身应用）{% endblock %}
+
+{% block page_title %}欢迎回来！{% endblock %}
+{% block page_subtitle %}今天的系统运行状态{% endblock %}
+
+{% block content %}
+<!-- 统计卡片网格 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon orange">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" id="stat-stations">-</div>
+        <div class="stat-label">变电站总数</div>
+        <div class="stat-change positive">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 2L2 6h8L6 2z"/>
+            </svg>
+            <span>正常运行</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" id="stat-cameras">-</div>
+        <div class="stat-label">摄像头总数</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon red">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" id="stat-fault-open">-</div>
+        <div class="stat-label">待处理故障</div>
+        <div class="stat-change negative" id="stat-open-change" style="display: none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 10L2 6h8L6 10z"/>
+            </svg>
+            <span>需要关注</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" id="stat-fault-closed">-</div>
+        <div class="stat-label">已关闭故障</div>
+    </div>
+</div>
+
+<!-- 次要统计 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" id="stat-faults">-</div>
+        <div class="stat-label">故障总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-faults-month">-</div>
+        <div class="stat-label">本月故障</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-fault-handling">-</div>
+        <div class="stat-label">处理中</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" id="stat-fault-year">-</div>
+        <div class="stat-label">本年故障</div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">故障状态分布</h3>
+                <p class="card-subtitle">实时统计</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">县区故障 Top5</h3>
+                <p class="card-subtitle">按故障数量排序</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="countyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- 最近告警 -->
+<div class="table-card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">最近告警</h3>
+            <p class="card-subtitle">最新5条故障记录</p>
+        </div>
+        <button class="btn btn-secondary">查看全部</button>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>站点</th>
+                <th>故障类型</th>
+                <th>状态</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+        <tbody id="recent-faults-body">
+            <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted);">加载中...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
+<script>
+let statusChart = null;
+let countyChart = null;
+
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function formatTime(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function updateStat(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (typeof value === 'number') {
+        el.textContent = value.toLocaleString();
+    } else {
+        el.textContent = value ?? '-';
+    }
+}
+
+function statusLabel(status) {
+    if (status === 'open') return '待处理';
+    if (status === 'handling') return '处理中';
+    if (status === 'closed') return '已关闭';
+    return status || '-';
+}
+
+function statusBadgeClass(status) {
+    if (status === 'open') return 'badge-danger';
+    if (status === 'handling') return 'badge-warning';
+    if (status === 'closed') return 'badge-success';
+    return 'badge-info';
+}
+
+function renderRecentFaults(faults) {
+    const tbody = document.getElementById('recent-faults-body');
+    if (!faults.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">暂无告警记录</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = faults.map(f => `
+        <tr>
+            <td>${escapeHtml(f.station_name || '-')}</td>
+            <td>${escapeHtml(f.fault_type || '-')}</td>
+            <td><span class="badge ${statusBadgeClass(f.status)}">${statusLabel(f.status)}</span></td>
+            <td>${formatTime(f.created_at)}</td>
+        </tr>
+    `).join('');
+}
+
+function renderStatusChart(openCount, handlingCount, closedCount) {
+    const ctx = document.getElementById('statusChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    if (statusChart) statusChart.destroy();
+    statusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['待处理', '处理中', '已关闭'],
+            datasets: [{
+                data: [openCount, handlingCount, closedCount],
+                backgroundColor: ['#EF5350', '#FFC107', '#4CAF50'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 13, family: 'Inter' }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderCountyChart(labels, values) {
+    const ctx = document.getElementById('countyChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+
+    if (countyChart) countyChart.destroy();
+    countyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '故障数',
+                data: values,
+                backgroundColor: 'rgba(255, 107, 53, 0.8)',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+async function loadDashboardData() {
+    try {
+        const [statsRes, faultsRes, stationsRes] = await Promise.allSettled([
+            fetch('/api/stats'),
+            fetch('/api/faults'),
+            fetch('/api/stations')
+        ]);
+
+        if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
+            const stats = await statsRes.value.json();
+            updateStat('stat-stations', stats.stations || 0);
+            updateStat('stat-cameras', stats.cameras || 0);
+            updateStat('stat-faults', stats.faults || 0);
+            updateStat('stat-faults-month', stats.faults_this_month || 0);
+            updateStat('stat-fault-year', stats.faults_this_year || 0);
+        }
+
+        let faults = [];
+        if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
+            const faultData = await faultsRes.value.json();
+            faults = faultData.faults || [];
+        }
+
+        const statusCounts = { open: 0, handling: 0, closed: 0 };
+        const recentFaults = [...faults]
+            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+            .slice(0, 5);
+
+        faults.forEach(f => {
+            if (f.status in statusCounts) statusCounts[f.status] += 1;
+        });
+
+        updateStat('stat-fault-open', statusCounts.open);
+        updateStat('stat-fault-handling', statusCounts.handling);
+        updateStat('stat-fault-closed', statusCounts.closed);
+
+        // 显示待处理提示
+        if (statusCounts.open > 0) {
+            document.getElementById('stat-open-change').style.display = 'inline-flex';
+        }
+
+        renderRecentFaults(recentFaults);
+        renderStatusChart(statusCounts.open, statusCounts.handling, statusCounts.closed);
+
+        const countyMap = {};
+        if (stationsRes.status === 'fulfilled' && stationsRes.value.ok) {
+            const stationsData = await stationsRes.value.json();
+            const stations = stationsData.stations || [];
+            stations.forEach(s => {
+                countyMap[s.id] = s.county || '未知';
+            });
+        }
+
+        const countyCounts = {};
+        faults.forEach(f => {
+            const county = countyMap[f.station_id] || '未知';
+            countyCounts[county] = (countyCounts[county] || 0) + 1;
+        });
+
+        const topCounty = Object.entries(countyCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        renderCountyChart(
+            topCounty.length ? topCounty.map(i => i[0]) : ['暂无数据'],
+            topCounty.length ? topCounty.map(i => i[1]) : [0]
+        );
+    } catch (error) {
+        console.error('数据加载失败:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+});
+</script>
+{% endblock %}
