@@ -711,6 +711,10 @@ function renderSlotCardV2(slot) {
 function renderSlotCardV3(slot) {
     const current = slot.current_camera;
     const slotTitle = slot.location_desc || slot.area || slot.slot_code || '\u672a\u547d\u540d\u69fd\u4f4d';
+    const historyCameras = slot.history_cameras || [];
+    const shouldCollapseSingleHistoryCamera = !current
+        && historyCameras.length === 1
+        && getCameraPrimaryLabel(historyCameras[0]).trim() === String(slotTitle).trim();
     const currentPrimaryLabel = getCameraPrimaryLabel(current);
     const currentSecondaryMeta = getCameraSecondaryMeta(current, {
         primaryLabel: currentPrimaryLabel,
@@ -753,9 +757,9 @@ function renderSlotCardV3(slot) {
                     ${emptyStateMeta}
                 `}
             </div>
-            ${slot.history_cameras && slot.history_cameras.length ? `
+            ${historyCameras.length && !shouldCollapseSingleHistoryCamera ? `
                 <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
-                    ${slot.history_cameras.map((camera) => `
+                    ${historyCameras.map((camera) => `
                         <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; gap: 8px;">
                             <span>${escapeHtml(getCameraPrimaryLabel(camera))}</span>
                             <span style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHtml(camera.ip_address || '-')}</span>
@@ -863,6 +867,190 @@ function renderSlotGroupsV2(slots) {
     `).join('');
 }
 
+function renderSlotGroupsV3(slots, recorders) {
+    if ((!slots || !slots.length) && (!recorders || !recorders.length)) {
+        return '<p style="color: var(--text-muted);">当前项目下暂无槽位数据</p>';
+    }
+
+    const normalizeSortValue = (value) => String(value || '').trim();
+    const localeOptions = { numeric: true, sensitivity: 'base' };
+    const getSlotSortLabel = (slot) => normalizeSortValue(slot.location_desc || slot.area || slot.slot_code || '');
+    const sortSlots = (items) => items.sort((left, right) => {
+        const leftChannel = Number(left.channel_number);
+        const rightChannel = Number(right.channel_number);
+        const leftHasChannel = !Number.isNaN(leftChannel);
+        const rightHasChannel = !Number.isNaN(rightChannel);
+        if (leftHasChannel && rightHasChannel && leftChannel !== rightChannel) {
+            return leftChannel - rightChannel;
+        }
+        if (leftHasChannel !== rightHasChannel) {
+            return leftHasChannel ? -1 : 1;
+        }
+        const labelCompare = getSlotSortLabel(left).localeCompare(getSlotSortLabel(right), 'zh-Hans-CN', localeOptions);
+        if (labelCompare !== 0) {
+            return labelCompare;
+        }
+        return normalizeSortValue(left.slot_code).localeCompare(normalizeSortValue(right.slot_code), 'zh-Hans-CN', localeOptions);
+    });
+    const sortRecorders = (items) => items.sort((left, right) => {
+        const leftName = normalizeSortValue(left.recorder_name || left.ip_address || left.label || '');
+        const rightName = normalizeSortValue(right.recorder_name || right.ip_address || right.label || '');
+        const nameCompare = leftName.localeCompare(rightName, 'zh-Hans-CN', localeOptions);
+        if (nameCompare !== 0) {
+            return nameCompare;
+        }
+        return normalizeSortValue(left.ip_address).localeCompare(normalizeSortValue(right.ip_address), 'zh-Hans-CN', localeOptions);
+    });
+
+    const projectGroups = new Map();
+    const ensureProjectGroup = (item) => {
+        const key = item.project_code || `project-${item.project_id || 'unknown'}`;
+        if (!projectGroups.has(key)) {
+            projectGroups.set(key, {
+                project_id: item.project_id || null,
+                project_code: item.project_code || '',
+                project_name: item.project_name || '',
+                project_short_name: item.project_short_name || '',
+                project_color: item.project_color || '#FF6B35',
+                project_sort_order: item.project_sort_order || 0,
+                slots: [],
+                recorders: [],
+            });
+        }
+        return projectGroups.get(key);
+    };
+
+    (recorders || []).forEach((recorder) => {
+        ensureProjectGroup(recorder).recorders.push(recorder);
+    });
+
+    (slots || []).forEach((slot) => {
+        ensureProjectGroup(slot).slots.push(slot);
+    });
+
+    const groupsWithSlots = Array.from(projectGroups.values()).filter((group) => group.slots.length);
+    if (groupsWithSlots.length === 1) {
+        const primaryGroup = groupsWithSlots[0];
+        Array.from(projectGroups.values()).forEach((group) => {
+            if (group === primaryGroup || !group.recorders.length || group.slots.length) {
+                return;
+            }
+            primaryGroup.recorders.push(...group.recorders);
+            group.recorders = [];
+        });
+    }
+
+    const sortedProjects = Array.from(projectGroups.values()).filter((group) => group.slots.length || group.recorders.length).sort((left, right) => {
+        if ((left.project_sort_order || 0) !== (right.project_sort_order || 0)) {
+            return (left.project_sort_order || 0) - (right.project_sort_order || 0);
+        }
+        return normalizeSortValue(left.project_short_name || left.project_name || left.project_code).localeCompare(
+            normalizeSortValue(right.project_short_name || right.project_name || right.project_code),
+            'zh-Hans-CN',
+            localeOptions,
+        );
+    });
+
+    return sortedProjects.map((group) => {
+        const recorderSections = new Map();
+
+        (group.recorders || []).forEach((recorder) => {
+            recorderSections.set(`recorder-${recorder.id}`, {
+                kind: 'recorder',
+                recorder,
+                slots: [],
+            });
+        });
+
+        (group.slots || []).forEach((slot) => {
+            const recorder = slot.recorder;
+            if (recorder && recorder.id) {
+                const key = `recorder-${recorder.id}`;
+                if (!recorderSections.has(key)) {
+                    recorderSections.set(key, {
+                        kind: 'recorder',
+                        recorder,
+                        slots: [],
+                    });
+                }
+                recorderSections.get(key).slots.push(slot);
+                return;
+            }
+
+            const unassignedKey = 'recorder-unassigned';
+            if (!recorderSections.has(unassignedKey)) {
+                recorderSections.set(unassignedKey, {
+                    kind: 'unassigned',
+                    label: '未匹配录像机',
+                    slots: [],
+                });
+            }
+            recorderSections.get(unassignedKey).slots.push(slot);
+        });
+
+        const sortedSections = Array.from(recorderSections.values());
+        sortedSections.forEach((section) => sortSlots(section.slots));
+        const assignedSections = sortedSections.filter((section) => section.kind === 'recorder');
+        const unassignedSections = sortedSections.filter((section) => section.kind !== 'recorder');
+        sortRecorders(assignedSections.map((section) => section.recorder));
+        assignedSections.sort((left, right) => {
+            const leftRecorder = left.recorder || {};
+            const rightRecorder = right.recorder || {};
+            const leftName = normalizeSortValue(leftRecorder.recorder_name || leftRecorder.ip_address || '');
+            const rightName = normalizeSortValue(rightRecorder.recorder_name || rightRecorder.ip_address || '');
+            const nameCompare = leftName.localeCompare(rightName, 'zh-Hans-CN', localeOptions);
+            if (nameCompare !== 0) {
+                return nameCompare;
+            }
+            return normalizeSortValue(leftRecorder.ip_address).localeCompare(normalizeSortValue(rightRecorder.ip_address), 'zh-Hans-CN', localeOptions);
+        });
+        const displaySections = [...assignedSections, ...unassignedSections];
+
+        return `
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap;">
+                    <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; background: rgba(255, 107, 53, 0.1); color: #FF6B35; font-size: 12px; font-weight: 700;">
+                        ${escapeHtml(group.project_short_name || group.project_name || group.project_code || '项目')}
+                    </span>
+                    <span style="font-size: 12px; color: var(--text-secondary);">${group.recorders.length} 台录像机 | ${group.slots.length} 个槽位</span>
+                </div>
+                ${displaySections.map((section) => {
+                    const recorder = section.recorder || null;
+                    const sectionTitle = recorder ? (recorder.recorder_name || '未命名录像机') : (section.label || '未匹配录像机');
+                    const sectionMeta = recorder
+                        ? [
+                            recorder.ip_address ? `IP ${recorder.ip_address}` : '',
+                            recorder.port ? `端口 ${recorder.port}` : '',
+                          ].filter(Boolean).join(' | ')
+                        : '这些槽位暂时没有匹配到对应录像机';
+                    const sectionNote = recorder && recorder.description ? recorder.description : '';
+                    return `
+                        <div style="margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));">
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 700;">${escapeHtml(sectionTitle)}</div>
+                                    <div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">${escapeHtml(sectionMeta || '暂无录像机信息')}</div>
+                                    ${sectionNote ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">${escapeHtml(sectionNote)}</div>` : ''}
+                                </div>
+                                <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.08); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">${section.slots.length} 个槽位</span>
+                            </div>
+                            ${section.slots.length ? `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                                    ${section.slots.map(renderSlotCardV3).join('')}
+                                </div>
+                            ` : `
+                                <div style="padding: 14px 16px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: 13px;">
+                                    当前还没有匹配到摄像机槽位
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }).join('');
+}
+
 async function showDetail(stationId) {
     const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
     const modalTitle = document.getElementById('modal-title');
@@ -887,6 +1075,7 @@ async function showDetail(stationId) {
         const station = stationData.station || {};
         const cameras = stationData.cameras || [];
         const slots = slotsData.slots || [];
+        const recorders = slotsData.recorders || [];
         const stationMapUrl = stationHasCoordinates(station) ? buildStationMapUrl(station) : '';
 
         modalTitle.textContent = station.name || '变电站详情';
@@ -915,9 +1104,13 @@ async function showDetail(stationId) {
                     <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">槽位数</span>
                     <span style="font-weight: 600;">${slots.length}</span>
                 </div>
+                <div style="display: flex; padding: 12px 0;">
+                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">褰曞儚鏈烘暟</span>
+                    <span style="font-weight: 600;">${recorders.length}</span>
+                </div>
             </div>
             <h6 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">项目 / 槽位 / 当前设备</h6>
-            ${renderSlotGroupsV2(slots)}
+            ${renderSlotGroupsV3(slots, recorders)}
         `;
 
         modalReportBtn.href = withProject('/fault/new', { station_id: stationId });

@@ -705,9 +705,56 @@ def normalize_tags_payload(raw_value):
     return parse_tags_json(raw_value)
 
 
+def build_station_recorders_payload(db, station_id, project_scope):
+    if not table_exists(db, "station_recorders"):
+        return []
+
+    recorder_columns = get_table_columns(db, "station_recorders")
+    if "project_id" not in recorder_columns:
+        return []
+
+    query = """
+        SELECT
+            sr.id,
+            sr.station_id,
+            sr.project_id,
+            sr.recorder_name,
+            sr.ip_address,
+            sr.port,
+            sr.description,
+            sr.source_type,
+            sr.source_key,
+            sr.status,
+            p.code AS project_code,
+            p.name AS project_name,
+            p.short_name AS project_short_name,
+            p.color AS project_color,
+            p.sort_order AS project_sort_order
+        FROM station_recorders sr
+        LEFT JOIN projects p ON p.id = sr.project_id
+        WHERE sr.station_id = ?
+          AND sr.status = 'active'
+    """
+    params = [station_id]
+    if project_scope['enabled']:
+        project_sql, project_params = build_project_in_clause("sr", project_scope['project_ids'])
+        query += project_sql
+        params.extend(project_params)
+    query += """
+        ORDER BY
+            COALESCE(p.sort_order, 0),
+            COALESCE(sr.recorder_name, ''),
+            COALESCE(sr.ip_address, ''),
+            COALESCE(sr.port, 0),
+            sr.id
+    """
+    return [dict(row) for row in db.execute(query, params).fetchall()]
+
+
 def build_station_slots_payload(db, station_id, project_scope):
     camera_columns = get_table_columns(db, "cameras")
     fault_report_columns = get_table_columns(db, "fault_reports")
+    station_recorders = build_station_recorders_payload(db, station_id, project_scope)
 
     if not (
         table_exists(db, "camera_slots")
@@ -792,6 +839,50 @@ def build_station_slots_payload(db, station_id, project_scope):
     for row in history_rows:
         history_map.setdefault(row['slot_id'], []).append(dict(row))
 
+    recorders_by_project = {}
+    recorder_by_exact = {}
+    recorder_by_ip = {}
+    for recorder in station_recorders:
+        project_id = recorder.get('project_id')
+        recorders_by_project.setdefault(project_id, []).append(recorder)
+
+        ip_key = str(recorder.get('ip_address') or '').strip()
+        if not ip_key:
+            continue
+
+        port_value = recorder.get('port')
+        if port_value is not None:
+            recorder_by_exact[(project_id, ip_key, port_value)] = recorder
+
+        ip_bucket_key = (project_id, ip_key)
+        recorder_by_ip.setdefault(ip_bucket_key, []).append(recorder)
+
+    def match_slot_recorder(project_id, current_camera, history_cameras):
+        candidates = []
+        if current_camera:
+            candidates.append(current_camera)
+        candidates.extend(history_cameras or [])
+
+        for camera in candidates:
+            ip_key = str(camera.get('ip_address') or '').strip()
+            if not ip_key:
+                continue
+
+            port_value = camera.get('channel_port')
+            if port_value is not None:
+                recorder = recorder_by_exact.get((project_id, ip_key, port_value))
+                if recorder:
+                    return recorder
+
+            recorder_bucket = recorder_by_ip.get((project_id, ip_key), [])
+            if len(recorder_bucket) == 1:
+                return recorder_bucket[0]
+
+        project_recorders = recorders_by_project.get(project_id, [])
+        if len(project_recorders) == 1:
+            return project_recorders[0]
+        return None
+
     fault_count_map = {slot_id: 0 for slot_id in slot_ids}
     recent_faults_map = {slot_id: [] for slot_id in slot_ids}
     if 'camera_slot_id' in fault_report_columns:
@@ -854,6 +945,12 @@ def build_station_slots_payload(db, station_id, project_scope):
                 'status': 'active',
             }
 
+        matched_recorder = match_slot_recorder(
+            row['project_id'],
+            current_camera,
+            history_map.get(row['slot_id'], []),
+        )
+
         slots.append({
             'slot_id': row['slot_id'],
             'slot_code': row['slot_code'],
@@ -872,6 +969,7 @@ def build_station_slots_payload(db, station_id, project_scope):
             'history_camera_count': len(history_map.get(row['slot_id'], [])),
             'fault_count': fault_count_map.get(row['slot_id'], 0),
             'recent_faults': recent_faults_map.get(row['slot_id'], []),
+            'recorder': matched_recorder,
         })
     return slots
 
@@ -1223,19 +1321,26 @@ def get_station_slots(station_id):
     if not station:
         return api_error('变电站不存在', 404)
 
+    project_scope = {
+        'enabled': False,
+        'project_ids': None,
+        'requested_project': None,
+        'projects': [],
+    }
+    recorders = build_station_recorders_payload(
+        db,
+        station_id,
+        project_scope,
+    )
     slots = build_station_slots_payload(
         db,
         station_id,
-        {
-            'enabled': False,
-            'project_ids': None,
-            'requested_project': None,
-            'projects': [],
-        },
+        project_scope,
     )
     return api_success({
         'station': dict(station),
         'slots': slots,
+        'recorders': recorders,
         'total': len(slots),
     })
 
