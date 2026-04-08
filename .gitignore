@@ -36,6 +36,10 @@ logs/
 
 # Data (runtime)
 data/
+import_reports/
+.context/
+.impeccable.md
+*.db.backup_*
 
 # Captures (camera captures - large files)
 captures/
