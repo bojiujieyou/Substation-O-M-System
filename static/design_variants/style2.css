@@ -1915,6 +1915,30 @@ textarea.form-input-modal {
     margin-top: 8px;
 }
 
+.login-remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -4px 0 16px;
+    flex-wrap: wrap;
+}
+
+.login-remember-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.login-remember-option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--accent-primary);
+}
+
 /* Hero card buttons */
 .hero-btn {
     display: inline-flex;
