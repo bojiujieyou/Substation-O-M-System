@@ -570,8 +570,42 @@ function renderRecentFaults(faults) {
     `;
 }
 
+function getCameraPrimaryLabel(camera) {
+    if (!camera) {
+        return '';
+    }
+    return camera.location_desc || camera.area || camera.project_camera_code || (camera.camera_index ? `设备 ${camera.camera_index}` : `#${camera.id}`);
+}
+
+function getCameraSecondaryMeta(camera, options = {}) {
+    if (!camera) {
+        return '';
+    }
+    const primaryLabel = String(options.primaryLabel || '').trim();
+    const slotTitle = String(options.slotTitle || '').trim();
+    const slotChannelNumber = options.slotChannelNumber;
+    const parts = [];
+    if (camera.project_camera_code && camera.project_camera_code.trim() !== primaryLabel && camera.project_camera_code.trim() !== slotTitle) {
+        parts.push(camera.project_camera_code);
+    } else if (camera.camera_index) {
+        parts.push(`设备编号 ${camera.camera_index}`);
+    }
+    const cameraChannelNumber = camera.channel_number;
+    const shouldShowChannel =
+        cameraChannelNumber !== null
+        && cameraChannelNumber !== undefined
+        && cameraChannelNumber !== ''
+        && String(cameraChannelNumber) !== String(slotChannelNumber ?? '');
+    if (shouldShowChannel) {
+        parts.push(`通道 ${camera.channel_number}`);
+    }
+    return parts.join(' | ');
+}
+
 function renderSlotCard(slot) {
     const current = slot.current_camera;
+    const currentPrimaryLabel = getCameraPrimaryLabel(current);
+    const currentSecondaryMeta = getCameraSecondaryMeta(current);
     return `
         <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; background: var(--bg-card);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
@@ -614,6 +648,129 @@ function renderSlotCard(slot) {
     `;
 }
 
+/*
+function renderSlotCardV2(slot) {
+    const current = slot.current_camera;
+    const slotTitle = slot.location_desc || slot.area || slot.slot_code || '未命名槽位';
+    const currentPrimaryLabel = getCameraPrimaryLabel(current);
+    const currentSecondaryMeta = getCameraSecondaryMeta(current);
+    const currentIpText = current && current.ip_address ? current.ip_address : '未配置IP';
+    const emptyStateMeta = slot.history_camera_count
+        ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">历史设备 ${escapeHtml(slot.history_camera_count)} 台</div>`
+        : '';
+
+    return `
+        <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; background: var(--bg-card);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">${escapeHtml(slotTitle)}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                        槽位编码 ${escapeHtml(slot.slot_code || '-')}
+                        ${slot.channel_number !== null && slot.channel_number !== undefined ? ` | 通道 ${escapeHtml(slot.channel_number)}` : ''}
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: var(--text-secondary);">
+                    <div>历史设备 ${slot.history_camera_count || 0}</div>
+                    <div>故障 ${slot.fault_count || 0}</div>
+                </div>
+            </div>
+            <div style="padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 12px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">当前设备</div>
+                ${current ? `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                        <div style="min-width: 0; flex: 1;">
+                            <div style="font-weight: 600; line-height: 1.45;">${escapeHtml(currentPrimaryLabel)}</div>
+                            ${currentSecondaryMeta ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(currentSecondaryMeta)}</div>` : ''}
+                        </div>
+                        <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">${escapeHtml(currentIpText)}</span>
+                    </div>
+                ` : `
+                    <div style="color: var(--text-muted);">当前无在用设备</div>
+                    ${emptyStateMeta}
+                `}
+            </div>
+            ${slot.history_cameras && slot.history_cameras.length ? `
+                <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
+                    ${slot.history_cameras.map((camera) => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; gap: 8px;">
+                            <span>${escapeHtml(getCameraPrimaryLabel(camera))}</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHtml(camera.ip_address || '-')}</span>
+                            <span style="text-transform: uppercase; color: var(--text-muted); font-size: 11px;">${escapeHtml(camera.status || '-')}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            <div style="margin-top: 12px;">
+                ${renderRecentFaults(slot.recent_faults)}
+            </div>
+        </div>
+    `;
+}
+*/
+
+function renderSlotCardV3(slot) {
+    const current = slot.current_camera;
+    const slotTitle = slot.location_desc || slot.area || slot.slot_code || '\u672a\u547d\u540d\u69fd\u4f4d';
+    const currentPrimaryLabel = getCameraPrimaryLabel(current);
+    const currentSecondaryMeta = getCameraSecondaryMeta(current, {
+        primaryLabel: currentPrimaryLabel,
+        slotTitle,
+        slotChannelNumber: slot.channel_number,
+    });
+    const currentMatchesSlotTitle = currentPrimaryLabel && currentPrimaryLabel.trim() === slotTitle.trim();
+    const currentIpText = current && current.ip_address ? current.ip_address : '\u672a\u914d\u7f6eIP';
+    const emptyStateMeta = slot.history_camera_count
+        ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">\u5386\u53f2\u8bbe\u5907 ${escapeHtml(slot.history_camera_count)} \u53f0</div>`
+        : '';
+
+    return `
+        <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; background: var(--bg-card);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">${escapeHtml(slotTitle)}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                        \u69fd\u4f4d\u7f16\u7801 ${escapeHtml(slot.slot_code || '-')}
+                        ${slot.channel_number !== null && slot.channel_number !== undefined ? ` | \u901a\u9053 ${escapeHtml(slot.channel_number)}` : ''}
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: var(--text-secondary);">
+                    <div>\u5386\u53f2\u8bbe\u5907 ${slot.history_camera_count || 0}</div>
+                    <div>\u6545\u969c ${slot.fault_count || 0}</div>
+                </div>
+            </div>
+            <div style="padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 12px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">\u5f53\u524d\u8bbe\u5907</div>
+                ${current ? `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                        <div style="min-width: 0; flex: 1;">
+                            <div style="font-weight: 600; line-height: 1.45;">${currentMatchesSlotTitle ? '\u5df2\u7ed1\u5b9a\u5f53\u524d\u69fd\u4f4d' : escapeHtml(currentPrimaryLabel)}</div>
+                            ${currentSecondaryMeta ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(currentSecondaryMeta)}</div>` : ''}
+                        </div>
+                        <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">${escapeHtml(currentIpText)}</span>
+                    </div>
+                ` : `
+                    <div style="color: var(--text-muted);">\u5f53\u524d\u65e0\u5728\u7528\u8bbe\u5907</div>
+                    ${emptyStateMeta}
+                `}
+            </div>
+            ${slot.history_cameras && slot.history_cameras.length ? `
+                <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
+                    ${slot.history_cameras.map((camera) => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; gap: 8px;">
+                            <span>${escapeHtml(getCameraPrimaryLabel(camera))}</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHtml(camera.ip_address || '-')}</span>
+                            <span style="text-transform: uppercase; color: var(--text-muted); font-size: 11px;">${escapeHtml(camera.status || '-')}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            <div style="margin-top: 12px;">
+                ${renderRecentFaults(slot.recent_faults)}
+            </div>
+        </div>
+    `;
+}
+
 function renderSlotGroups(slots) {
     if (!slots || !slots.length) {
         return '<p style="color: var(--text-muted);">当前项目下暂无槽位数据</p>';
@@ -643,7 +800,64 @@ function renderSlotGroups(slots) {
                 <span style="font-size: 12px; color: var(--text-secondary);">${group.slots.length} 个槽位</span>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                ${group.slots.map(renderSlotCard).join('')}
+                ${group.slots.map(renderSlotCardV3).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderSlotGroupsV2(slots) {
+    if (!slots || !slots.length) {
+        return '<p style="color: var(--text-muted);">当前项目下暂无槽位数据</p>';
+    }
+
+    const normalizeSortValue = (value) => String(value || '').trim();
+    const getSlotSortLabel = (slot) => normalizeSortValue(slot.location_desc || slot.area || slot.slot_code || '');
+    const sortSlots = (items) => items.sort((left, right) => {
+        const leftChannel = Number(left.channel_number);
+        const rightChannel = Number(right.channel_number);
+        const leftHasChannel = !Number.isNaN(leftChannel);
+        const rightHasChannel = !Number.isNaN(rightChannel);
+        if (leftHasChannel && rightHasChannel && leftChannel !== rightChannel) {
+            return leftChannel - rightChannel;
+        }
+        if (leftHasChannel !== rightHasChannel) {
+            return leftHasChannel ? -1 : 1;
+        }
+        const labelCompare = getSlotSortLabel(left).localeCompare(getSlotSortLabel(right), 'zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+        if (labelCompare !== 0) {
+            return labelCompare;
+        }
+        return normalizeSortValue(left.slot_code).localeCompare(normalizeSortValue(right.slot_code), 'zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+    });
+
+    const groups = new Map();
+    slots.forEach((slot) => {
+        const key = slot.project_code || 'unknown';
+        if (!groups.has(key)) {
+            groups.set(key, {
+                project_code: slot.project_code,
+                project_name: slot.project_name,
+                project_short_name: slot.project_short_name,
+                project_color: slot.project_color || '#FF6B35',
+                slots: [],
+            });
+        }
+        groups.get(key).slots.push(slot);
+    });
+
+    groups.forEach((group) => sortSlots(group.slots));
+
+    return Array.from(groups.values()).map((group) => `
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; background: rgba(255, 107, 53, 0.1); color: #FF6B35; font-size: 12px; font-weight: 700;">
+                    ${escapeHtml(group.project_short_name || group.project_name || group.project_code || '项目')}
+                </span>
+                <span style="font-size: 12px; color: var(--text-secondary);">${group.slots.length} 个槽位</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                ${group.slots.map(renderSlotCardV3).join('')}
             </div>
         </div>
     `).join('');
@@ -703,7 +917,7 @@ async function showDetail(stationId) {
                 </div>
             </div>
             <h6 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">项目 / 槽位 / 当前设备</h6>
-            ${renderSlotGroups(slots)}
+            ${renderSlotGroupsV2(slots)}
         `;
 
         modalReportBtn.href = withProject('/fault/new', { station_id: stationId });

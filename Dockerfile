@@ -1,5 +1,6 @@
 # Dockerfile — 变电站图像监控运维平台
-FROM python:3.11-slim
+ARG PYTHON_BASE_IMAGE=python:3.11-slim
+FROM ${PYTHON_BASE_IMAGE}
 
 # 设置工作目录
 WORKDIR /app

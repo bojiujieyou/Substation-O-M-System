@@ -1,9 +1,11 @@
 # docker-compose.yml - Substation Monitor Platform (fnOS/NAS)
-version: '3.8'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.11-slim}
     container_name: substation_monitor
     restart: unless-stopped
     ports:
@@ -29,7 +31,10 @@ services:
       - /vol1/1000/Docker/Substation-O-M-System/.env
 
   backup:
-    build: .
+    build:
+      context: .
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.11-slim}
     container_name: substation_monitor_backup
     volumes:
       - /vol1/1000/Docker/Substation-O-M-System/data:/app/data:ro
