@@ -180,6 +180,14 @@
         const currentPath = window.location.pathname;
         const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
         const logoutLink = document.getElementById('sidebar-logout-link');
+        const notificationBtn = document.getElementById('notification-btn');
+
+        if (notificationBtn) {
+            notificationBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = withProject('{{ url_for("admin_notifications.notification_center_page") if session.get("role") == "admin" else url_for("admin_page") }}');
+            });
+        }
 
         // 导航高亮
         navItems.forEach(item => {

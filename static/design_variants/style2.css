@@ -178,7 +178,7 @@ body {
 .nav-item-nested {
     padding-left: 16px;
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
 .nav-item-nested svg {
@@ -3041,4 +3041,3 @@ textarea.form-input-modal {
 .text-muted { color: var(--text-secondary); }
 .text-danger { color: var(--accent-danger); }
 .text-success { color: var(--accent-success); }
-
