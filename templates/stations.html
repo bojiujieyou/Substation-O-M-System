@@ -4,9 +4,24 @@
 
 {% block page_title %}变电站列表{% endblock %}
 
+{% block extra_head %}
+<style>
+#station-search {
+    width: 320px;
+    flex: 0 0 320px;
+}
+
+#county-filter {
+    width: 160px;
+    flex: 0 0 160px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
+        <input id="station-search" type="search" class="form-input" placeholder="搜索站名 / 区县 / 电压等级" style="min-width: 240px; max-width: 320px;">
         <select id="county-filter" class="form-select" style="min-width: 160px;">
             <option value="">全部区县</option>
             <option value="丽水">丽水</option>
@@ -28,6 +43,27 @@
         <span>新建变电站</span>
     </button>
     {% endif %}
+</div>
+
+<div id="station-overview" style="display:none; margin-bottom: 18px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+        <div class="table-card" style="padding: 14px 16px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">站点总数</div>
+            <div id="overview-stations" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
+        </div>
+        <div class="table-card" style="padding: 14px 16px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">摄像头总数</div>
+            <div id="overview-cameras" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
+        </div>
+        <div class="table-card" style="padding: 14px 16px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">有未关闭故障站点</div>
+            <div id="overview-open-stations" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
+        </div>
+        <div class="table-card" style="padding: 14px 16px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">已设置坐标</div>
+            <div id="overview-located" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
+        </div>
+    </div>
 </div>
 
 <div id="loading" class="loading-state">
@@ -151,6 +187,83 @@
 {% block scripts %}
 <script>
 let allStations = [];
+let stationSearchKeyword = '';
+
+function normalizeSearchText(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function formatRelativeStationDate(dateStr) {
+    if (!dateStr) {
+        return '暂无故障';
+    }
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) {
+        return String(dateStr).slice(0, 10);
+    }
+    return date.toLocaleDateString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit',
+        day: '2-digit',
+    });
+}
+
+function enrichStations(stations, cameras, faults) {
+    const cameraCountByStation = new Map();
+    (cameras || []).forEach((camera) => {
+        if (!camera || !camera.station_id) {
+            return;
+        }
+        cameraCountByStation.set(camera.station_id, (cameraCountByStation.get(camera.station_id) || 0) + 1);
+    });
+
+    const openFaultCountByStation = new Map();
+    const latestFaultAtByStation = new Map();
+    (faults || []).forEach((fault) => {
+        if (!fault || !fault.station_id) {
+            return;
+        }
+
+        if ((fault.status || 'open') !== 'closed') {
+            openFaultCountByStation.set(
+                fault.station_id,
+                (openFaultCountByStation.get(fault.station_id) || 0) + 1
+            );
+        }
+
+        const currentLatest = latestFaultAtByStation.get(fault.station_id);
+        if (!currentLatest || String(fault.created_at || '') > String(currentLatest)) {
+            latestFaultAtByStation.set(fault.station_id, fault.created_at || '');
+        }
+    });
+
+    return (stations || []).map((station) => ({
+        ...station,
+        camera_count: cameraCountByStation.get(station.id) || 0,
+        open_fault_count: openFaultCountByStation.get(station.id) || 0,
+        latest_fault_at: latestFaultAtByStation.get(station.id) || '',
+        has_coordinates: stationHasCoordinates(station),
+    }));
+}
+
+function updateStationOverview(stations) {
+    const overview = document.getElementById('station-overview');
+    if (!overview) {
+        return;
+    }
+
+    overview.style.display = stations.length ? 'block' : 'none';
+    document.getElementById('overview-stations').textContent = String(stations.length);
+    document.getElementById('overview-cameras').textContent = String(
+        stations.reduce((sum, station) => sum + (station.camera_count || 0), 0)
+    );
+    document.getElementById('overview-open-stations').textContent = String(
+        stations.filter((station) => (station.open_fault_count || 0) > 0).length
+    );
+    document.getElementById('overview-located').textContent = String(
+        stations.filter((station) => station.has_coordinates).length
+    );
+}
 
 async function loadStations() {
     const loading = document.getElementById('loading');
@@ -164,21 +277,39 @@ async function loadStations() {
     list.style.display = 'none';
 
     try {
-        const response = await fetch(withProject('/api/stations'));
-        if (!response.ok) {
+        const stationResponse = await fetch(withProject('/api/stations'));
+        if (!stationResponse.ok) {
             throw new Error('加载失败');
         }
 
-        const data = await response.json();
-        allStations = data.stations || [];
+        const stationData = await stationResponse.json();
+        const [cameraResult, faultResult] = await Promise.allSettled([
+            fetch(withProject('/api/cameras')),
+            fetch(withProject('/api/faults')),
+        ]);
+
+        let cameras = [];
+        if (cameraResult.status === 'fulfilled' && cameraResult.value.ok) {
+            const cameraData = await cameraResult.value.json();
+            cameras = cameraData.cameras || [];
+        }
+
+        let faults = [];
+        if (faultResult.status === 'fulfilled' && faultResult.value.ok) {
+            const faultData = await faultResult.value.json();
+            faults = faultData.faults || [];
+        }
+
+        allStations = enrichStations(stationData.stations || [], cameras, faults);
         loading.style.display = 'none';
+        updateStationOverview(allStations);
 
         if (!allStations.length) {
             empty.style.display = 'block';
             return;
         }
 
-        filterByCounty(document.getElementById('county-filter').value);
+        applyStationFilters();
         list.style.display = 'block';
     } catch (err) {
         console.error('loadStations failed:', err);
@@ -191,9 +322,21 @@ function renderStations(stations) {
     const tbody = document.getElementById('station-tbody');
     tbody.innerHTML = stations.map((station) => `
         <tr>
-            <td style="font-weight: 600;">${escapeHtml(station.name)}</td>
-            <td>${escapeHtml(station.voltage_level || '-')}</td>
-            <td>${escapeHtml(station.county || '-')}</td>
+            <td>
+                <div style="font-weight: 700;">${escapeHtml(station.name)}</div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); color: var(--text-primary); font-size: 12px; white-space: nowrap;">${station.camera_count || 0} 路摄像头</span>
+                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: ${(station.open_fault_count || 0) > 0 ? 'rgba(217, 48, 37, 0.12)' : 'rgba(52, 168, 83, 0.12)'}; color: ${(station.open_fault_count || 0) > 0 ? '#d93025' : '#1e8e3e'}; font-size: 12px; white-space: nowrap;">${station.open_fault_count || 0} 条未关闭</span>
+                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">最近 ${escapeHtml(formatRelativeStationDate(station.latest_fault_at))}</span>
+                </div>
+            </td>
+            <td><span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(255, 143, 0, 0.12); color: var(--text-primary); font-size: 12px; font-weight: 600; white-space: nowrap;">${escapeHtml(station.voltage_level || '-')}</span></td>
+            <td>
+                <div>${escapeHtml(station.county || '-')}</div>
+                <div style="margin-top: 6px; font-size: 12px; color: ${stationHasCoordinates(station) ? '#1e8e3e' : 'var(--text-muted)'};">
+                    ${stationHasCoordinates(station) ? '已定位' : '未定位'}
+                </div>
+            </td>
             <td>${renderStationLocationCell(station)}</td>
             <td style="text-align: right;">
                 <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" type="button" onclick="showDetail(${station.id})">查看详情</button>
@@ -202,12 +345,30 @@ function renderStations(stations) {
     `).join('');
 }
 
-function filterByCounty(county) {
-    if (!county) {
-        renderStations(allStations);
-        return;
-    }
-    renderStations(allStations.filter((station) => station.county === county));
+function applyStationFilters() {
+    const county = document.getElementById('county-filter').value;
+    const keyword = stationSearchKeyword;
+    const filteredStations = allStations.filter((station) => {
+        if (county && station.county !== county) {
+            return false;
+        }
+        if (!keyword) {
+            return true;
+        }
+
+        const haystack = [
+            station.name,
+            station.county,
+            station.voltage_level,
+            station.location,
+            resolveStationLocationText(station),
+        ].map(normalizeSearchText).join(' ');
+
+        return haystack.includes(keyword);
+    });
+
+    updateStationOverview(filteredStations);
+    renderStations(filteredStations);
 }
 
 function faultStatusText(status) {
@@ -344,6 +505,41 @@ function renderStationLocationCell(station) {
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span title="${locationTitle}" style="display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">${locationText}</span>
             <a href="${buildStationMapUrl(station)}" title="跳转地图定位" class="link-primary" data-project-link style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); font-size: 12px; font-weight: 600; line-height: 1.6; text-decoration: none; white-space: nowrap;">定位</a>
+        </div>
+    `;
+}
+
+function resolveStationLocationCompactText(station) {
+    const location = String(station?.location || '').trim();
+    if (location) {
+        return location;
+    }
+    if (!stationHasCoordinates(station)) {
+        return '未填写';
+    }
+    const lat = Number(station.latitude);
+    const lng = Number(station.longitude);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        return '未填写';
+    }
+    return `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
+}
+
+function renderStationLocationCell(station) {
+    const locationText = escapeHtml(resolveStationLocationCompactText(station));
+    const locationTitle = escapeHtml(resolveStationLocationText(station));
+    if (!stationHasCoordinates(station)) {
+        return `
+            <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span title="${locationTitle}" style="display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; font-size: 13px;">${locationText}</span>
+                <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-muted); font-size: 12px; line-height: 1.5; white-space: nowrap;">未设坐标</span>
+            </div>
+        `;
+    }
+    return `
+        <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span title="${locationTitle}" style="display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; font-size: 13px; font-family: var(--font-mono);">${locationText}</span>
+            <a href="${buildStationMapUrl(station)}" title="跳转地图定位" class="link-primary" data-project-link style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); font-size: 12px; font-weight: 600; line-height: 1.5; text-decoration: none; white-space: nowrap;">地图</a>
         </div>
     `;
 }
@@ -565,8 +761,13 @@ async function submitCreateStation() {
     }
 }
 
-document.getElementById('county-filter').addEventListener('change', (event) => {
-    filterByCounty(event.target.value);
+document.getElementById('county-filter').addEventListener('change', () => {
+    applyStationFilters();
+});
+
+document.getElementById('station-search').addEventListener('input', (event) => {
+    stationSearchKeyword = normalizeSearchText(event.target.value);
+    applyStationFilters();
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
