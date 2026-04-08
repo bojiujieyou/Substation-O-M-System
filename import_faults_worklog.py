@@ -36,8 +36,12 @@ SOURCE_TYPE = "import_worklog"
 SOURCE_SYSTEM = "worklog"
 IMPORT_MODE = "best-effort"
 TIMEZONE_DEFAULT = "Asia/Shanghai"
-TARGET_TYPES = {"图像监控", "智能巡视", "辅控系统"}
-SKIP_STATIONS = {"缙云", "遂昌公司", "丽水", "湖州", "钦矿变"}
+SYSTEM_TYPE_ALIASES = {
+    "智慧监控": "图像监控",
+    "智慧巡视": "智能巡视",
+}
+TARGET_TYPES = {"图像监控", "智能巡视", "辅控系统", "智慧监控", "智慧巡视"}
+SKIP_STATIONS = {"缙云", "遂昌公司", "丽水", "湖州", "钦矿变", "钼矿变"}
 
 
 FAIL_ON_ANY_FAILURE = "any_failure"
@@ -144,6 +148,11 @@ def infer_fault_type(content):
     if any(token in text for token in ["网络", "断网", "掉线", "通信"]):
         return "网络故障"
     return "设备故障"
+
+
+def normalize_worklog_system_type(value):
+    text = str(value or "").strip()
+    return SYSTEM_TYPE_ALIASES.get(text, text)
 
 
 def make_legacy_idempotency_key(station_id, time_text, description):
@@ -301,7 +310,7 @@ def import_worklog_file(
         for row_index, row in enumerate(rows[2:], start=3):
             if not row or row[5] is None:
                 continue
-            system_type = str(row[5]).strip()
+            system_type = normalize_worklog_system_type(row[5])
             if system_type not in TARGET_TYPES:
                 continue
 

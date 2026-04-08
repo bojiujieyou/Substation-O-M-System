@@ -7,6 +7,90 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+.edit-station-camera-panel {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+}
+
+.edit-station-camera-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.edit-station-camera-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.edit-station-camera-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.edit-station-camera-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.edit-station-camera-item {
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+}
+
+.edit-station-camera-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.edit-station-camera-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.edit-station-camera-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.edit-station-camera-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.edit-station-camera-empty {
+    padding: 16px 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.edit-station-camera-loading {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -194,7 +278,7 @@
 </div>
 
 <div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="edit-modal-title">编辑变电站</h5>
@@ -233,6 +317,15 @@
                     <div class="form-group">
                         <label for="edit-location" class="form-label">位置</label>
                         <input type="text" id="edit-location" class="form-input">
+                    </div>
+                    <div class="edit-station-camera-panel">
+                        <div class="edit-station-camera-summary">
+                            <div class="edit-station-camera-title">当前摄像机</div>
+                            <div class="edit-station-camera-count" id="edit-camera-count">加载中...</div>
+                        </div>
+                        <div class="edit-station-camera-list" id="edit-camera-list">
+                            <div class="edit-station-camera-loading">正在加载摄像机清单...</div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -416,6 +509,70 @@ function renderUploadResult(state, options = {}) {
         ${details.length ? `<div class="review-secondary-steps upload-feedback-details">${details.map((detail) => `<div class="review-secondary-step">${escapeHtml(detail)}</div>`).join('')}</div>` : ''}
         ${actions.length ? `<div class="upload-feedback-actions">${actions.map((action) => `<a class="btn btn-sm ${action.variant || 'btn-secondary'}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`).join('')}</div>` : ''}
     `;
+}
+
+function renderEditStationCameras(cameras) {
+    const listEl = document.getElementById('edit-camera-list');
+    const countEl = document.getElementById('edit-camera-count');
+    if (!listEl || !countEl) return;
+
+    const rows = Array.isArray(cameras) ? cameras : [];
+    countEl.textContent = `共 ${rows.length} 台`;
+
+    if (!rows.length) {
+        listEl.innerHTML = '<div class="edit-station-camera-empty">当前项目下暂未查询到摄像机。</div>';
+        return;
+    }
+
+    listEl.innerHTML = rows.map((camera) => {
+        const displayName = camera.location_desc || camera.project_camera_code || camera.camera_index || `摄像机 #${camera.id}`;
+        const badges = [
+            camera.camera_index ? `<span class="badge badge-info">编号 ${escapeHtml(String(camera.camera_index))}</span>` : '',
+            camera.channel_number !== null && camera.channel_number !== undefined ? `<span class="badge badge-secondary">通道 ${escapeHtml(String(camera.channel_number))}</span>` : '',
+        ].filter(Boolean).join('');
+
+        const meta = [
+            camera.ip_address ? `IP: ${escapeHtml(camera.ip_address)}` : '',
+            camera.area ? `区域: ${escapeHtml(camera.area)}` : '',
+            camera.project_camera_code ? `编码: ${escapeHtml(camera.project_camera_code)}` : '',
+        ].filter(Boolean).map((text) => `<span>${text}</span>`).join('');
+
+        return `
+            <div class="edit-station-camera-item">
+                <div class="edit-station-camera-main">
+                    <div class="edit-station-camera-name">${escapeHtml(displayName)}</div>
+                    <div class="edit-station-camera-badges">${badges}</div>
+                </div>
+                <div class="edit-station-camera-meta">${meta || '<span>未补充更多设备信息</span>'}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadEditStationCameras(stationId) {
+    const listEl = document.getElementById('edit-camera-list');
+    const countEl = document.getElementById('edit-camera-count');
+    if (!listEl || !countEl) return;
+
+    listEl.innerHTML = '<div class="edit-station-camera-loading">正在加载摄像机清单...</div>';
+    countEl.textContent = '加载中...';
+
+    try {
+        const projectCode = getCurrentProjectCode() || getDefaultProjectCode();
+        const detailUrl = new URL(`/api/stations/${stationId}`, window.location.origin);
+        if (projectCode) {
+            detailUrl.searchParams.set('project', projectCode);
+        }
+        const response = await fetch(detailUrl.toString());
+        const payload = await response.json();
+        if (!response.ok) {
+            throw new Error(payload.error || '加载摄像机失败');
+        }
+        renderEditStationCameras(payload.cameras || []);
+    } catch (error) {
+        countEl.textContent = '加载失败';
+        listEl.innerHTML = `<div class="edit-station-camera-empty">${escapeHtml(error.message)}</div>`;
+    }
 }
 
 function buildAiStatusLines(status) {
@@ -852,6 +1009,7 @@ function editStation(stationId) {
     document.getElementById('edit-county').value = station.county || '丽水';
     document.getElementById('edit-location').value = station.location || '';
 
+    loadEditStationCameras(station.id);
     new bootstrap.Modal(document.getElementById('edit-modal')).show();
 }
 
@@ -1217,17 +1375,26 @@ document.getElementById('replace-camera-current').addEventListener('change', fil
 document.addEventListener('DOMContentLoaded', async () => {
     bindImportContextEvents();
 
-    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
-        await window.AppProjectState.ready();
-    }
-    await loadAdminProjects();
-    await loadAiStatus();
-    await loadStations();
-    await loadPhotoStats();
-    await loadUnmatchedPhotos();
     document.getElementById('upload-result').textContent = '';
     document.getElementById('photo-index-result').textContent = '';
     document.getElementById('manual-match-result').textContent = '';
+
+    if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
+        await window.AppProjectState.ready();
+    }
+
+    const primaryTasks = [
+        loadAdminProjects(),
+        loadStations(),
+    ];
+    const secondaryTasks = [
+        loadAiStatus(),
+        loadPhotoStats(),
+        loadUnmatchedPhotos(),
+    ];
+
+    await Promise.allSettled(primaryTasks);
+    Promise.allSettled(secondaryTasks);
 });
 
 // ============================================================

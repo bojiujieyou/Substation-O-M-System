@@ -5,9 +5,24 @@ import re
 
 PROJECT_CODE_BY_SYSTEM_TYPE = {
     "图像监控": "unified",
+    "智慧监控": "unified",
     "智能巡视": "inspection",
+    "智慧巡视": "inspection",
     "辅控系统": "auxiliary",
 }
+
+
+_STATION_SUFFIX_TOKENS = (
+    "变电站",
+    "安防",
+    "一键顺控",
+    "集控站",
+    "集控",
+)
+
+
+def _strip_station_voltage_prefix(text):
+    return re.sub(r"^\s*\d+\s*[kK][vV]\s*", "", text or "", flags=re.IGNORECASE)
 
 
 def table_exists(conn, table_name):
@@ -29,26 +44,11 @@ def normalize_station_name(value):
     if not value:
         return ""
     text = str(value).strip().lower()
-    for token in [
-        " ",
-        "\t",
-        "_",
-        "-",
-        "/",
-        "\\",
-        "（",
-        "）",
-        "(",
-        ")",
-        "【",
-        "】",
-        "[",
-        "]",
-        "变电站",
-        "变",
-        "站",
-    ]:
+    text = _strip_station_voltage_prefix(text)
+    for token in _STATION_SUFFIX_TOKENS:
         text = text.replace(token, "")
+    text = re.sub(r"[（）；：()【】\[\]]", "", text)
+    text = re.sub(r"[\s_\-\\/,:;，。、]+", "", text)
     return text
 
 

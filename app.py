@@ -1998,7 +1998,20 @@ def get_station_scoped(station_id):
         camera_params.extend(project_params)
     if 'status' in camera_columns:
         camera_query += " AND c.status = 'active'"
-    camera_query += " ORDER BY c.camera_index, c.channel_number"
+    camera_query += """
+        ORDER BY
+            CASE
+                WHEN c.channel_number IS NOT NULL THEN c.channel_number
+                WHEN TRIM(COALESCE(c.camera_index, '')) GLOB '[0-9]*' THEN CAST(TRIM(c.camera_index) AS INTEGER)
+                ELSE 2147483647
+            END,
+            CASE
+                WHEN TRIM(COALESCE(c.camera_index, '')) = '' THEN 1
+                ELSE 0
+            END,
+            c.camera_index,
+            c.id
+    """
     cameras = db.execute(camera_query, camera_params).fetchall()
 
     fault_count_query = "SELECT COUNT(*) AS count FROM fault_reports f WHERE f.station_id = ?"
