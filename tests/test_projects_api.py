@@ -251,6 +251,8 @@ def seeded_project_schema(project_test_db):
         UPDATE fault_reports
         SET source_type = 'import_excel',
             project_device_code = 'INSPECT-CAM-001',
+            description = 'Lens blur on east yard camera',
+            handler_note = 'Cleaned housing and restored focus',
             source_time_raw = '2026-04-02 08:00:00',
             source_timezone = 'Asia/Shanghai'
         WHERE id = 2
@@ -601,6 +603,8 @@ def test_station_slots_endpoint_returns_project_scoped_slot_view(client, seeded_
     assert slot["current_camera"]["id"] == 1
     assert slot["history_camera_count"] == 0
     assert slot["recent_faults"][0]["fault_label"] == "Blur"
+    assert slot["recent_faults"][0]["description"] == "Lens blur on east yard camera"
+    assert slot["recent_faults"][0]["handler_note"] == "Cleaned housing and restored focus"
 
 
 def test_station_slots_endpoint_shows_history_after_replacement(client, seeded_project_schema):

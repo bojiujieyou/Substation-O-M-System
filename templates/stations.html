@@ -544,10 +544,50 @@ function renderStationLocationCell(station) {
     `;
 }
 
-function renderRecentFaults(faults) {
+function renderRecentFaults(slot) {
+    const faults = slot && Array.isArray(slot.recent_faults) ? slot.recent_faults : [];
     if (!faults || !faults.length) {
         return '<span style="color: var(--text-muted); font-size: 13px;">暂无故障记录</span>';
     }
+
+    const detailItems = faults.map((fault) => {
+        const status = fault.status || 'open';
+        const label = fault.fault_label || '未命名故障';
+        const createdAt = formatFaultDate(fault.created_at);
+        const closedAt = formatFaultDate(fault.closed_at);
+        const description = String(fault.description || '').trim();
+        const handlerNote = String(fault.handler_note || '').trim();
+        const detailId = `fault-detail-${slot.slot_id}-${fault.id}`;
+        return `
+            <div
+                id="${escapeHtml(detailId)}"
+                data-fault-detail
+                style="display: none; margin-top: 10px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-primary);"
+            >
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+                    <div style="font-size: 13px; font-weight: 700;">${escapeHtml(label)}</div>
+                    <button
+                        type="button"
+                        class="btn-link"
+                        data-fault-close="${escapeHtml(detailId)}"
+                        style="padding: 0; border: 0; background: transparent; font-size: 12px; color: var(--text-secondary); text-decoration: none;"
+                    >
+                        收起
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                    状态 ${escapeHtml(faultStatusText(status))}
+                    ${createdAt ? ` | 上报 ${escapeHtml(createdAt)}` : ''}
+                    ${closedAt ? ` | 关闭 ${escapeHtml(closedAt)}` : ''}
+                </div>
+                <div style="font-size: 13px; line-height: 1.7; color: var(--text-primary);">
+                    <div><strong>故障描述：</strong>${escapeHtml(description || '未填写故障描述')}</div>
+                    ${handlerNote ? `<div style="margin-top: 6px;"><strong>处理备注：</strong>${escapeHtml(handlerNote)}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
     return `
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             ${faults.map((fault) => {
@@ -556,16 +596,22 @@ function renderRecentFaults(faults) {
                 const createdAt = formatFaultDate(fault.created_at);
                 const statusLabel = faultStatusText(status);
                 const badgeText = ['历史故障', label, statusLabel, createdAt].filter(Boolean).join(' · ');
+                const detailId = `fault-detail-${slot.slot_id}-${fault.id}`;
                 return `
-                    <span
+                    <button
+                        type="button"
                         class="badge badge-${escapeHtml(status)}"
-                        style="margin-right: 0;"
-                        title="${escapeHtml(`${label} / ${statusLabel}${createdAt ? ` / ${createdAt}` : ''}`)}"
+                        data-fault-toggle="${escapeHtml(detailId)}"
+                        style="margin-right: 0; border: 0; cursor: pointer;"
+                        title="${escapeHtml(`${label} / ${statusLabel}${createdAt ? ` / ${createdAt}` : ''} / 点击查看描述`)}"
                     >
                         ${escapeHtml(badgeText)}
-                    </span>
+                    </button>
                 `;
             }).join('')}
+        </div>
+        <div style="margin-top: 6px;">
+            ${detailItems}
         </div>
     `;
 }
@@ -642,7 +688,7 @@ function renderSlotCard(slot) {
                 </div>
             ` : ''}
             <div style="margin-top: 12px;">
-                ${renderRecentFaults(slot.recent_faults)}
+                ${renderRecentFaults(slot)}
             </div>
         </div>
     `;
@@ -701,7 +747,7 @@ function renderSlotCardV2(slot) {
                 </div>
             ` : ''}
             <div style="margin-top: 12px;">
-                ${renderRecentFaults(slot.recent_faults)}
+                ${renderRecentFaults(slot)}
             </div>
         </div>
     `;
@@ -769,7 +815,7 @@ function renderSlotCardV3(slot) {
                 </div>
             ` : ''}
             <div style="margin-top: 12px;">
-                ${renderRecentFaults(slot.recent_faults)}
+                ${renderRecentFaults(slot)}
             </div>
         </div>
     `;
@@ -1175,6 +1221,36 @@ document.getElementById('county-filter').addEventListener('change', () => {
 document.getElementById('station-search').addEventListener('input', (event) => {
     stationSearchKeyword = normalizeSearchText(event.target.value);
     applyStationFilters();
+});
+
+document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-fault-toggle]');
+    if (toggle) {
+        const detailId = toggle.getAttribute('data-fault-toggle');
+        const detailCard = detailId ? document.getElementById(detailId) : null;
+        if (!detailCard) {
+            return;
+        }
+        const container = detailCard.parentElement;
+        if (container) {
+            container.querySelectorAll('[data-fault-detail]').forEach((item) => {
+                if (item !== detailCard) {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        detailCard.style.display = detailCard.style.display === 'none' ? 'block' : 'none';
+        return;
+    }
+
+    const closeBtn = event.target.closest('[data-fault-close]');
+    if (closeBtn) {
+        const detailId = closeBtn.getAttribute('data-fault-close');
+        const detailCard = detailId ? document.getElementById(detailId) : null;
+        if (detailCard) {
+            detailCard.style.display = 'none';
+        }
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {

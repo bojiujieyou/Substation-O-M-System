@@ -82,6 +82,20 @@ def should_abort_import(*, fail_on_rules, reason, action):
     return False
 
 
+def ensure_worklog_fault_columns(conn):
+    existing_columns = get_columns(conn, "fault_reports")
+    required_columns = {
+        "camera_location_text": "TEXT",
+        "camera_slot_id": "INTEGER",
+        "project_device_code": "TEXT",
+    }
+    for column_name, column_type in required_columns.items():
+        if column_name in existing_columns:
+            continue
+        conn.execute(f"ALTER TABLE fault_reports ADD COLUMN {column_name} {column_type}")
+        existing_columns.add(column_name)
+
+
 def abort_import_if_needed(*, fail_on_rules, row_result, reason, action):
     if not should_abort_import(fail_on_rules=fail_on_rules, reason=reason, action=action):
         return
@@ -169,6 +183,170 @@ def build_description(location, content):
     return " | ".join(parts) if parts else (content or "")
 
 
+def normalize_camera_location(value):
+    text = str(value or "").strip().lower()
+    for token in [
+        "摄像机",
+        "摄像头",
+        "球机",
+        "枪机",
+        "监控点",
+        "视频",
+        "图像",
+        "恢复正常",
+        "故障",
+        "异常",
+        "接口",
+        "集中电源",
+        "地点",
+        " ",
+        "\t",
+        "\r",
+        "\n",
+        "_",
+        "-",
+        "/",
+        "\\",
+        "|",
+        "，",
+        ",",
+        "。",
+        ".",
+        "：",
+        ":",
+        "；",
+        ";",
+        "（",
+        "）",
+        "(",
+        ")",
+        "[",
+        "]",
+    ]:
+        text = text.replace(token, "")
+    return text
+
+
+def _looks_like_camera_location(value):
+    text = str(value or "").strip()
+    if not text:
+        return False
+    keywords = (
+        "侧",
+        "室",
+        "场地",
+        "门",
+        "通道",
+        "开关",
+        "主变",
+        "电容器",
+        "蓄电池",
+        "楼",
+        "围墙",
+        "大门",
+        "#",
+        "kV",
+        "kv",
+    )
+    return any(keyword in text for keyword in keywords)
+
+
+def derive_camera_location_text(location, content):
+    if _looks_like_camera_location(location):
+        return str(location).strip()
+
+    content_text = str(content or "").strip()
+    if not content_text:
+        return ""
+
+    match = re.search(r"([\u4e00-\u9fffA-Za-z0-9#-]+?(?:侧|室|场地|门口|大门|通道))\s*(?:摄像机|摄像头|球机|枪机)", content_text)
+    if match:
+        return match.group(1).strip()
+
+    return ""
+
+
+def resolve_camera_binding(conn, *, station_id, project_id, location, content):
+    if not project_id:
+        return None
+    if "camera_slots" not in [row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]:
+        return None
+
+    normalized_hints = {
+        normalize_camera_location(location),
+        normalize_camera_location(content),
+    }
+    normalized_hints.discard("")
+    if not normalized_hints:
+        return None
+
+    rows = conn.execute(
+        """
+        SELECT
+            cs.id AS slot_id,
+            cs.location_desc,
+            cs.area,
+            c.id AS camera_id,
+            c.location_desc AS camera_location,
+            c.area AS camera_area,
+            c.project_camera_code,
+            c.camera_index
+        FROM camera_slots cs
+        LEFT JOIN cameras c
+          ON c.slot_id = cs.id
+         AND c.status = 'active'
+        WHERE cs.station_id = ?
+          AND cs.project_id = ?
+        ORDER BY cs.id
+        """,
+        (station_id, project_id),
+    ).fetchall()
+
+    matches = []
+    for row in rows:
+        best_candidate = ""
+        best_length = 0
+        for candidate in (
+            row["camera_location"] if hasattr(row, "keys") else row[4],
+            row["location_desc"] if hasattr(row, "keys") else row[1],
+            row["camera_area"] if hasattr(row, "keys") else row[5],
+            row["area"] if hasattr(row, "keys") else row[2],
+        ):
+            normalized_candidate = normalize_camera_location(candidate)
+            if not normalized_candidate:
+                continue
+            if any(
+                normalized_candidate in hint or hint in normalized_candidate
+                for hint in normalized_hints
+            ):
+                if len(normalized_candidate) > best_length:
+                    best_candidate = str(candidate or "").strip()
+                    best_length = len(normalized_candidate)
+        if best_length > 0:
+            matches.append(
+                {
+                    "slot_id": row["slot_id"] if hasattr(row, "keys") else row[0],
+                    "camera_id": row["camera_id"] if hasattr(row, "keys") else row[3],
+                    "location_desc": best_candidate,
+                    "project_device_code": (
+                        row["project_camera_code"] if hasattr(row, "keys") else row[6]
+                    ) or ((row["camera_index"] if hasattr(row, "keys") else row[7]) or None),
+                    "score": best_length,
+                }
+            )
+
+    if not matches:
+        return None
+
+    matches.sort(key=lambda item: (-item["score"], item["slot_id"]))
+    top_score = matches[0]["score"]
+    top_matches = [item for item in matches if item["score"] == top_score]
+    unique_matches = {item["slot_id"]: item for item in top_matches}
+    if len(unique_matches) != 1:
+        return None
+    return next(iter(unique_matches.values()))
+
+
 def get_or_create_project_batch(
     conn,
     batch_cache,
@@ -218,6 +396,10 @@ def insert_fault_report(
     project_row=None,
     batch_id=None,
     source_record_key=None,
+    camera_id=None,
+    camera_slot_id=None,
+    camera_location_text=None,
+    project_device_code=None,
     raw_time_value=None,
     timezone_default=TIMEZONE_DEFAULT,
 ):
@@ -250,10 +432,14 @@ def insert_fault_report(
     ]
 
     optional_values = [
+        ("camera_id", camera_id),
         ("project_id", project_row["id"] if project_row else None),
+        ("camera_slot_id", camera_slot_id),
         ("source_type", SOURCE_TYPE),
         ("source_batch_id", str(batch_id) if batch_id else None),
         ("source_record_key", source_record_key),
+        ("project_device_code", project_device_code),
+        ("camera_location_text", camera_location_text),
         ("fault_type_label_snapshot", fault_type),
         ("source_time_raw", str(raw_time_value) if raw_time_value is not None else None),
         ("source_timezone", timezone_default),
@@ -292,6 +478,7 @@ def import_worklog_file(
     database_path = Path(database_path or get_db_path()).resolve()
     source_path = Path(source_file).resolve()
     conn = create_db_connection(database_path, row_factory=True, enable_wal=True)
+    ensure_worklog_fault_columns(conn)
     multi_project_enabled = multi_project_import_enabled(conn)
     batch_cache = {}
     fail_on_rules = parse_fail_on_rules(fail_on)
@@ -475,6 +662,19 @@ def import_worklog_file(
                     )
                     continue
 
+                camera_binding = None
+                camera_location_text = derive_camera_location_text(location, content)
+                if batch_state:
+                    camera_binding = resolve_camera_binding(
+                        conn,
+                        station_id=match["station_id"],
+                        project_id=batch_state["project"]["id"],
+                        location=location,
+                        content=content,
+                    )
+                    if camera_binding and camera_binding.get("location_desc"):
+                        camera_location_text = camera_binding["location_desc"]
+
                 try:
                     if not dry_run:
                         insert_fault_report(
@@ -489,12 +689,21 @@ def import_worklog_file(
                             project_row=batch_state["project"] if batch_state else None,
                             batch_id=batch_id,
                             source_record_key=source_record_key,
+                            camera_id=camera_binding["camera_id"] if camera_binding else None,
+                            camera_slot_id=camera_binding["slot_id"] if camera_binding else None,
+                            camera_location_text=camera_location_text or None,
+                            project_device_code=camera_binding["project_device_code"] if camera_binding else None,
                             raw_time_value=raw_time,
                             timezone_default=timezone_default,
                         )
                     stats["inserted"] += 1
                     row_result["action"] = "insert"
                     row_result["station_id"] = match["station_id"]
+                    if camera_binding:
+                        row_result["camera_slot_id"] = camera_binding["slot_id"]
+                        row_result["camera_id"] = camera_binding["camera_id"]
+                    if camera_location_text:
+                        row_result["camera_location_text"] = camera_location_text
                     report_rows.append(row_result)
                     if batch_state:
                         batch_state["success_count"] += 1
@@ -575,6 +784,96 @@ def import_worklog_file(
     )
     write_report_file(Path(report_path).resolve() if report_path else None, report)
     return report
+
+
+def backfill_worklog_camera_bindings(*, database_path=None, dry_run=False):
+    database_path = Path(database_path or get_db_path()).resolve()
+    conn = create_db_connection(database_path, row_factory=True, enable_wal=True)
+    ensure_worklog_fault_columns(conn)
+    stats = {
+        "scanned": 0,
+        "updated": 0,
+        "slot_bound": 0,
+        "location_filled": 0,
+    }
+
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, station_id, project_id, description, camera_id, camera_slot_id, camera_location_text
+            FROM fault_reports
+            WHERE source_type = ?
+              AND (
+                    camera_id IS NULL
+                 OR camera_slot_id IS NULL
+                 OR camera_location_text IS NULL
+                 OR TRIM(camera_location_text) = ''
+              )
+            ORDER BY id
+            """,
+            (SOURCE_TYPE,),
+        ).fetchall()
+
+        for row in rows:
+            stats["scanned"] += 1
+            description = str(row["description"] or "")
+            content, _, suffix = description.partition(" | 地点:")
+            location = suffix.strip()
+            content = content.strip()
+
+            camera_binding = resolve_camera_binding(
+                conn,
+                station_id=row["station_id"],
+                project_id=row["project_id"],
+                location=location,
+                content=content,
+            ) if row["project_id"] else None
+            camera_location_text = derive_camera_location_text(location, content)
+            if camera_binding and camera_binding.get("location_desc"):
+                camera_location_text = camera_binding["location_desc"]
+
+            update_fields = []
+            update_values = []
+
+            if camera_binding and row["camera_id"] != camera_binding["camera_id"]:
+                update_fields.append("camera_id = ?")
+                update_values.append(camera_binding["camera_id"])
+            if camera_binding and row["camera_slot_id"] != camera_binding["slot_id"]:
+                update_fields.append("camera_slot_id = ?")
+                update_values.append(camera_binding["slot_id"])
+            if camera_binding and camera_binding.get("project_device_code"):
+                update_fields.append("project_device_code = COALESCE(project_device_code, ?)")
+                update_values.append(camera_binding["project_device_code"])
+            if camera_location_text and str(row["camera_location_text"] or "").strip() != camera_location_text:
+                update_fields.append("camera_location_text = ?")
+                update_values.append(camera_location_text)
+
+            if not update_fields:
+                continue
+
+            if camera_binding:
+                stats["slot_bound"] += 1
+            if camera_location_text:
+                stats["location_filled"] += 1
+            stats["updated"] += 1
+
+            if dry_run:
+                continue
+
+            update_values.append(row["id"])
+            conn.execute(
+                f"UPDATE fault_reports SET {', '.join(update_fields)} WHERE id = ?",
+                update_values,
+            )
+
+        if dry_run:
+            conn.rollback()
+        else:
+            conn.commit()
+    finally:
+        conn.close()
+
+    return stats
 
 
 def legacy_main_unused():

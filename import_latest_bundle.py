@@ -16,13 +16,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from admin import _sync_station_project_cameras
+from config import Config
 from import_faults_worklog import import_worklog_file
 from import_review_support import get_project_row, normalize_station_name, table_exists
 from init_db import get_db_path
+from parse_excel import parse_station_excel
 from utils import backup_sqlite_database, create_db_connection
 
 
 DEFAULT_PROJECT_CODE = "unified"
+DEFAULT_CAMERA_IP_SOURCE_ROOT = Config.DATA_SOURCE_PATH
 RECORDER_SOURCE_SYSTEM = "recorder_inventory_csv"
 CAMERA_SOURCE_SYSTEM = "camera_inventory_csv"
 COUNTY_NAMES = ("丽水", "云和", "庆元", "景宁", "松阳", "缙云", "遂昌", "青田", "龙泉", "莲都")
@@ -105,6 +108,122 @@ def recorder_sort_key(recorder):
     return (order, name)
 
 
+def normalize_camera_location(value):
+    text = clean(value).lower()
+    text = re.sub(r"^\s*(室内|室外)[-_/\\\s]*", "", text)
+    text = re.sub(r"[\s_\-\\/,:;，。]+", "", text)
+    return text
+
+
+def iter_camera_ip_source_files(source_root):
+    root = Path(source_root)
+    if not root.exists():
+        return []
+
+    for pattern in ("*.xlsx", "*.xls"):
+        for filepath in sorted(root.rglob(pattern)):
+            name = filepath.name
+            if name.startswith("~$"):
+                continue
+            if "冲突副本" in name:
+                continue
+            yield filepath
+
+
+def load_camera_ip_reference(source_root):
+    grouped = {}
+    for filepath in iter_camera_ip_source_files(source_root):
+        try:
+            payload = parse_station_excel(str(filepath))
+        except Exception:
+            continue
+
+        station = payload.get("station") or {}
+        station_name = station.get("name")
+        station_key = normalize_station_name(station_name)
+        if not station_key:
+            continue
+
+        bucket = grouped.setdefault(
+            station_key,
+            {
+                "station_name": station_name,
+                "by_channel": defaultdict(list),
+                "by_index": defaultdict(list),
+                "by_location": defaultdict(list),
+            },
+        )
+
+        for camera in payload.get("cameras") or []:
+            ip_address = clean(camera.get("ip_address"))
+            if not ip_address:
+                continue
+
+            channel_number = camera.get("channel_number")
+            camera_index = clean(camera.get("camera_index"))
+            location_key = normalize_camera_location(
+                camera.get("location") or camera.get("location_desc")
+            )
+            camera_record = {
+                "ip_address": ip_address,
+                "camera_index": camera_index,
+                "channel_number": channel_number,
+                "location": clean(camera.get("location") or camera.get("location_desc")),
+            }
+
+            if channel_number is not None:
+                bucket["by_channel"][channel_number].append(camera_record)
+            if camera_index:
+                bucket["by_index"][camera_index].append(camera_record)
+            if location_key:
+                bucket["by_location"][location_key].append(camera_record)
+
+    return grouped
+
+
+def resolve_camera_ip(reference, *, station_key, camera_name, channel_number):
+    if not reference:
+        return ""
+
+    station_bucket = reference.get(station_key)
+    if not station_bucket:
+        return ""
+
+    camera_index = extract_camera_index(camera_name, channel_number)
+    location_key = normalize_camera_location(camera_name)
+    if location_key:
+        matches = station_bucket["by_location"].get(location_key, [])
+        if len(matches) == 1:
+            return matches[0]["ip_address"]
+
+    if camera_index:
+        matches = station_bucket["by_index"].get(camera_index, [])
+        if location_key and len(matches) > 1:
+            matches = [
+                item for item in matches
+                if normalize_camera_location(item.get("location")) == location_key
+            ]
+        if len(matches) == 1:
+            return matches[0]["ip_address"]
+
+    if channel_number is not None:
+        matches = station_bucket["by_channel"].get(channel_number, [])
+        if location_key and len(matches) > 1:
+            matches = [
+                item for item in matches
+                if normalize_camera_location(item.get("location")) == location_key
+            ]
+        if camera_index and len(matches) > 1:
+            matches = [
+                item for item in matches
+                if clean(item.get("camera_index")) == camera_index
+            ]
+        if len(matches) == 1:
+            return matches[0]["ip_address"]
+
+    return ""
+
+
 def read_gbk_csv_rows(path):
     with Path(path).open("r", encoding="gbk", newline="") as handle:
         return list(csv.reader(handle))
@@ -151,7 +270,7 @@ def parse_station_csv(path):
     return grouped
 
 
-def parse_camera_csv(path):
+def parse_camera_csv(path, camera_ip_reference=None):
     rows = read_gbk_csv_rows(path)
     grouped = {}
     for row in rows[1:]:
@@ -160,13 +279,20 @@ def parse_camera_csv(path):
         camera_name = clean(row[0])
         area_path = clean(row[1])
         recorder_name = clean(row[3])
-        ip_address, channel_port = parse_ip_port(row[4])
+        recorder_ip_address, recorder_port = parse_ip_port(row[4])
         recorder_code = clean(row[5])
         channel_number = to_int(row[6])
         station_label = parse_station_name_from_path(area_path)
         station_key = normalize_station_name(station_label)
         if not station_key or not camera_name:
             continue
+
+        camera_ip_address = resolve_camera_ip(
+            camera_ip_reference,
+            station_key=station_key,
+            camera_name=camera_name,
+            channel_number=channel_number,
+        )
 
         bundle = grouped.setdefault(
             station_key,
@@ -188,10 +314,13 @@ def parse_camera_csv(path):
                 "area": "",
                 "location": camera_name,
                 "location_desc": camera_name,
-                "ip_address": ip_address,
-                "channel_port": channel_port,
+                "ip_address": camera_ip_address,
+                "channel_port": recorder_port,
                 "channel_number": channel_number,
                 "project_camera_code": recorder_code or camera_name,
+                "recorder_name": recorder_name,
+                "recorder_ip_address": recorder_ip_address,
+                "recorder_port": recorder_port,
             }
         )
     return grouped
@@ -436,6 +565,7 @@ def import_inventory_bundle(
     camera_csv,
     database_path,
     project_code=DEFAULT_PROJECT_CODE,
+    camera_ip_source_root=DEFAULT_CAMERA_IP_SOURCE_ROOT,
     dry_run=False,
 ):
     conn = create_db_connection(database_path, row_factory=True, enable_wal=True)
@@ -443,13 +573,16 @@ def import_inventory_bundle(
     if not project:
         raise ValueError(f"Project not found: {project_code}")
 
+    camera_ip_reference = load_camera_ip_reference(camera_ip_source_root)
     station_groups = parse_station_csv(station_csv)
-    camera_groups = parse_camera_csv(camera_csv)
+    camera_groups = parse_camera_csv(camera_csv, camera_ip_reference=camera_ip_reference)
 
     report = {
         "project": project_code,
         "station_csv": str(Path(station_csv).resolve()),
         "camera_csv": str(Path(camera_csv).resolve()),
+        "camera_ip_source_root": str(Path(camera_ip_source_root).resolve()),
+        "camera_ip_station_seen": len(camera_ip_reference),
         "dry_run": dry_run,
         "stations_seen": len(station_groups),
         "camera_station_seen": len(camera_groups),
@@ -543,6 +676,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Import latest recorder/camera CSVs and worklog workbook")
     parser.add_argument("--station-csv", required=True, help="Path to latest 变电站.csv")
     parser.add_argument("--camera-csv", required=True, help="Path to latest 摄像头.csv")
+    parser.add_argument(
+        "--camera-ip-root",
+        default=DEFAULT_CAMERA_IP_SOURCE_ROOT,
+        help="Root directory containing per-station device Excel files with real camera IPs",
+    )
     parser.add_argument("--worklog", required=True, help="Path to latest 工作记录.xlsx")
     parser.add_argument("--database", default=get_db_path(), help="SQLite database path")
     parser.add_argument("--project", default=DEFAULT_PROJECT_CODE, help="Project code for inventory import")
@@ -567,6 +705,7 @@ def main():
         camera_csv=args.camera_csv,
         database_path=database_path,
         project_code=args.project,
+        camera_ip_source_root=args.camera_ip_root,
         dry_run=args.dry_run,
     )
     worklog_report = import_worklog_file(

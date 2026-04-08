@@ -16,6 +16,7 @@ from admin import (
     upload_excel_scoped,
     delete_camera_scoped,
     add_camera_scoped,
+    ensure_camera_recorder_metadata_columns,
 )
 from admin_fault_types import admin_fault_types_bp
 from admin_notifications import admin_notifications_bp
@@ -23,6 +24,7 @@ from admin_projects import admin_projects_bp
 from admin_review import admin_review_bp
 from admin_user_access import admin_user_access_bp
 from auth import auth_bp
+from import_review_support import normalize_station_name
 from notification_runtime import dispatch_notification_event
 from photo_indexer import IMAGE_EXTENSIONS
 from project_access import (
@@ -294,6 +296,16 @@ def extend_params(params, extra):
     if extra:
         params.extend(extra)
     return params
+
+
+FAULT_STATUS_SORT_SQL = """
+CASE COALESCE(f.status, 'open')
+    WHEN 'open' THEN 0
+    WHEN 'handling' THEN 1
+    WHEN 'closed' THEN 2
+    ELSE 3
+END
+"""
 
 
 def build_project_in_clause(alias: str, project_ids: list[int] | None):
@@ -752,6 +764,7 @@ def build_station_recorders_payload(db, station_id, project_scope):
 
 
 def build_station_slots_payload(db, station_id, project_scope):
+    ensure_camera_recorder_metadata_columns(db)
     camera_columns = get_table_columns(db, "cameras")
     fault_report_columns = get_table_columns(db, "fault_reports")
     station_recorders = build_station_recorders_payload(db, station_id, project_scope)
@@ -783,6 +796,9 @@ def build_station_slots_payload(db, station_id, project_scope):
             c.ip_address AS current_ip_address,
             c.channel_port AS current_channel_port,
             c.channel_number AS current_channel_number,
+            c.recorder_name AS current_recorder_name,
+            c.recorder_ip_address AS current_recorder_ip_address,
+            c.recorder_port AS current_recorder_port,
             c.area AS current_area,
             c.location_desc AS current_location_desc,
             c.created_at AS current_created_at
@@ -825,6 +841,9 @@ def build_station_slots_payload(db, station_id, project_scope):
             c.ip_address,
             c.channel_port,
             c.channel_number,
+            c.recorder_name,
+            c.recorder_ip_address,
+            c.recorder_port,
             c.status,
             c.replaced_by_camera_id,
             c.retired_at,
@@ -842,9 +861,13 @@ def build_station_slots_payload(db, station_id, project_scope):
     recorders_by_project = {}
     recorder_by_exact = {}
     recorder_by_ip = {}
+    recorder_by_name = {}
     for recorder in station_recorders:
         project_id = recorder.get('project_id')
         recorders_by_project.setdefault(project_id, []).append(recorder)
+        recorder_name_key = normalize_station_name(recorder.get('recorder_name'))
+        if recorder_name_key:
+            recorder_by_name.setdefault((project_id, recorder_name_key), []).append(recorder)
 
         ip_key = str(recorder.get('ip_address') or '').strip()
         if not ip_key:
@@ -864,6 +887,21 @@ def build_station_slots_payload(db, station_id, project_scope):
         candidates.extend(history_cameras or [])
 
         for camera in candidates:
+            recorder_name_key = normalize_station_name(camera.get('recorder_name'))
+            if recorder_name_key:
+                named_recorders = recorder_by_name.get((project_id, recorder_name_key), [])
+                if len(named_recorders) == 1:
+                    return named_recorders[0]
+
+                recorder_ip_key = str(camera.get('recorder_ip_address') or '').strip()
+                recorder_port = camera.get('recorder_port')
+                for recorder in named_recorders:
+                    if recorder_ip_key and recorder_ip_key != str(recorder.get('ip_address') or '').strip():
+                        continue
+                    if recorder_port is not None and recorder_port != recorder.get('port'):
+                        continue
+                    return recorder
+
             ip_key = str(camera.get('ip_address') or '').strip()
             if not ip_key:
                 continue
@@ -909,9 +947,11 @@ def build_station_slots_payload(db, station_id, project_scope):
                 f.id,
                 f.camera_slot_id AS slot_id,
                 COALESCE(f.fault_type_label_snapshot, f.fault_type) AS fault_label,
+                COALESCE(f.description, '') AS description,
                 f.status,
                 f.created_at,
-                f.closed_at
+                f.closed_at,
+                COALESCE(f.handler_note, '') AS handler_note
             FROM fault_reports f
             WHERE f.station_id = ?
               AND f.camera_slot_id IN ({placeholders})
@@ -939,6 +979,9 @@ def build_station_slots_payload(db, station_id, project_scope):
                 'ip_address': row['current_ip_address'],
                 'channel_port': row['current_channel_port'],
                 'channel_number': row['current_channel_number'],
+                'recorder_name': row['current_recorder_name'],
+                'recorder_ip_address': row['current_recorder_ip_address'],
+                'recorder_port': row['current_recorder_port'],
                 'area': row['current_area'],
                 'location_desc': row['current_location_desc'],
                 'created_at': row['current_created_at'],
@@ -1711,7 +1754,7 @@ def get_faults():
         LEFT JOIN cameras c ON f.camera_id = c.id
         LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
         {where_clause}
-        ORDER BY f.created_at DESC
+        ORDER BY {FAULT_STATUS_SORT_SQL}, f.created_at DESC, f.id DESC
         LIMIT ? OFFSET ?
     """
     params.extend([page_size, offset])
@@ -2308,6 +2351,7 @@ def get_faults_scoped():
     offset = (page - 1) * page_size
 
     fault_report_columns = get_table_columns(db, "fault_reports")
+    has_camera_slots = table_exists(db, "camera_slots")
     project_scope, error = build_project_scope(db, project_code)
     if error:
         return error
@@ -2342,16 +2386,27 @@ def get_faults_scoped():
     total_row = db.execute(count_query, list(params)).fetchone()
     total = total_row['total'] if total_row else 0
 
+    camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), '')"
+    camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '')"
+    camera_slot_join = ""
+    if has_camera_slots:
+        camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '')"
+        camera_location_expr = (
+            "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), "
+            "NULLIF(TRIM(f.camera_location_text), ''), '')"
+        )
+        camera_slot_join = "LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id"
+
     query = f"""
         SELECT f.*, s.name as station_name, s.voltage_level,
-               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
-               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location
+               {camera_area_expr} as camera_area,
+               {camera_location_expr} as camera_location
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
-        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
+        {camera_slot_join}
         {where_clause}
-        ORDER BY f.created_at DESC
+        ORDER BY {FAULT_STATUS_SORT_SQL}, f.created_at DESC, f.id DESC
         LIMIT ? OFFSET ?
     """
     rows = db.execute(query, params + [page_size, offset]).fetchall()

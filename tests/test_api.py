@@ -116,6 +116,40 @@ class TestFaultsEndpoint:
         })
         assert response.status_code == 404
 
+    def test_get_faults_prioritizes_unclosed_before_closed(self, client, init_db, test_db):
+        conn = sqlite3.connect(test_db)
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '测试变电站', '110kV', '测试县')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (id, station_id, fault_type, reporter_name, status, created_at, updated_at)
+            VALUES (1, 1, '设备故障', 'A', 'closed', '2026-04-08 10:00:00', '2026-04-08 10:00:00')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (id, station_id, fault_type, reporter_name, status, created_at, updated_at)
+            VALUES (2, 1, '设备故障', 'B', 'open', '2026-04-08 09:00:00', '2026-04-08 09:00:00')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (id, station_id, fault_type, reporter_name, status, created_at, updated_at)
+            VALUES (3, 1, '设备故障', 'C', 'handling', '2026-04-08 08:00:00', '2026-04-08 08:00:00')
+            """
+        )
+        conn.commit()
+        conn.close()
+
+        response = client.get('/api/faults')
+        assert response.status_code == 200
+        faults = response.get_json()['faults']
+        assert [fault['id'] for fault in faults] == [2, 3, 1]
+
 class TestTokenAuth:
     """Token认证测试（决策#1, #2）"""
 

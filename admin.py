@@ -531,6 +531,23 @@ def _get_table_columns(db, table_name):
     return {row["name"] for row in rows}
 
 
+def ensure_camera_recorder_metadata_columns(db):
+    if not table_exists(db, "cameras"):
+        return
+
+    columns = _get_table_columns(db, "cameras")
+    required_columns = {
+        "recorder_name": "TEXT",
+        "recorder_ip_address": "TEXT",
+        "recorder_port": "INTEGER",
+    }
+    for column_name, column_type in required_columns.items():
+        if column_name in columns:
+            continue
+        db.execute(f"ALTER TABLE cameras ADD COLUMN {column_name} {column_type}")
+        columns.add(column_name)
+
+
 def _multi_project_camera_schema_enabled(db):
     camera_columns = _get_table_columns(db, "cameras")
     return (
@@ -628,6 +645,9 @@ def _camera_matches(active_camera, camera):
         and _normalize_text(active_camera['ip_address']) == _normalize_text(camera.get('ip_address'))
         and active_camera['channel_port'] == camera.get('channel_port')
         and active_camera['channel_number'] == camera.get('channel_number')
+        and _normalize_text(active_camera['recorder_name']) == _normalize_text(camera.get('recorder_name'))
+        and _normalize_text(active_camera['recorder_ip_address']) == _normalize_text(camera.get('recorder_ip_address'))
+        and active_camera['recorder_port'] == camera.get('recorder_port')
     )
 
 
@@ -636,9 +656,10 @@ def _insert_camera_instance(cursor, slot_id, station_id, project_id, camera):
         """
         INSERT INTO cameras (
             slot_id, station_id, project_id, project_camera_code, camera_index,
-            area, location_desc, ip_address, channel_port, channel_number, status
+            area, location_desc, ip_address, channel_port, channel_number,
+            recorder_name, recorder_ip_address, recorder_port, status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
         """,
         (
             slot_id,
@@ -651,6 +672,9 @@ def _insert_camera_instance(cursor, slot_id, station_id, project_id, camera):
             camera.get('ip_address', ''),
             camera.get('channel_port'),
             camera.get('channel_number'),
+            _normalize_text(camera.get('recorder_name')),
+            _normalize_text(camera.get('recorder_ip_address')),
+            camera.get('recorder_port'),
         ),
     )
     return cursor.lastrowid
@@ -682,6 +706,7 @@ def _replace_active_camera(cursor, active_camera, replacement_camera):
 
 
 def _sync_station_project_cameras(db, station_id, project, cameras):
+    ensure_camera_recorder_metadata_columns(db)
     cursor = db.cursor()
     project_id = project['id']
     project_code = project['code']
@@ -707,7 +732,8 @@ def _sync_station_project_cameras(db, station_id, project, cameras):
                 """
                 UPDATE cameras
                 SET station_id = ?, project_id = ?, camera_index = ?, area = ?, location_desc = ?,
-                    ip_address = ?, channel_port = ?, channel_number = ?
+                    ip_address = ?, channel_port = ?, channel_number = ?,
+                    recorder_name = ?, recorder_ip_address = ?, recorder_port = ?
                 WHERE id = ?
                 """,
                 (
@@ -719,6 +745,9 @@ def _sync_station_project_cameras(db, station_id, project, cameras):
                     camera.get('ip_address', ''),
                     camera.get('channel_port'),
                     camera.get('channel_number'),
+                    _normalize_text(camera.get('recorder_name')),
+                    _normalize_text(camera.get('recorder_ip_address')),
+                    camera.get('recorder_port'),
                     active_camera['id'],
                 ),
             )
@@ -934,6 +963,7 @@ def add_camera_scoped():
     if not _multi_project_camera_schema_enabled(db):
         return add_camera()
 
+    ensure_camera_recorder_metadata_columns(db)
     data = request.get_json()
     if not data:
         return jsonify({'error': '鏃犳晥鏁版嵁'}), 400
@@ -997,6 +1027,7 @@ def replace_camera_scoped(camera_id):
     if not _multi_project_camera_schema_enabled(db):
         return jsonify({'error': 'multi-project camera replacement is not enabled'}), 400
 
+    ensure_camera_recorder_metadata_columns(db)
     data = request.get_json(silent=True) or {}
     if not data.get('ip_address'):
         return jsonify({'error': 'missing required field: ip_address'}), 400
@@ -1031,6 +1062,9 @@ def replace_camera_scoped(camera_id):
         'ip_address': data.get('ip_address'),
         'channel_port': data.get('channel_port', old_camera['channel_port']),
         'channel_number': data.get('channel_number', old_camera['channel_number']),
+        'recorder_name': data.get('recorder_name', old_camera['recorder_name']),
+        'recorder_ip_address': data.get('recorder_ip_address', old_camera['recorder_ip_address']),
+        'recorder_port': data.get('recorder_port', old_camera['recorder_port']),
     }
 
     try:

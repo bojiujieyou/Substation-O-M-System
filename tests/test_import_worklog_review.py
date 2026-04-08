@@ -238,3 +238,54 @@ def test_worklog_import_dry_run_writes_report_without_database_changes(tmp_path,
     assert proposal_count == 0
     assert queue_count == 0
     assert batch_count == 0
+
+
+def test_worklog_import_binds_camera_and_fills_camera_location_text(tmp_path, monkeypatch):
+    db_path = _prepare_multi_project_db(tmp_path, monkeypatch)
+    workbook_path = tmp_path / "worklog_camera_binding.xlsx"
+    inspection_type = _system_type_for("inspection")
+    _create_workbook(
+        workbook_path,
+        [
+            [1, "2025-01-02", "Test Station", "Test County", "East Yard camera power fault recovered", inspection_type, "", "Alice"],
+        ],
+    )
+
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "INSERT INTO stations (id, name, voltage_level, county) VALUES (1, 'Test Station', '110kV', 'Test County')"
+    )
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (1, 'SLOT-1', 1, 2, 'East Yard', '', 1)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, slot_id, station_id, project_id, project_camera_code, camera_index, area, location_desc, ip_address, channel_port, channel_number, status)
+        VALUES
+            (1, 1, 1, 2, 'INS-001', '1', '', 'East Yard', '10.0.0.1', NULL, 1, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    report = import_worklog_file(str(workbook_path), database_path=db_path)
+
+    assert report["inserted"] == 1
+
+    conn = sqlite3.connect(db_path)
+    try:
+        fault = conn.execute(
+            """
+            SELECT camera_id, camera_slot_id, camera_location_text, project_device_code
+            FROM fault_reports
+            WHERE station_id = 1
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert fault == (1, 1, "East Yard", "INS-001")
