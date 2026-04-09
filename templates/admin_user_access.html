@@ -4,12 +4,64 @@
 
 {% block page_title %}用户项目授权{% endblock %}
 
+{% block extra_head %}
+<style>
+.user-access-role-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(26, 115, 232, 0.08);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.user-access-project-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.user-access-level-select {
+    min-width: 132px;
+}
+
+.user-access-admin-note {
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    background: rgba(26, 115, 232, 0.04);
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.user-access-admin-projects {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.user-access-admin-project-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-primary);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
         <div>
             <h2 class="page-title">用户项目授权</h2>
-            <p class="text-muted mb-0">维护管理员与运维人员账号，并按项目配置可见范围和写权限。</p>
+            <p class="text-muted mb-0">维护平台管理员与运维账号，并按项目配置无权限、只读、可编辑三档。</p>
         </div>
         <div class="page-actions">
             <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
@@ -31,8 +83,8 @@
                 <div class="form-group mb-3">
                     <label class="form-label" for="new-role">角色</label>
                     <select id="new-role" class="form-select">
-                        <option value="operator">operator</option>
-                        <option value="admin">admin</option>
+                        <option value="operator">运维账号</option>
+                        <option value="admin">平台管理员</option>
                     </select>
                 </div>
                 <div class="form-actions form-actions-start">
@@ -66,6 +118,24 @@ function setCreateMessage(message, isError = false) {
     setInlineMessage('user-create-message', message, isError, 'text-success');
 }
 
+function setUserMessage(userId, message, isError = false) {
+    setInlineMessage(`user-message-${userId}`, message, isError, 'text-success');
+}
+
+function userRoleLabel(role) {
+    return role === 'admin' ? '平台管理员' : '运维账号';
+}
+
+function projectPermissionLevel(project) {
+    if (project.assigned && project.can_write) {
+        return 'write';
+    }
+    if (project.assigned) {
+        return 'read';
+    }
+    return 'none';
+}
+
 async function loadUsers() {
     const data = await fetchJson('/auth/users');
     userRows = data.users || [];
@@ -91,35 +161,42 @@ function renderUsers() {
     container.innerHTML = userRows.map(user => {
         const scopeData = projectCache[user.id] || { projects: [] };
         const projects = scopeData.projects || [];
-        const projectCheckboxes = projects.map(project => `
-            <div class="user-access-scope-card">
-                <div class="form-check">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="user-${user.id}-project-${project.id}"
-                        ${project.assigned ? 'checked' : ''}
-                        ${user.role === 'admin' ? 'disabled' : ''}
-                    >
-                    <label class="form-check-label" for="user-${user.id}-project-${project.id}">
-                        ${escapeHtml(project.name)} ${project.is_active ? '' : '<span class="text-muted">(已停用)</span>'}
-                    </label>
+        const projectControls = user.role === 'admin'
+            ? `
+                <div class="user-access-admin-note">
+                    平台管理员默认拥有全部项目的查看、编辑和授权能力，这里不需要逐项配置。
+                    <div class="user-access-admin-projects">
+                        ${projects.map(project => `
+                            <span class="user-access-admin-project-pill">
+                                ${escapeHtml(project.name)}${project.is_active ? '' : '（已停用）'}
+                            </span>
+                        `).join('')}
+                    </div>
                 </div>
-                <div class="form-check user-access-write-check">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="user-${user.id}-project-${project.id}-write"
-                        ${project.can_write ? 'checked' : ''}
-                        ${!project.assigned || user.role === 'admin' ? 'disabled' : ''}
-                        onchange="toggleWriteDependency(${user.id}, ${project.id})"
-                    >
-                    <label class="form-check-label" for="user-${user.id}-project-${project.id}-write">
-                        写权限
-                    </label>
+            `
+            : projects.map(project => `
+                <div class="user-access-scope-card">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                        <div>
+                            <div>${escapeHtml(project.name)}</div>
+                            <div class="user-access-project-meta">
+                                ${project.is_active ? '按当前项目配置范围' : '项目已停用，保留历史授权状态'}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label" for="user-${user.id}-project-${project.id}-level">权限档位</label>
+                            <select
+                                id="user-${user.id}-project-${project.id}-level"
+                                class="form-select user-access-level-select"
+                            >
+                                <option value="none" ${projectPermissionLevel(project) === 'none' ? 'selected' : ''}>无权限</option>
+                                <option value="read" ${projectPermissionLevel(project) === 'read' ? 'selected' : ''}>只读</option>
+                                <option value="write" ${projectPermissionLevel(project) === 'write' ? 'selected' : ''}>可编辑</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
 
         return `
             <div class="card">
@@ -127,42 +204,36 @@ function renderUsers() {
                     <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                         <div>
                             <h4 class="card-title mb-1">${escapeHtml(user.username)}</h4>
-                            <div class="text-muted">${escapeHtml(user.role)} · ${escapeHtml(user.created_at || '')}</div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="user-access-role-pill">${escapeHtml(userRoleLabel(user.role))}</span>
+                                <span class="text-muted">${escapeHtml(user.created_at || '')}</span>
+                            </div>
                         </div>
                         <div class="d-flex gap-2">
                             ${user.role !== 'admin' ? `<button class="btn btn-sm btn-primary" onclick="saveUserProjects(${user.id})">保存授权</button>` : ''}
                             <button class="btn btn-sm btn-secondary" onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')">删除</button>
                         </div>
                     </div>
-                    ${scopeData.error ? `<div class="text-danger">${escapeHtml(scopeData.error)}</div>` : projectCheckboxes}
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="user-${user.id}-password">新密码</label>
+                            <input
+                                id="user-${user.id}-password"
+                                type="password"
+                                class="form-input"
+                                placeholder="输入新密码后点击重置"
+                            >
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-sm btn-secondary w-100" onclick="resetUserPassword(${user.id}, '${escapeHtml(user.username)}')">重置密码</button>
+                        </div>
+                    </div>
+                    ${scopeData.error ? `<div class="text-danger">${escapeHtml(scopeData.error)}</div>` : projectControls}
+                    <div id="user-message-${user.id}" class="form-hint mt-3"></div>
                 </div>
             </div>
         `;
     }).join('');
-
-    userRows.forEach(user => {
-        const scopeData = projectCache[user.id] || { projects: [] };
-        (scopeData.projects || []).forEach(project => {
-            const assignedCheckbox = document.getElementById(`user-${user.id}-project-${project.id}`);
-            const writeCheckbox = document.getElementById(`user-${user.id}-project-${project.id}-write`);
-            if (assignedCheckbox && writeCheckbox && user.role !== 'admin') {
-                assignedCheckbox.addEventListener('change', () => {
-                    writeCheckbox.disabled = !assignedCheckbox.checked;
-                    if (!assignedCheckbox.checked) {
-                        writeCheckbox.checked = false;
-                    }
-                });
-            }
-        });
-    });
-}
-
-function toggleWriteDependency(userId, projectId) {
-    const assignedCheckbox = document.getElementById(`user-${userId}-project-${projectId}`);
-    const writeCheckbox = document.getElementById(`user-${userId}-project-${projectId}-write`);
-    if (!assignedCheckbox.checked) {
-        writeCheckbox.checked = false;
-    }
 }
 
 async function createUser() {
@@ -188,9 +259,15 @@ async function createUser() {
 async function saveUserProjects(userId) {
     const scopeData = projectCache[userId] || { projects: [] };
     const projects = (scopeData.projects || []).map(project => {
-        const assigned = document.getElementById(`user-${userId}-project-${project.id}`).checked;
-        const canWrite = assigned && document.getElementById(`user-${userId}-project-${project.id}-write`).checked;
-        return assigned ? { project_id: project.id, can_write: canWrite } : null;
+        const levelSelect = document.getElementById(`user-${userId}-project-${project.id}-level`);
+        const level = levelSelect ? levelSelect.value : 'none';
+        if (level === 'write') {
+            return { project_id: project.id, can_write: true };
+        }
+        if (level === 'read') {
+            return { project_id: project.id, can_write: false };
+        }
+        return null;
     }).filter(Boolean);
 
     try {
@@ -201,9 +278,10 @@ async function saveUserProjects(userId) {
         });
         await loadUserProjects(userId);
         renderUsers();
-        setCreateMessage(`用户 #${userId} 的项目授权已更新。`);
+        setCreateMessage('');
+        setUserMessage(userId, `用户 #${userId} 的项目授权已更新。`);
     } catch (error) {
-        setCreateMessage(error.message, true);
+        setUserMessage(userId, error.message, true);
     }
 }
 
@@ -217,6 +295,25 @@ async function deleteUser(userId, username) {
         await loadUsers();
     } catch (error) {
         setCreateMessage(error.message, true);
+    }
+}
+
+async function resetUserPassword(userId, username) {
+    const passwordInput = document.getElementById(`user-${userId}-password`);
+    const password = passwordInput ? passwordInput.value : '';
+    try {
+        await fetchJson(`/auth/users/${userId}/password`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password }),
+        });
+        if (passwordInput) {
+            passwordInput.value = '';
+        }
+        setCreateMessage('');
+        setUserMessage(userId, `用户 ${username} 的密码已更新。`);
+    } catch (error) {
+        setUserMessage(userId, error.message, true);
     }
 }
 

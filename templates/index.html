@@ -4,138 +4,474 @@
 
 {% block page_title %}项目首页{% endblock %}
 
+{% block extra_head %}
+<style>
+.dashboard-kpi-grid {
+    align-items: stretch;
+}
+
+.dashboard-kpi-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+}
+
+.dashboard-kpi-card {
+    position: relative;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-kpi-card:hover {
+    border-color: rgba(255, 107, 53, 0.3);
+}
+
+.dashboard-kpi-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 36px;
+    margin-bottom: 18px;
+}
+
+.dashboard-kpi-card .stat-value {
+    display: flex;
+    align-items: flex-end;
+    min-height: 52px;
+    margin-bottom: 0;
+}
+
+.dashboard-kpi-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.dashboard-kpi-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-kpi-meta {
+    margin-top: auto;
+    padding-top: 12px;
+    min-height: 54px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.dashboard-duty-grid,
+.dashboard-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    align-items: stretch;
+}
+
+.dashboard-todo-card,
+.dashboard-overview-card {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.dashboard-todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.dashboard-todo-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 249, 252, 0.92));
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-todo-item:hover {
+    border-color: rgba(255, 107, 53, 0.3);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.dashboard-todo-item-high {
+    border-color: rgba(217, 48, 37, 0.2);
+    background: linear-gradient(180deg, rgba(255, 245, 245, 1), rgba(255, 255, 255, 1));
+}
+
+.dashboard-todo-item-medium {
+    border-color: rgba(255, 149, 0, 0.2);
+}
+
+.dashboard-todo-item-low {
+    border-color: rgba(52, 199, 89, 0.2);
+}
+
+.dashboard-todo-main {
+    min-width: 0;
+}
+
+.dashboard-todo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dashboard-todo-subtitle {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.dashboard-todo-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    flex: 1;
+    align-content: start;
+}
+
+.dashboard-overview-item {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+.dashboard-overview-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.dashboard-overview-value {
+    margin-top: 8px;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.dashboard-overview-note {
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.dashboard-chart-stack {
+    display: grid;
+    gap: var(--space-lg);
+    height: 100%;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-recent-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.dashboard-recent-link:hover {
+    text-decoration: underline;
+}
+
+.dashboard-shortcuts-card-bottom {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-shortcut-icon-warning {
+    background: linear-gradient(135deg, #f9ab00 0%, #ff9500 100%);
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcuts-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    grid-auto-rows: 1fr;
+    flex: 1;
+}
+
+.dashboard-shortcuts-card-bottom .card-header,
+.dashboard-todo-card .card-header,
+.dashboard-overview-card .card-header,
+.table-card .card-header,
+.chart-card .card-header {
+    min-height: 64px;
+    align-items: flex-start;
+}
+
+.table-card,
+.chart-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.dashboard-recent-card {
+    min-height: 100%;
+}
+
+.table-card .data-table,
+.chart-card .chart-wrapper {
+    flex: 1;
+}
+
+.dashboard-recent-card .data-table {
+    table-layout: fixed;
+}
+
+.dashboard-recent-card .data-table th:nth-child(1),
+.dashboard-recent-card .data-table td:nth-child(1) {
+    width: 46%;
+}
+
+.dashboard-recent-card .data-table th:nth-child(2),
+.dashboard-recent-card .data-table td:nth-child(2) {
+    width: 16%;
+    white-space: nowrap;
+}
+
+.dashboard-recent-card .data-table th:nth-child(3),
+.dashboard-recent-card .data-table td:nth-child(3) {
+    width: 14%;
+    white-space: nowrap;
+}
+
+.dashboard-recent-card .data-table th:nth-child(4),
+.dashboard-recent-card .data-table td:nth-child(4) {
+    width: 24%;
+}
+
+.dashboard-recent-card .data-table td {
+    vertical-align: top;
+}
+
+.dashboard-recent-station-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dashboard-recent-station-status {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.dashboard-shortcuts-list .dashboard-shortcut-item {
+    height: 100%;
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcut-item {
+    position: relative;
+    align-items: flex-start;
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcut-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 72px;
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcut-badge {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcut-item-priority {
+    box-shadow: inset 0 1px 0 rgba(255, 107, 53, 0.08);
+}
+
+.dashboard-shortcuts-card-bottom .dashboard-shortcut-item-priority::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 4px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(180deg, #ff6b35 0%, #f7931e 100%);
+}
+
+@media (max-width: 1100px) {
+    .dashboard-duty-grid,
+    .dashboard-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-todo-card,
+    .dashboard-overview-card,
+    .dashboard-shortcuts-card-bottom {
+        padding: 18px;
+    }
+
+    .dashboard-overview-grid,
+    .dashboard-shortcuts-card-bottom .dashboard-shortcuts-list {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-todo-item {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-shortcuts-card-bottom .dashboard-shortcut-content {
+        min-height: auto;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="card dashboard-hero">
-    <div class="dashboard-hero-body">
-        <p id="hero-kicker" class="dashboard-hero-kicker">变电站图像监控运维平台</p>
-        <h2 id="hero-title" class="dashboard-hero-title">监控运维总览</h2>
-        <p id="hero-subtitle" class="dashboard-hero-subtitle">统一查看变电站、摄像头、故障记录与统计分析，快速定位异常并推进处理。</p>
-        <div class="dashboard-hero-actions">
-            <a href="{{ url_for('admin_page') }}" class="hero-btn hero-btn-solid" data-project-link>导入数据</a>
-            <a href="{{ url_for('design_variant_faults', style='style2') }}" class="hero-btn hero-btn-ghost" data-project-link>查看故障记录</a>
-            <a href="{{ url_for('design_variant_stations', style='style2') }}" class="hero-btn hero-btn-ghost" data-project-link>查看变电站</a>
+<div class="stats-grid dashboard-kpi-grid">
+    <a id="kpi-open-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="stat-card dashboard-kpi-link dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">当前未处理故障</span>
+            <span class="dashboard-kpi-indicator">故障页</span>
         </div>
-    </div>
-    <div class="dashboard-hero-aside" aria-hidden="true">
-        <div class="dashboard-hero-status-card">
-            <div class="dashboard-hero-status-label">值班重点</div>
-            <div class="dashboard-hero-status-value" id="hero-open-count">-</div>
-            <div class="dashboard-hero-status-text">待处理故障</div>
-        </div>
-    </div>
-</section>
-
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-value" id="stat-stations">-</div>
-        <div class="stat-label">变电站总数</div>
-        <div class="stat-trend up">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                <path d="M6 2L2 6h8L6 2z"/>
-            </svg>
-            <span>运行中</span>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-value" id="stat-cameras">-</div>
-        <div class="stat-label">摄像头总数</div>
-    </div>
-
-    <div class="stat-card">
         <div class="stat-value stat-value-danger" id="stat-fault-open">-</div>
-        <div class="stat-label">待处理故障</div>
-        <div class="stat-trend down" id="stat-open-trend" style="display: none;">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                <path d="M6 10L2 6h8L6 10z"/>
-            </svg>
-            <span>需关注</span>
-        </div>
-    </div>
+        <div class="dashboard-kpi-meta" id="stat-open-note">优先清理待处理故障</div>
+    </a>
 
-    <div class="stat-card">
-        <div class="stat-value stat-value-success" id="stat-fault-closed">-</div>
-        <div class="stat-label">已关闭故障</div>
-    </div>
+    <a id="kpi-overdue-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="stat-card dashboard-kpi-link dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">超时未闭环故障</span>
+            <span class="dashboard-kpi-indicator">高风险</span>
+        </div>
+        <div class="stat-value stat-value-danger" id="stat-fault-overdue">-</div>
+        <div class="dashboard-kpi-meta" id="stat-overdue-note">按 7 天未闭环近似计算</div>
+    </a>
+
+    <a id="kpi-today-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="stat-card dashboard-kpi-link dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">今日新增故障</span>
+            <span class="dashboard-kpi-indicator">最近动态</span>
+        </div>
+        <div class="stat-value" id="stat-fault-today">-</div>
+        <div class="dashboard-kpi-meta" id="stat-today-note">按今日上报时间近似统计</div>
+    </a>
+
+    <a id="kpi-station-link" href="{{ url_for('design_variant_stations', style='style2') }}" class="stat-card dashboard-kpi-link dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">异常站点数</span>
+            <span class="dashboard-kpi-indicator">站点页</span>
+        </div>
+        <div class="stat-value" id="stat-station-abnormal">-</div>
+        <div class="dashboard-kpi-meta" id="stat-station-note">按存在未闭环故障的站点近似统计</div>
+    </a>
 </div>
 
-<section class="card dashboard-summary-card">
-    <div class="card-header">
-        <div>
-            <h3 class="card-title">运维概览</h3>
-            <p class="card-subtitle">全量故障与本月新增情况</p>
-        </div>
-        <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-md" data-project-link>查看统计</a>
-    </div>
-    <div class="dashboard-summary-grid overview-grid">
-        <div class="dashboard-summary-item">
-            <div class="dashboard-summary-head">
-                <div class="dashboard-summary-marker">总</div>
-                <div>
-                    <div class="dashboard-summary-label">故障总数</div>
-                    <div class="dashboard-summary-value" id="stat-faults">-</div>
-                </div>
-            </div>
-            <div class="dashboard-progress-track">
-                <div id="total-fault-progress" class="dashboard-progress-fill dashboard-progress-fill-primary"></div>
-            </div>
-        </div>
-        <div class="dashboard-summary-item">
-            <div class="dashboard-summary-head">
-                <div class="dashboard-summary-marker dashboard-summary-marker-info">月</div>
-                <div>
-                    <div class="dashboard-summary-label">本月新增</div>
-                    <div class="dashboard-summary-value" id="stat-faults-month">-</div>
-                </div>
-            </div>
-            <div class="dashboard-progress-track">
-                <div id="month-fault-progress" class="dashboard-progress-fill dashboard-progress-fill-info"></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<div class="charts-grid">
-    <div class="chart-card">
+<div class="dashboard-duty-grid">
+    <section class="card dashboard-todo-card">
         <div class="card-header">
             <div>
-                <h3 class="card-title">故障状态分布</h3>
-                <p class="card-subtitle">待处理、处理中、已关闭</p>
+                <h3 class="card-title">当前待办</h3>
+                <p id="todo-section-subtitle" class="card-subtitle">基于现有故障与站点数据整理当前最值得优先处理的事项</p>
+            </div>
+            <a id="todo-header-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="btn btn-secondary btn-sm">进入故障页</a>
+        </div>
+        <div id="todo-list" class="dashboard-todo-list">
+            <div class="dashboard-todo-item">
+                <div class="dashboard-todo-main">
+                    <div class="dashboard-todo-title">正在整理当前待办事项</div>
+                    <div class="dashboard-todo-subtitle">故障、站点和统计数据加载完成后，会自动生成值班优先清单。</div>
+                </div>
+                <span class="dashboard-todo-action">加载中</span>
             </div>
         </div>
-        <div class="chart-wrapper">
-            <canvas id="statusChart"></canvas>
-        </div>
-    </div>
+    </section>
 
-    <div class="chart-card">
+    <section class="card dashboard-overview-card">
         <div class="card-header">
             <div>
-                <h3 class="card-title">区县故障分布</h3>
-                <p class="card-subtitle">按区县统计故障数量</p>
+                <h3 class="card-title">运行态势</h3>
+                <p class="card-subtitle">保留总量视角，但降低其在首页的视觉优先级</p>
             </div>
-            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看报表</a>
+            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看统计</a>
         </div>
-        <div class="chart-wrapper">
-            <canvas id="countyChart"></canvas>
+        <div class="dashboard-overview-grid">
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">故障总数</div>
+                <div class="dashboard-overview-value" id="stat-faults">-</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">本月新增</div>
+                <div class="dashboard-overview-value" id="stat-faults-month">-</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">处理中故障</div>
+                <div class="dashboard-overview-value" id="stat-fault-handling">-</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">摄像头总数</div>
+                <div class="dashboard-overview-value" id="stat-cameras">-</div>
+            </div>
         </div>
-    </div>
+        <div class="dashboard-overview-note" id="overview-note">首页优先面向值班处置，趋势与分布仍保留在统计与图表区域查看。</div>
+    </section>
 </div>
 
-<div class="dashboard-bottom-grid faults-shortcuts-grid">
-    <div class="table-card">
+<div class="dashboard-activity-grid">
+    <div class="table-card dashboard-recent-card">
         <div class="card-header">
             <div>
-                <h3 class="card-title">最新故障</h3>
-                <p class="card-subtitle">最近 5 条故障记录</p>
+                <h3 class="card-title">最近故障</h3>
+                <p class="card-subtitle">优先复用当前故障列表数据，展示最近几条故障摘要</p>
             </div>
             <a href="{{ url_for('design_variant_faults', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看全部</a>
         </div>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>站点</th>
-                    <th>类型</th>
+                    <th>故障摘要</th>
+                    <th>故障类型</th>
                     <th>上报时间</th>
                     <th>状态</th>
                 </tr>
@@ -148,66 +484,136 @@
         </table>
     </div>
 
-    <section class="card dashboard-shortcuts-card">
-        <div class="card-header">
-            <div>
-                <h3 class="card-title">快捷入口</h3>
-                <p class="card-subtitle">常用功能快速跳转</p>
+    <div class="dashboard-chart-stack">
+        <div class="chart-card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">故障状态分布</h3>
+                    <p class="card-subtitle">待处理、处理中、已关闭</p>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="statusChart"></canvas>
             </div>
         </div>
-        <div class="dashboard-shortcuts-list">
-            <a href="{{ url_for('admin_page') }}" class="dashboard-shortcut-item dashboard-shortcut-item-priority" data-project-link>
-                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-primary">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h6a1 1 0 01.707.293l3 3A1 1 0 0115 7v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm7 1V3.414L13.586 7H11a1 1 0 01-1-1zm-1 4a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2v-2z" clip-rule="evenodd"/>
-                    </svg>
+
+        <div class="chart-card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">区县故障分布</h3>
+                    <p class="card-subtitle">按故障数量统计最近可见区县</p>
                 </div>
-                <div class="dashboard-shortcut-content">
-                    <div class="dashboard-shortcut-title">导入数据</div>
-                    <div class="dashboard-shortcut-subtitle">上传台账或批量故障数据，进入统一导入流程</div>
-                </div>
-                <div class="dashboard-shortcut-badge dashboard-shortcut-badge-primary">优先</div>
-            </a>
-            <a href="{{ url_for('design_variant_stations', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
-                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-info">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
-                    </svg>
-                </div>
-                <div class="dashboard-shortcut-content">
-                    <div class="dashboard-shortcut-title">站点巡检</div>
-                    <div class="dashboard-shortcut-subtitle">查看站点清单与设备信息</div>
-                </div>
-                <div class="dashboard-shortcut-badge">进入</div>
-            </a>
-            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
-                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-success">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
-                        <path d="M3 14a1 1 0 011-1h1a1 1 0 011 1v2H3v-2zM8 10a1 1 0 011-1h1a1 1 0 011 1v6H8v-6zM13 6a1 1 0 011-1h1a1 1 0 011 1v10h-3V6z"/>
-                    </svg>
-                </div>
-                <div class="dashboard-shortcut-content">
-                    <div class="dashboard-shortcut-title">统计分析</div>
-                    <div class="dashboard-shortcut-subtitle">查看状态分布与区县统计</div>
-                </div>
-                <div class="dashboard-shortcut-badge">进入</div>
-            </a>
-            <a href="{{ url_for('design_variant_fault_new', style='style2') }}" class="dashboard-shortcut-item dashboard-shortcut-item-muted" data-project-link>
-                <div class="dashboard-shortcut-icon dashboard-shortcut-icon-muted">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
-                    </svg>
-                </div>
-                <div class="dashboard-shortcut-content">
-                    <div class="dashboard-shortcut-title">新建报修</div>
-                    <div class="dashboard-shortcut-subtitle">保留手工入口，优先级低于导入流程</div>
-                </div>
-                <div class="dashboard-shortcut-badge">备用</div>
-            </a>
+                <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>查看报表</a>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="countyChart"></canvas>
+            </div>
         </div>
-        <a href="{{ url_for('design_variant_faults', style='style2') }}" class="btn btn-secondary dashboard-shortcuts-footer-link" data-project-link>打开故障记录</a>
-    </section>
+    </div>
 </div>
+
+<section class="card dashboard-shortcuts-card dashboard-shortcuts-card-bottom">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">快捷入口</h3>
+            <p class="card-subtitle">将报故障、待处理故障和异常站点放在更靠前的位置</p>
+        </div>
+    </div>
+    <div class="dashboard-shortcuts-list">
+        <a href="{{ url_for('design_variant_fault_new', style='style2') }}" class="dashboard-shortcut-item dashboard-shortcut-item-priority" data-project-link>
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-primary">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 0 110-2h6V3a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">报故障</div>
+                <div class="dashboard-shortcut-subtitle">快速进入人工报修入口，补充现场新发现的问题。</div>
+            </div>
+            <div class="dashboard-shortcut-badge dashboard-shortcut-badge-primary">优先</div>
+        </a>
+
+        <a id="shortcut-open-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="dashboard-shortcut-item dashboard-shortcut-item-priority">
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-warning">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v2H3V5z"/>
+                    <path d="M3 9h14v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">查看待处理故障</div>
+                <div class="dashboard-shortcut-subtitle">聚焦当前未处理事项，直接进入故障列表筛选结果。</div>
+            </div>
+            <div class="dashboard-shortcut-badge dashboard-shortcut-badge-primary">排查</div>
+        </a>
+
+        <a id="shortcut-station-link" href="{{ url_for('design_variant_stations', style='style2') }}" class="dashboard-shortcut-item dashboard-shortcut-item-priority">
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-info">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM5 12a1 1 0 100 2h3a1 1 0 100-2H5z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">查看异常站点</div>
+                <div class="dashboard-shortcut-subtitle">查看当前存在未闭环故障的站点，优先复核高风险站点。</div>
+            </div>
+            <div class="dashboard-shortcut-badge dashboard-shortcut-badge-primary">复核</div>
+        </a>
+
+        <a href="{{ url_for('design_variant_map', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-success">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">地图定位</div>
+                <div class="dashboard-shortcut-subtitle">从地理位置快速定位重点站点，辅助现场联动判断。</div>
+            </div>
+            <div class="dashboard-shortcut-badge">定位</div>
+        </a>
+
+        <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="dashboard-shortcut-item" data-project-link>
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-info">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path d="M3 14a1 1 0 011-1h1a1 1 0 011 1v2H3v-2zM8 10a1 1 0 011-1h1a1 1 0 011 1v6H8v-6zM13 6a1 1 0 011-1h1a1 1 0 011 1v10h-3V6z"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">查看统计</div>
+                <div class="dashboard-shortcut-subtitle">查看分布、趋势与整体报表，用于复盘和趋势判断。</div>
+            </div>
+            <div class="dashboard-shortcut-badge">报表</div>
+        </a>
+
+        <a href="{{ url_for('admin_page') }}" class="dashboard-shortcut-item" data-project-link>
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-muted">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">进入后台</div>
+                <div class="dashboard-shortcut-subtitle">进入管理后台，处理配置、导入审查和管理类操作。</div>
+            </div>
+            <div class="dashboard-shortcut-badge">管理</div>
+        </a>
+
+        <a href="{{ url_for('admin_page') }}" class="dashboard-shortcut-item dashboard-shortcut-item-muted" data-project-link>
+            <div class="dashboard-shortcut-icon dashboard-shortcut-icon-muted">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="white" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h6a1 1 0 01.707.293l3 3A1 1 0 0115 7v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm7 1V3.414L13.586 7H11a1 1 0 01-1-1zm-1 4a1 1 0 112 0v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2v-2z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="dashboard-shortcut-content">
+                <div class="dashboard-shortcut-title">导入数据</div>
+                <div class="dashboard-shortcut-subtitle">保留原有导入能力，但降低其在首页的优先级。</div>
+            </div>
+            <div class="dashboard-shortcut-badge">导入</div>
+        </a>
+    </div>
+</section>
 {% endblock %}
 
 {% block scripts %}
@@ -216,46 +622,153 @@
 let statusChart = null;
 let countyChart = null;
 
+const OVERDUE_DAYS = 7;
+const OVERDUE_MS = OVERDUE_DAYS * 24 * 60 * 60 * 1000;
+const PAGE_PATHS = {
+    faults: {{ url_for('design_variant_faults', style='style2') | tojson }},
+    stations: {{ url_for('design_variant_stations', style='style2') | tojson }},
+    faultNew: {{ url_for('design_variant_fault_new', style='style2') | tojson }},
+    statistics: {{ url_for('design_variant_statistics', style='style2') | tojson }},
+    map: {{ url_for('design_variant_map', style='style2') | tojson }},
+    admin: {{ url_for('admin_page') | tojson }},
+};
+
 const HOME_PROJECT_COPY = {
     unified: {
-        pageTitle: '统一平台首页',
-        kicker: '统一平台 · SUBSTATION OPS',
-        title: '统一平台运维总览',
-        subtitle: '聚合查看各类站点、摄像头、故障与统计数据，适合做全局运行态势总览。'
+        pageTitle: '统一平台首页'
     },
     inspection: {
-        pageTitle: '智慧巡视首页',
-        kicker: '智慧巡视 · INSPECTION OPS',
-        title: '智慧巡视项目总览',
-        subtitle: '聚焦智慧巡视项目的站点设备、巡检故障和趋势变化，便于快速排查巡视异常。'
+        pageTitle: '巡视项目首页'
     },
     auxiliary: {
-        pageTitle: '辅控系统首页',
-        kicker: '辅控系统 · AUXILIARY OPS',
-        title: '辅控系统项目总览',
-        subtitle: '查看辅控系统项目的运行数据、故障处理与分布情况，支撑辅控链路日常运维。'
+        pageTitle: '辅控项目首页'
     }
 };
 
+function updateStat(id, value) {
+    const el = document.getElementById(id);
+    if (!el) {
+        return;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        el.textContent = value.toLocaleString();
+        return;
+    }
+    el.textContent = value ?? '-';
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = value;
+    }
+}
+
+function setHref(id, href) {
+    const el = document.getElementById(id);
+    if (el && href) {
+        el.href = href;
+    }
+}
+
+function buildProjectUrl(path, params = {}) {
+    const cleanParams = {};
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            cleanParams[key] = value;
+        }
+    });
+    return withProject(path, cleanParams);
+}
+
+function parseDate(value) {
+    if (!value) {
+        return null;
+    }
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatTime(value) {
-    if (!value) return '-';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return '-';
-    return d.toLocaleString('zh-CN', {
+    const date = parseDate(value);
+    if (!date) {
+        return '-';
+    }
+    return date.toLocaleString('zh-CN', {
         timeZone: 'Asia/Shanghai',
-        month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit'
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
     });
 }
 
-function updateStat(id, value) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (typeof value === 'number') {
-        el.textContent = value.toLocaleString();
-    } else {
-        el.textContent = value ?? '-';
+function formatRecentFaultTime(value) {
+    const date = parseDate(value);
+    if (!date) {
+        return '-';
     }
+    if (isToday(value)) {
+        return date.toLocaleString('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    return date.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getShanghaiDayKey(value) {
+    const date = value instanceof Date ? value : parseDate(value);
+    if (!date) {
+        return '';
+    }
+    const parts = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date);
+    const year = parts.find((part) => part.type === 'year')?.value || '';
+    const month = parts.find((part) => part.type === 'month')?.value || '';
+    const day = parts.find((part) => part.type === 'day')?.value || '';
+    return [year, month, day].filter(Boolean).join('-');
+}
+
+function isToday(value) {
+    return getShanghaiDayKey(value) === getShanghaiDayKey(new Date());
+}
+
+function isUnresolvedFault(fault) {
+    return (fault?.status || 'open') !== 'closed';
+}
+
+function isOverdueFault(fault) {
+    const createdAt = parseDate(fault?.created_at);
+    if (!createdAt || !isUnresolvedFault(fault)) {
+        return false;
+    }
+    return (Date.now() - createdAt.getTime()) >= OVERDUE_MS;
+}
+
+function getFaultTypeLabel(fault) {
+    return fault?.fault_type_label_snapshot || fault?.fault_type || '-';
+}
+
+function getCompactFaultTypeLabel(fault) {
+    const label = getFaultTypeLabel(fault);
+    const compactMap = {
+        '摄像头离线': '离线',
+        '视频质量异常': '画质异常',
+        '网络通信异常': '通信异常'
+    };
+    return compactMap[label] || label;
 }
 
 function statusLabel(status) {
@@ -272,33 +785,79 @@ function statusBadgeClass(status) {
     return 'badge-info';
 }
 
+function compareByCreatedDesc(a, b) {
+    return new Date(b?.created_at || 0) - new Date(a?.created_at || 0);
+}
+
 function renderRecentFaults(faults) {
     const tbody = document.getElementById('recent-faults-body');
-    if (!faults.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="dashboard-table-empty">暂无记录</td></tr>';
+    if (!tbody) {
         return;
     }
 
-    tbody.innerHTML = faults.slice(0, 5).map((f) => `
-        <tr>
-            <td>
-                <div class="dashboard-recent-station">
-                    <div class="dashboard-recent-station-name">${escapeHtml(f.station_name || '-')}</div>
-                    <div class="dashboard-recent-station-status">${statusLabel(f.status)}</div>
+    if (!faults.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="dashboard-table-empty">当前项目暂无最近故障记录</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = faults.slice(0, 6).map((fault) => {
+        const faultLink = buildProjectUrl(PAGE_PATHS.faults, { fault_id: fault.id });
+        return `
+            <tr>
+                <td>
+                    <div class="dashboard-recent-station">
+                        <div class="dashboard-recent-station-name">${escapeHtml(fault.station_name || '-')}</div>
+                        <div class="dashboard-recent-station-status">#${escapeHtml(fault.id)} · ${escapeHtml(fault.camera_location || fault.camera_area || '位置待补充')}</div>
+                        <a href="${faultLink}" class="dashboard-recent-link">查看详情</a>
+                    </div>
+                </td>
+                <td>${escapeHtml(getCompactFaultTypeLabel(fault))}</td>
+                <td class="dashboard-recent-time">${escapeHtml(formatRecentFaultTime(fault.created_at))}</td>
+                <td><span class="badge ${statusBadgeClass(fault.status)}">${statusLabel(fault.status)}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderTodoItems(items) {
+    const list = document.getElementById('todo-list');
+    if (!list) {
+        return;
+    }
+
+    if (!items.length) {
+        list.innerHTML = `
+            <div class="dashboard-todo-item dashboard-todo-item-low">
+                <div class="dashboard-todo-main">
+                    <div class="dashboard-todo-title">当前无明显积压风险</div>
+                    <div class="dashboard-todo-subtitle">可优先进入统计页或地图页，复核趋势变化和站点分布情况。</div>
                 </div>
-            </td>
-            <td>${escapeHtml(f.fault_type || '-')}</td>
-            <td class="dashboard-recent-time">${formatTime(f.created_at)}</td>
-            <td><span class="badge ${statusBadgeClass(f.status)}">${statusLabel(f.status)}</span></td>
-        </tr>
+                <a href="${buildProjectUrl(PAGE_PATHS.statistics)}" class="dashboard-todo-action">查看统计</a>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = items.slice(0, 5).map((item) => `
+        <a href="${item.href}" class="dashboard-todo-item dashboard-todo-item-${item.level}">
+            <div class="dashboard-todo-main">
+                <div class="dashboard-todo-title">${escapeHtml(item.title)}</div>
+                <div class="dashboard-todo-subtitle">${escapeHtml(item.subtitle)}</div>
+            </div>
+            <span class="dashboard-todo-action">${escapeHtml(item.action)}</span>
+        </a>
     `).join('');
 }
 
 function renderStatusChart(openCount, handlingCount, closedCount) {
     const ctx = document.getElementById('statusChart');
-    if (!ctx || typeof Chart === 'undefined') return;
+    if (!ctx || typeof Chart === 'undefined') {
+        return;
+    }
 
-    if (statusChart) statusChart.destroy();
+    if (statusChart) {
+        statusChart.destroy();
+    }
 
     statusChart = new Chart(ctx, {
         type: 'doughnut',
@@ -329,9 +888,13 @@ function renderStatusChart(openCount, handlingCount, closedCount) {
 
 function renderCountyChart(labels, values) {
     const ctx = document.getElementById('countyChart');
-    if (!ctx || typeof Chart === 'undefined') return;
+    if (!ctx || typeof Chart === 'undefined') {
+        return;
+    }
 
-    if (countyChart) countyChart.destroy();
+    if (countyChart) {
+        countyChart.destroy();
+    }
 
     countyChart = new Chart(ctx, {
         type: 'bar',
@@ -373,87 +936,121 @@ function renderCountyChart(labels, values) {
     });
 }
 
-async function loadDashboardData() {
-    try {
-        const projectCode = window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function'
-            ? window.AppProjectState.getProjectCode()
-            : '';
-        const [statsRes, faultsRes, stationsRes] = await Promise.allSettled([
-            fetch(withProject('/api/stats', projectCode ? { project: projectCode } : {})),
-            fetch(withProject('/api/faults', projectCode ? { project: projectCode } : {})),
-            fetch(withProject('/api/stations', projectCode ? { project: projectCode } : {}))
-        ]);
+function buildTodoData(faults, stationRiskList) {
+    const todoItems = [];
+    const overdueFaults = faults.filter(isOverdueFault).sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+    const openFaults = faults.filter((fault) => (fault.status || 'open') === 'open').sort(compareByCreatedDesc);
+    const todayFaults = faults.filter((fault) => isToday(fault.created_at)).sort(compareByCreatedDesc);
+    const topRiskStation = stationRiskList[0];
 
-        if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
-            const stats = await statsRes.value.json();
-            updateStat('stat-stations', stats.stations || 0);
-            updateStat('stat-cameras', stats.cameras || 0);
-            updateStat('stat-faults', stats.faults || 0);
-            updateStat('stat-faults-month', stats.faults_this_month || 0);
-
-            const totalFaults = stats.faults || 0;
-            const monthFaults = stats.faults_this_month || 0;
-            const totalProgress = document.getElementById('total-fault-progress');
-            const monthProgress = document.getElementById('month-fault-progress');
-            if (totalProgress && totalFaults > 0) {
-                totalProgress.style.width = Math.min(100, totalFaults) + '%';
-            }
-            if (monthProgress && totalFaults > 0) {
-                monthProgress.style.width = Math.min(100, Math.round(monthFaults / totalFaults * 100)) + '%';
-            }
-        }
-
-        let faults = [];
-        if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
-            const faultData = await faultsRes.value.json();
-            faults = faultData.faults || [];
-        }
-
-        const statusCounts = { open: 0, handling: 0, closed: 0 };
-        faults.forEach(f => {
-            if (f.status in statusCounts) statusCounts[f.status] += 1;
+    if (overdueFaults.length) {
+        const oldestFault = overdueFaults[0];
+        todoItems.push({
+            level: 'high',
+            title: `${overdueFaults.length} 条超时未闭环故障待优先处理`,
+            subtitle: `最早一条来自 ${oldestFault.station_name || '未知站点'}，上报时间 ${formatTime(oldestFault.created_at)}。`,
+            action: '处理超时',
+            href: buildProjectUrl(PAGE_PATHS.faults, { focus: 'overdue' })
         });
-
-        updateStat('stat-fault-open', statusCounts.open);
-        updateStat('stat-fault-closed', statusCounts.closed);
-        updateStat('hero-open-count', statusCounts.open);
-
-        if (statusCounts.open > 0) {
-            document.getElementById('stat-open-trend').style.display = 'inline-flex';
-        }
-
-        const recentFaults = [...faults]
-            .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-        renderRecentFaults(recentFaults);
-        renderStatusChart(statusCounts.open, statusCounts.handling, statusCounts.closed);
-
-        const countyMap = {};
-        if (stationsRes.status === 'fulfilled' && stationsRes.value.ok) {
-            const stationsData = await stationsRes.value.json();
-            const stations = stationsData.stations || [];
-            stations.forEach(s => {
-                countyMap[s.id] = s.county || '未知';
-            });
-        }
-
-        const countyCounts = {};
-        faults.forEach(f => {
-            const county = countyMap[f.station_id] || '未知';
-            countyCounts[county] = (countyCounts[county] || 0) + 1;
-        });
-
-        const topCounty = Object.entries(countyCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 7);
-
-        renderCountyChart(
-            topCounty.length ? topCounty.map(i => i[0]) : ['暂无数据'],
-            topCounty.length ? topCounty.map(i => i[1]) : [0]
-        );
-    } catch (error) {
-        console.error('数据加载失败:', error);
     }
+
+    if (openFaults.length) {
+        const latestOpen = openFaults[0];
+        todoItems.push({
+            level: overdueFaults.length ? 'medium' : 'high',
+            title: `最新未处理故障：${latestOpen.station_name || '未知站点'}`,
+            subtitle: `${getFaultTypeLabel(latestOpen)}，上报于 ${formatTime(latestOpen.created_at)}。`,
+            action: '看详情',
+            href: buildProjectUrl(PAGE_PATHS.faults, { fault_id: latestOpen.id })
+        });
+    }
+
+    if (todayFaults.length) {
+        const unresolvedToday = todayFaults.filter(isUnresolvedFault).length;
+        todoItems.push({
+            level: unresolvedToday > 0 ? 'medium' : 'low',
+            title: `今日新增 ${todayFaults.length} 条故障`,
+            subtitle: unresolvedToday > 0
+                ? `其中 ${unresolvedToday} 条尚未闭环，建议先查看今日新增。`
+                : '今日新增故障均已进入处理或完成闭环，可做快速复核。',
+            action: '看今日',
+            href: buildProjectUrl(PAGE_PATHS.faults, { focus: 'today' })
+        });
+    }
+
+    if (topRiskStation && topRiskStation.open_fault_count > 0) {
+        todoItems.push({
+            level: topRiskStation.open_fault_count >= 3 ? 'high' : 'medium',
+            title: `${topRiskStation.name} 当前故障最集中`,
+            subtitle: `累计 ${topRiskStation.open_fault_count} 条未闭环故障，最近一次上报 ${formatTime(topRiskStation.latest_fault_at)}。`,
+            action: '看该站',
+            href: buildProjectUrl(PAGE_PATHS.faults, { station_id: topRiskStation.id })
+        });
+    }
+
+    return todoItems;
+}
+
+function buildDutyDecision(metrics, todoItems) {
+    if (metrics.overdueCount > 0) {
+        return {
+            badgeClass: 'badge-danger',
+            badgeText: '高风险',
+            title: '当前项目存在超时未闭环风险',
+            subtitle: `共有 ${metrics.overdueCount} 条故障超过 ${OVERDUE_DAYS} 天仍未闭环，建议优先进入故障页处理超时事项。`,
+            nextStep: '下一步建议：进入故障记录页，优先处理超时未闭环故障。',
+            primaryLink: buildProjectUrl(PAGE_PATHS.faults, { focus: 'overdue' }),
+            primaryText: '处理超时故障',
+            secondaryLink: buildProjectUrl(PAGE_PATHS.stations, { view: 'abnormal' }),
+            secondaryText: '查看异常站点'
+        };
+    }
+
+    if (metrics.openCount > 0) {
+        return {
+            badgeClass: 'badge-warning',
+            badgeText: '需关注',
+            title: '当前项目仍有待处理故障',
+            subtitle: `当前有 ${metrics.openCount} 条待处理故障，${metrics.todayCount} 条为今日新增，建议先清理新近未处理事项。`,
+            nextStep: '下一步建议：进入故障记录页，查看待处理故障列表。',
+            primaryLink: buildProjectUrl(PAGE_PATHS.faults, { status: 'open' }),
+            primaryText: '查看待处理故障',
+            secondaryLink: todoItems[0]?.href || buildProjectUrl(PAGE_PATHS.faults, { focus: 'today' }),
+            secondaryText: '查看当前待办'
+        };
+    }
+
+    if (metrics.abnormalStationCount > 0) {
+        return {
+            badgeClass: 'badge-warning',
+            badgeText: '需复核',
+            title: '当前项目以站点复核为主',
+            subtitle: `当前有 ${metrics.abnormalStationCount} 个站点存在未闭环故障，故障已进入处理流程，建议先复核异常站点。`,
+            nextStep: '下一步建议：进入站点页，优先查看异常站点。',
+            primaryLink: buildProjectUrl(PAGE_PATHS.stations, { view: 'abnormal' }),
+            primaryText: '查看异常站点',
+            secondaryLink: buildProjectUrl(PAGE_PATHS.map),
+            secondaryText: '地图定位'
+        };
+    }
+
+    return {
+        badgeClass: 'badge-success',
+        badgeText: '平稳',
+        title: '当前项目整体平稳',
+        subtitle: '当前未发现超时未闭环故障，首页建议转入趋势复核和站点分布巡查。',
+        nextStep: '下一步建议：进入统计页或地图页，继续做趋势和分布复核。',
+        primaryLink: buildProjectUrl(PAGE_PATHS.statistics),
+        primaryText: '查看统计',
+        secondaryLink: buildProjectUrl(PAGE_PATHS.map),
+        secondaryText: '地图定位'
+    };
+}
+
+function applyDutyDecision(decision) {
+    setText('todo-section-subtitle', decision.nextStep);
+    setHref('todo-header-link', decision.primaryLink);
+    setText('todo-header-link', decision.primaryText);
 }
 
 function updateHomepageProjectCopy() {
@@ -464,14 +1061,173 @@ function updateHomepageProjectCopy() {
     const copy = HOME_PROJECT_COPY[projectCode] || HOME_PROJECT_COPY.unified;
 
     const pageTitle = document.querySelector('.page-title');
-    const kicker = document.getElementById('hero-kicker');
-    const heroTitle = document.getElementById('hero-title');
-    const heroSubtitle = document.getElementById('hero-subtitle');
+    if (pageTitle) {
+        pageTitle.textContent = copy.pageTitle;
+    }
+}
 
-    if (pageTitle) pageTitle.textContent = copy.pageTitle;
-    if (kicker) kicker.textContent = copy.kicker;
-    if (heroTitle) heroTitle.textContent = copy.title;
-    if (heroSubtitle) heroSubtitle.textContent = copy.subtitle;
+async function loadDashboardData() {
+    try {
+        const projectCode = window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function'
+            ? window.AppProjectState.getProjectCode()
+            : '';
+
+        const [statsRes, faultsRes, stationsRes] = await Promise.allSettled([
+            fetch(buildProjectUrl('/api/stats', projectCode ? { project: projectCode } : {})),
+            fetch(buildProjectUrl('/api/faults', projectCode ? { project: projectCode, page_size: 200 } : { page_size: 200 })),
+            fetch(buildProjectUrl('/api/stations', projectCode ? { project: projectCode } : {}))
+        ]);
+
+        let stats = {};
+        if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
+            stats = await statsRes.value.json();
+        }
+
+        let faults = [];
+        if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
+            const faultData = await faultsRes.value.json();
+            faults = faultData.faults || [];
+        }
+
+        let stations = [];
+        if (stationsRes.status === 'fulfilled' && stationsRes.value.ok) {
+            const stationData = await stationsRes.value.json();
+            stations = stationData.stations || [];
+        }
+
+        const statusCounts = { open: 0, handling: 0, closed: 0 };
+        const stationRiskMap = new Map();
+        stations.forEach((station) => {
+            stationRiskMap.set(Number(station.id), {
+                id: Number(station.id),
+                name: station.name || '-',
+                latest_fault_at: '',
+                open_fault_count: 0
+            });
+        });
+
+        faults.forEach((fault) => {
+            const normalizedStatus = fault.status || 'open';
+            if (normalizedStatus in statusCounts) {
+                statusCounts[normalizedStatus] += 1;
+            }
+
+            const stationId = Number(fault.station_id || 0);
+            if (!stationId) {
+                return;
+            }
+
+            if (!stationRiskMap.has(stationId)) {
+                stationRiskMap.set(stationId, {
+                    id: stationId,
+                    name: fault.station_name || '-',
+                    latest_fault_at: '',
+                    open_fault_count: 0
+                });
+            }
+
+            const stationRisk = stationRiskMap.get(stationId);
+            if (isUnresolvedFault(fault)) {
+                stationRisk.open_fault_count += 1;
+            }
+
+            if (!stationRisk.latest_fault_at || String(fault.created_at || '') > String(stationRisk.latest_fault_at)) {
+                stationRisk.latest_fault_at = fault.created_at || '';
+            }
+        });
+
+        const overdueFaults = faults.filter(isOverdueFault);
+        const todayFaults = faults.filter((fault) => isToday(fault.created_at));
+        const abnormalStations = Array.from(stationRiskMap.values()).filter((station) => station.open_fault_count > 0);
+        const sortedStationRisk = abnormalStations.sort((a, b) => {
+            if ((b.open_fault_count || 0) !== (a.open_fault_count || 0)) {
+                return (b.open_fault_count || 0) - (a.open_fault_count || 0);
+            }
+            return new Date(b.latest_fault_at || 0) - new Date(a.latest_fault_at || 0);
+        });
+
+        const recentFaults = [...faults].sort(compareByCreatedDesc);
+        const countyMap = {};
+        stations.forEach((station) => {
+            countyMap[station.id] = station.county || '未知';
+        });
+        const countyCounts = {};
+        faults.forEach((fault) => {
+            const county = countyMap[fault.station_id] || '未知';
+            countyCounts[county] = (countyCounts[county] || 0) + 1;
+        });
+        const topCounty = Object.entries(countyCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 7);
+
+        updateStat('stat-fault-open', statusCounts.open);
+        updateStat('stat-fault-overdue', overdueFaults.length);
+        updateStat('stat-fault-today', todayFaults.length);
+        updateStat('stat-station-abnormal', abnormalStations.length);
+        updateStat('stat-fault-handling', statusCounts.handling);
+        updateStat('stat-cameras', stats.cameras || 0);
+        updateStat('stat-faults', stats.faults ?? faults.length);
+        updateStat('stat-faults-month', stats.faults_this_month || 0);
+
+        setText(
+            'stat-open-note',
+            statusCounts.handling > 0
+                ? `另有 ${statusCounts.handling} 条处理中故障，建议一并关注闭环进度。`
+                : '当前待处理故障会直接决定值班处置优先级。'
+        );
+        setText(
+            'stat-overdue-note',
+            overdueFaults.length > 0
+                ? `按 ${OVERDUE_DAYS} 天未闭环近似计算，优先级最高。`
+                : `当前未发现超过 ${OVERDUE_DAYS} 天仍未闭环的故障。`
+        );
+        setText(
+            'stat-today-note',
+            todayFaults.length > 0
+                ? '今日新增故障优先用于判断当前是否存在新风险。'
+                : '当前项目今日暂无新增故障。'
+        );
+        setText(
+            'stat-station-note',
+            abnormalStations.length > 0
+                ? '按存在未闭环故障的站点近似统计，可直接进入异常视图。'
+                : '当前未发现存在未闭环故障的异常站点。'
+        );
+        setText(
+            'overview-note',
+            `共覆盖 ${stations.length || stats.stations || 0} 个站点，图表仍保留状态分布和区县分布能力，便于继续复核。`
+        );
+
+        setHref('kpi-open-link', buildProjectUrl(PAGE_PATHS.faults, { status: 'open' }));
+        setHref('kpi-overdue-link', buildProjectUrl(PAGE_PATHS.faults, { focus: 'overdue' }));
+        setHref('kpi-today-link', buildProjectUrl(PAGE_PATHS.faults, { focus: 'today' }));
+        setHref('kpi-station-link', buildProjectUrl(PAGE_PATHS.stations, { view: 'abnormal' }));
+        setHref('shortcut-open-link', buildProjectUrl(PAGE_PATHS.faults, { status: 'open' }));
+        setHref('shortcut-station-link', buildProjectUrl(PAGE_PATHS.stations, { view: 'abnormal' }));
+
+        const todoItems = buildTodoData(recentFaults, sortedStationRisk);
+        renderTodoItems(todoItems);
+
+        const decision = buildDutyDecision({
+            openCount: statusCounts.open,
+            overdueCount: overdueFaults.length,
+            todayCount: todayFaults.length,
+            abnormalStationCount: abnormalStations.length
+        }, todoItems);
+        applyDutyDecision(decision);
+
+        renderRecentFaults(recentFaults);
+        renderStatusChart(statusCounts.open, statusCounts.handling, statusCounts.closed);
+        renderCountyChart(
+            topCounty.length ? topCounty.map((item) => item[0]) : ['暂无数据'],
+            topCounty.length ? topCounty.map((item) => item[1]) : [0]
+        );
+    } catch (error) {
+        console.error('首页数据加载失败:', error);
+        setText('todo-section-subtitle', '首页数据加载失败，请稍后重试，或先进入故障页继续值班处置。');
+        setHref('todo-header-link', buildProjectUrl(PAGE_PATHS.faults));
+        setText('todo-header-link', '进入故障页');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -479,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.AppProjectState.ready();
     }
     updateHomepageProjectCopy();
-    loadDashboardData();
+    await loadDashboardData();
 });
 </script>
 {% endblock %}

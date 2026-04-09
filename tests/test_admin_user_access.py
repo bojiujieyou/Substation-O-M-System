@@ -99,6 +99,68 @@ def test_user_access_center_page_renders(client, seeded_user_access_schema):
     assert b"admin-section-header-title" in response.data
     assert b"admin-section-stack" in response.data
     assert b"user-access-scope-card" in response.data
-    assert b"user-access-write-check" in response.data
+    assert b"user-access-role-pill" in response.data
+    assert b"user-access-level-select" in response.data
+    assert "权限档位".encode("utf-8") in response.data
     assert b"setInlineMessage(" in response.data
     assert b"renderBlockMessage(" in response.data
+
+
+def test_admin_can_list_users_for_user_access_center(client, seeded_user_access_schema):
+    login(client)
+
+    response = client.get("/auth/users")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    usernames = [user["username"] for user in data["users"]]
+    assert usernames == ["admin1", "operator1"]
+
+
+def test_admin_can_create_user_for_user_access_center(client, seeded_user_access_schema, user_access_db):
+    login(client)
+
+    response = client.post(
+        "/auth/users",
+        json={"username": "operator2", "password": "operatorpass2", "role": "operator"},
+    )
+
+    assert response.status_code == 201
+    payload = response.get_json()
+    assert payload["message"] == "用户创建成功"
+    assert payload["user_id"] > 0
+
+    conn = sqlite3.connect(user_access_db)
+    row = conn.execute(
+        "SELECT username, role FROM users WHERE username = ?",
+        ("operator2",),
+    ).fetchone()
+    conn.close()
+    assert row == ("operator2", "operator")
+
+
+def test_admin_can_reset_user_password_from_user_access_center(client, seeded_user_access_schema):
+    login(client)
+
+    response = client.put(
+        "/auth/users/2/password",
+        json={"password": "new-operator-pass"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert "密码" in payload["message"]
+
+    client.post("/auth/logout")
+
+    old_login = client.post(
+        "/auth/login",
+        json={"username": "operator1", "password": "operatorpass"},
+    )
+    assert old_login.status_code == 401
+
+    new_login = client.post(
+        "/auth/login",
+        json={"username": "operator1", "password": "new-operator-pass"},
+    )
+    assert new_login.status_code == 200

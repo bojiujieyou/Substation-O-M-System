@@ -6,20 +6,556 @@
 
 {% block extra_head %}
 <style>
-.fault-toolbar {
+.fault-workbench-shell {
     margin-bottom: 24px;
+    padding: 20px;
+}
+
+.fault-view-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.fault-view-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fault-view-tab:hover {
+    border-color: rgba(255, 107, 53, 0.3);
+    color: var(--accent-primary);
+}
+
+.fault-view-tab.active {
+    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(255, 107, 53, 0.18);
+    color: var(--accent-primary);
+}
+
+.fault-filter-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.fault-filter-main,
+.fault-filter-advanced-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.fault-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 96px;
+    padding: 14px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.fault-filter-field:hover {
+    border-color: rgba(255, 107, 53, 0.18);
+}
+
+.fault-filter-field:focus-within {
+    border-color: rgba(255, 107, 53, 0.28);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.08);
+}
+
+.fault-filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+}
+
+.fault-filter-inline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+}
+
+.fault-filter-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.fault-filter-field .form-select-filter,
+.fault-filter-field .form-input-compact {
+    min-width: 0;
+    width: 100%;
+    min-height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.fault-filter-field .form-select-filter {
+    border-color: #dfe4ec;
+}
+
+.fault-filter-field .form-input-compact {
+    border-color: #dfe4ec;
+}
+
+.fault-filter-main .fault-filter-field:nth-child(4) .form-input-compact {
+    padding-left: 14px;
+}
+
+.fault-advanced-panel {
+    border-top: 1px solid var(--border-color);
+    padding-top: 14px;
+}
+
+.fault-advanced-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    list-style: none;
 }
 
-.fault-toolbar-filters {
+.fault-advanced-summary::-webkit-details-marker {
+    display: none;
+}
+
+.fault-advanced-summary::after {
+    content: "展开";
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.fault-advanced-panel[open] .fault-advanced-summary::after {
+    content: "收起";
+}
+
+.fault-workbench-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.fault-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.fault-list-card {
+    padding: var(--space-xl);
+}
+
+.fault-list-header {
+    align-items: flex-start;
+}
+
+.fault-list-header-copy {
+    max-width: 760px;
+}
+
+.fault-list-header-copy .card-subtitle {
+    line-height: 1.7;
+}
+
+.fault-workbench-table td {
+    vertical-align: top;
+}
+
+.fault-summary-cell {
+    min-width: 240px;
+}
+
+.fault-summary-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fault-summary-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.fault-summary-id {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.fault-summary-context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.fault-summary-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.12);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.fault-summary-meta,
+.fault-station-meta,
+.fault-timeline-note,
+.fault-time-note {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.fault-summary-desc {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.fault-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.fault-mini-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.fault-station-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fault-state-stack,
+.fault-risk-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.fault-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+}
+
+.fault-badge-open {
+    background: #FFF3CD;
+    color: #856404;
+}
+
+.fault-badge-handling {
+    background: #D1ECF1;
+    color: #0C5460;
+}
+
+.fault-badge-closed {
+    background: #D4EDDA;
+    color: #155724;
+}
+
+.fault-badge-overdue {
+    background: rgba(220, 53, 69, 0.12);
+    color: #b42318;
+}
+
+.fault-badge-deleted {
+    background: rgba(142, 142, 147, 0.14);
+    color: #5f6368;
+}
+
+.fault-badge-today {
+    background: rgba(255, 149, 0, 0.12);
+    color: #b26a00;
+}
+
+.fault-badge-muted {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+.fault-row-risk-high {
+    box-shadow: inset 3px 0 0 rgba(220, 53, 69, 0.75);
+}
+
+.fault-row-deleted {
+    opacity: 0.8;
+}
+
+.fault-action-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 168px;
+}
+
+.fault-action-main,
+.fault-action-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fault-action-stack .btn-primary,
+.fault-action-stack .btn-secondary,
+.fault-action-stack .btn-ghost,
+.fault-action-stack .btn-link-danger,
+.fault-action-panel .btn-primary,
+.fault-action-panel .btn-secondary,
+.fault-action-panel .btn-ghost,
+.fault-action-panel .btn-link-danger {
+    min-height: 34px;
+    border-radius: 999px;
+    font-weight: 600;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.fault-btn-progress {
+    background: #e8f1ff;
+    border-color: #b7d0ff;
+    color: #1d4ed8;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.fault-btn-progress:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+
+.fault-btn-close {
+    background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+    box-shadow: 0 6px 14px rgba(249, 115, 22, 0.16);
+}
+
+.fault-btn-close:hover {
+    background: #ea580c;
+}
+
+.fault-btn-detail {
+    background: #ffffff;
+    border-color: #d7dee8;
+    color: #344054;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.fault-btn-detail:hover {
+    background: #f8fafc;
+    border-color: #c7d2e0;
+    color: #1f2937;
+}
+
+.fault-btn-edit {
+    background: #f5f7fb;
+    border-color: #dde3ec;
+    color: #475467;
+}
+
+.fault-btn-edit:hover {
+    background: #eef2f7;
+    border-color: #cfd8e3;
+    color: #344054;
+}
+
+.btn-link-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 59, 48, 0.18);
+    background: rgba(255, 59, 48, 0.08);
+    color: #d92d20;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-link-danger:hover {
+    background: rgba(255, 59, 48, 0.14);
+    border-color: rgba(255, 59, 48, 0.28);
+    color: #b42318;
+}
+
+.fault-time-cell {
+    min-width: 112px;
+}
+
+.fault-time-main {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.fault-detail-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 248, 243, 1), rgba(255, 255, 255, 1));
+    border: 1px solid rgba(255, 107, 53, 0.14);
+    margin-bottom: 18px;
+}
+
+.fault-detail-hero-main {
+    min-width: 0;
+}
+
+.fault-detail-hero-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fault-detail-hero-meta {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.fault-detail-hero-desc {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.fault-detail-hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.fault-detail-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fault-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fault-timeline-item {
+    position: relative;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+.fault-timeline-head {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
+}
+
+.fault-timeline-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fault-timeline-time {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.fault-action-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.fault-action-primary,
+.fault-action-secondary-panel {
+    display: flex;
     flex-wrap: wrap;
+    gap: 10px;
+}
+
+.fault-action-note {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-secondary);
 }
 
 .tag-editor .btn-primary {
@@ -28,48 +564,131 @@
     font-size: 13px;
 }
 
+@media (max-width: 1100px) {
+    .fault-filter-main,
+    .fault-filter-advanced-grid,
+    .fault-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
-    .fault-toolbar-filters {
-        width: 100%;
+    .fault-filter-main,
+    .fault-filter-advanced-grid,
+    .fault-filter-inline,
+    .fault-detail-grid {
+        grid-template-columns: 1fr;
     }
 
-    .fault-toolbar-filters .form-select-filter {
-        flex: 1 1 100%;
-        min-width: 0;
+    .fault-detail-hero {
+        flex-direction: column;
+    }
+
+    .fault-summary-head {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .fault-filter-field {
+        min-height: auto;
+    }
+
+    .fault-detail-hero-badges {
+        justify-content: flex-start;
+    }
+
+    .fault-list-card {
+        padding: 18px;
     }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="fault-toolbar">
-    <div class="fault-toolbar-filters">
-        <select id="project-filter" class="form-select-filter">
-            <option value="">加载项目中...</option>
-        </select>
-        <select id="status-filter" class="form-select-filter">
-            <option value="">全部状态</option>
-            <option value="open">待处理</option>
-            <option value="handling">处理中</option>
-            <option value="closed">已关闭</option>
-        </select>
-        <select id="source-filter" class="form-select-filter">
-            <option value="">全部来源</option>
-            <option value="manual">手工</option>
-            <option value="import_worklog">工单导入</option>
-            <option value="import_excel">Excel导入</option>
-            <option value="import_daily_fault_summary">每日故障汇总导入</option>
-            <option value="migration">迁移</option>
-        </select>
+<section class="card fault-workbench-shell">
+    <div id="fault-view-tabs" class="fault-view-tabs">
+        <button type="button" class="fault-view-tab" data-view="pending">待处理</button>
+        <button type="button" class="fault-view-tab" data-view="handling">处理中</button>
+        <button type="button" class="fault-view-tab" data-view="today">今日新增</button>
+        <button type="button" class="fault-view-tab" data-view="overdue">超时未闭环</button>
+        <button type="button" class="fault-view-tab" data-view="closed">已关闭</button>
+        <button type="button" class="fault-view-tab" data-view="all">全部</button>
         {% if is_admin %}
-        <select id="deleted-filter" class="form-select-filter">
-            <option value="active">正常记录</option>
-            <option value="only">回收站</option>
-            <option value="all">全部记录</option>
-        </select>
+        <button type="button" class="fault-view-tab" data-view="deleted">已删除</button>
         {% endif %}
     </div>
-</div>
+
+    <div class="fault-filter-panel">
+        <div class="fault-filter-main">
+            <div class="fault-filter-field">
+                <label class="fault-filter-label" for="project-filter">项目</label>
+                <select id="project-filter" class="form-select-filter">
+                    <option value="">加载项目中...</option>
+                </select>
+            </div>
+            <div class="fault-filter-field">
+                <label class="fault-filter-label" for="status-filter">状态</label>
+                <select id="status-filter" class="form-select-filter">
+                    <option value="">全部状态</option>
+                    <option value="open">待处理</option>
+                    <option value="handling">处理中</option>
+                    <option value="closed">已关闭</option>
+                </select>
+            </div>
+            <div class="fault-filter-field">
+                <label class="fault-filter-label">时间范围</label>
+                <div class="fault-filter-inline">
+                    <input id="date-start-filter" type="date" class="form-input-compact">
+                    <span class="fault-filter-separator">至</span>
+                    <input id="date-end-filter" type="date" class="form-input-compact">
+                </div>
+            </div>
+            <div class="fault-filter-field">
+                <label class="fault-filter-label" for="search-filter">搜索</label>
+                <input id="search-filter" type="search" class="form-input-compact" placeholder="搜索单号、站点、故障类型、描述、标签">
+            </div>
+        </div>
+
+        <details id="advanced-filters" class="fault-advanced-panel">
+            <summary class="fault-advanced-summary">高级筛选</summary>
+            <div class="fault-filter-advanced-grid">
+                <div class="fault-filter-field">
+                    <label class="fault-filter-label" for="source-filter">来源类型</label>
+                    <select id="source-filter" class="form-select-filter">
+                        <option value="">全部来源</option>
+                        <option value="manual">手工</option>
+                        <option value="import_worklog">工单导入</option>
+                        <option value="import_excel">Excel导入</option>
+                        <option value="import_daily_fault_summary">每日故障汇总导入</option>
+                        <option value="migration">迁移</option>
+                    </select>
+                </div>
+                {% if is_admin %}
+                <div class="fault-filter-field">
+                    <label class="fault-filter-label" for="deleted-filter">删除状态</label>
+                    <select id="deleted-filter" class="form-select-filter">
+                        <option value="active">正常记录</option>
+                        <option value="only">回收站</option>
+                        <option value="all">全部记录</option>
+                    </select>
+                </div>
+                {% endif %}
+                <div class="fault-filter-field">
+                    <label class="fault-filter-label" for="fault-type-filter">故障类型</label>
+                    <select id="fault-type-filter" class="form-select-filter">
+                        <option value="">全部类型</option>
+                    </select>
+                </div>
+                <div class="fault-filter-field">
+                    <label class="fault-filter-label" for="tag-filter">标签</label>
+                    <input id="tag-filter" type="search" class="form-input-compact" placeholder="按标签关键字筛选">
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div id="fault-workbench-meta" class="fault-workbench-meta"></div>
+</section>
 
 <div id="loading" class="loading-state">
     <div class="spinner"></div>
@@ -86,18 +705,22 @@
     <p>当前筛选条件下没有故障记录</p>
 </div>
 
-<div id="fault-list" class="table-card" style="display:none;">
-    <table class="data-table">
+<div id="fault-list" class="table-card fault-list-card" style="display:none;">
+    <div class="card-header fault-list-header">
+        <div class="fault-list-header-copy">
+            <h3 id="fault-list-title" class="card-title">故障处置队列</h3>
+            <p id="fault-list-subtitle" class="card-subtitle">优先展示待处理、超时和最近新增故障，支持直接进入处理动作。</p>
+        </div>
+    </div>
+    <table class="data-table fault-workbench-table">
         <thead>
             <tr>
-                <th>单号</th>
-                <th>项目</th>
-                <th>变电站</th>
-                <th>摄像头位置</th>
-                <th>故障类型</th>
+                <th>故障摘要</th>
+                <th>所属站点</th>
                 <th>状态</th>
-                <th>报修时间</th>
-                <th>报修人</th>
+                <th>优先级 / 风险</th>
+                <th>创建时间</th>
+                <th>最后更新时间</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -169,10 +792,6 @@
                 <div class="detail-info" id="detail-content"></div>
             </div>
             <div class="modal-footer">
-                {% if is_admin %}
-                <button type="button" class="btn-secondary" id="detail-restore-btn" style="display:none;" onclick="restoreFaultFromDetail()">恢复</button>
-                {% endif %}
-                <button type="button" class="btn-primary" id="detail-edit-btn" onclick="openEditFromDetail()">编辑</button>
                 <button type="button" class="btn-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
@@ -248,17 +867,189 @@
 {% block scripts %}
 <script>
 let allFaults = [];
+let filteredFaults = [];
 let currentFaultId = null;
 let currentEditFaultId = null;
 let visibleProjects = [];
 let currentDetailFault = null;
 let tagSuggestions = [];
+let currentView = 'all';
+let searchDebounceTimer = null;
 const is_admin = {{ is_admin | tojson }};
 const can_edit_tags = {{ can_edit_tags | tojson }};
 
 // 分页状态
 let currentPage = 1;
 let pageSize = 10;
+const OVERDUE_DAYS = 7;
+const OVERDUE_MS = OVERDUE_DAYS * 24 * 60 * 60 * 1000;
+let faultDetailOpenedFromUrl = false;
+const VIEW_DEFINITIONS = {
+    pending: { label: '待处理', subtitle: '优先查看当前尚未接手或未闭环的故障', empty: '当前没有待处理故障' },
+    handling: { label: '处理中', subtitle: '聚焦已经进入处理阶段、需要继续跟进闭环的故障', empty: '当前没有处理中故障' },
+    today: { label: '今日新增', subtitle: '快速排查今天新进入队列的故障事项', empty: '当前没有今日新增故障' },
+    overdue: { label: '超时未闭环', subtitle: `按 ${OVERDUE_DAYS} 天未闭环近似识别高风险故障`, empty: `当前没有超过 ${OVERDUE_DAYS} 天仍未闭环的故障` },
+    closed: { label: '已关闭', subtitle: '查看已闭环故障，用于复核处理质量和关闭结果', empty: '当前没有已关闭故障' },
+    all: { label: '全部故障', subtitle: '显示当前筛选条件下全部故障记录，便于综合调度', empty: '当前筛选条件下没有故障记录' },
+    deleted: { label: '已删除', subtitle: '回收站视图，便于审查和恢复误删记录', empty: '回收站里暂无故障记录' }
+};
+
+function getFaultUrlParams() {
+    return new URLSearchParams(window.location.search);
+}
+
+function getUrlView() {
+    return (getFaultUrlParams().get('view') || '').trim();
+}
+
+function normalizeFaultView(view) {
+    if (view === 'deleted' && !is_admin) {
+        return 'all';
+    }
+    return Object.prototype.hasOwnProperty.call(VIEW_DEFINITIONS, view) ? view : 'all';
+}
+
+function getInitialFaultView() {
+    const params = getFaultUrlParams();
+    const view = normalizeFaultView(getUrlView());
+    if (view !== 'all' || getUrlView() === 'all') {
+        return view;
+    }
+
+    const focus = getUrlFocusFilter();
+    if (focus === 'overdue') return 'overdue';
+    if (focus === 'today') return 'today';
+
+    const deleted = (params.get('deleted') || '').trim();
+    if (deleted === 'only' && is_admin) return 'deleted';
+
+    const status = (params.get('status') || '').trim();
+    if (status === 'open') return 'pending';
+    if (status === 'handling') return 'handling';
+    if (status === 'closed') return 'closed';
+    return 'all';
+}
+
+function setUrlParam(url, key, value, defaultValue = '') {
+    if (value && value !== defaultValue) {
+        url.searchParams.set(key, value);
+    } else {
+        url.searchParams.delete(key);
+    }
+}
+
+function updateFaultPageUrl() {
+    const url = new URL(window.location.href);
+    const project = document.getElementById('project-filter')?.value || '';
+    const status = document.getElementById('status-filter')?.value || '';
+    const sourceType = document.getElementById('source-filter')?.value || '';
+    const deleted = document.getElementById('deleted-filter')?.value || 'active';
+
+    setUrlParam(url, 'project', project);
+    setUrlParam(url, 'view', currentView, 'all');
+    setUrlParam(url, 'status', status);
+    setUrlParam(url, 'source_type', sourceType);
+    setUrlParam(url, 'deleted', deleted, 'active');
+    url.searchParams.delete('focus');
+    window.history.replaceState({}, '', url.toString());
+}
+
+function updateViewTabs() {
+    document.querySelectorAll('.fault-view-tab').forEach((button) => {
+        button.classList.toggle('active', button.dataset.view === currentView);
+    });
+}
+
+function getUrlStationId() {
+    const stationId = Number(getFaultUrlParams().get('station_id') || '');
+    return Number.isFinite(stationId) && stationId > 0 ? stationId : null;
+}
+
+function getUrlFocusFilter() {
+    return (getFaultUrlParams().get('focus') || '').trim();
+}
+
+function getUrlFaultId() {
+    const faultId = Number(getFaultUrlParams().get('fault_id') || '');
+    return Number.isFinite(faultId) && faultId > 0 ? faultId : null;
+}
+
+function parseFaultDate(dateStr) {
+    if (!dateStr) {
+        return null;
+    }
+    const date = new Date(dateStr);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getShanghaiDayKey(dateInput) {
+    const date = dateInput instanceof Date ? dateInput : parseFaultDate(dateInput);
+    if (!date) {
+        return '';
+    }
+    const parts = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date);
+    const year = parts.find((part) => part.type === 'year')?.value || '';
+    const month = parts.find((part) => part.type === 'month')?.value || '';
+    const day = parts.find((part) => part.type === 'day')?.value || '';
+    return [year, month, day].filter(Boolean).join('-');
+}
+
+function isTodayFault(fault) {
+    return getShanghaiDayKey(fault && fault.created_at) === getShanghaiDayKey(new Date());
+}
+
+function isUnresolvedFault(fault) {
+    const status = (fault && fault.status) || 'open';
+    return !fault?.deleted_at && status !== 'closed';
+}
+
+function isOverdueFault(fault) {
+    const createdAt = parseFaultDate(fault && fault.created_at);
+    if (!createdAt || !isUnresolvedFault(fault)) {
+        return false;
+    }
+    return (Date.now() - createdAt.getTime()) >= OVERDUE_MS;
+}
+
+function applyViewFilter(faults) {
+    if (currentView === 'pending') {
+        return faults.filter((fault) => !fault.deleted_at && (fault.status || 'open') === 'open');
+    }
+    if (currentView === 'handling') {
+        return faults.filter((fault) => !fault.deleted_at && fault.status === 'handling');
+    }
+    if (currentView === 'closed') {
+        return faults.filter((fault) => !fault.deleted_at && fault.status === 'closed');
+    }
+    if (currentView === 'today') {
+        return faults.filter((fault) => !fault.deleted_at && isTodayFault(fault));
+    }
+    if (currentView === 'overdue') {
+        return faults.filter(isOverdueFault);
+    }
+    if (currentView === 'deleted') {
+        return faults.filter((fault) => !!fault.deleted_at);
+    }
+    return faults;
+}
+
+function buildFaultEmptyMessage(deletedMode) {
+    if (currentView === 'deleted' || deletedMode === 'only') {
+        return VIEW_DEFINITIONS.deleted.empty;
+    }
+    if (VIEW_DEFINITIONS[currentView] && currentView !== 'all') {
+        return VIEW_DEFINITIONS[currentView].empty;
+    }
+    if (getUrlStationId()) {
+        return '当前站点暂无符合条件的故障记录';
+    }
+    return VIEW_DEFINITIONS.all.empty;
+}
 
 function currentDeletedMode() {
     const select = document.getElementById('deleted-filter');
@@ -271,18 +1062,15 @@ function currentFaultQueryParams() {
     if (deletedMode && deletedMode !== 'active') {
         params.deleted = deletedMode;
     }
+    const stationId = getUrlStationId();
+    if (stationId) {
+        params.station_id = stationId;
+    }
     return params;
 }
 
 function setDetailActionState(fault) {
-    const restoreBtn = document.getElementById('detail-restore-btn');
-    const editBtn = document.getElementById('detail-edit-btn');
-    if (restoreBtn) {
-        restoreBtn.style.display = (is_admin && fault && fault.deleted_at) ? 'inline-flex' : 'none';
-    }
-    if (editBtn) {
-        editBtn.disabled = !!(fault && fault.deleted_at);
-    }
+    return;
 }
 
 function getUrlProjectCode() {
@@ -320,6 +1108,16 @@ function sourceTypeText(sourceType) {
     }[sourceType] || (sourceType || '-');
 }
 
+function compactSourceTypeText(sourceType) {
+    return {
+        manual: '手工',
+        import_worklog: '工单',
+        import_excel: 'Excel',
+        import_daily_fault_summary: '汇总',
+        migration: '迁移'
+    }[sourceType] || sourceTypeText(sourceType);
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -331,6 +1129,115 @@ function formatDate(dateStr) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+function formatCompactDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getFaultLastUpdatedAt(fault) {
+    return fault?.updated_at || fault?.closed_at || fault?.handling_started_at || fault?.created_at || '';
+}
+
+function excerptText(value, maxLength = 36) {
+    if (!value) return '';
+    return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+}
+
+function normalizeText(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function getFaultTypeText(fault) {
+    return fault?.fault_type_label_snapshot || fault?.fault_type || '-';
+}
+
+function getFaultTags(fault) {
+    return Array.isArray(fault?.tags) ? fault.tags : [];
+}
+
+function getFaultSearchText(fault) {
+    return [
+        fault?.id,
+        projectNameById(fault?.project_id),
+        fault?.station_name,
+        fault?.camera_location,
+        fault?.camera_area,
+        getFaultTypeText(fault),
+        fault?.description,
+        fault?.reporter_name,
+        fault?.reporter_contact,
+        fault?.handler_name,
+        getFaultTags(fault).join(' ')
+    ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function getCurrentViewDefinition() {
+    return VIEW_DEFINITIONS[currentView] || VIEW_DEFINITIONS.all;
+}
+
+function renderFaultBadge(label, tone) {
+    return `<span class="fault-badge fault-badge-${tone}">${escapeHtml(label)}</span>`;
+}
+
+function renderFaultStateBadges(fault) {
+    const badges = [];
+    if (fault.deleted_at) {
+        badges.push(renderFaultBadge('已删除', 'deleted'));
+        return badges.join('');
+    }
+
+    badges.push(renderFaultBadge(statusText(fault.status || 'open'), fault.status || 'open'));
+    if (isOverdueFault(fault)) {
+        badges.push(renderFaultBadge('超时', 'overdue'));
+    }
+    if (isTodayFault(fault)) {
+        badges.push(renderFaultBadge('今日新增', 'today'));
+    }
+    return badges.join('');
+}
+
+function getFaultPriorityMeta(fault) {
+    if (fault.deleted_at) {
+        return { label: '回收站', tone: 'deleted', note: '记录已移入回收站' };
+    }
+    if (isOverdueFault(fault)) {
+        return { label: '高风险', tone: 'overdue', note: `超过 ${OVERDUE_DAYS} 天未闭环` };
+    }
+    if ((fault.status || 'open') === 'open') {
+        return { label: '优先处理', tone: 'today', note: isTodayFault(fault) ? '今日新增且未闭环' : '待处理故障' };
+    }
+    if (fault.status === 'handling') {
+        return { label: '持续跟进', tone: 'handling', note: '已进入处理流程' };
+    }
+    return { label: '已闭环', tone: 'closed', note: '作为复核记录保留' };
+}
+
+function buildFilterSummaryMeta(faults) {
+    const overdueCount = faults.filter(isOverdueFault).length;
+    const openCount = faults.filter((fault) => !fault.deleted_at && (fault.status || 'open') === 'open').length;
+    const handlingCount = faults.filter((fault) => !fault.deleted_at && fault.status === 'handling').length;
+    const closedCount = faults.filter((fault) => !fault.deleted_at && fault.status === 'closed').length;
+    const deletedCount = faults.filter((fault) => !!fault.deleted_at).length;
+    const chips = [
+        `当前命中 ${faults.length} 条`,
+        `待处理 ${openCount}`,
+        `处理中 ${handlingCount}`,
+        `超时 ${overdueCount}`,
+        `已关闭 ${closedCount}`
+    ];
+    if (is_admin) {
+        chips.push(`已删除 ${deletedCount}`);
+    }
+    return chips;
 }
 
 function projectNameById(projectId) {
@@ -350,67 +1257,294 @@ function renderTagBadges(tags) {
     return tags.map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('');
 }
 
+function populateFaultTypeOptions(faults) {
+    const select = document.getElementById('fault-type-filter');
+    if (!select) {
+        return;
+    }
+    const currentValue = select.value;
+    const types = [...new Set(faults
+        .map((fault) => getFaultTypeText(fault))
+        .filter((item) => item && item !== '-'))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    select.innerHTML = '<option value="">全部类型</option>' + types.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+    if (currentValue && types.includes(currentValue)) {
+        select.value = currentValue;
+    }
+}
+
+function updateWorkbenchSummary(faults) {
+    const meta = document.getElementById('fault-workbench-meta');
+    const title = document.getElementById('fault-list-title');
+    const subtitle = document.getElementById('fault-list-subtitle');
+    const viewInfo = getCurrentViewDefinition();
+
+    if (meta) {
+        meta.innerHTML = buildFilterSummaryMeta(faults)
+            .map((text) => `<span class="fault-meta-chip">${escapeHtml(text)}</span>`)
+            .join('');
+    }
+    if (title) {
+        title.textContent = `${viewInfo.label}工作台`;
+    }
+    if (subtitle) {
+        subtitle.textContent = viewInfo.subtitle;
+    }
+    updateViewTabs();
+}
+
+function matchesDateRange(fault) {
+    const startValue = document.getElementById('date-start-filter')?.value || '';
+    const endValue = document.getElementById('date-end-filter')?.value || '';
+    if (!startValue && !endValue) {
+        return true;
+    }
+    const createdAt = parseFaultDate(fault?.created_at);
+    if (!createdAt) {
+        return false;
+    }
+    const createdDayKey = getShanghaiDayKey(createdAt);
+    if (startValue && createdDayKey < startValue) {
+        return false;
+    }
+    if (endValue && createdDayKey > endValue) {
+        return false;
+    }
+    return true;
+}
+
+function matchesSearchFilters(fault) {
+    const search = normalizeText(document.getElementById('search-filter')?.value || '');
+    const sourceType = document.getElementById('source-filter')?.value || '';
+    const status = document.getElementById('status-filter')?.value || '';
+    const faultType = document.getElementById('fault-type-filter')?.value || '';
+    const tagKeyword = normalizeText(document.getElementById('tag-filter')?.value || '');
+
+    if (status && (fault.status || 'open') !== status) {
+        return false;
+    }
+    if (sourceType && (fault.source_type || '') !== sourceType) {
+        return false;
+    }
+    if (faultType && getFaultTypeText(fault) !== faultType) {
+        return false;
+    }
+    if (tagKeyword) {
+        const tags = getFaultTags(fault).map((tag) => normalizeText(tag));
+        if (!tags.some((tag) => tag.includes(tagKeyword))) {
+            return false;
+        }
+    }
+    if (search && !getFaultSearchText(fault).includes(search)) {
+        return false;
+    }
+    return matchesDateRange(fault);
+}
+
+function getFaultSortWeight(fault) {
+    if (fault.deleted_at) return 50;
+    if (isOverdueFault(fault)) return 1;
+    if ((fault.status || 'open') === 'open') return isTodayFault(fault) ? 2 : 3;
+    if (fault.status === 'handling') return 4;
+    if (fault.status === 'closed') return 5;
+    return 10;
+}
+
+function sortFaultsForWorkbench(faults) {
+    return [...faults].sort((a, b) => {
+        const weightDiff = getFaultSortWeight(a) - getFaultSortWeight(b);
+        if (weightDiff !== 0) {
+            return weightDiff;
+        }
+        return new Date(getFaultLastUpdatedAt(b) || 0) - new Date(getFaultLastUpdatedAt(a) || 0);
+    });
+}
+
+function syncViewFromFilters() {
+    const deletedValue = document.getElementById('deleted-filter')?.value || 'active';
+    const statusValue = document.getElementById('status-filter')?.value || '';
+    if (deletedValue === 'only' && is_admin) {
+        currentView = 'deleted';
+    } else if (currentView === 'today' || currentView === 'overdue') {
+        // 保留工作视图优先级
+    } else if (statusValue === 'open') {
+        currentView = 'pending';
+    } else if (statusValue === 'handling') {
+        currentView = 'handling';
+    } else if (statusValue === 'closed') {
+        currentView = 'closed';
+    } else {
+        currentView = 'all';
+    }
+}
+
+function applyCurrentFilters() {
+    const empty = document.getElementById('empty');
+    const list = document.getElementById('fault-list');
+    const loading = document.getElementById('loading');
+    const deletedMode = currentDeletedMode();
+
+    filteredFaults = sortFaultsForWorkbench(
+        applyViewFilter(allFaults).filter(matchesSearchFilters)
+    );
+
+    loading.style.display = 'none';
+    updateWorkbenchSummary(filteredFaults);
+
+    if (!filteredFaults.length) {
+        const emptyText = document.querySelector('#empty p');
+        if (emptyText) {
+            emptyText.textContent = buildFaultEmptyMessage(deletedMode);
+        }
+        empty.style.display = 'block';
+        list.style.display = 'none';
+        return;
+    }
+
+    empty.style.display = 'none';
+    renderFaults(filteredFaults);
+    list.style.display = 'block';
+}
+
+function switchFaultView(view) {
+    const normalized = normalizeFaultView(view);
+    const deletedFilter = document.getElementById('deleted-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const previousDeletedMode = currentDeletedMode();
+
+    currentView = normalized;
+    if (statusFilter) {
+        if (normalized === 'pending') statusFilter.value = 'open';
+        else if (normalized === 'handling') statusFilter.value = 'handling';
+        else if (normalized === 'closed') statusFilter.value = 'closed';
+        else statusFilter.value = '';
+    }
+    if (deletedFilter) {
+        deletedFilter.value = normalized === 'deleted' ? 'only' : 'active';
+    }
+
+    currentPage = 1;
+    updateFaultPageUrl();
+    if (previousDeletedMode !== currentDeletedMode()) {
+        loadFaults();
+        return;
+    }
+    applyCurrentFilters();
+}
 function injectAssignmentDetailRows(fault) {
-    const processingSection = document.querySelector('#detail-content .detail-section:last-child');
-    if (!processingSection || processingSection.dataset.assignmentInjected === 'true') {
-        return;
-    }
-
-    const title = processingSection.querySelector('.detail-section-title');
-    if (!title) {
-        return;
-    }
-
-    const assignedValue = fault.assigned_to_username || (fault.assigned_to != null ? `#${fault.assigned_to}` : '-');
-    title.insertAdjacentHTML('afterend', `
-        <div class="detail-row"><span class="detail-label">当前责任人:</span><span class="detail-value">${escapeHtml(assignedValue)}</span></div>
-        <div class="detail-row"><span class="detail-label">开始处理时间:</span><span class="detail-value">${fault.handling_started_at ? formatDate(fault.handling_started_at) : '-'}</span></div>
-    `);
-    processingSection.dataset.assignmentInjected = 'true';
+    return;
 }
 
 function injectImportAuditDetailRows(fault) {
-    const sections = Array.from(document.querySelectorAll('#detail-content .detail-section'));
-    if (!sections.length) {
-        return;
+    return;
+}
+
+function buildFaultTimelineHtml(fault) {
+    const assignedValue = fault.assigned_to_username || (fault.assigned_to != null ? `#${fault.assigned_to}` : '');
+    const items = [
+        {
+            title: '故障上报',
+            time: formatDate(fault.created_at),
+            note: [fault.reporter_name || '', compactSourceTypeText(fault.source_type) || ''].filter(Boolean).join(' · ')
+        }
+    ];
+
+    if (assignedValue || fault.handling_started_at) {
+        items.push({
+            title: '进入处理',
+            time: fault.handling_started_at ? formatDate(fault.handling_started_at) : '待更新',
+            note: assignedValue ? `当前责任人 ${assignedValue}` : '尚未记录责任人'
+        });
     }
 
-    const basicSection = sections[0];
-    const reportSection = sections.find((section) => {
-        const title = section.querySelector('.detail-section-title');
-        return title && title.textContent.includes('报修');
-    }) || (sections.length >= 2 ? sections[sections.length - 2] : null);
+    if (fault.handler_name || fault.handler_note) {
+        items.push({
+            title: '处置记录',
+            time: fault.closed_at ? formatDate(fault.closed_at) : (fault.handling_started_at ? formatDate(fault.handling_started_at) : '处理中'),
+            note: [fault.handler_name || '', excerptText(fault.handler_note || '', 48)].filter(Boolean).join(' · ')
+        });
+    }
 
-    if (basicSection && basicSection.dataset.auditBasicInjected !== 'true') {
-        const title = basicSection.querySelector('.detail-section-title');
-        if (title) {
-            title.insertAdjacentHTML('afterend', `
-                <div class="detail-row"><span class="detail-label">槽位 ID:</span><span class="detail-value">${fault.camera_slot_id != null ? escapeHtml(fault.camera_slot_id) : '-'}</span></div>
-                <div class="detail-row"><span class="detail-label">项目设备编号:</span><span class="detail-value">${escapeHtml(fault.project_device_code || '-')}</span></div>
-            `);
-            basicSection.dataset.auditBasicInjected = 'true';
+    if (fault.closed_at) {
+        items.push({
+            title: '完成闭环',
+            time: formatDate(fault.closed_at),
+            note: '故障已关闭'
+        });
+    }
+
+    if (fault.deleted_at) {
+        items.push({
+            title: '移入回收站',
+            time: formatDate(fault.deleted_at),
+            note: '该记录当前为已删除状态'
+        });
+    }
+
+    const timelineHtml = items.map((item) => `
+        <div class="fault-timeline-item">
+            <div class="fault-timeline-head">
+                <div class="fault-timeline-title">${escapeHtml(item.title)}</div>
+                <div class="fault-timeline-time">${escapeHtml(item.time)}</div>
+            </div>
+            <div class="fault-timeline-note">${escapeHtml(item.note || '-')}</div>
+        </div>
+    `).join('');
+
+    const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
+    const historyHtml = `
+        <div class="fault-timeline-item">
+            <div class="fault-timeline-head">
+                <div class="fault-timeline-title">同槽位历史</div>
+                <div class="fault-timeline-time">${slotHistory.length} 条</div>
+            </div>
+            ${renderSlotHistory(slotHistory)}
+        </div>
+    `;
+
+    return `${timelineHtml}${historyHtml}`;
+}
+
+function buildFaultActionPanel(fault, tagEditor) {
+    const primaryButtons = [];
+    const secondaryButtons = [];
+    const adminButtons = [];
+
+    if (fault.deleted_at) {
+        if (is_admin) {
+            primaryButtons.push(`<button type="button" class="btn-primary" onclick="restoreFaultFromDetail()">恢复记录</button>`);
+        }
+    } else {
+        if ((fault.status || 'open') === 'open') {
+            primaryButtons.push(`<button type="button" class="btn-secondary" onclick="markFaultHandling(${fault.id})">转处理中</button>`);
+            primaryButtons.push(`<button type="button" class="btn-primary" onclick="openHandleFromDetail()">关闭故障</button>`);
+        } else if (fault.status === 'handling') {
+            primaryButtons.push(`<button type="button" class="btn-primary" onclick="openHandleFromDetail()">关闭故障</button>`);
+        }
+        secondaryButtons.push(`<button type="button" class="btn-ghost fault-btn-edit" onclick="openEditFromDetail()">编辑记录</button>`);
+        secondaryButtons.push(`<button type="button" class="btn-ghost fault-btn-detail" onclick="copyFaultDetailLink(${fault.id})">复制链接</button>`);
+        if (is_admin) {
+            adminButtons.push(`<button type="button" class="btn-link-danger" onclick="deleteFault(${fault.id})">移入回收站</button>`);
         }
     }
 
-    if (reportSection && reportSection.dataset.auditSourceInjected !== 'true') {
-        const title = reportSection.querySelector('.detail-section-title');
-        if (title) {
-            title.insertAdjacentHTML('afterend', `
-                <div class="detail-row"><span class="detail-label">原始时间:</span><span class="detail-value">${escapeHtml(fault.source_time_raw || '-')}</span></div>
-                <div class="detail-row"><span class="detail-label">原始时区:</span><span class="detail-value">${escapeHtml(fault.source_timezone || '-')}</span></div>
-            `);
-            reportSection.dataset.auditSourceInjected = 'true';
-        }
-    }
+    return `
+        <div class="fault-action-panel">
+            <div class="fault-action-primary">${primaryButtons.join('')}</div>
+            <div class="fault-action-secondary-panel">${secondaryButtons.join('')}</div>
+            <div>
+                <div class="detail-section-title">标签与辅助标记</div>
+                <div class="tag-chip-list">${renderTagBadges(getFaultTags(fault))}</div>
+                ${tagEditor}
+            </div>
+            ${adminButtons.length ? `<div class="fault-action-secondary-panel">${adminButtons.join('')}</div>` : ''}
+            <div class="fault-action-note">主动作聚焦“处理中 / 关闭故障”，删除和恢复保留为较弱层级操作，避免干扰高频处置。</div>
+        </div>
+    `;
 }
 
 function buildFaultDetailHtml(fault) {
-    const tags = Array.isArray(fault.tags) ? fault.tags : [];
-    const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
-    const deletedRows = fault.deleted_at ? `
-            <div class="detail-row"><span class="detail-label">删除状态:</span><span class="badge badge-closed">已删除</span></div>
-            <div class="detail-row"><span class="detail-label">删除时间:</span><span class="detail-value">${formatDate(fault.deleted_at)}</span></div>
-    ` : '';
+    const tags = getFaultTags(fault);
+    const priority = getFaultPriorityMeta(fault);
     const tagEditor = (can_edit_tags && !fault.deleted_at) ? `
         <div class="tag-editor">
             <input
@@ -431,37 +1565,49 @@ function buildFaultDetailHtml(fault) {
 
     return `
         <div class="detail-section">
-            <h6 class="detail-section-title">基本信息</h6>
-            <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value">${fault.id}</span></div>
-            <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value">${escapeHtml(projectNameById(fault.project_id))}</span></div>
-            <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
-            ${deletedRows}
-            <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
-            <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
+            <h6 class="detail-section-title">摘要信息</h6>
+            <div class="fault-detail-hero">
+                <div class="fault-detail-hero-main">
+                    <div class="fault-detail-hero-title">${escapeHtml(getFaultTypeText(fault))}</div>
+                    <div class="fault-detail-hero-meta">#${escapeHtml(fault.id)} · ${escapeHtml(projectNameById(fault.project_id))} · ${escapeHtml(fault.station_name || '-')}</div>
+                    <div class="fault-detail-hero-desc">${escapeHtml(fault.description || '当前未填写故障描述')}</div>
+                </div>
+                <div class="fault-detail-hero-badges">
+                    ${renderFaultStateBadges(fault)}
+                    ${renderFaultBadge(priority.label, priority.tone)}
+                </div>
+            </div>
+            <div class="fault-detail-grid">
+                <div>
+                    <div class="detail-row"><span class="detail-label">所属站点:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
+                    <div class="detail-row"><span class="detail-label">摄像头位置:</span><span class="detail-value">${escapeHtml(fault.camera_location || fault.camera_location_text || fault.camera_area || '-')}</span></div>
+                    <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
+                    <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
+                    <div class="detail-row"><span class="detail-label">最后更新时间:</span><span class="detail-value">${formatDate(getFaultLastUpdatedAt(fault))}</span></div>
+                </div>
+                <div>
+                    <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
+                    <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
+                    <div class="detail-row"><span class="detail-label">当前责任人:</span><span class="detail-value">${escapeHtml(fault.assigned_to_username || (fault.assigned_to != null ? `#${fault.assigned_to}` : '-'))}</span></div>
+                    <div class="detail-row"><span class="detail-label">槽位 ID:</span><span class="detail-value">${fault.camera_slot_id != null ? escapeHtml(fault.camera_slot_id) : '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">项目设备编号:</span><span class="detail-value">${escapeHtml(fault.project_device_code || '-')}</span></div>
+                    <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
+                </div>
+            </div>
         </div>
         <div class="detail-section">
-            <h6 class="detail-section-title">同槽位历史</h6>
-            ${renderSlotHistory(slotHistory)}
+            <h6 class="detail-section-title">处置过程 / 时间线</h6>
+            <div class="fault-timeline">
+                ${buildFaultTimelineHtml(fault)}
+            </div>
+            <div class="fault-detail-grid" style="margin-top: 12px;">
+                <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">原始时间 / 时区:</span><span class="detail-value">${escapeHtml(fault.source_time_raw || '-')} / ${escapeHtml(fault.source_timezone || '-')}</span></div>
+            </div>
         </div>
         <div class="detail-section">
-            <h6 class="detail-section-title">标签</h6>
-            <div class="tag-chip-list">${renderTagBadges(tags)}</div>
-            ${tagEditor}
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">报修信息</h6>
-            <div class="detail-row"><span class="detail-label">报修人:</span><span class="detail-value">${escapeHtml(fault.reporter_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">联系方式:</span><span class="detail-value">${escapeHtml(fault.reporter_contact || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
-        </div>
-        <div class="detail-section">
-            <h6 class="detail-section-title">处理信息</h6>
-            <div class="detail-row"><span class="detail-label">处理人:</span><span class="detail-value">${escapeHtml(fault.handler_name || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">处理备注:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
-            <div class="detail-row"><span class="detail-label">关闭时间:</span><span class="detail-value">${fault.closed_at ? formatDate(fault.closed_at) : '-'}</span></div>
+            <h6 class="detail-section-title">操作区</h6>
+            ${buildFaultActionPanel(fault, tagEditor)}
         </div>
     `;
 }
@@ -498,9 +1644,7 @@ async function loadFaults() {
     const error = document.getElementById('error');
     const empty = document.getElementById('empty');
     const list = document.getElementById('fault-list');
-    const status = document.getElementById('status-filter').value;
     const project = document.getElementById('project-filter').value;
-    const sourceType = document.getElementById('source-filter').value;
     const deletedMode = currentDeletedMode();
 
     loading.style.display = 'flex';
@@ -510,29 +1654,21 @@ async function loadFaults() {
 
     try {
         const params = new URLSearchParams();
-        if (status) params.set('status', status);
+        params.set('page_size', '200');
         if (project) params.set('project', project);
-        if (sourceType) params.set('source_type', sourceType);
         if (deletedMode !== 'active') params.set('deleted', deletedMode);
+        const stationId = getUrlStationId();
+        if (stationId) params.set('station_id', String(stationId));
         const response = await fetch(withProject('/api/faults', Object.fromEntries(params.entries())));
         if (!response.ok) throw new Error('加载失败');
         const data = await response.json();
         allFaults = data.faults || [];
-        loading.style.display = 'none';
-
-        if (!allFaults.length) {
-            const emptyText = document.querySelector('#empty p');
-            if (emptyText) {
-                emptyText.textContent = deletedMode === 'only'
-                    ? '回收站里暂无故障记录'
-                    : '当前筛选条件下没有故障记录';
-            }
-            empty.style.display = 'block';
-            return;
+        populateFaultTypeOptions(allFaults);
+        applyCurrentFilters();
+        if (!faultDetailOpenedFromUrl && getUrlFaultId()) {
+            faultDetailOpenedFromUrl = true;
+            await showDetailModal(getUrlFaultId());
         }
-
-        renderFaults(allFaults);
-        list.style.display = 'block';
     } catch (err) {
         console.error(err);
         loading.style.display = 'none';
@@ -549,24 +1685,50 @@ function renderFaults(faults) {
 
     const tbody = document.getElementById('fault-tbody');
     tbody.innerHTML = pageFaults.map(fault => `
-        <tr>
-            <td class="mono" data-label="单号">${fault.id}</td>
-            <td data-label="项目">${escapeHtml(projectNameById(fault.project_id))}</td>
-            <td data-label="变电站">${escapeHtml(fault.station_name || '-')}</td>
-            <td data-label="摄像头位置">${escapeHtml(fault.camera_location || fault.camera_area || '-')}</td>
-            <td data-label="故障类型">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</td>
-            <td data-label="状态">${fault.deleted_at
-                ? '<span class="badge badge-closed">已删除</span>'
-                : `<span class="badge badge-${fault.status}">${statusText(fault.status)}</span>`}</td>
-            <td class="mono" data-label="报修时间">${formatDate(fault.created_at)}</td>
-            <td data-label="报修人">${escapeHtml(fault.reporter_name || '-')}</td>
+        <tr class="${isOverdueFault(fault) ? 'fault-row-risk-high' : ''} ${fault.deleted_at ? 'fault-row-deleted' : ''}">
+            <td data-label="故障摘要" class="fault-summary-cell">
+                <div class="fault-summary-head">
+                    <div class="fault-summary-title">${escapeHtml(getFaultTypeText(fault))}</div>
+                    <div class="fault-summary-id">#${escapeHtml(fault.id)}</div>
+                </div>
+                <div class="fault-summary-context">
+                    <span class="fault-summary-chip">${escapeHtml(projectNameById(fault.project_id))}</span>
+                    <span class="fault-summary-chip">${escapeHtml(compactSourceTypeText(fault.source_type))}</span>
+                </div>
+                <div class="fault-summary-desc">${escapeHtml(excerptText(fault.description || '暂无故障描述', 42))}</div>
+                ${getFaultTags(fault).length ? `<div class="fault-summary-tags">${getFaultTags(fault).slice(0, 3).map((tag) => `<span class="fault-mini-tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+            </td>
+            <td data-label="所属站点">
+                <div class="fault-station-name">${escapeHtml(fault.station_name || '-')}</div>
+                <div class="fault-station-meta">${escapeHtml(fault.camera_location || fault.camera_area || '位置待补充')}</div>
+            </td>
+            <td data-label="状态">
+                <div class="fault-state-stack">${renderFaultStateBadges(fault)}</div>
+            </td>
+            <td data-label="优先级 / 风险">
+                <div class="fault-risk-stack">${renderFaultBadge(getFaultPriorityMeta(fault).label, getFaultPriorityMeta(fault).tone)}</div>
+                <div class="fault-time-note">${escapeHtml(getFaultPriorityMeta(fault).note)}</div>
+            </td>
+            <td data-label="创建时间" class="fault-time-cell">
+                <div class="fault-time-main">${formatCompactDate(fault.created_at)}</div>
+                <div class="fault-time-note">${isTodayFault(fault) ? '今日新增' : '创建时间'}</div>
+            </td>
+            <td data-label="最后更新时间" class="fault-time-cell">
+                <div class="fault-time-main">${formatCompactDate(getFaultLastUpdatedAt(fault))}</div>
+                <div class="fault-time-note">${fault.closed_at ? '最近闭环' : (fault.handling_started_at ? '最近处理' : '最近记录')}</div>
+            </td>
             <td data-label="操作">
-                <div class="table-action-group">
-                    <button class="btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
-                    ${!fault.deleted_at ? `<button class="btn-ghost" onclick="showEditModal(${fault.id})">编辑</button>` : ''}
-                    ${!fault.deleted_at && fault.status !== 'closed' ? `<button class="btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
-                    ${is_admin && fault.deleted_at ? `<button class="btn-secondary" onclick="restoreFault(${fault.id})">恢复</button>` : ''}
-                    ${is_admin && !fault.deleted_at ? `<button class="btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
+                <div class="fault-action-stack">
+                    <div class="fault-action-main">
+                        ${!fault.deleted_at && (fault.status || 'open') === 'open' ? `<button class="btn-secondary btn-sm fault-btn-progress" onclick="markFaultHandling(${fault.id})">转处理中</button>` : ''}
+                        ${!fault.deleted_at && fault.status !== 'closed' ? `<button class="btn-primary btn-sm fault-btn-close" onclick="showHandleModal(${fault.id})">关闭故障</button>` : ''}
+                        ${fault.deleted_at && is_admin ? `<button class="btn-primary btn-sm" onclick="restoreFault(${fault.id})">恢复</button>` : ''}
+                        <button class="btn-ghost fault-btn-detail" onclick="showDetailModal(${fault.id})">查看详情</button>
+                    </div>
+                    <div class="fault-action-secondary">
+                        ${!fault.deleted_at ? `<button class="btn-ghost fault-btn-edit" onclick="showEditModal(${fault.id})">编辑</button>` : ''}
+                        ${is_admin && !fault.deleted_at ? `<button class="btn-link-danger" onclick="deleteFault(${fault.id})">移入回收站</button>` : ''}
+                    </div>
                 </div>
             </td>
         </tr>
@@ -610,7 +1772,7 @@ function renderPagination(totalItems, totalPages) {
 
 function goToPage(page) {
     currentPage = page;
-    renderFaults(allFaults);
+    renderFaults(filteredFaults);
     document.getElementById('fault-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -628,6 +1790,48 @@ async function showHandleModal(faultId) {
     document.getElementById('equipment-type').value = fault.equipment_type || '';
     document.getElementById('equipment-quantity').value = fault.equipment_quantity || 0;
     new bootstrap.Modal(document.getElementById('handle-modal')).show();
+}
+
+function openHandleFromDetail() {
+    if (!currentDetailFault || !currentDetailFault.id) {
+        showToast('当前没有可处理的故障记录', 'warning');
+        return;
+    }
+    const detailModal = bootstrap.Modal.getInstance(document.getElementById('detail-modal'));
+    if (detailModal) {
+        detailModal.hide();
+    }
+    showHandleModal(currentDetailFault.id);
+}
+
+async function markFaultHandling(faultId) {
+    try {
+        const response = await fetch(withProject(`/api/faults/${faultId}/status`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'handling' })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '更新失败');
+        await loadFaults();
+        if (currentDetailFault && currentDetailFault.id === faultId) {
+            await showDetailModal(faultId);
+        }
+        showToast('故障已转为处理中', 'success');
+    } catch (error) {
+        showToast('更新状态失败: ' + error.message, 'error');
+    }
+}
+
+function copyFaultDetailLink(faultId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('fault_id', faultId);
+    if (currentView && currentView !== 'all') {
+        url.searchParams.set('view', currentView);
+    }
+    navigator.clipboard.writeText(url.toString())
+        .then(() => showToast('故障链接已复制', 'success'))
+        .catch(() => showToast('复制失败，请手动复制地址栏链接', 'warning'));
 }
 
 function populateEditForm(fault) {
@@ -668,6 +1872,10 @@ function openEditFromDetail() {
         showToast('回收站中的故障记录请先恢复再编辑', 'warning');
         return;
     }
+    const detailModal = bootstrap.Modal.getInstance(document.getElementById('detail-modal'));
+    if (detailModal) {
+        detailModal.hide();
+    }
     showEditModal(currentDetailFault.id);
 }
 
@@ -700,7 +1908,7 @@ function renderSlotHistory(historyItems) {
                 <div class="slot-history-item">
                     <div class="slot-history-main">
                         <span class="slot-history-title">#${item.id} ${escapeHtml(item.fault_label || '-')}</span>
-                        <span class="badge badge-${item.status}">${statusText(item.status)}</span>
+                        ${renderFaultBadge(statusText(item.status), item.status || 'open')}
                     </div>
                     <div class="slot-history-meta">
                         <span>创建于 ${formatDate(item.created_at)}</span>
@@ -899,28 +2107,65 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
 document.getElementById('project-filter').addEventListener('change', function() {
     updateUrlProject(this.value);
     currentPage = 1;
+    updateFaultPageUrl();
     loadFaults();
 });
 
 document.getElementById('status-filter').addEventListener('change', function() {
     currentPage = 1;
-    loadFaults();
+    syncViewFromFilters();
+    updateFaultPageUrl();
+    applyCurrentFilters();
 });
 document.getElementById('source-filter').addEventListener('change', function() {
     currentPage = 1;
-    loadFaults();
+    updateFaultPageUrl();
+    applyCurrentFilters();
 });
 const deletedFilter = document.getElementById('deleted-filter');
 if (deletedFilter) {
     deletedFilter.addEventListener('change', function() {
         currentPage = 1;
+        syncViewFromFilters();
+        updateFaultPageUrl();
         loadFaults();
     });
 }
 document.getElementById('page-size-select').addEventListener('change', function() {
     pageSize = parseInt(this.value, 10);
     currentPage = 1;
-    renderFaults(allFaults);
+    renderFaults(filteredFaults);
+});
+document.getElementById('date-start-filter').addEventListener('change', function() {
+    currentPage = 1;
+    applyCurrentFilters();
+});
+document.getElementById('date-end-filter').addEventListener('change', function() {
+    currentPage = 1;
+    applyCurrentFilters();
+});
+document.getElementById('fault-type-filter').addEventListener('change', function() {
+    currentPage = 1;
+    applyCurrentFilters();
+});
+document.getElementById('tag-filter').addEventListener('input', function() {
+    currentPage = 1;
+    if (searchDebounceTimer) {
+        window.clearTimeout(searchDebounceTimer);
+    }
+    searchDebounceTimer = window.setTimeout(() => applyCurrentFilters(), 150);
+});
+document.getElementById('search-filter').addEventListener('input', function() {
+    currentPage = 1;
+    if (searchDebounceTimer) {
+        window.clearTimeout(searchDebounceTimer);
+    }
+    searchDebounceTimer = window.setTimeout(() => applyCurrentFilters(), 150);
+});
+document.querySelectorAll('.fault-view-tab').forEach((button) => {
+    button.addEventListener('click', function() {
+        switchFaultView(this.dataset.view || 'all');
+    });
 });
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -928,7 +2173,35 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
             await window.AppProjectState.ready();
         }
+        const urlParams = getFaultUrlParams();
+        const statusFromUrl = (urlParams.get('status') || '').trim();
+        const sourceFromUrl = (urlParams.get('source_type') || '').trim();
+        const deletedFromUrl = (urlParams.get('deleted') || '').trim();
+        currentView = getInitialFaultView();
+        if (statusFromUrl) {
+            document.getElementById('status-filter').value = statusFromUrl;
+        }
+        if (sourceFromUrl) {
+            document.getElementById('source-filter').value = sourceFromUrl;
+        }
+        if (deletedFromUrl && document.getElementById('deleted-filter')) {
+            document.getElementById('deleted-filter').value = deletedFromUrl;
+        }
+        if (currentView === 'pending') {
+            document.getElementById('status-filter').value = 'open';
+        } else if (currentView === 'handling') {
+            document.getElementById('status-filter').value = 'handling';
+        } else if (currentView === 'closed') {
+            document.getElementById('status-filter').value = 'closed';
+        } else if ((currentView === 'today' || currentView === 'overdue') && !statusFromUrl) {
+            document.getElementById('status-filter').value = '';
+        }
+        if (currentView === 'deleted' && document.getElementById('deleted-filter')) {
+            document.getElementById('deleted-filter').value = 'only';
+        }
+        updateViewTabs();
         await loadProjects();
+        updateFaultPageUrl();
         await loadFaults();
     } catch (error) {
         console.error(error);

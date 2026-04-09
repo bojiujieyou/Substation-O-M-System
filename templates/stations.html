@@ -6,96 +6,613 @@
 
 {% block extra_head %}
 <style>
+.station-page-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.station-command-card {
+    padding: 20px 22px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+.station-command-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.station-command-kicker {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--text-secondary);
+}
+
+.station-command-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.station-command-text {
+    margin: 10px 0 0;
+    max-width: 760px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.station-command-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.station-toolbar {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.station-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 #station-search {
     width: 320px;
     flex: 0 0 320px;
 }
 
 #county-filter {
-    width: 160px;
-    flex: 0 0 160px;
+    width: 170px;
+    flex: 0 0 170px;
+}
+
+.station-filter-note {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.station-view-panel {
+    padding: 16px 18px;
+}
+
+.station-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.station-view-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.station-view-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.station-view-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.station-view-tab {
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.station-view-tab:hover {
+    border-color: rgba(26, 115, 232, 0.32);
+    color: var(--text-primary);
+}
+
+.station-view-tab.is-active {
+    background: rgba(26, 115, 232, 0.12);
+    border-color: rgba(26, 115, 232, 0.24);
+    color: #1d4ed8;
+}
+
+.station-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.station-overview-card {
+    padding: 16px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-card);
+}
+
+.station-overview-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.station-overview-value {
+    margin-top: 8px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-overview-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.station-diagnostic-list {
+    display: grid;
+    gap: 14px;
+}
+
+.station-card {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--bg-card);
+    padding: 18px;
+    display: grid;
+    gap: 16px;
+}
+
+.station-card-risk-serious {
+    border-color: rgba(220, 38, 38, 0.22);
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.06);
+}
+
+.station-card-risk-abnormal {
+    border-color: rgba(234, 88, 12, 0.18);
+}
+
+.station-card-risk-watch {
+    border-color: rgba(217, 119, 6, 0.16);
+}
+
+.station-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.station-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.station-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-card-subtitle {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.station-health-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.station-health-normal {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.station-health-watch {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b45309;
+}
+
+.station-health-abnormal {
+    background: rgba(249, 115, 22, 0.14);
+    color: #c2410c;
+}
+
+.station-health-serious {
+    background: rgba(220, 38, 38, 0.14);
+    color: #b91c1c;
+}
+
+.station-risk-note {
+    min-width: 180px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.04);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.station-risk-note strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.station-card-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.station-card-metric {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.035);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.station-card-metric.is-alert {
+    background: rgba(220, 38, 38, 0.06);
+    border-color: rgba(220, 38, 38, 0.12);
+}
+
+.station-card-metric.is-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.14);
+}
+
+.station-card-metric-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.station-card-metric-value {
+    margin-top: 8px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-card-metric-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.station-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.station-next-step {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.station-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.station-action-link,
+.station-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.station-action-link.is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.station-list-empty {
+    padding: 28px 24px;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+}
+
+.station-detail-shell {
+    display: grid;
+    gap: 18px;
+}
+
+.station-detail-top {
+    padding: 16px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+.station-detail-top-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.station-detail-top-title {
+    margin: 10px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.station-detail-top-text {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.station-detail-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.station-detail-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.station-detail-card {
+    padding: 16px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-card);
+}
+
+.station-detail-card-title {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-detail-keyvals {
+    display: grid;
+    gap: 10px;
+}
+
+.station-detail-keyval {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.station-detail-keyval-label {
+    color: var(--text-secondary);
+}
+
+.station-detail-keyval-value {
+    color: var(--text-primary);
+    text-align: right;
+    font-weight: 600;
+}
+
+.station-detail-timeline {
+    display: grid;
+    gap: 10px;
+}
+
+.station-detail-timeline-item {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.035);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.station-detail-timeline-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.station-detail-timeline-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-detail-timeline-meta,
+.station-detail-timeline-desc {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.station-detail-section-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    #station-search,
+    #county-filter {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .station-command-title {
+        font-size: 22px;
+    }
+
+    .station-card,
+    .station-detail-card,
+    .station-detail-top,
+    .station-command-card {
+        padding: 16px;
+    }
+
+    .station-actions {
+        justify-content: flex-start;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
-        <input id="station-search" type="search" class="form-input" placeholder="搜索站名 / 区县 / 电压等级" style="min-width: 240px; max-width: 320px;">
-        <select id="county-filter" class="form-select" style="min-width: 160px;">
-            <option value="">全部区县</option>
-            <option value="丽水">丽水</option>
-            <option value="云和">云和</option>
-            <option value="庆元">庆元</option>
-            <option value="景宁">景宁</option>
-            <option value="松阳">松阳</option>
-            <option value="缙云">缙云</option>
-            <option value="遂昌">遂昌</option>
-            <option value="青田">青田</option>
-            <option value="龙泉">龙泉</option>
-        </select>
+<div class="station-page-shell">
+    <section class="card station-command-card">
+        <div class="station-command-main">
+            <div>
+                <p class="station-command-kicker">STATION DIAGNOSTICS</p>
+                <h2 id="station-command-title" class="station-command-title">站点诊断入口</h2>
+                <p id="station-command-text" class="station-command-text">进入站点页后，先看异常站点、最近故障和高风险站点，再决定是去看故障、地图定位还是直接报障。</p>
+            </div>
+            <div class="station-command-actions">
+                <a id="station-command-primary" href="#" class="btn-primary">查看异常站点</a>
+                <a id="station-command-secondary" href="#" class="btn-secondary">查看最近故障</a>
+            </div>
+        </div>
+        <div class="station-toolbar">
+            <div class="station-filter-row">
+                <input id="station-search" type="search" class="form-input" placeholder="搜索站名 / 区县 / 电压等级 / 故障线索">
+                <select id="county-filter" class="form-select">
+                    <option value="">全部区县</option>
+                    <option value="丽水">丽水</option>
+                    <option value="云和">云和</option>
+                    <option value="庆元">庆元</option>
+                    <option value="景宁">景宁</option>
+                    <option value="松阳">松阳</option>
+                    <option value="缙云">缙云</option>
+                    <option value="遂昌">遂昌</option>
+                    <option value="青田">青田</option>
+                    <option value="龙泉">龙泉</option>
+                </select>
+                <span class="station-filter-note">默认按风险和最近故障排序，帮助值班人员先看需要处置的站点。</span>
+            </div>
+            {% if session.get('role') == 'admin' %}
+            <button id="stations-create-btn" class="btn-primary" onclick="openCreateModal()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 110-2h4V3a1 1 0 011-1z"/>
+                </svg>
+                <span>新建变电站</span>
+            </button>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card station-view-panel">
+        <div class="station-view-header">
+            <div>
+                <h3 class="station-view-title">快捷视图</h3>
+                <p class="station-view-subtitle">用预设视图直接切到异常、近期有故障或高风险站点，降低从列表中重新判断优先级的成本。</p>
+            </div>
+        </div>
+        <div id="station-view-tabs" class="station-view-tabs">
+            <button type="button" class="station-view-tab" data-view="all">全部站点</button>
+            <button type="button" class="station-view-tab" data-view="abnormal">只看异常站点</button>
+            <button type="button" class="station-view-tab" data-view="recent-fault">最近有故障的站点</button>
+            <button type="button" class="station-view-tab" data-view="top-risk">风险较高站点</button>
+        </div>
+    </section>
+
+    <div id="station-overview" class="station-overview-grid" style="display:none;">
+        <div class="station-overview-card">
+            <div class="station-overview-label">当前视图站点数</div>
+            <div id="overview-stations" class="station-overview-value">0</div>
+            <div class="station-overview-note">当前视图下可直接排查的站点数量。</div>
+        </div>
+        <div class="station-overview-card">
+            <div class="station-overview-label">异常站点</div>
+            <div id="overview-abnormal" class="station-overview-value">0</div>
+            <div class="station-overview-note">按未闭环故障和异常摄像头近似判定。</div>
+        </div>
+        <div class="station-overview-card">
+            <div class="station-overview-label">最近有故障</div>
+            <div id="overview-recent" class="station-overview-value">0</div>
+            <div class="station-overview-note">统计最近 7 天内出现故障的站点。</div>
+        </div>
+        <div class="station-overview-card">
+            <div class="station-overview-label">高风险站点</div>
+            <div id="overview-risk" class="station-overview-value">0</div>
+            <div class="station-overview-note">优先考虑超时未闭环、多故障叠加或异常摄像头较多的站点。</div>
+        </div>
     </div>
-    {% if session.get('role') == 'admin' %}
-    <button id="stations-create-btn" class="btn-primary" onclick="openCreateModal()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 110-2h4V3a1 1 0 011-1z"/>
-        </svg>
-        <span>新建变电站</span>
-    </button>
-    {% endif %}
-</div>
 
-<div id="station-overview" style="display:none; margin-bottom: 18px;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-        <div class="table-card" style="padding: 14px 16px;">
-            <div style="font-size: 12px; color: var(--text-secondary);">站点总数</div>
-            <div id="overview-stations" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
-        </div>
-        <div class="table-card" style="padding: 14px 16px;">
-            <div style="font-size: 12px; color: var(--text-secondary);">摄像头总数</div>
-            <div id="overview-cameras" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
-        </div>
-        <div class="table-card" style="padding: 14px 16px;">
-            <div style="font-size: 12px; color: var(--text-secondary);">有未关闭故障站点</div>
-            <div id="overview-open-stations" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
-        </div>
-        <div class="table-card" style="padding: 14px 16px;">
-            <div style="font-size: 12px; color: var(--text-secondary);">已设置坐标</div>
-            <div id="overview-located" style="font-size: 24px; font-weight: 700; margin-top: 6px;">0</div>
-        </div>
+    <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>加载中...</span>
     </div>
-</div>
 
-<div id="loading" class="loading-state">
-    <div class="spinner"></div>
-    <span>加载中...</span>
-</div>
+    <div id="error" class="error-state" style="display:none;">
+        <span class="error-icon">!</span>
+        <span>加载失败</span>
+        <button class="btn-secondary" onclick="loadStations()">重试</button>
+    </div>
 
-<div id="error" class="error-state" style="display:none;">
-    <span class="error-icon">!</span>
-    <span>加载失败</span>
-    <button class="btn-secondary" onclick="loadStations()">重试</button>
-</div>
+    <div id="empty" class="empty-state" style="display:none;">
+        <p>暂无变电站数据</p>
+        <p style="color: var(--text-muted); margin-top: 8px;">请先在管理后台导入台账或手工创建站点。</p>
+        <a href="{{ url_for('admin_page') }}" class="btn-primary" style="margin-top: 16px;" data-project-link>前往管理后台</a>
+    </div>
 
-<div id="empty" class="empty-state" style="display:none;">
-    <p>暂无变电站数据</p>
-    <p style="color: var(--text-muted); margin-top: 8px;">请先在管理后台导入台账或手工创建站点。</p>
-    <a href="{{ url_for('admin_page') }}" class="btn-primary" style="margin-top: 16px;" data-project-link>前往管理后台</a>
-</div>
-
-<div id="station-list" class="table-card" style="display:none;">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>变电站名称</th>
-                <th>电压等级</th>
-                <th>区县</th>
-                <th>位置</th>
-                <th style="text-align: right;">操作</th>
-            </tr>
-        </thead>
-        <tbody id="station-tbody"></tbody>
-    </table>
+    <div id="station-list" class="station-diagnostic-list" style="display:none;"></div>
 </div>
 
 <!-- 详情模态框 -->
@@ -187,18 +704,50 @@
 {% block scripts %}
 <script>
 let allStations = [];
+let allCameras = [];
+let allFaults = [];
 let stationSearchKeyword = '';
+let requestedStationOpened = false;
+
+const STATION_VIEW_DEFINITIONS = {
+    all: {
+        label: '全部站点',
+        empty: '当前筛选条件下没有匹配的站点。'
+    },
+    abnormal: {
+        label: '异常站点',
+        empty: '当前筛选条件下没有异常站点。'
+    },
+    'recent-fault': {
+        label: '最近有故障的站点',
+        empty: '最近 7 天内暂无故障站点。'
+    },
+    'top-risk': {
+        label: '高风险站点',
+        empty: '当前没有需要优先处置的高风险站点。'
+    }
+};
+const STATION_RECENT_DAYS = 7;
+const STATION_OVERDUE_MS = STATION_RECENT_DAYS * 24 * 60 * 60 * 1000;
 
 function normalizeSearchText(value) {
     return String(value || '').trim().toLowerCase();
+}
+
+function parseStationDate(dateStr) {
+    if (!dateStr) {
+        return null;
+    }
+    const date = new Date(dateStr);
+    return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function formatRelativeStationDate(dateStr) {
     if (!dateStr) {
         return '暂无故障';
     }
-    const date = new Date(dateStr);
-    if (Number.isNaN(date.getTime())) {
+    const date = parseStationDate(dateStr);
+    if (!date) {
         return String(dateStr).slice(0, 10);
     }
     return date.toLocaleDateString('zh-CN', {
@@ -208,42 +757,268 @@ function formatRelativeStationDate(dateStr) {
     });
 }
 
-function enrichStations(stations, cameras, faults) {
-    const cameraCountByStation = new Map();
-    (cameras || []).forEach((camera) => {
-        if (!camera || !camera.station_id) {
-            return;
+function formatStationDateTime(dateStr) {
+    if (!dateStr) {
+        return '暂无记录';
+    }
+    const date = parseStationDate(dateStr);
+    if (!date) {
+        return String(dateStr).slice(0, 16);
+    }
+    return date.toLocaleString('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function getStationUrlParams() {
+    return new URLSearchParams(window.location.search);
+}
+
+function getStationViewMode() {
+    const rawView = String(getStationUrlParams().get('view') || '').trim();
+    return STATION_VIEW_DEFINITIONS[rawView] ? rawView : 'all';
+}
+
+function getRequestedStationId() {
+    const stationId = Number(getStationUrlParams().get('station_id') || '');
+    return Number.isFinite(stationId) && stationId > 0 ? stationId : null;
+}
+
+function setStationViewMode(view) {
+    const nextView = STATION_VIEW_DEFINITIONS[view] ? view : 'all';
+    const url = new URL(window.location.href);
+    if (nextView === 'all') {
+        url.searchParams.delete('view');
+    } else {
+        url.searchParams.set('view', nextView);
+    }
+    window.history.replaceState({}, '', url.toString());
+    updateStationViewTabs();
+    applyStationFilters();
+}
+
+function updateStationViewTabs() {
+    const currentView = getStationViewMode();
+    document.querySelectorAll('.station-view-tab').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.view === currentView);
+    });
+}
+
+function getCurrentDesignBasePath() {
+    const match = window.location.pathname.match(/^\/design\/([^/]+)\//);
+    if (match && match[1]) {
+        return `/design/${match[1]}`;
+    }
+    return '';
+}
+
+function getCurrentDesignStationsPath() {
+    const basePath = getCurrentDesignBasePath();
+    return basePath ? `${basePath}/stations` : '/stations';
+}
+
+function getCurrentDesignFaultsPath() {
+    const basePath = getCurrentDesignBasePath();
+    return basePath ? `${basePath}/faults` : '/faults';
+}
+
+function getCurrentDesignMapPath() {
+    const basePath = getCurrentDesignBasePath();
+    return basePath ? `${basePath}/map` : '/map';
+}
+
+function getFaultLabel(fault) {
+    return String(
+        fault?.fault_type_label_snapshot
+        || fault?.fault_label
+        || fault?.fault_type
+        || '未命名故障'
+    ).trim();
+}
+
+function getFaultDescriptionSnippet(fault) {
+    const raw = String(fault?.description || '').replace(/\s+/g, ' ').trim();
+    if (!raw) {
+        return '暂无故障描述';
+    }
+    return raw.length > 60 ? `${raw.slice(0, 60)}...` : raw;
+}
+
+function isUnresolvedStationFault(fault) {
+    return !fault?.deleted_at && ((fault?.status || 'open') !== 'closed');
+}
+
+function isOverdueStationFault(fault) {
+    if (!isUnresolvedStationFault(fault)) {
+        return false;
+    }
+    const createdAt = parseStationDate(fault?.created_at);
+    return !!createdAt && (Date.now() - createdAt.getTime()) > STATION_OVERDUE_MS;
+}
+
+function isRecentStationFault(fault) {
+    const createdAt = parseStationDate(fault?.created_at);
+    return !!createdAt && (Date.now() - createdAt.getTime()) <= STATION_OVERDUE_MS;
+}
+
+function isCameraPossiblyAbnormal(camera) {
+    const status = normalizeSearchText(camera?.status);
+    if (!status) {
+        return false;
+    }
+    return !['active', 'online', 'normal', 'ok', '启用', '正常', '在用', 'running'].includes(status);
+}
+
+function buildStationHealthMeta(metrics) {
+    if (metrics.overdue_fault_count > 0 || metrics.open_fault_count >= 3 || metrics.abnormal_camera_count >= 4) {
+        return {
+            level: 'serious',
+            label: '严重',
+            note: '存在超时未闭环或多故障叠加，建议优先处置。'
+        };
+    }
+    if (metrics.open_fault_count > 0 || metrics.abnormal_camera_count >= 2) {
+        return {
+            level: 'abnormal',
+            label: '异常',
+            note: '当前站点存在未闭环故障或多个异常摄像头。'
+        };
+    }
+    if (metrics.recent_fault_count > 0 || metrics.abnormal_camera_count === 1) {
+        return {
+            level: 'watch',
+            label: '关注',
+            note: '近期有故障或出现单点异常，建议继续观察。'
+        };
+    }
+    return {
+        level: 'normal',
+        label: '正常',
+        note: '当前未发现明显风险。'
+    };
+}
+
+function isHighRiskStation(station) {
+    return (station.overdue_fault_count || 0) > 0
+        || (station.open_fault_count || 0) >= 2
+        || (station.abnormal_camera_count || 0) >= 3
+        || (station.risk_score || 0) >= 12;
+}
+
+function buildStationDiagnostics(station, cameras, faults) {
+    const stationCameras = Array.isArray(cameras) ? cameras : [];
+    const stationFaults = Array.isArray(faults) ? faults : [];
+    const unresolvedFaults = stationFaults.filter(isUnresolvedStationFault);
+    const overdueFaults = unresolvedFaults.filter(isOverdueStationFault);
+    const recentFaults = stationFaults.filter(isRecentStationFault);
+    const sortedFaults = [...stationFaults].sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0));
+    const abnormalCameraIds = new Set();
+
+    stationCameras.forEach((camera) => {
+        if (isCameraPossiblyAbnormal(camera)) {
+            abnormalCameraIds.add(String(camera.id));
         }
-        cameraCountByStation.set(camera.station_id, (cameraCountByStation.get(camera.station_id) || 0) + 1);
     });
 
-    const openFaultCountByStation = new Map();
-    const latestFaultAtByStation = new Map();
-    (faults || []).forEach((fault) => {
-        if (!fault || !fault.station_id) {
-            return;
-        }
-
-        if ((fault.status || 'open') !== 'closed') {
-            openFaultCountByStation.set(
-                fault.station_id,
-                (openFaultCountByStation.get(fault.station_id) || 0) + 1
-            );
-        }
-
-        const currentLatest = latestFaultAtByStation.get(fault.station_id);
-        if (!currentLatest || String(fault.created_at || '') > String(currentLatest)) {
-            latestFaultAtByStation.set(fault.station_id, fault.created_at || '');
+    unresolvedFaults.forEach((fault) => {
+        if (fault.camera_id) {
+            abnormalCameraIds.add(String(fault.camera_id));
         }
     });
 
-    return (stations || []).map((station) => ({
-        ...station,
-        camera_count: cameraCountByStation.get(station.id) || 0,
-        open_fault_count: openFaultCountByStation.get(station.id) || 0,
-        latest_fault_at: latestFaultAtByStation.get(station.id) || '',
+    const latestFault = sortedFaults[0] || null;
+    const abnormalCameraCount = Math.min(abnormalCameraIds.size, stationCameras.length || abnormalCameraIds.size);
+    const metrics = {
+        camera_count: stationCameras.length,
+        abnormal_camera_count: abnormalCameraCount,
+        open_fault_count: unresolvedFaults.length,
+        overdue_fault_count: overdueFaults.length,
+        recent_fault_count: recentFaults.length,
+        latest_fault_at: latestFault?.created_at || '',
+        latest_fault_label: latestFault ? getFaultLabel(latestFault) : '',
+        recent_faults: sortedFaults.slice(0, 4),
         has_coordinates: stationHasCoordinates(station),
-    }));
+    };
+    const healthMeta = buildStationHealthMeta(metrics);
+    const riskReasons = [];
+
+    if (metrics.overdue_fault_count > 0) {
+        riskReasons.push(`${metrics.overdue_fault_count} 条超时未闭环`);
+    }
+    if (metrics.open_fault_count > 0) {
+        riskReasons.push(`${metrics.open_fault_count} 条未闭环故障`);
+    }
+    if (metrics.abnormal_camera_count > 0) {
+        riskReasons.push(`${metrics.abnormal_camera_count} 路异常摄像头`);
+    }
+    if (!riskReasons.length && metrics.recent_fault_count > 0) {
+        riskReasons.push(`最近 ${STATION_RECENT_DAYS} 天出现过故障`);
+    }
+
+    return {
+        ...station,
+        ...metrics,
+        health_level: healthMeta.level,
+        health_label: healthMeta.label,
+        health_note: healthMeta.note,
+        risk_score:
+            metrics.overdue_fault_count * 10
+            + metrics.open_fault_count * 4
+            + metrics.abnormal_camera_count * 3
+            + metrics.recent_fault_count,
+        risk_reasons: riskReasons,
+        latest_fault: latestFault,
+    };
+}
+
+function compareStationsByPriority(left, right) {
+    if ((right.risk_score || 0) !== (left.risk_score || 0)) {
+        return (right.risk_score || 0) - (left.risk_score || 0);
+    }
+    if ((right.open_fault_count || 0) !== (left.open_fault_count || 0)) {
+        return (right.open_fault_count || 0) - (left.open_fault_count || 0);
+    }
+    if ((right.abnormal_camera_count || 0) !== (left.abnormal_camera_count || 0)) {
+        return (right.abnormal_camera_count || 0) - (left.abnormal_camera_count || 0);
+    }
+    return new Date(right.latest_fault_at || 0) - new Date(left.latest_fault_at || 0);
+}
+
+function enrichStations(stations, cameras, faults) {
+    const camerasByStation = new Map();
+    const faultsByStation = new Map();
+
+    (cameras || []).forEach((camera) => {
+        const stationId = Number(camera?.station_id || 0);
+        if (!stationId) {
+            return;
+        }
+        if (!camerasByStation.has(stationId)) {
+            camerasByStation.set(stationId, []);
+        }
+        camerasByStation.get(stationId).push(camera);
+    });
+
+    (faults || []).forEach((fault) => {
+        const stationId = Number(fault?.station_id || 0);
+        if (!stationId) {
+            return;
+        }
+        if (!faultsByStation.has(stationId)) {
+            faultsByStation.set(stationId, []);
+        }
+        faultsByStation.get(stationId).push(fault);
+    });
+
+    return (stations || []).map((station) => buildStationDiagnostics(
+        station,
+        camerasByStation.get(Number(station.id)) || [],
+        faultsByStation.get(Number(station.id)) || [],
+    ));
 }
 
 function updateStationOverview(stations) {
@@ -252,17 +1027,62 @@ function updateStationOverview(stations) {
         return;
     }
 
-    overview.style.display = stations.length ? 'block' : 'none';
+    const abnormalCount = stations.filter((station) => station.health_level === 'abnormal' || station.health_level === 'serious').length;
+    const recentCount = stations.filter((station) => (station.recent_fault_count || 0) > 0).length;
+    const highRiskCount = stations.filter(isHighRiskStation).length;
+
+    overview.style.display = stations.length ? 'grid' : 'none';
     document.getElementById('overview-stations').textContent = String(stations.length);
-    document.getElementById('overview-cameras').textContent = String(
-        stations.reduce((sum, station) => sum + (station.camera_count || 0), 0)
-    );
-    document.getElementById('overview-open-stations').textContent = String(
-        stations.filter((station) => (station.open_fault_count || 0) > 0).length
-    );
-    document.getElementById('overview-located').textContent = String(
-        stations.filter((station) => station.has_coordinates).length
-    );
+    document.getElementById('overview-abnormal').textContent = String(abnormalCount);
+    document.getElementById('overview-recent').textContent = String(recentCount);
+    document.getElementById('overview-risk').textContent = String(highRiskCount);
+}
+
+function setCommandLink(id, href, text) {
+    const element = document.getElementById(id);
+    if (!element) {
+        return;
+    }
+    element.href = href;
+    element.textContent = text;
+}
+
+function updateStationCommandPanel(stations) {
+    const currentView = getStationViewMode();
+    const title = document.getElementById('station-command-title');
+    const text = document.getElementById('station-command-text');
+    const highRiskStations = stations.filter(isHighRiskStation);
+    const abnormalStations = stations.filter((station) => station.health_level === 'abnormal' || station.health_level === 'serious');
+    const topStation = highRiskStations[0] || abnormalStations[0] || stations[0] || null;
+
+    if (!stations.length) {
+        title.textContent = `${STATION_VIEW_DEFINITIONS[currentView].label}暂无匹配站点`;
+        text.textContent = '可以切换到其他视图、放宽搜索条件，或先进入故障页查看待处理事项。';
+        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'all' }), '查看全部站点');
+        setCommandLink('station-command-secondary', withProject(getCurrentDesignFaultsPath(), { view: 'pending' }), '查看待处理故障');
+        return;
+    }
+
+    if (highRiskStations.length > 0) {
+        title.textContent = `当前有 ${highRiskStations.length} 个高风险站点需要优先关注`;
+        text.textContent = `优先检查 ${topStation?.name || '目标站点'}，它已经出现超时未闭环、多故障叠加或异常摄像头偏多的情况，适合作为值班首个处理入口。`;
+        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'top-risk' }), '查看高风险站点');
+        setCommandLink('station-command-secondary', buildStationFaultUrl(topStation, { view: topStation?.overdue_fault_count ? 'overdue' : 'pending' }), '进入站点故障');
+        return;
+    }
+
+    if (abnormalStations.length > 0) {
+        title.textContent = `当前有 ${abnormalStations.length} 个异常站点`;
+        text.textContent = `建议先看 ${topStation?.name || '异常站点'} 的未闭环故障和摄像头状态，再决定是否直接报障或进入地图定位。`;
+        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'abnormal' }), '查看异常站点');
+        setCommandLink('station-command-secondary', buildStationFaultUrl(topStation, { view: 'pending' }), '查看站点故障');
+        return;
+    }
+
+    title.textContent = '当前站点整体平稳';
+    text.textContent = `当前视图覆盖 ${stations.length} 个站点，最近 ${STATION_RECENT_DAYS} 天有故障的站点为 ${stations.filter((station) => station.recent_fault_count > 0).length} 个，可继续通过最近故障视图做复核。`;
+    setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'recent-fault' }), '查看最近故障站点');
+    setCommandLink('station-command-secondary', withProject(getCurrentDesignFaultsPath(), { view: 'pending' }), '查看待处理故障');
 }
 
 async function loadStations() {
@@ -288,29 +1108,34 @@ async function loadStations() {
             fetch(withProject('/api/faults')),
         ]);
 
-        let cameras = [];
+        allCameras = [];
         if (cameraResult.status === 'fulfilled' && cameraResult.value.ok) {
             const cameraData = await cameraResult.value.json();
-            cameras = cameraData.cameras || [];
+            allCameras = cameraData.cameras || [];
         }
 
-        let faults = [];
+        allFaults = [];
         if (faultResult.status === 'fulfilled' && faultResult.value.ok) {
             const faultData = await faultResult.value.json();
-            faults = faultData.faults || [];
+            allFaults = faultData.faults || [];
         }
 
-        allStations = enrichStations(stationData.stations || [], cameras, faults);
+        allStations = enrichStations(stationData.stations || [], allCameras, allFaults);
         loading.style.display = 'none';
-        updateStationOverview(allStations);
 
         if (!allStations.length) {
             empty.style.display = 'block';
             return;
         }
 
+        list.style.display = 'grid';
         applyStationFilters();
-        list.style.display = 'block';
+
+        const requestedStationId = getRequestedStationId();
+        if (!requestedStationOpened && requestedStationId && allStations.some((station) => Number(station.id) === requestedStationId)) {
+            requestedStationOpened = true;
+            showDetail(requestedStationId);
+        }
     } catch (err) {
         console.error('loadStations failed:', err);
         loading.style.display = 'none';
@@ -319,61 +1144,68 @@ async function loadStations() {
 }
 
 function renderStations(stations) {
-    const tbody = document.getElementById('station-tbody');
-    tbody.innerHTML = stations.map((station) => `
-        <tr>
-            <td>
-                <div style="font-weight: 700;">${escapeHtml(station.name)}</div>
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); color: var(--text-primary); font-size: 12px; white-space: nowrap;">${station.camera_count || 0} 路摄像头</span>
-                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: ${(station.open_fault_count || 0) > 0 ? 'rgba(217, 48, 37, 0.12)' : 'rgba(52, 168, 83, 0.12)'}; color: ${(station.open_fault_count || 0) > 0 ? '#d93025' : '#1e8e3e'}; font-size: 12px; white-space: nowrap;">${station.open_fault_count || 0} 条未关闭</span>
-                    <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">最近 ${escapeHtml(formatRelativeStationDate(station.latest_fault_at))}</span>
-                </div>
-            </td>
-            <td><span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(255, 143, 0, 0.12); color: var(--text-primary); font-size: 12px; font-weight: 600; white-space: nowrap;">${escapeHtml(station.voltage_level || '-')}</span></td>
-            <td>
-                <div>${escapeHtml(station.county || '-')}</div>
-                <div style="margin-top: 6px; font-size: 12px; color: ${stationHasCoordinates(station) ? '#1e8e3e' : 'var(--text-muted)'};">
-                    ${stationHasCoordinates(station) ? '已定位' : '未定位'}
-                </div>
-            </td>
-            <td>${renderStationLocationCell(station)}</td>
-            <td style="text-align: right;">
-                <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" type="button" onclick="showDetail(${station.id})">查看详情</button>
-            </td>
-        </tr>
-    `).join('');
+    const list = document.getElementById('station-list');
+    if (!list) {
+        return;
+    }
+
+    if (!stations.length) {
+        list.innerHTML = `
+            <div class="station-list-empty">
+                <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">当前视图暂无匹配站点</div>
+                <div style="margin-top: 8px; font-size: 13px; line-height: 1.7;">${escapeHtml(STATION_VIEW_DEFINITIONS[getStationViewMode()].empty)}</div>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = stations.map((station) => renderStationCard(station)).join('');
 }
 
 function applyStationFilters() {
     const county = document.getElementById('county-filter').value;
     const keyword = stationSearchKeyword;
-    const filteredStations = allStations.filter((station) => {
-        if (county && station.county !== county) {
-            return false;
-        }
-        if (!keyword) {
-            return true;
-        }
+    const currentView = getStationViewMode();
+    const filteredStations = allStations
+        .filter((station) => {
+            if (county && station.county !== county) {
+                return false;
+            }
+            if (!stationMatchesView(station, currentView)) {
+                return false;
+            }
+            if (!keyword) {
+                return true;
+            }
 
-        const haystack = [
-            station.name,
-            station.county,
-            station.voltage_level,
-            station.location,
-            resolveStationLocationText(station),
-        ].map(normalizeSearchText).join(' ');
+            const haystack = [
+                station.name,
+                station.county,
+                station.voltage_level,
+                station.location,
+                resolveStationLocationText(station),
+                station.health_label,
+                station.health_note,
+                station.latest_fault_label,
+                ...(station.risk_reasons || []),
+                ...((station.recent_faults || []).map((fault) => (
+                    [getFaultLabel(fault), faultStatusText(fault.status), fault.description].filter(Boolean).join(' ')
+                ))),
+            ].map(normalizeSearchText).join(' ');
 
-        return haystack.includes(keyword);
-    });
+            return haystack.includes(keyword);
+        })
+        .sort(compareStationsByPriority);
 
+    updateStationViewTabs();
     updateStationOverview(filteredStations);
+    updateStationCommandPanel(filteredStations);
     renderStations(filteredStations);
 }
 
 function faultStatusText(status) {
     const map = {
-        open: '未关闭',
+        open: '待处理',
         handling: '处理中',
         closed: '已关闭',
     };
@@ -394,14 +1226,6 @@ function formatFaultDate(dateStr) {
         month: '2-digit',
         day: '2-digit',
     });
-}
-
-function getCurrentDesignMapPath() {
-    const match = window.location.pathname.match(/^\/design\/([^/]+)\//);
-    if (match && match[1]) {
-        return `/design/${match[1]}/map`;
-    }
-    return '/map';
 }
 
 function stationHasCoordinates(station) {
@@ -452,96 +1276,132 @@ function resolveStationLocationCompactText(station) {
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
         return '未填写';
     }
-    return `坐标 ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-}
-
-function renderStationLocationCell(station) {
-    const locationText = escapeHtml(resolveStationLocationCompactText(station));
-    const locationTitle = escapeHtml(resolveStationLocationText(station));
-    if (!stationHasCoordinates(station)) {
-        return `
-            <div>${locationText}</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">未设置坐标</div>
-        `;
-    }
-    return `
-        <div>${locationText}</div>
-        <div style="margin-top: 6px;">
-            <a href="${buildStationMapUrl(station)}" class="link-primary" data-project-link>地图定位</a>
-        </div>
-    `;
-}
-
-function renderStationLocationCell(station) {
-    const locationText = escapeHtml(resolveStationLocationText(station));
-    if (!stationHasCoordinates(station)) {
-        return `
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span>${locationText}</span>
-                <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-muted); font-size: 12px; line-height: 1.6; white-space: nowrap;">未设坐标</span>
-            </div>
-        `;
-    }
-    return `
-        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span>${locationText}</span>
-            <a href="${buildStationMapUrl(station)}" class="link-primary" data-project-link style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); font-size: 12px; font-weight: 600; line-height: 1.6; text-decoration: none; white-space: nowrap;">地图定位</a>
-        </div>
-    `;
-}
-
-function renderStationLocationCell(station) {
-    const locationText = escapeHtml(resolveStationLocationCompactText(station));
-    const locationTitle = escapeHtml(resolveStationLocationText(station));
-    if (!stationHasCoordinates(station)) {
-        return `
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span title="${locationTitle}" style="display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">${locationText}</span>
-                <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-muted); font-size: 12px; line-height: 1.6; white-space: nowrap;">未设坐标</span>
-            </div>
-        `;
-    }
-    return `
-        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span title="${locationTitle}" style="display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">${locationText}</span>
-            <a href="${buildStationMapUrl(station)}" title="跳转地图定位" class="link-primary" data-project-link style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); font-size: 12px; font-weight: 600; line-height: 1.6; text-decoration: none; white-space: nowrap;">定位</a>
-        </div>
-    `;
-}
-
-function resolveStationLocationCompactText(station) {
-    const location = String(station?.location || '').trim();
-    if (location) {
-        return location;
-    }
-    if (!stationHasCoordinates(station)) {
-        return '未填写';
-    }
-    const lat = Number(station.latitude);
-    const lng = Number(station.longitude);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) {
-        return '未填写';
-    }
     return `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
 }
 
-function renderStationLocationCell(station) {
-    const locationText = escapeHtml(resolveStationLocationCompactText(station));
-    const locationTitle = escapeHtml(resolveStationLocationText(station));
-    if (!stationHasCoordinates(station)) {
-        return `
-            <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span title="${locationTitle}" style="display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; font-size: 13px;">${locationText}</span>
-                <span style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(120, 120, 128, 0.12); color: var(--text-muted); font-size: 12px; line-height: 1.5; white-space: nowrap;">未设坐标</span>
-            </div>
-        `;
-    }
+function buildStationFaultUrl(station, extraParams = {}) {
+    return withProject(getCurrentDesignFaultsPath(), {
+        station_id: station.id,
+        ...extraParams,
+    });
+}
+
+function buildStationReportUrl(station) {
+    return withProject('/fault/new', {
+        station_id: station.id,
+    });
+}
+
+function renderHealthBadge(station) {
+    return `<span class="station-health-badge station-health-${escapeHtml(station.health_level || 'normal')}">${escapeHtml(station.health_label || '正常')}</span>`;
+}
+
+function renderStationMetricCard(label, value, note, tone = '') {
+    const toneClass = tone ? ` is-${tone}` : '';
     return `
-        <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <span title="${locationTitle}" style="display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; font-size: 13px; font-family: var(--font-mono);">${locationText}</span>
-            <a href="${buildStationMapUrl(station)}" title="跳转地图定位" class="link-primary" data-project-link style="display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: rgba(26, 115, 232, 0.12); font-size: 12px; font-weight: 600; line-height: 1.5; text-decoration: none; white-space: nowrap;">地图</a>
+        <div class="station-card-metric${toneClass}">
+            <div class="station-card-metric-label">${escapeHtml(label)}</div>
+            <div class="station-card-metric-value">${escapeHtml(String(value))}</div>
+            <div class="station-card-metric-note">${escapeHtml(note)}</div>
         </div>
     `;
+}
+
+function getStationNextStep(station) {
+    if ((station.overdue_fault_count || 0) > 0) {
+        return '下一步建议：先进入故障页查看超时未闭环故障，再回到站点详情核对受影响槽位。';
+    }
+    if ((station.open_fault_count || 0) > 0) {
+        return '下一步建议：进入故障页处理待处理故障，并同步复核该站点当前摄像头状态。';
+    }
+    if ((station.abnormal_camera_count || 0) > 0) {
+        return '下一步建议：打开站点详情，先看当前异常摄像头所在的录像机和槽位。';
+    }
+    if ((station.recent_fault_count || 0) > 0) {
+        return '下一步建议：复核最近故障是否已稳定闭环，必要时继续观察。';
+    }
+    return '下一步建议：该站点当前可作为常规巡检对象，必要时再进入详情核对设备分布。';
+}
+
+function renderStationCard(station) {
+    const riskNote = station.risk_reasons?.length
+        ? station.risk_reasons.join('，')
+        : station.health_note;
+    const faultLink = buildStationFaultUrl(station, {
+        view: station.overdue_fault_count > 0 ? 'overdue' : 'pending'
+    });
+    const reportLink = buildStationReportUrl(station);
+    const mapLink = station.has_coordinates ? buildStationMapUrl(station) : '';
+    const latestFaultLabel = station.latest_fault_label || '暂无故障';
+
+    return `
+        <article class="station-card station-card-risk-${escapeHtml(station.health_level || 'normal')}">
+            <div class="station-card-header">
+                <div style="min-width: 0; flex: 1;">
+                    <div class="station-card-title-row">
+                        <h3 class="station-card-title">${escapeHtml(station.name || '-')}</h3>
+                        ${renderHealthBadge(station)}
+                    </div>
+                    <div class="station-card-subtitle">
+                        ${escapeHtml(station.voltage_level || '-')} | ${escapeHtml(station.county || '未分配区县')} | ${escapeHtml(resolveStationLocationCompactText(station))}
+                        ${station.latest_fault_at ? ` | 最近故障 ${escapeHtml(formatRelativeStationDate(station.latest_fault_at))}` : ''}
+                    </div>
+                </div>
+                <div class="station-risk-note">
+                    <strong>${escapeHtml(station.health_note || '当前状态平稳')}</strong>
+                    ${escapeHtml(riskNote)}
+                </div>
+            </div>
+            <div class="station-card-metrics">
+                ${renderStationMetricCard(
+                    '未闭环故障',
+                    station.open_fault_count || 0,
+                    station.overdue_fault_count > 0 ? `其中 ${station.overdue_fault_count} 条已超过 ${STATION_RECENT_DAYS} 天` : '未闭环故障越多，站点优先级越高',
+                    station.open_fault_count > 0 ? 'alert' : ''
+                )}
+                ${renderStationMetricCard(
+                    '摄像头状态',
+                    `${station.camera_count || 0} / ${station.abnormal_camera_count || 0}`,
+                    (station.abnormal_camera_count || 0) > 0 ? '总数 / 异常数，建议核查受影响设备' : '总数 / 异常数，当前未发现明显异常',
+                    (station.abnormal_camera_count || 0) > 0 ? 'warning' : ''
+                )}
+                ${renderStationMetricCard(
+                    '最近故障',
+                    station.latest_fault_at ? formatRelativeStationDate(station.latest_fault_at) : '暂无',
+                    latestFaultLabel,
+                    station.recent_fault_count > 0 ? 'warning' : ''
+                )}
+                ${renderStationMetricCard(
+                    '定位状态',
+                    station.has_coordinates ? '已定位' : '未定位',
+                    station.has_coordinates ? resolveStationLocationCompactText(station) : '地图定位能力待补充',
+                    station.has_coordinates ? '' : 'warning'
+                )}
+            </div>
+            <div class="station-card-footer">
+                <div class="station-next-step">${escapeHtml(getStationNextStep(station))}</div>
+                <div class="station-actions">
+                    <a class="btn-primary station-action-link" href="${faultLink}">查看故障</a>
+                    <a class="btn-secondary station-action-link${station.has_coordinates ? '' : ' is-disabled'}" href="${station.has_coordinates ? mapLink : '#'}">地图定位</a>
+                    <a class="btn-secondary station-action-link" href="${reportLink}">直接报障</a>
+                    <button class="btn-ghost station-action-button" type="button" onclick="showDetail(${station.id})">查看详情</button>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+function stationMatchesView(station, view) {
+    switch (view) {
+    case 'abnormal':
+        return station.health_level === 'abnormal' || station.health_level === 'serious';
+    case 'recent-fault':
+        return (station.recent_fault_count || 0) > 0;
+    case 'top-risk':
+        return isHighRiskStation(station);
+    default:
+        return true;
+    }
 }
 
 function renderRecentFaults(slot) {
@@ -1400,6 +2260,38 @@ function mountStationDetailLocator(modalBody, slots, recorders) {
     render();
 }
 
+function renderStationDetailKeyval(label, value) {
+    return `
+        <div class="station-detail-keyval">
+            <span class="station-detail-keyval-label">${escapeHtml(label)}</span>
+            <span class="station-detail-keyval-value">${escapeHtml(String(value))}</span>
+        </div>
+    `;
+}
+
+function renderStationRecentFaultTimeline(station) {
+    const recentFaults = Array.isArray(station?.recent_faults) ? station.recent_faults : [];
+    if (!recentFaults.length) {
+        return '<div class="station-detail-timeline-item"><div class="station-detail-timeline-title">暂无最近故障</div><div class="station-detail-timeline-meta">当前站点没有可用于近似展示的故障记录。</div></div>';
+    }
+
+    return recentFaults.slice(0, 4).map((fault) => `
+        <div class="station-detail-timeline-item">
+            <div class="station-detail-timeline-head">
+                <div class="station-detail-timeline-title">${escapeHtml(getFaultLabel(fault))}</div>
+                <span class="station-health-badge station-health-${escapeHtml((fault.status || 'open') === 'closed' ? 'normal' : ((fault.status || 'open') === 'handling' ? 'watch' : 'abnormal'))}">
+                    ${escapeHtml(faultStatusText(fault.status))}
+                </span>
+            </div>
+            <div class="station-detail-timeline-meta">
+                上报 ${escapeHtml(formatStationDateTime(fault.created_at))}
+                ${fault.closed_at ? ` | 关闭 ${escapeHtml(formatStationDateTime(fault.closed_at))}` : ''}
+            </div>
+            <div class="station-detail-timeline-desc">${escapeHtml(getFaultDescriptionSnippet(fault))}</div>
+        </div>
+    `).join('');
+}
+
 async function showDetail(stationId) {
     const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
     const modalTitle = document.getElementById('modal-title');
@@ -1425,46 +2317,74 @@ async function showDetail(stationId) {
         const cameras = stationData.cameras || [];
         const slots = slotsData.slots || [];
         const recorders = slotsData.recorders || [];
-        const stationMapUrl = stationHasCoordinates(station) ? buildStationMapUrl(station) : '';
+        const stationSnapshot = allStations.find((item) => Number(item.id) === Number(stationId))
+            || buildStationDiagnostics(
+                station,
+                cameras,
+                allFaults.filter((fault) => Number(fault?.station_id || 0) === Number(stationId))
+            );
+        const stationMapUrl = stationSnapshot.has_coordinates ? buildStationMapUrl(stationSnapshot) : '';
+        const stationFaultUrl = buildStationFaultUrl(stationSnapshot, {
+            view: stationSnapshot.overdue_fault_count > 0 ? 'overdue' : 'pending'
+        });
+        const stationReportUrl = buildStationReportUrl(stationSnapshot);
 
         modalTitle.textContent = station.name || '变电站详情';
         modalBody.innerHTML = `
-            <div style="margin-bottom: 24px;">
-                <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">电压等级</span>
-                    <span style="font-weight: 600;">${escapeHtml(station.voltage_level || '-')}</span>
-                </div>
-                <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">区县</span>
-                    <span style="font-weight: 600;">${escapeHtml(station.county || '-')}</span>
-                </div>
-                <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">位置</span>
-                    <div>
-                        <div style="font-weight: 600;">${escapeHtml(resolveStationLocationText(station))}</div>
-                        ${stationMapUrl ? `<div style="margin-top: 6px;"><a href="${stationMapUrl}" class="link-primary" data-project-link>跳转地图定位</a></div>` : '<div style="margin-top: 6px; font-size: 12px; color: var(--text-muted);">未设置坐标</div>'}
+            <div class="station-detail-shell">
+                <section class="station-detail-top">
+                    <div class="station-detail-top-head">
+                        <div>
+                            ${renderHealthBadge(stationSnapshot)}
+                            <div class="station-detail-top-title">${escapeHtml(station.name || '变电站详情')}</div>
+                            <div class="station-detail-top-text">
+                                ${escapeHtml(stationSnapshot.health_note || '当前站点暂无明显风险。')}
+                                ${stationSnapshot.risk_reasons?.length ? `当前关注点：${escapeHtml(stationSnapshot.risk_reasons.join('，'))}。` : ''}
+                            </div>
+                        </div>
+                        <div class="station-detail-actions">
+                            <a href="${stationFaultUrl}" class="btn-primary">查看故障</a>
+                            <a href="${stationMapUrl || '#'}" class="btn-secondary${stationMapUrl ? '' : ' station-action-link is-disabled'}">地图定位</a>
+                            <a href="${stationReportUrl}" class="btn-secondary">直接报障</a>
+                        </div>
                     </div>
+                </section>
+                <div class="station-detail-summary-grid">
+                    <section class="station-detail-card">
+                        <h4 class="station-detail-card-title">基础信息</h4>
+                        <div class="station-detail-keyvals">
+                            ${renderStationDetailKeyval('电压等级', station.voltage_level || '-')}
+                            ${renderStationDetailKeyval('区县', station.county || '-')}
+                            ${renderStationDetailKeyval('位置', resolveStationLocationText(station))}
+                            ${renderStationDetailKeyval('定位状态', stationSnapshot.has_coordinates ? '已定位' : '未定位')}
+                        </div>
+                    </section>
+                    <section class="station-detail-card">
+                        <h4 class="station-detail-card-title">当前状态摘要</h4>
+                        <div class="station-detail-keyvals">
+                            ${renderStationDetailKeyval('未闭环故障', stationSnapshot.open_fault_count || 0)}
+                            ${renderStationDetailKeyval('超时未闭环', stationSnapshot.overdue_fault_count || 0)}
+                            ${renderStationDetailKeyval('摄像头总数 / 异常', `${stationSnapshot.camera_count || 0} / ${stationSnapshot.abnormal_camera_count || 0}`)}
+                            ${renderStationDetailKeyval('录像机数 / 槽位数', `${recorders.length} / ${slots.length}`)}
+                        </div>
+                    </section>
+                    <section class="station-detail-card">
+                        <h4 class="station-detail-card-title">最近故障与处置线索</h4>
+                        <div class="station-detail-timeline">
+                            ${renderStationRecentFaultTimeline(stationSnapshot)}
+                        </div>
+                    </section>
                 </div>
-                <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">当前设备数</span>
-                    <span style="font-weight: 600;">${cameras.length}</span>
-                </div>
-                <div style="display: flex; padding: 12px 0;">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">槽位数</span>
-                    <span style="font-weight: 600;">${slots.length}</span>
-                </div>
-                <div style="display: flex; padding: 12px 0;">
-                    <span style="width: 100px; color: var(--text-secondary); font-size: 13px;">褰曞儚鏈烘暟</span>
-                    <span style="font-weight: 600;">${recorders.length}</span>
-                </div>
+                <section class="station-detail-card">
+                    <h4 class="station-detail-section-title">项目 / 录像机 / 槽位诊断</h4>
+                    <div id="station-detail-locator"></div>
+                    <div id="station-detail-groups">${renderStationDetailGroups(slots, recorders)}</div>
+                </section>
             </div>
-            <h6 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">项目 / 槽位 / 当前设备</h6>
-            <div id="station-detail-locator"></div>
-            <div id="station-detail-groups">${renderStationDetailGroups(slots, recorders)}</div>
         `;
         mountStationDetailLocator(modalBody, slots, recorders);
 
-        modalReportBtn.href = withProject('/fault/new', { station_id: stationId });
+        modalReportBtn.href = stationReportUrl;
     } catch (err) {
         console.error('showDetail failed:', err);
         modalTitle.textContent = '加载失败';
@@ -1528,6 +2448,14 @@ document.getElementById('station-search').addEventListener('input', (event) => {
     applyStationFilters();
 });
 
+document.getElementById('station-view-tabs').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-view]');
+    if (!button) {
+        return;
+    }
+    setStationViewMode(button.dataset.view || 'all');
+});
+
 document.addEventListener('click', (event) => {
     const toggle = event.target.closest('[data-fault-toggle]');
     if (toggle) {
@@ -1562,6 +2490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
     }
+    updateStationViewTabs();
     await loadStations();
 });
 </script>

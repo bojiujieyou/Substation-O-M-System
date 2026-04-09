@@ -170,7 +170,7 @@ def list_users():
     cursor = db.cursor()
 
     cursor.execute("SELECT id, username, role, created_at FROM users ORDER BY created_at DESC")
-    users = cursor.fetchall()
+    users = [dict(row) for row in cursor.fetchall()]
 
     return jsonify({'users': users})
 
@@ -225,6 +225,37 @@ def delete_user(user_id):
     db.commit()
 
     return jsonify({'message': '用户已删除'})
+
+
+@auth_bp.route('/users/<int:user_id>/password', methods=['PUT'])
+def reset_user_password(user_id):
+    """重置用户密码（仅管理员）"""
+    if not _admin_required():
+        return jsonify({'error': '需要管理员权限'}), 403
+
+    data = request.get_json(silent=True) or {}
+    password = data.get('password', '')
+    if not isinstance(password, str) or not password.strip():
+        return jsonify({'error': '新密码不能为空'}), 400
+
+    db = get_db()
+    user = db.execute(
+        "SELECT id, username FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    if not user:
+        return jsonify({'error': '用户不存在'}), 404
+
+    db.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (hash_password(password), user_id),
+    )
+    db.commit()
+
+    return jsonify({
+        'message': f'已更新用户 {user["username"]} 的密码',
+        'user_id': user_id,
+    })
 
 
 @auth_bp.route('/users/<int:user_id>/projects', methods=['GET'])
