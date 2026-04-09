@@ -589,6 +589,36 @@ def test_stations_and_cameras_default_scope_follow_visible_projects(client, seed
 
 
 def test_station_slots_endpoint_returns_project_scoped_slot_view(client, seeded_project_schema):
+    conn = sqlite3.connect(app.config["DATABASE_PATH"])
+    conn.execute(
+        """
+        CREATE TABLE station_recorders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            station_id INTEGER NOT NULL,
+            project_id INTEGER NOT NULL,
+            recorder_name TEXT,
+            ip_address TEXT,
+            port INTEGER,
+            description TEXT,
+            source_type TEXT DEFAULT 'manual',
+            source_key TEXT,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO station_recorders
+            (id, station_id, project_id, recorder_name, ip_address, port, description, status)
+        VALUES
+            (1, 1, 2, 'Inspection Recorder 1', '10.0.0.2', 8000, 'Main inspection recorder', 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
     login(client, "operator1", "operatorpass")
 
     response = client.get("/api/stations/1/slots?project=inspection")
@@ -596,12 +626,15 @@ def test_station_slots_endpoint_returns_project_scoped_slot_view(client, seeded_
     data = response.get_json()
 
     assert data["total"] == 1
+    assert len(data["recorders"]) == 1
+    assert data["recorders"][0]["recorder_name"] == "Inspection Recorder 1"
     slot = data["slots"][0]
     assert slot["project_code"] == "inspection"
     assert slot["slot_id"] == 1
     assert slot["fault_count"] == 1
     assert slot["current_camera"]["id"] == 1
     assert slot["history_camera_count"] == 0
+    assert slot["recorder"]["recorder_name"] == "Inspection Recorder 1"
     assert slot["recent_faults"][0]["fault_label"] == "Blur"
     assert slot["recent_faults"][0]["description"] == "Lens blur on east yard camera"
     assert slot["recent_faults"][0]["handler_note"] == "Cleaned housing and restored focus"

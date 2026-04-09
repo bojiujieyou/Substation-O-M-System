@@ -2425,6 +2425,7 @@ def get_station_slots_scoped(station_id):
 
     fault_report_columns = get_table_columns(db, "fault_reports")
     camera_columns = get_table_columns(db, "cameras")
+    recorders = build_station_recorders_payload(db, station_id, project_scope)
     slots = build_station_slots_payload(db, station_id, project_scope)
 
     if project_scope['enabled']:
@@ -2452,6 +2453,7 @@ def get_station_slots_scoped(station_id):
     return api_success({
         'station': dict(station),
         'slots': slots,
+        'recorders': recorders,
         'total': len(slots),
     })
 
