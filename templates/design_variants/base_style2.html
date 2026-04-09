@@ -107,18 +107,33 @@
                     <span>退出</span>
                 </a>
 
+                {% if session.get('user_id') %}
                 <div class="user-profile">
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23FF6B35'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='16' font-weight='600'%3EA%3C/text%3E%3C/svg%3E" alt="User" class="user-avatar">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23FF6B35'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='16' font-weight='600'%3E{{ session.get('username', 'U')[0].upper() }}%3C/text%3E%3C/svg%3E" alt="User" class="user-avatar">
                     <div class="user-info">
-                        <div class="user-name">Alex Terner</div>
-                        <div class="user-email">at@gmail.com</div>
+                        <div class="user-name">{{ session.get('username', '未登录') }}</div>
+                        <div class="user-email">{{ session.get('role', 'user') }}</div>
                     </div>
-                    <button class="user-menu-btn">
+                    <button class="user-menu-btn" type="button" aria-label="用户菜单">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M4 6l4 4 4-4H4z"/>
                         </svg>
                     </button>
                 </div>
+                {% else %}
+                <a href="{{ url_for('login_page') }}" class="user-profile user-profile-link" title="点击前往登录">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23FF6B35'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='16' font-weight='600'%3EU%3C/text%3E%3C/svg%3E" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-name">未登录</div>
+                        <div class="user-email">点击登录</div>
+                    </div>
+                    <span class="user-menu-btn" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M6 4l4 4-4 4"/>
+                        </svg>
+                    </span>
+                </a>
+                {% endif %}
             </div>
         </aside>
 

@@ -81,6 +81,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
             <div class="modal-body">
+                <div class="photo-preview-toolbar">
+                    <button type="button" class="btn-secondary btn-sm" id="photo-zoom-out-btn">缩小</button>
+                    <button type="button" class="btn-secondary btn-sm" id="photo-zoom-reset-btn">还原</button>
+                    <button type="button" class="btn-secondary btn-sm" id="photo-zoom-in-btn">放大</button>
+                    <span class="photo-zoom-indicator" id="photo-zoom-indicator">100%</span>
+                </div>
                 <div class="photo-preview-wrap">
                     <img id="photo-preview-image" alt="照片预览">
                 </div>

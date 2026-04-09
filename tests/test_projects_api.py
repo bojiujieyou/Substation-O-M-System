@@ -690,6 +690,59 @@ def test_fault_tag_update_requires_project_write_scope(client, seeded_project_sc
     assert unified_tags == '["台风", "统一平台"]'
 
 
+def test_fault_detail_update_requires_project_write_scope(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    allowed = client.put(
+        "/api/faults/2",
+        json={
+            "fault_type": "Blur Updated",
+            "description": "updated description",
+            "camera_location_text": "inspection-slot-updated",
+            "handler_note": "updated note",
+        },
+    )
+    assert allowed.status_code == 200
+
+    denied = client.put(
+        "/api/faults/1",
+        json={
+            "fault_type": "No Image Updated",
+            "description": "should fail",
+        },
+    )
+    assert denied.status_code == 403
+    assert denied.get_json()["code"] == "PROJECT_ACCESS_DENIED"
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        inspection_fault = conn.execute(
+            """
+            SELECT fault_type, fault_type_label_snapshot, description, camera_location_text, handler_note
+            FROM fault_reports
+            WHERE id = 2
+            """
+        ).fetchone()
+        unified_fault = conn.execute(
+            """
+            SELECT fault_type, description
+            FROM fault_reports
+            WHERE id = 1
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert inspection_fault == (
+        "Blur Updated",
+        "Blur Updated",
+        "updated description",
+        "inspection-slot-updated",
+        "updated note",
+    )
+    assert unified_fault == ("No Image", None)
+
+
 def test_admin_add_camera_requires_project_in_multi_project_mode(client, seeded_project_schema):
     login(client, "admin1", "adminpass")
 

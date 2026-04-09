@@ -10,6 +10,14 @@ import sqlite3
 from app import app, get_db
 from config import Config
 
+
+def login_admin_session(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 1
+        session['username'] = 'admin'
+        session['role'] = 'admin'
+
+
 @pytest.fixture
 def client(test_db):
     """测试客户端"""
@@ -149,6 +157,142 @@ class TestFaultsEndpoint:
         assert response.status_code == 200
         faults = response.get_json()['faults']
         assert [fault['id'] for fault in faults] == [2, 3, 1]
+
+    def test_update_fault_detail_fields(self, client, init_db, test_db):
+        conn = sqlite3.connect(test_db)
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, 'Test Station', '110kV', 'Test County')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, fault_type, description, reporter_name, reporter_contact,
+                handler_name, handler_note, status, created_at, updated_at
+            )
+            VALUES (
+                1, 1, 'Legacy Type', 'legacy description', 'legacy reporter', '10086',
+                'legacy handler', 'legacy note', 'closed', '2026-04-08 10:00:00', '2026-04-08 10:00:00'
+            )
+            """
+        )
+        conn.commit()
+        conn.close()
+
+        response = client.put('/api/faults/1', json={
+            'fault_type': 'Updated Type',
+            'description': 'updated description',
+            'camera_location_text': 'updated location',
+            'reporter_name': 'updated reporter',
+            'reporter_contact': '10010',
+            'handler_name': 'updated handler',
+            'handler_note': 'updated note',
+        })
+        assert response.status_code == 200
+
+        conn = sqlite3.connect(test_db)
+        try:
+            row = conn.execute(
+                """
+                SELECT fault_type, description, camera_location_text, reporter_name, reporter_contact, handler_name, handler_note
+                FROM fault_reports
+                WHERE id = 1
+                """
+            ).fetchone()
+        finally:
+            conn.close()
+
+        assert row == (
+            'Updated Type',
+            'updated description',
+            'updated location',
+            'updated reporter',
+            '10010',
+            'updated handler',
+            'updated note',
+        )
+
+    def test_fault_camera_location_falls_back_to_description(self, client, init_db, test_db):
+        conn = sqlite3.connect(test_db)
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '汤公变', '220kV', '遂昌')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, fault_type, description, reporter_name, status, created_at, updated_at
+            )
+            VALUES (
+                1, 1, '设备故障', '西南角13#摄像机排查维修后恢复 | 地点: 遂昌', '工作记录导入',
+                'closed', '2026-04-08 10:00:00', '2026-04-08 10:00:00'
+            )
+            """
+        )
+        conn.commit()
+        conn.close()
+
+        list_response = client.get('/api/faults')
+        assert list_response.status_code == 200
+        list_fault = list_response.get_json()['faults'][0]
+        assert list_fault['camera_location'] == '西南角13#摄像机'
+
+        detail_response = client.get('/api/faults/1/detail')
+        assert detail_response.status_code == 200
+        detail_fault = detail_response.get_json()['fault']
+        assert detail_fault['camera_location'] == '西南角13#摄像机'
+        assert detail_fault['camera_location_text'] == '西南角13#摄像机'
+
+    def test_delete_fault_moves_record_to_trash_and_can_restore(self, client, init_db, test_db):
+        login_admin_session(client)
+
+        conn = sqlite3.connect(test_db)
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, 'Test Station', '110kV', 'Test County')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (id, station_id, fault_type, reporter_name, status, created_at, updated_at)
+            VALUES (1, 1, 'No Image', 'tester', 'open', '2026-04-09 09:00:00', '2026-04-09 09:00:00')
+            """
+        )
+        conn.commit()
+        conn.close()
+
+        delete_response = client.delete('/api/faults/1')
+        assert delete_response.status_code == 200
+
+        active_list = client.get('/api/faults')
+        assert active_list.status_code == 200
+        assert active_list.get_json()['faults'] == []
+
+        deleted_detail = client.get('/api/faults/1/detail?deleted=only')
+        assert deleted_detail.status_code == 200
+        assert deleted_detail.get_json()['fault']['deleted_at'] is not None
+
+        trash_list = client.get('/api/faults?deleted=only')
+        assert trash_list.status_code == 200
+        trash_faults = trash_list.get_json()['faults']
+        assert len(trash_faults) == 1
+        assert trash_faults[0]['id'] == 1
+        assert trash_faults[0]['deleted_at'] is not None
+
+        restore_response = client.post('/api/faults/1/restore')
+        assert restore_response.status_code == 200
+
+        restored_list = client.get('/api/faults')
+        assert restored_list.status_code == 200
+        restored_faults = restored_list.get_json()['faults']
+        assert len(restored_faults) == 1
+        assert restored_faults[0]['id'] == 1
+        assert restored_faults[0]['deleted_at'] is None
 
 class TestTokenAuth:
     """Token认证测试（决策#1, #2）"""

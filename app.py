@@ -4,11 +4,12 @@ import sqlite3
 import math
 import logging
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from functools import wraps
 from flask import Flask, request, jsonify, g, current_app, session, redirect, render_template, send_file
-from ai_fault_analysis import ensure_ai_runtime_schema
+from ai_fault_analysis import ensure_ai_runtime_schema, normalize_camera_hint
 from config import Config
 from admin import (
     admin_bp,
@@ -183,6 +184,95 @@ def get_table_columns(db, table_name):
     """返回表字段集合，用于兼容旧 schema。"""
     rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
     return {row["name"] for row in rows}
+
+
+def ensure_fault_report_soft_delete_schema(db):
+    if not table_exists(db, "fault_reports"):
+        return set()
+    columns = get_table_columns(db, "fault_reports")
+    required_columns = {
+        "deleted_at": "TIMESTAMP",
+        "deleted_by": "INTEGER",
+    }
+    missing = False
+    for column_name, column_sql in required_columns.items():
+        if column_name in columns:
+            continue
+        db.execute(f"ALTER TABLE fault_reports ADD COLUMN {column_name} {column_sql}")
+        missing = True
+    if missing:
+        db.commit()
+        columns = get_table_columns(db, "fault_reports")
+    return columns
+
+
+def build_fault_deleted_clause(fault_report_columns, *, alias="f", mode="active"):
+    if "deleted_at" not in fault_report_columns:
+        return " AND 1=0" if mode == "only" else ""
+    column_name = f"{alias}.deleted_at" if alias else "deleted_at"
+    if mode == "only":
+        return f" AND {column_name} IS NOT NULL"
+    if mode == "all":
+        return ""
+    return f" AND {column_name} IS NULL"
+
+
+def get_fault_deleted_mode():
+    raw_mode = str(request.args.get("deleted") or "").strip().lower()
+    if raw_mode in {"only", "all"} and session.get("role") == "admin":
+        return raw_mode
+    return "active"
+
+
+def _looks_like_fault_camera_location(value):
+    text = str(value or "").strip()
+    if not text or len(text) > 80:
+        return False
+    strong_markers = ("摄像机", "摄像头", "球机", "枪机", "半球", "云台")
+    if any(marker in text for marker in strong_markers):
+        return True
+    has_channel_marker = "#" in text or bool(re.search(r"通道\s*\d+", text))
+    location_markers = ("主变", "场地", "室", "门", "围墙", "东", "南", "西", "北")
+    return has_channel_marker and any(marker in text for marker in location_markers)
+
+
+def derive_fault_camera_location(description):
+    text = str(description or "").strip()
+    if not text:
+        return ""
+    text = text.splitlines()[0].strip()
+    text = re.sub(r"\s*\|\s*地点[:：].*$", "", text).strip()
+    text = re.sub(r"\s*\|\s*区县[:：].*$", "", text).strip()
+    text = re.sub(r"\s+", " ", text)
+
+    direct_match = re.search(
+        r"(?P<location>[\u4e00-\u9fffA-Za-z0-9#\-/_.（）()]+?(?:摄像机|摄像头|球机|枪机|半球|云台|通道\s*\d+))",
+        text,
+    )
+    if direct_match:
+        candidate = direct_match.group("location").strip(" |,，;；:：")
+        if _looks_like_fault_camera_location(candidate):
+            return candidate
+
+    normalized = normalize_camera_hint(text)
+    normalized = re.sub(r"(排查|维修|检修|恢复|更换|重启|处理|排障).*$", "", normalized).strip(" |,，;；:：")
+    if _looks_like_fault_camera_location(normalized):
+        return normalized
+    return ""
+
+
+def enrich_fault_camera_location(payload):
+    camera_location = str(payload.get("camera_location") or "").strip()
+    if camera_location:
+        return payload
+    fallback = derive_fault_camera_location(
+        payload.get("camera_location_text") or payload.get("description")
+    )
+    if fallback:
+        payload["camera_location"] = fallback
+        if not str(payload.get("camera_location_text") or "").strip():
+            payload["camera_location_text"] = fallback
+    return payload
 
 
 def project_access_denied():
@@ -766,7 +856,7 @@ def build_station_recorders_payload(db, station_id, project_scope):
 def build_station_slots_payload(db, station_id, project_scope):
     ensure_camera_recorder_metadata_columns(db)
     camera_columns = get_table_columns(db, "cameras")
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     station_recorders = build_station_recorders_payload(db, station_id, project_scope)
 
     if not (
@@ -1682,6 +1772,7 @@ def get_faults():
 
     # 支持筛选
     ensure_ai_runtime_schema(db)
+    deleted_mode = get_fault_deleted_mode()
     status = request.args.get('status')
     station_id = request.args.get('station_id', type=int)
     year = request.args.get('year', type=int)
@@ -1734,6 +1825,10 @@ def get_faults():
         count_where += " AND f.project_id = ?"
         params.append(project['id'])
 
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="f", mode=deleted_mode)
+    where_clause += deleted_clause
+    count_where += deleted_clause
+
     # 分离的COUNT查询（不JOIN cameras表，避免列名问题）
     count_query = f"""
         SELECT COUNT(*) as total
@@ -1762,10 +1857,11 @@ def get_faults():
     rows = db.execute(query, params).fetchall()
 
     return api_success({
-        'faults': [dict(row) for row in rows],
+        'faults': [enrich_fault_camera_location(dict(row)) for row in rows],
         'total': total,
         'page': page,
-        'page_size': page_size
+        'page_size': page_size,
+        'deleted_mode': deleted_mode,
     })
 
 # ============================================================
@@ -1787,8 +1883,10 @@ def update_fault_status(fault_id):
 
     # 状态转换验证（决策#7）
     db = get_db()
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
 
-    fault = db.execute("SELECT id, status FROM fault_reports WHERE id = ?",
+    fault = db.execute(f"SELECT id, status FROM fault_reports WHERE id = ?{deleted_clause}",
                         (fault_id,)).fetchone()
 
     if not fault:
@@ -1816,7 +1914,6 @@ def update_fault_status(fault_id):
         if not handler_name or not handler_note:
             return api_error('关闭故障需要提供处理人姓名和处理备注')
 
-        fault_report_columns = get_table_columns(db, "fault_reports")
         if {"equipment_type", "equipment_quantity"}.issubset(fault_report_columns):
             db.execute("""
                 UPDATE fault_reports
@@ -1855,18 +1952,134 @@ def update_fault_status(fault_id):
 def delete_fault(fault_id):
     """删除故障记录（仅admin）"""
     db = get_db()
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
 
-    fault = db.execute("SELECT id FROM fault_reports WHERE id = ?",
+    fault = db.execute("SELECT id, deleted_at FROM fault_reports WHERE id = ?",
                         (fault_id,)).fetchone()
 
     if not fault:
         return api_error('故障记录不存在', 404)
 
-    db.execute("DELETE FROM fault_reports WHERE id = ?", (fault_id,))
-    db.commit()
-    logger.info(f"Fault deleted: id={fault_id}")
+    if fault['deleted_at']:
+        return api_success({'message': '故障记录已在回收站', 'fault_id': fault_id})
 
-    return api_success({'message': '故障记录已删除'})
+    db.execute(
+        """
+        UPDATE fault_reports
+        SET deleted_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP,
+            deleted_by = ?
+        WHERE id = ?
+        """,
+        (session.get('user_id'), fault_id),
+    )
+    db.commit()
+    logger.info(f"Fault soft-deleted: id={fault_id}")
+
+    return api_success({'message': '故障记录已移入回收站', 'fault_id': fault_id})
+
+
+@app.route('/api/faults/<int:fault_id>/restore', methods=['POST'])
+@require_admin
+def restore_fault(fault_id):
+    db = get_db()
+    ensure_fault_report_soft_delete_schema(db)
+
+    fault = db.execute("SELECT id, deleted_at FROM fault_reports WHERE id = ?", (fault_id,)).fetchone()
+    if not fault:
+        return api_error('故障记录不存在', 404)
+    if not fault['deleted_at']:
+        return api_success({'message': '故障记录无需恢复', 'fault_id': fault_id})
+
+    db.execute(
+        """
+        UPDATE fault_reports
+        SET deleted_at = NULL,
+            deleted_by = NULL,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        """,
+        (fault_id,),
+    )
+    db.commit()
+    logger.info(f"Fault restored from trash: id={fault_id}")
+
+    return api_success({'message': '故障记录已恢复', 'fault_id': fault_id})
+
+
+@app.route('/api/faults/<int:fault_id>', methods=['PUT'])
+def update_fault(fault_id):
+    db = get_db()
+    ensure_ai_runtime_schema(db)
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
+    payload = request.get_json(silent=True) or {}
+    if not payload:
+        return api_error('无可更新内容')
+
+    select_fields = ["id", "status"]
+    if 'project_id' in fault_report_columns:
+        select_fields.append("project_id")
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
+    fault = db.execute(
+        f"SELECT {', '.join(select_fields)} FROM fault_reports WHERE id = ?{deleted_clause}",
+        (fault_id,),
+    ).fetchone()
+    if not fault:
+        return api_error('fault not found', 404)
+
+    if projects_enabled(db) and 'project_id' in fault_report_columns and fault['project_id']:
+        project_row = db.execute(
+            "SELECT code FROM projects WHERE id = ?",
+            (fault['project_id'],),
+        ).fetchone()
+        if project_row and not ensure_project_write_access(db, project_row['code']):
+            return project_access_denied()
+
+    editable_fields = [
+        ('fault_type', 'fault_type'),
+        ('description', 'description'),
+        ('camera_location_text', 'camera_location_text'),
+        ('reporter_name', 'reporter_name'),
+        ('reporter_contact', 'reporter_contact'),
+        ('handler_name', 'handler_name'),
+        ('handler_note', 'handler_note'),
+        ('equipment_type', 'equipment_type'),
+        ('equipment_quantity', 'equipment_quantity'),
+    ]
+
+    update_fields = []
+    update_params = []
+    for request_key, column_name in editable_fields:
+        if request_key not in payload or column_name not in fault_report_columns:
+            continue
+        value = payload.get(request_key)
+        if column_name == 'equipment_quantity':
+            try:
+                value = int(value or 0)
+            except (TypeError, ValueError):
+                return api_error('equipment_quantity must be an integer')
+        elif value is None:
+            value = ''
+        elif isinstance(value, str):
+            value = value.strip()
+        update_fields.append(f"{column_name} = ?")
+        update_params.append(value)
+
+    if 'fault_type' in payload and 'fault_type_label_snapshot' in fault_report_columns:
+        update_fields.append("fault_type_label_snapshot = ?")
+        update_params.append(str(payload.get('fault_type') or '').strip())
+
+    if not update_fields:
+        return api_error('没有可更新字段')
+
+    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+    update_params.append(fault_id)
+    db.execute(
+        f"UPDATE fault_reports SET {', '.join(update_fields)} WHERE id = ?",
+        update_params,
+    )
+    db.commit()
+    return api_success({'message': '故障记录已更新', 'fault_id': fault_id})
 
 # ============================================================
 # API: 故障详情（GET）
@@ -1877,23 +2090,42 @@ def get_fault_detail(fault_id):
     """获取故障完整详情"""
     db = get_db()
     ensure_ai_runtime_schema(db)
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
+    deleted_mode = get_fault_deleted_mode()
+    has_camera_slots = table_exists(db, "camera_slots")
+    camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), '')"
+    camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '')"
+    camera_slot_join = ""
+    if has_camera_slots:
+        camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '')"
+        camera_location_expr = (
+            "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), "
+            "NULLIF(TRIM(f.camera_location_text), ''), '')"
+        )
+        camera_slot_join = "LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id"
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="f", mode=deleted_mode)
     fault = db.execute("""
         SELECT f.*, s.name as station_name,
                c.camera_index,
-               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
-               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location,
+               {camera_area_expr} as camera_area,
+               {camera_location_expr} as camera_location,
                c.ip_address as camera_ip
         FROM fault_reports f
         LEFT JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
-        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
-        WHERE f.id = ?
-    """, (fault_id,)).fetchone()
+        {camera_slot_join}
+        WHERE f.id = ?{deleted_clause}
+    """.format(
+        camera_area_expr=camera_area_expr,
+        camera_location_expr=camera_location_expr,
+        camera_slot_join=camera_slot_join,
+        deleted_clause=deleted_clause,
+    ), (fault_id,)).fetchone()
 
     if not fault:
         return api_error('故障记录不存在', 404)
 
-    return api_success({'fault': dict(fault)})
+    return api_success({'fault': enrich_fault_camera_location(dict(fault))})
 
 
 # ============================================================
@@ -2340,6 +2572,7 @@ def create_fault_scoped():
 def get_faults_scoped():
     db = get_db()
     ensure_ai_runtime_schema(db)
+    deleted_mode = get_fault_deleted_mode()
     status = request.args.get('status')
     station_id = request.args.get('station_id', type=int)
     year = request.args.get('year', type=int)
@@ -2350,7 +2583,7 @@ def get_faults_scoped():
     page_size = min(max(page_size, 1), 200)
     offset = (page - 1) * page_size
 
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     has_camera_slots = table_exists(db, "camera_slots")
     project_scope, error = build_project_scope(db, project_code)
     if error:
@@ -2376,6 +2609,7 @@ def get_faults_scoped():
         project_sql, project_params = build_project_in_clause("f", project_scope['project_ids'])
         where_clause += project_sql
         params.extend(project_params)
+    where_clause += build_fault_deleted_clause(fault_report_columns, alias="f", mode=deleted_mode)
 
     count_query = f"""
         SELECT COUNT(*) as total
@@ -2411,10 +2645,11 @@ def get_faults_scoped():
     """
     rows = db.execute(query, params + [page_size, offset]).fetchall()
     return api_success({
-        'faults': [dict(row) for row in rows],
+        'faults': [enrich_fault_camera_location(dict(row)) for row in rows],
         'total': total,
         'page': page,
-        'page_size': page_size
+        'page_size': page_size,
+        'deleted_mode': deleted_mode,
     })
 
 
@@ -2436,7 +2671,7 @@ def update_fault_status_scoped(fault_id):
     if 'project_id' in fault_report_columns:
         select_fields.append("project_id")
     fault = db.execute(
-        f"SELECT {', '.join(select_fields)} FROM fault_reports WHERE id = ?",
+        f"SELECT {', '.join(select_fields)} FROM fault_reports WHERE id = ?{build_fault_deleted_clause(fault_report_columns, alias='', mode='active')}",
         (fault_id,),
     ).fetchone()
     if not fault:
@@ -2497,26 +2732,38 @@ def update_fault_status_scoped(fault_id):
 def get_fault_detail_scoped(fault_id):
     db = get_db()
     ensure_ai_runtime_schema(db)
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
+    deleted_mode = get_fault_deleted_mode()
+    has_camera_slots = table_exists(db, "camera_slots")
     assigned_user_select = ""
     assigned_user_join = ""
     if 'assigned_to' in fault_report_columns and table_exists(db, "users"):
         assigned_user_select = ", u.username as assigned_to_username"
         assigned_user_join = " LEFT JOIN users u ON f.assigned_to = u.id"
+    camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), '')"
+    camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '')"
+    camera_slot_join = ""
+    if has_camera_slots:
+        camera_area_expr = "COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '')"
+        camera_location_expr = (
+            "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), "
+            "NULLIF(TRIM(f.camera_location_text), ''), '')"
+        )
+        camera_slot_join = " LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id"
     fault = db.execute(
         f"""
         SELECT f.*, s.name as station_name,
                c.camera_index,
-               COALESCE(NULLIF(TRIM(c.area), ''), NULLIF(TRIM(cs.area), ''), '') as camera_area,
-               COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(cs.location_desc), ''), NULLIF(TRIM(f.camera_location_text), ''), '') as camera_location,
+               {camera_area_expr} as camera_area,
+               {camera_location_expr} as camera_location,
                c.ip_address as camera_ip
                {assigned_user_select}
         FROM fault_reports f
         LEFT JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
-        LEFT JOIN camera_slots cs ON f.camera_slot_id = cs.id
+        {camera_slot_join}
         {assigned_user_join}
-        WHERE f.id = ?
+        WHERE f.id = ?{build_fault_deleted_clause(fault_report_columns, alias='f', mode=deleted_mode)}
         """,
         (fault_id,),
     ).fetchone()
@@ -2529,6 +2776,7 @@ def get_fault_detail_scoped(fault_id):
             return project_access_denied()
 
     payload = dict(fault)
+    enrich_fault_camera_location(payload)
     if 'tags_json' in fault_report_columns:
         payload['tags'] = parse_tags_json(payload.get('tags_json'))
     payload['slot_history'] = []
@@ -2550,6 +2798,7 @@ def get_fault_detail_scoped(fault_id):
         if 'project_id' in fault_report_columns and payload.get('project_id'):
             history_query += " AND f.project_id = ?"
             history_params.append(payload['project_id'])
+        history_query += build_fault_deleted_clause(fault_report_columns, alias="f", mode="active")
         history_query += " ORDER BY f.created_at DESC, f.id DESC LIMIT 5"
         slot_history = [dict(row) for row in db.execute(history_query, history_params).fetchall()]
         payload['slot_history'] = slot_history
@@ -2560,7 +2809,7 @@ def get_fault_detail_scoped(fault_id):
 @app.route('/api/fault-tags', methods=['GET'])
 def get_fault_tag_suggestions():
     db = get_db()
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     if 'tags_json' not in fault_report_columns:
         return api_success({'tags': []})
 
@@ -2570,6 +2819,7 @@ def get_fault_tag_suggestions():
 
     query = "SELECT tags_json FROM fault_reports f WHERE f.tags_json IS NOT NULL AND TRIM(f.tags_json) != ''"
     params = []
+    query += build_fault_deleted_clause(fault_report_columns, alias="f", mode="active")
     if project_scope['enabled'] and 'project_id' in fault_report_columns:
         project_sql, project_params = build_project_in_clause("f", project_scope['project_ids'])
         query += project_sql
@@ -2595,7 +2845,7 @@ def get_fault_tag_suggestions():
 @app.route('/api/faults/<int:fault_id>/tags', methods=['PUT'])
 def update_fault_tags(fault_id):
     db = get_db()
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     if 'tags_json' not in fault_report_columns:
         return api_error('tags feature unavailable', 409)
 
@@ -2603,7 +2853,7 @@ def update_fault_tags(fault_id):
     tags = normalize_tags_payload(payload.get('tags', []))
 
     fault = db.execute(
-        "SELECT id, project_id FROM fault_reports WHERE id = ?",
+        f"SELECT id, project_id FROM fault_reports WHERE id = ?{build_fault_deleted_clause(fault_report_columns, alias='', mode='active')}",
         (fault_id,),
     ).fetchone()
     if not fault:

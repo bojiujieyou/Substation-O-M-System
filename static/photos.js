@@ -59,6 +59,77 @@ function buildGroupSection(group) {
 let groupsCache = [];
 let unmatchedCache = [];
 let photosFlatCache = [];
+let previewZoom = 1;
+let previewDragState = null;
+const PREVIEW_ZOOM_MIN = 1;
+const PREVIEW_ZOOM_MAX = 2.2;
+const PREVIEW_ZOOM_STEP = 0.1;
+const PREVIEW_WHEEL_STEP = 0.05;
+const PREVIEW_TAP_ZOOM = 1.35;
+
+function previewElements() {
+    return {
+        wrap: document.querySelector('#photo-preview-modal .photo-preview-wrap'),
+        image: document.getElementById('photo-preview-image'),
+        indicator: document.getElementById('photo-zoom-indicator'),
+    };
+}
+
+function syncPreviewZoom() {
+    const { wrap, image, indicator } = previewElements();
+    if (!wrap || !image || !indicator) return;
+    image.style.transform = `scale(${previewZoom})`;
+    indicator.textContent = `${Math.round(previewZoom * 100)}%`;
+    wrap.classList.toggle('is-zoomed', previewZoom > 1.01);
+    if (previewZoom <= 1.01) {
+        wrap.scrollLeft = 0;
+        wrap.scrollTop = 0;
+    }
+}
+
+function setPreviewZoom(nextZoom, options = {}) {
+    const { image } = previewElements();
+    if (image && Number.isFinite(options.originX) && Number.isFinite(options.originY)) {
+        image.style.transformOrigin = `${options.originX}% ${options.originY}%`;
+    } else if (image && Number(nextZoom) <= PREVIEW_ZOOM_MIN + 0.001) {
+        image.style.transformOrigin = 'center center';
+    }
+    previewZoom = Math.min(PREVIEW_ZOOM_MAX, Math.max(PREVIEW_ZOOM_MIN, Number(nextZoom) || 1));
+    syncPreviewZoom();
+}
+
+function adjustPreviewZoom(delta) {
+    setPreviewZoom(Math.round((previewZoom + delta) * 10) / 10);
+}
+
+function resetPreviewZoom() {
+    setPreviewZoom(1);
+}
+
+function startPreviewDrag(event) {
+    const { wrap } = previewElements();
+    if (!wrap || previewZoom <= 1.01) return;
+    previewDragState = {
+        startX: event.clientX,
+        startY: event.clientY,
+        scrollLeft: wrap.scrollLeft,
+        scrollTop: wrap.scrollTop,
+    };
+    wrap.classList.add('is-dragging');
+}
+
+function movePreviewDrag(event) {
+    const { wrap } = previewElements();
+    if (!wrap || !previewDragState) return;
+    wrap.scrollLeft = previewDragState.scrollLeft - (event.clientX - previewDragState.startX);
+    wrap.scrollTop = previewDragState.scrollTop - (event.clientY - previewDragState.startY);
+}
+
+function stopPreviewDrag() {
+    const { wrap } = previewElements();
+    previewDragState = null;
+    if (wrap) wrap.classList.remove('is-dragging');
+}
 
 async function loadPhotoGroups() {
     const loading = document.getElementById('photo-loading');
@@ -143,6 +214,7 @@ function openPreview(photoId) {
     document.getElementById('photo-preview-title').textContent = photo.filename || '照片预览';
     const img = document.getElementById('photo-preview-image');
     img.src = photoFileUrl(photo.id);
+    resetPreviewZoom();
 
     document.getElementById('photo-preview-meta').innerHTML = `
         <div class="detail-row"><span class="detail-label">文件名</span><span class="detail-value">${escapeHtml(photo.filename || '-')}</span></div>
@@ -169,6 +241,44 @@ document.getElementById('filter-keyword').addEventListener('keydown', (event) =>
         event.preventDefault();
         loadPhotoGroups();
     }
+});
+
+document.getElementById('photo-zoom-in-btn')?.addEventListener('click', () => adjustPreviewZoom(PREVIEW_ZOOM_STEP));
+document.getElementById('photo-zoom-out-btn')?.addEventListener('click', () => adjustPreviewZoom(-PREVIEW_ZOOM_STEP));
+document.getElementById('photo-zoom-reset-btn')?.addEventListener('click', resetPreviewZoom);
+
+document.getElementById('photo-preview-image')?.addEventListener('click', () => {
+    if (previewZoom > 1.01) {
+        resetPreviewZoom();
+    } else {
+        setPreviewZoom(PREVIEW_TAP_ZOOM);
+    }
+});
+
+document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    const { image } = previewElements();
+    if (image) {
+        const rect = image.getBoundingClientRect();
+        const originX = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
+        const originY = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
+        setPreviewZoom(
+            Math.round((previewZoom + (event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP)) * 10) / 10,
+            { originX, originY }
+        );
+        return;
+    }
+    adjustPreviewZoom(event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP);
+}, { passive: false });
+
+document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventListener('mousedown', startPreviewDrag);
+document.addEventListener('mousemove', movePreviewDrag);
+document.addEventListener('mouseup', stopPreviewDrag);
+document.addEventListener('mouseleave', stopPreviewDrag);
+
+document.getElementById('photo-preview-modal')?.addEventListener('hidden.bs.modal', () => {
+    stopPreviewDrag();
+    resetPreviewZoom();
 });
 
 document.addEventListener('DOMContentLoaded', async () => {

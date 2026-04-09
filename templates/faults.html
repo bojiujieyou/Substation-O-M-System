@@ -61,6 +61,13 @@
             <option value="import_daily_fault_summary">每日故障汇总导入</option>
             <option value="migration">迁移</option>
         </select>
+        {% if is_admin %}
+        <select id="deleted-filter" class="form-select-filter">
+            <option value="active">正常记录</option>
+            <option value="only">回收站</option>
+            <option value="all">全部记录</option>
+        </select>
+        {% endif %}
     </div>
 </div>
 
@@ -162,7 +169,76 @@
                 <div class="detail-info" id="detail-content"></div>
             </div>
             <div class="modal-footer">
+                {% if is_admin %}
+                <button type="button" class="btn-secondary" id="detail-restore-btn" style="display:none;" onclick="restoreFaultFromDetail()">恢复</button>
+                {% endif %}
+                <button type="button" class="btn-primary" id="detail-edit-btn" onclick="openEditFromDetail()">编辑</button>
                 <button type="button" class="btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit-modal-title">编辑故障记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-info mb-3">
+                    <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value" id="edit-fault-id"></span></div>
+                    <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value" id="edit-project"></span></div>
+                    <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value" id="edit-station"></span></div>
+                    <div class="detail-row"><span class="detail-label">当前状态:</span><span class="detail-value" id="edit-status"></span></div>
+                </div>
+                <form id="edit-fault-form">
+                    <div class="form-group">
+                        <label for="edit-fault-type" class="form-label">故障类型</label>
+                        <input type="text" id="edit-fault-type" class="form-input-modal" placeholder="请输入故障类型">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-camera-location" class="form-label">摄像头位置</label>
+                        <input type="text" id="edit-camera-location" class="form-input-modal" placeholder="请输入摄像头位置">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-description" class="form-label">故障描述</label>
+                        <textarea id="edit-description" class="form-input-modal" rows="4" placeholder="请输入故障描述"></textarea>
+                    </div>
+                    <div class="form-grid-two">
+                        <div>
+                            <label for="edit-reporter-name" class="form-label">报修人</label>
+                            <input type="text" id="edit-reporter-name" class="form-input-modal" placeholder="请输入报修人">
+                        </div>
+                        <div>
+                            <label for="edit-reporter-contact" class="form-label">联系方式</label>
+                            <input type="text" id="edit-reporter-contact" class="form-input-modal" placeholder="请输入联系方式">
+                        </div>
+                    </div>
+                    <div class="form-grid-two">
+                        <div>
+                            <label for="edit-handler-name" class="form-label">处理人</label>
+                            <input type="text" id="edit-handler-name" class="form-input-modal" placeholder="请输入处理人">
+                        </div>
+                        <div>
+                            <label for="edit-equipment-quantity" class="form-label">更换数量</label>
+                            <input type="number" id="edit-equipment-quantity" class="form-input-modal" min="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-equipment-type" class="form-label">更换设备类型</label>
+                        <input type="text" id="edit-equipment-type" class="form-input-modal" placeholder="例如：摄像机、电源模块">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-handler-note" class="form-label">处理备注</label>
+                        <textarea id="edit-handler-note" class="form-input-modal" rows="3" placeholder="请输入处理备注"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn-primary" id="confirm-edit-btn">保存修改</button>
             </div>
         </div>
     </div>
@@ -173,6 +249,7 @@
 <script>
 let allFaults = [];
 let currentFaultId = null;
+let currentEditFaultId = null;
 let visibleProjects = [];
 let currentDetailFault = null;
 let tagSuggestions = [];
@@ -182,6 +259,31 @@ const can_edit_tags = {{ can_edit_tags | tojson }};
 // 分页状态
 let currentPage = 1;
 let pageSize = 10;
+
+function currentDeletedMode() {
+    const select = document.getElementById('deleted-filter');
+    return select ? select.value : 'active';
+}
+
+function currentFaultQueryParams() {
+    const params = {};
+    const deletedMode = currentDeletedMode();
+    if (deletedMode && deletedMode !== 'active') {
+        params.deleted = deletedMode;
+    }
+    return params;
+}
+
+function setDetailActionState(fault) {
+    const restoreBtn = document.getElementById('detail-restore-btn');
+    const editBtn = document.getElementById('detail-edit-btn');
+    if (restoreBtn) {
+        restoreBtn.style.display = (is_admin && fault && fault.deleted_at) ? 'inline-flex' : 'none';
+    }
+    if (editBtn) {
+        editBtn.disabled = !!(fault && fault.deleted_at);
+    }
+}
 
 function getUrlProjectCode() {
     return new URLSearchParams(window.location.search).get('project') || '';
@@ -305,7 +407,11 @@ function injectImportAuditDetailRows(fault) {
 function buildFaultDetailHtml(fault) {
     const tags = Array.isArray(fault.tags) ? fault.tags : [];
     const slotHistory = Array.isArray(fault.slot_history) ? fault.slot_history : [];
-    const tagEditor = can_edit_tags ? `
+    const deletedRows = fault.deleted_at ? `
+            <div class="detail-row"><span class="detail-label">删除状态:</span><span class="badge badge-closed">已删除</span></div>
+            <div class="detail-row"><span class="detail-label">删除时间:</span><span class="detail-value">${formatDate(fault.deleted_at)}</span></div>
+    ` : '';
+    const tagEditor = (can_edit_tags && !fault.deleted_at) ? `
         <div class="tag-editor">
             <input
                 type="text"
@@ -331,6 +437,7 @@ function buildFaultDetailHtml(fault) {
             <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">状态:</span><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></div>
+            ${deletedRows}
             <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
             <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">描述:</span><span class="detail-value">${escapeHtml(fault.description || '-')}</span></div>
@@ -394,6 +501,7 @@ async function loadFaults() {
     const status = document.getElementById('status-filter').value;
     const project = document.getElementById('project-filter').value;
     const sourceType = document.getElementById('source-filter').value;
+    const deletedMode = currentDeletedMode();
 
     loading.style.display = 'flex';
     error.style.display = 'none';
@@ -405,6 +513,7 @@ async function loadFaults() {
         if (status) params.set('status', status);
         if (project) params.set('project', project);
         if (sourceType) params.set('source_type', sourceType);
+        if (deletedMode !== 'active') params.set('deleted', deletedMode);
         const response = await fetch(withProject('/api/faults', Object.fromEntries(params.entries())));
         if (!response.ok) throw new Error('加载失败');
         const data = await response.json();
@@ -412,6 +521,12 @@ async function loadFaults() {
         loading.style.display = 'none';
 
         if (!allFaults.length) {
+            const emptyText = document.querySelector('#empty p');
+            if (emptyText) {
+                emptyText.textContent = deletedMode === 'only'
+                    ? '回收站里暂无故障记录'
+                    : '当前筛选条件下没有故障记录';
+            }
             empty.style.display = 'block';
             return;
         }
@@ -440,14 +555,18 @@ function renderFaults(faults) {
             <td data-label="变电站">${escapeHtml(fault.station_name || '-')}</td>
             <td data-label="摄像头位置">${escapeHtml(fault.camera_location || fault.camera_area || '-')}</td>
             <td data-label="故障类型">${escapeHtml(fault.fault_type_label_snapshot || fault.fault_type || '-')}</td>
-            <td data-label="状态"><span class="badge badge-${fault.status}">${statusText(fault.status)}</span></td>
+            <td data-label="状态">${fault.deleted_at
+                ? '<span class="badge badge-closed">已删除</span>'
+                : `<span class="badge badge-${fault.status}">${statusText(fault.status)}</span>`}</td>
             <td class="mono" data-label="报修时间">${formatDate(fault.created_at)}</td>
             <td data-label="报修人">${escapeHtml(fault.reporter_name || '-')}</td>
             <td data-label="操作">
                 <div class="table-action-group">
                     <button class="btn-ghost" onclick="showDetailModal(${fault.id})">详情</button>
-                    ${fault.status !== 'closed' ? `<button class="btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
-                    ${is_admin ? `<button class="btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
+                    ${!fault.deleted_at ? `<button class="btn-ghost" onclick="showEditModal(${fault.id})">编辑</button>` : ''}
+                    ${!fault.deleted_at && fault.status !== 'closed' ? `<button class="btn-ghost" onclick="showHandleModal(${fault.id})">处理</button>` : ''}
+                    ${is_admin && fault.deleted_at ? `<button class="btn-secondary" onclick="restoreFault(${fault.id})">恢复</button>` : ''}
+                    ${is_admin && !fault.deleted_at ? `<button class="btn-danger" onclick="deleteFault(${fault.id})">删除</button>` : ''}
                 </div>
             </td>
         </tr>
@@ -511,9 +630,50 @@ async function showHandleModal(faultId) {
     new bootstrap.Modal(document.getElementById('handle-modal')).show();
 }
 
+function populateEditForm(fault) {
+    currentEditFaultId = fault.id;
+    document.getElementById('edit-fault-id').textContent = fault.id;
+    document.getElementById('edit-project').textContent = projectNameById(fault.project_id);
+    document.getElementById('edit-station').textContent = fault.station_name || '-';
+    document.getElementById('edit-status').textContent = statusText(fault.status);
+    document.getElementById('edit-fault-type').value = fault.fault_type_label_snapshot || fault.fault_type || '';
+    document.getElementById('edit-camera-location').value = fault.camera_location || fault.camera_location_text || '';
+    document.getElementById('edit-description').value = fault.description || '';
+    document.getElementById('edit-reporter-name').value = fault.reporter_name || '';
+    document.getElementById('edit-reporter-contact').value = fault.reporter_contact || '';
+    document.getElementById('edit-handler-name').value = fault.handler_name || '';
+    document.getElementById('edit-handler-note').value = fault.handler_note || '';
+    document.getElementById('edit-equipment-type').value = fault.equipment_type || '';
+    document.getElementById('edit-equipment-quantity').value = fault.equipment_quantity || 0;
+}
+
+async function showEditModal(faultId) {
+    try {
+        const response = await fetch(withProject(`/api/faults/${faultId}/detail`, currentFaultQueryParams()));
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '加载失败');
+        populateEditForm(data.fault);
+        new bootstrap.Modal(document.getElementById('edit-modal')).show();
+    } catch (error) {
+        showToast('加载编辑信息失败: ' + error.message, 'error');
+    }
+}
+
+function openEditFromDetail() {
+    if (!currentDetailFault || !currentDetailFault.id) {
+        showToast('当前没有可编辑的故障记录', 'warning');
+        return;
+    }
+    if (currentDetailFault.deleted_at) {
+        showToast('回收站中的故障记录请先恢复再编辑', 'warning');
+        return;
+    }
+    showEditModal(currentDetailFault.id);
+}
+
 async function showDetailModal(faultId) {
     try {
-        const response = await fetch(withProject(`/api/faults/${faultId}/detail`));
+        const response = await fetch(withProject(`/api/faults/${faultId}/detail`, currentFaultQueryParams()));
         if (!response.ok) throw new Error('加载失败');
         const data = await response.json();
         const projectCode = projectCodeById(data.fault.project_id) || getUrlProjectCode();
@@ -522,6 +682,7 @@ async function showDetailModal(faultId) {
         document.getElementById('detail-content').innerHTML = buildFaultDetailHtml(currentDetailFault);
         injectImportAuditDetailRows(currentDetailFault);
         injectAssignmentDetailRows(currentDetailFault);
+        setDetailActionState(currentDetailFault);
         new bootstrap.Modal(document.getElementById('detail-modal')).show();
     } catch (error) {
         showToast('加载详情失败: ' + error.message, 'error');
@@ -601,7 +762,7 @@ async function saveFaultTags(faultId) {
 }
 
 async function deleteFault(faultId) {
-    if (!confirm(`确定要删除故障记录 #${faultId} 吗？此操作不可撤销。`)) {
+    if (!confirm(`确定要将故障记录 #${faultId} 移入回收站吗？后续可以恢复。`)) {
         return;
     }
     try {
@@ -609,10 +770,85 @@ async function deleteFault(faultId) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || '删除失败');
         await loadFaults();
+        showToast(data.message || '故障记录已移入回收站', 'success');
     } catch (error) {
         showToast('删除失败: ' + error.message, 'error');
     }
 }
+
+async function restoreFault(faultId) {
+    if (!confirm(`确定要恢复故障记录 #${faultId} 吗？`)) {
+        return;
+    }
+    try {
+        const response = await fetch(withProject(`/api/faults/${faultId}/restore`), { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '恢复失败');
+        if (currentDetailFault && currentDetailFault.id === faultId) {
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('detail-modal'));
+            if (detailModal) detailModal.hide();
+            currentDetailFault = null;
+        }
+        await loadFaults();
+        showToast(data.message || '故障记录已恢复', 'success');
+    } catch (error) {
+        showToast('恢复失败: ' + error.message, 'error');
+    }
+}
+
+function restoreFaultFromDetail() {
+    if (!currentDetailFault || !currentDetailFault.id) {
+        return;
+    }
+    restoreFault(currentDetailFault.id);
+}
+
+document.getElementById('confirm-edit-btn').addEventListener('click', async function() {
+    if (!currentEditFaultId) {
+        showToast('当前没有可编辑的故障记录', 'warning');
+        return;
+    }
+
+    const payload = {
+        fault_type: document.getElementById('edit-fault-type').value.trim(),
+        camera_location_text: document.getElementById('edit-camera-location').value.trim(),
+        description: document.getElementById('edit-description').value.trim(),
+        reporter_name: document.getElementById('edit-reporter-name').value.trim(),
+        reporter_contact: document.getElementById('edit-reporter-contact').value.trim(),
+        handler_name: document.getElementById('edit-handler-name').value.trim(),
+        handler_note: document.getElementById('edit-handler-note').value.trim(),
+        equipment_type: document.getElementById('edit-equipment-type').value.trim(),
+        equipment_quantity: parseInt(document.getElementById('edit-equipment-quantity').value || '0', 10) || 0,
+    };
+
+    this.disabled = true;
+    this.textContent = '保存中...';
+    try {
+        const response = await fetch(withProject(`/api/faults/${currentEditFaultId}`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '保存失败');
+
+        const detailFaultId = currentDetailFault && currentDetailFault.id === currentEditFaultId
+            ? currentEditFaultId
+            : null;
+
+        bootstrap.Modal.getInstance(document.getElementById('edit-modal')).hide();
+        await loadFaults();
+        if (detailFaultId) {
+            await showDetailModal(detailFaultId);
+        }
+        showToast('故障记录已更新', 'success');
+    } catch (error) {
+        showToast('保存失败: ' + error.message, 'error');
+    } finally {
+        this.disabled = false;
+        this.textContent = '保存修改';
+    }
+});
 
 document.getElementById('confirm-handle-btn').addEventListener('click', async function() {
     const handlerName = document.getElementById('handler-name').value.trim();
@@ -674,6 +910,13 @@ document.getElementById('source-filter').addEventListener('change', function() {
     currentPage = 1;
     loadFaults();
 });
+const deletedFilter = document.getElementById('deleted-filter');
+if (deletedFilter) {
+    deletedFilter.addEventListener('change', function() {
+        currentPage = 1;
+        loadFaults();
+    });
+}
 document.getElementById('page-size-select').addEventListener('change', function() {
     pageSize = parseInt(this.value, 10);
     currentPage = 1;

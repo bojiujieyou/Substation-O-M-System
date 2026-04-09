@@ -100,6 +100,8 @@ def init_db(force=False):
             handler_note TEXT,
             equipment_type TEXT,
             equipment_quantity INTEGER DEFAULT 0,
+            deleted_at TIMESTAMP,
+            deleted_by INTEGER,
             closed_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
