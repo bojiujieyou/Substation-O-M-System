@@ -4,7 +4,7 @@
 - 审计范围：
   - live DB：`station_monitor.db`
   - 代码基线：`init_db.py`
-  - 目标设计：`设计文档.md`（v4.5 冻结版）
+  - 目标设计：`docs/design/设计文档.md`（v4.5 冻结版）
 - 结论：Phase 1 可以启动，但必须先按“新建表 / 字段存在性检查 / 表重建”三类拆开执行，不能把所有变更都当成普通 `ALTER TABLE`。
 
 ## 1. 当前实际 Schema 概览
@@ -28,7 +28,7 @@
 
 补充发现：
 
-- live `fault_reports` 比 `设计文档.md` 的 3.0 基线多一个遗留字段：`camera_location_text`
+- live `fault_reports` 比 `docs/design/设计文档.md` 的 3.0 基线多一个遗留字段：`camera_location_text`
 - `fault_reports.status`、`fault_reports.closed_at`、`fault_reports.system_type`、`fault_reports.idempotency_key` 已存在，迁移时必须跳过重复 `ADD COLUMN`
 - `utils.py` 当前只设置了 `busy_timeout`，尚未统一开启 `PRAGMA foreign_keys = ON`
 

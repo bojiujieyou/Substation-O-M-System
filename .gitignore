@@ -23,9 +23,11 @@ static/leaflet-1.9.4.min.js
 # OS
 .DS_Store
 Thumbs.db
+~$*
 
 # gstack
 .gstack/
+.omx/
 
 # Misc
 =1.2.0
@@ -33,6 +35,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+*.pid
 
 # Data (runtime)
 data/
@@ -40,6 +43,12 @@ import_reports/
 .context/
 .impeccable.md
 *.db.backup_*
+
+# Test/temp workdirs
+.pytest_tmp/
+.tmp_pytest_*/
+tests_tmp/
+daily-import-*/
 
 # Captures (camera captures - large files)
 captures/

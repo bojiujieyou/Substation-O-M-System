@@ -69,7 +69,7 @@ status: ACTIVE
    - 已失效。`auth.py` 已实现 session 登录、登出、当前用户信息和限流
 
 5. 日志规范化仍是 deferred
-   - 已失效。`TODOS.md` 已记录为完成项
+   - 已失效。`docs/archive/TODOS.md` 已记录为完成项
 
 6. 当前仓库仍是 Bootstrap 初始骨架 / greenfield 文件树
    - 已失效。当前仓库已经具备多模块蓝图、项目范围控制、批次导入、审查中心、测试矩阵
@@ -308,7 +308,7 @@ status: ACTIVE
 ### 7.7 移动端策略
 - 不是把桌面布局硬压缩，而是按优先级重排为单列
 - 首屏先展示核心状态块、错误块、主 CTA
-- 继续遵守 `DESIGN.md` 已定义的移动端和触控目标规范
+- 继续遵守 `docs/design/DESIGN.md` 已定义的移动端和触控目标规范
 
 ## 8. Public contract / 对外契约变化
 
@@ -448,8 +448,8 @@ status: ACTIVE
 ## 13. 关键证据文件
 
 - `CLAUDE.md`
-- `DESIGN.md`
-- `TODOS.md`
+- `docs/design/DESIGN.md`
+- `docs/archive/TODOS.md`
 - `app.py`
 - `auth.py`
 - `project_access.py`

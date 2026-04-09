@@ -65,7 +65,7 @@
 
 ## 五、关联文件
 
-- Runbook：`REVIEW_CENTER_RUNBOOK.md`
+- Runbook：`docs/operations/REVIEW_CENTER_RUNBOOK.md`
 - 审查中心页面：`templates/admin_review.html`
 - 后端接口：`admin_review.py`
 - 过期维护：`maintain_review_queue.py`

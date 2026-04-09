@@ -36,7 +36,7 @@
 
 ### 4. 创建了文档
 - 📖 `templates/design_variants/README.md` - 详细技术文档
-- 📖 `DESIGN_VARIANTS_GUIDE.md` - 快速启动指南
+- 📖 `docs/archive/DESIGN_VARIANTS_GUIDE.md` - 快速启动指南
 
 ## 🎨 设计特点对比
 
@@ -71,7 +71,7 @@
 │       ├── style2.css              # 风格2样式
 │       └── style3.css              # 风格3样式
 ├── app.py                          # 已添加路由
-└── DESIGN_VARIANTS_GUIDE.md        # 快速指南
+└── docs/archive/DESIGN_VARIANTS_GUIDE.md        # 快速指南
 ```
 
 ## 🚀 如何使用

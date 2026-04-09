@@ -230,7 +230,7 @@ python import_faults_worklog.py `
 
 ## 十、Step 6：处理待确认队列
 
-按 [REVIEW_CENTER_RUNBOOK.md](/e:/项目/变电站图像监控运维平台/REVIEW_CENTER_RUNBOOK.md) 执行。
+按 [REVIEW_CENTER_RUNBOOK.md](/e:/项目/变电站图像监控运维平台/docs/operations/REVIEW_CENTER_RUNBOOK.md) 执行。
 
 顺序固定：
 
@@ -264,7 +264,7 @@ python inspect_import_batch.py `
 - 是否有明显错误写入正式表
 - 是否需要进入恢复流程
 
-如有整批系统性错误，转 [IMPORT_BATCH_RECOVERY_RUNBOOK.md](/e:/项目/变电站图像监控运维平台/IMPORT_BATCH_RECOVERY_RUNBOOK.md)。
+如有整批系统性错误，转 [IMPORT_BATCH_RECOVERY_RUNBOOK.md](/e:/项目/变电站图像监控运维平台/docs/operations/IMPORT_BATCH_RECOVERY_RUNBOOK.md)。
 
 ## 十二、Step 8：形成验收结论
 

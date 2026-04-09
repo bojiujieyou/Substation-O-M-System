@@ -5,7 +5,7 @@
 ---
 
 ### [x] 建立设计系统（设计token）
-**What:** 通过design-consultation生成DESIGN.md，定义色彩+字体+间距+阴影+圆角+动效token
+**What:** 通过design-consultation生成 `docs/design/DESIGN.md`，定义色彩+字体+间距+阴影+圆角+动效token
 
 **Why:** 当前计划缺少基础设计规范，实现者会随机做决定（卡片阴影/表格行高/按钮hover效果等）
 
@@ -13,16 +13,16 @@
 
 **Cons:** 需要额外时间投入
 
-**Context:** 设计评审（/plan-design-review）发现：CEO-PLAN无DESIGN.md，所有设计token缺失；2026-04-06 已按 `static/design_variants/style2.css` 完整同步实际实现
+**Context:** 设计评审（/plan-design-review）发现：`docs/archive/CEO-PLAN.md` 无 `docs/design/DESIGN.md`，所有设计token缺失；2026-04-06 已按 `static/design_variants/style2.css` 完整同步实际实现
 
 **Depends on:** 无
 
-**Status:** ✅ COMPLETED — DESIGN.md已生成（2026-03-25），并于2026-04-06完成与 style2 当前实现的二次对齐
+**Status:** ✅ COMPLETED — `docs/design/DESIGN.md` 已生成（2026-03-25），并于2026-04-06完成与 style2 当前实现的二次对齐
 
 ---
 
 ### [~] 补充交互状态规范
-**What:** 在CEO-PLAN中增加完整的交互状态表（7个功能 x 6种状态）
+**What:** 在 `docs/archive/CEO-PLAN.md` 中增加完整的交互状态表（7个功能 x 6种状态）
 
 **Why:** 当前计划只定义了正常流程，加载/空/错误状态缺失。运维人员会遇到加载中显示空白、报错时显示浏览器默认error等问题
 
@@ -49,18 +49,18 @@
 
 **Context:** 设计评审产出：当前计划完全未指定移动端响应式策略
 
-**Depends on:** 设计系统（DESIGN.md）
+**Depends on:** 设计系统（`docs/design/DESIGN.md`）
 
-**Status:** ⚠️ PARTIAL — 响应式规范已在DESIGN.md定义，并已完成首页、登录页、统计页、照片页、管理后台等核心页面的移动端适配；其余页面仍需继续补齐
+**Status:** ⚠️ PARTIAL — 响应式规范已在 `docs/design/DESIGN.md` 定义，并已完成首页、登录页、统计页、照片页、管理后台等核心页面的移动端适配；其余页面仍需继续补齐
 
 ---
 
 ### [x] Phase A ARIA无障碍实现
 **What:** 在 base.html 中添加 ARIA landmarks（role="banner"/"navigation"/"main"）、aria-label 和 skip-link，在 style.css 中添加显式 focus 样式
 
-**Why:** 无障碍是DESIGN.md的明确要求，当前模板缺少 role="banner/navigation/main"，键盘用户无法有效导航。运维人员中有视觉障碍者需要屏幕阅读器支持
+**Why:** 无障碍是 `docs/design/DESIGN.md` 的明确要求，当前模板缺少 role="banner/navigation/main"，键盘用户无法有效导航。运维人员中有视觉障碍者需要屏幕阅读器支持
 
-**Pros:** 满足DESIGN.md accessibility规范，支持屏幕阅读器用户，符合《网站可及性标准》要求
+**Pros:** 满足 `docs/design/DESIGN.md` accessibility规范，支持屏幕阅读器用户，符合《网站可及性标准》要求
 
 **Cons:** 改动HTML模板，不影响功能
 
