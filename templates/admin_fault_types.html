@@ -4,6 +4,90 @@
 
 {% block page_title %}故障类型版本管理{% endblock %}
 
+{% block extra_head %}
+<style>
+.version-history-card {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 249, 251, 0.96));
+}
+
+.version-history-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.version-history-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.version-history-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(26, 115, 232, 0.08);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.version-history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.version-history-stat {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #fff;
+}
+
+.version-history-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.version-history-stat-value {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.version-history-note {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.version-history-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.version-history-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.version-history-details[hidden] {
+    display: none !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -62,7 +146,7 @@
                     <button class="btn btn-sm btn-secondary" type="button" onclick="loadVersions()">刷新</button>
                 </div>
                 <div id="version-list" class="admin-section-stack">
-                    <div class="text-muted">请选择项目后加载版本。</div>
+                    <div class="text-muted">先选项目，再从这里看当前发布版和待发布草稿。</div>
                 </div>
             </div>
         </div>
@@ -187,50 +271,132 @@ function diffSummaryText(version) {
     return `新增 ${version.diff_summary.added} / 删除 ${version.diff_summary.removed} / 变更 ${version.diff_summary.changed}`;
 }
 
+function versionStatusText(version) {
+    return version.is_published ? '当前线上使用' : '草稿，确认后可发布';
+}
+
+function summarizeVersionTypes(version) {
+    const activeCount = (version.types || []).filter(item => item.is_active).length;
+    return {
+        total: (version.types || []).length,
+        active: activeCount,
+        inactive: (version.types || []).length - activeCount,
+    };
+}
+
+function toggleVersionDetails(versionId) {
+    const details = document.getElementById(`version-details-${versionId}`);
+    const button = document.getElementById(`version-toggle-${versionId}`);
+    if (!details || !button) {
+        return;
+    }
+    const shouldHide = !details.hasAttribute('hidden');
+    if (shouldHide) {
+        details.setAttribute('hidden', 'hidden');
+        button.textContent = '展开明细';
+        button.setAttribute('aria-expanded', 'false');
+    } else {
+        details.removeAttribute('hidden');
+        button.textContent = '收起明细';
+        button.setAttribute('aria-expanded', 'true');
+    }
+}
+
 function renderVersions() {
     const container = document.getElementById('version-list');
     if (!versionRows.length) {
-        renderBlockMessage(container, '当前项目还没有故障类型版本。');
+        renderBlockMessage(container, '当前项目还没有版本。先在左侧填写故障类型，再保存为草稿版本。');
         return;
     }
-    container.innerHTML = versionRows.map(version => `
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
+    container.innerHTML = versionRows.map(version => {
+        const summary = summarizeVersionTypes(version);
+        const semanticGroupCount = new Set(
+            (version.types || [])
+                .map(item => (item.semantic_group || item.type_code || '').trim())
+                .filter(Boolean)
+        ).size;
+        const detailRows = (version.types || []).length
+            ? version.types.map(item => `
+                <tr>
+                    <td>${escapeHtml(item.type_code)}</td>
+                    <td>${escapeHtml(item.type_label)}</td>
+                    <td>${escapeHtml(item.semantic_group || item.type_code)}</td>
+                    <td>${escapeHtml(item.sort_order)}</td>
+                    <td>${item.is_active ? '是' : '否'}</td>
+                </tr>
+            `).join('')
+            : `
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">当前版本还没有故障类型条目。</td>
+                </tr>
+            `;
+
+        return `
+            <div class="version-history-card">
+                <div class="version-history-top">
                     <div>
-                        <h4 class="card-title mb-1">v${version.version} ${version.is_published ? '<span class="badge text-bg-success">当前发布</span>' : '<span class="badge text-bg-secondary">草稿</span>'}</h4>
-                        <div class="text-muted mb-2">${escapeHtml(version.description || '无说明')}</div>
-                        <div class="text-muted small">差异摘要：${escapeHtml(diffSummaryText(version))}</div>
+                        <h4 class="mb-1">
+                            v${version.version}
+                            ${version.is_published ? '<span class="badge text-bg-success">当前发布</span>' : '<span class="badge text-bg-secondary">草稿</span>'}
+                        </h4>
+                        <div class="version-history-meta">
+                            <span class="version-history-pill">${escapeHtml(versionStatusText(version))}</span>
+                            <span class="version-history-pill">差异：${escapeHtml(diffSummaryText(version))}</span>
+                        </div>
                     </div>
-                    ${version.editable ? `<button class="btn btn-sm btn-primary" onclick="openPublishModal(${version.id})">发布</button>` : ''}
+                    <div class="version-history-actions">
+                        ${version.editable ? `<button class="btn btn-sm btn-primary" type="button" onclick="openPublishModal(${version.id})">发布这版</button>` : ''}
+                        <button
+                            class="btn btn-sm btn-secondary"
+                            type="button"
+                            id="version-toggle-${version.id}"
+                            onclick="toggleVersionDetails(${version.id})"
+                            aria-expanded="false"
+                        >
+                            展开明细
+                        </button>
+                    </div>
                 </div>
-                <div class="table-responsive mt-3">
-                    <table class="table table-sm align-middle">
-                        <thead>
-                            <tr>
-                                <th>代码</th>
-                                <th>名称</th>
-                                <th>语义组</th>
-                                <th>排序</th>
-                                <th>启用</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${version.types.map(item => `
+                <div class="version-history-note">${escapeHtml(version.description || '未填写版本说明')}</div>
+                <div class="version-history-grid">
+                    <div class="version-history-stat">
+                        <div class="version-history-stat-label">故障类型总数</div>
+                        <div class="version-history-stat-value">${summary.total}</div>
+                    </div>
+                    <div class="version-history-stat">
+                        <div class="version-history-stat-label">启用中</div>
+                        <div class="version-history-stat-value">${summary.active}</div>
+                    </div>
+                    <div class="version-history-stat">
+                        <div class="version-history-stat-label">停用中</div>
+                        <div class="version-history-stat-value">${summary.inactive}</div>
+                    </div>
+                    <div class="version-history-stat">
+                        <div class="version-history-stat-label">语义组数量</div>
+                        <div class="version-history-stat-value">${semanticGroupCount}</div>
+                    </div>
+                </div>
+                <div class="version-history-details" id="version-details-${version.id}" hidden>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
                                 <tr>
-                                    <td>${escapeHtml(item.type_code)}</td>
-                                    <td>${escapeHtml(item.type_label)}</td>
-                                    <td>${escapeHtml(item.semantic_group || item.type_code)}</td>
-                                    <td>${escapeHtml(item.sort_order)}</td>
-                                    <td>${item.is_active ? '是' : '否'}</td>
+                                    <th>代码</th>
+                                    <th>名称</th>
+                                    <th>语义组</th>
+                                    <th>排序</th>
+                                    <th>启用</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${detailRows}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 async function loadVersions() {
