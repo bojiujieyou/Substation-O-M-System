@@ -401,23 +401,43 @@ def create_station():
 def delete_station(station_id):
     """删除变电站及其摄像头"""
     db = get_db()
-    cursor = db.cursor()
-
-    # 检查是否存在
-    cursor.execute("SELECT id, name FROM stations WHERE id = ?", (station_id,))
-    station = cursor.fetchone()
+    station = db.execute("SELECT id, name FROM stations WHERE id = ?", (station_id,)).fetchone()
     if not station:
         return jsonify({'error': '变电站不存在'}), 404
 
-    # 删除摄像头
-    cursor.execute("DELETE FROM cameras WHERE station_id = ?", (station_id,))
+    try:
+        # 先删故障记录，避免 fault_reports.camera_id 引用待删除摄像头时触发外键失败。
+        db.execute("DELETE FROM fault_reports WHERE station_id = ?", (station_id,))
+        db.execute("DELETE FROM cameras WHERE station_id = ?", (station_id,))
 
-    # 删除变电站
-    cursor.execute("DELETE FROM stations WHERE id = ?", (station_id,))
+        if table_exists(db, "station_recorders"):
+            db.execute("DELETE FROM station_recorders WHERE station_id = ?", (station_id,))
+        if table_exists(db, "station_external_names"):
+            db.execute("DELETE FROM station_external_names WHERE station_id = ?", (station_id,))
+        if table_exists(db, "station_aliases"):
+            db.execute("DELETE FROM station_aliases WHERE station_id = ?", (station_id,))
+        if table_exists(db, "photos"):
+            db.execute("UPDATE photos SET station_id = NULL WHERE station_id = ?", (station_id,))
+        if table_exists(db, "camera_slots"):
+            db.execute("DELETE FROM camera_slots WHERE station_id = ?", (station_id,))
+        if table_exists(db, "station_name_mapping_proposals"):
+            db.execute(
+                "UPDATE station_name_mapping_proposals SET candidate_station_id = NULL WHERE candidate_station_id = ?",
+                (station_id,),
+            )
 
-    db.commit()
+        db.execute("DELETE FROM stations WHERE id = ?", (station_id,))
+        db.commit()
+    except sqlite3.IntegrityError:
+        db.rollback()
+        logger.exception("Station delete blocked by related records: id=%s, name=%s", station_id, station["name"])
+        return jsonify({'error': '删除失败：该变电站仍有关联数据未清理，请稍后重试或联系管理员检查。'}), 409
+    except Exception:
+        db.rollback()
+        logger.exception("Station delete failed unexpectedly: id=%s, name=%s", station_id, station["name"])
+        return jsonify({'error': '删除失败：系统处理该变电站时发生异常。'}), 500
+
     logger.info(f"Station deleted: id={station_id}, name={station['name']}")
-
     return jsonify({'message': f'已删除变电站 {station["name"]}'})
 
 @admin_bp.route('/stations/<int:station_id>', methods=['PUT'])

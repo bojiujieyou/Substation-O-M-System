@@ -294,6 +294,119 @@ class TestFaultsEndpoint:
         assert restored_faults[0]['id'] == 1
         assert restored_faults[0]['deleted_at'] is None
 
+    def test_delete_station_cleans_related_records_and_unlinks_photos(self, client, init_db, test_db):
+        login_admin_session(client)
+
+        conn = sqlite3.connect(test_db)
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS camera_slots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slot_code TEXT NOT NULL,
+                station_id INTEGER NOT NULL,
+                project_id INTEGER NOT NULL,
+                location_desc TEXT NOT NULL DEFAULT '',
+                area TEXT NOT NULL DEFAULT '',
+                channel_number INTEGER,
+                FOREIGN KEY (station_id) REFERENCES stations(id)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS station_external_names (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                station_id INTEGER NOT NULL,
+                source_system TEXT NOT NULL,
+                external_name TEXT NOT NULL,
+                normalized_name TEXT NOT NULL,
+                is_primary INTEGER DEFAULT 0,
+                FOREIGN KEY (station_id) REFERENCES stations(id)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS station_recorders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                station_id INTEGER NOT NULL,
+                project_id INTEGER NOT NULL,
+                recorder_name TEXT NOT NULL,
+                ip_address TEXT,
+                port INTEGER,
+                description TEXT,
+                status TEXT NOT NULL DEFAULT 'active',
+                FOREIGN KEY (station_id) REFERENCES stations(id)
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '110kV寿元变', '110kV', '测试县')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+            VALUES (1, 'A-01', 1, 1, '主变区域', '主变区', 1)
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO cameras (id, station_id, camera_index, area, location_desc, ip_address, channel_port, channel_number)
+            VALUES (1, 1, 'CAM-01', '主变区', '主变区域', '10.0.0.1', 8000, 1)
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (id, station_id, camera_id, fault_type, reporter_name, status)
+            VALUES (1, 1, 1, 'OFFLINE', 'tester', 'open')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO photos (id, rel_path, abs_path, filename, ext, station_id, match_status, match_method)
+            VALUES (1, 'photos/shouyuan.jpg', 'E:/photos/shouyuan.jpg', 'shouyuan.jpg', '.jpg', 1, 'matched', 'manual')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO station_aliases (id, station_id, alias, source)
+            VALUES (1, 1, '寿元变', 'manual')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO station_external_names (id, station_id, source_system, external_name, normalized_name, is_primary)
+            VALUES (1, 1, 'inventory', '110kV寿元变', '110kv寿元变', 1)
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO station_recorders (id, station_id, project_id, recorder_name, ip_address, port, description, status)
+            VALUES (1, 1, 1, 'NVR-01', '10.0.0.10', 8000, '测试录像机', 'active')
+            """
+        )
+        conn.commit()
+        conn.close()
+
+        response = client.delete('/admin/stations/1')
+        assert response.status_code == 200
+        assert '已删除变电站' in response.get_json()['message']
+
+        conn = sqlite3.connect(test_db)
+        assert conn.execute("SELECT COUNT(*) FROM stations WHERE id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM cameras WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM fault_reports WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM camera_slots WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM station_aliases WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM station_external_names WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM station_recorders WHERE station_id = 1").fetchone()[0] == 0
+        assert conn.execute("SELECT station_id FROM photos WHERE id = 1").fetchone()[0] is None
+        conn.close()
+
 class TestTokenAuth:
     """Token认证测试（决策#1, #2）"""
 

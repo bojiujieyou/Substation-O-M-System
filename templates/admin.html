@@ -1051,11 +1051,12 @@ async function deleteStation(stationId) {
 
     try {
         const response = await fetch(`/admin/stations/${stationId}`, { method: 'DELETE' });
+        const contentType = response.headers.get('content-type') || '';
+        const resp = contentType.includes('application/json') ? await response.json() : null;
         if (response.ok) {
             await loadStations();
         } else {
-            const resp = await response.json();
-            showToast(resp.error || '删除失败', 'error');
+            showToast(resp?.error || `删除失败（${response.status}）`, 'error');
         }
     } catch (error) {
         showToast('删除失败: ' + error.message, 'error');
