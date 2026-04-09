@@ -99,7 +99,7 @@ function setPreviewZoom(nextZoom, options = {}) {
 }
 
 function adjustPreviewZoom(delta) {
-    setPreviewZoom(Math.round((previewZoom + delta) * 10) / 10);
+    setPreviewZoom(Math.round((previewZoom + delta) * 100) / 100);
 }
 
 function resetPreviewZoom() {
@@ -263,7 +263,7 @@ document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventList
         const originX = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
         const originY = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
         setPreviewZoom(
-            Math.round((previewZoom + (event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP)) * 10) / 10,
+            Math.round((previewZoom + (event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP)) * 100) / 100,
             { originX, originY }
         );
         return;
