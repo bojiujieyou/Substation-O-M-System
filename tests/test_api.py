@@ -564,6 +564,10 @@ class TestIdempotency:
             INSERT INTO cameras (id, station_id, camera_index, ip_address)
             VALUES (1, 1, '1', '192.168.1.100')
         """)
+        conn.execute("""
+            INSERT INTO cameras (id, station_id, camera_index, ip_address)
+            VALUES (2, 1, '2', '192.168.1.101')
+        """)
         conn.commit()
         conn.close()
 
@@ -603,6 +607,27 @@ class TestIdempotency:
         # 没有IP匹配，应该能成功（不会触发幂等）
         assert response.status_code in [201, 400]
 
+    def test_allows_missing_fault_type_and_defaults_to_pending(self, client, init_db, setup_with_camera, test_db):
+        response = client.post('/api/faults', json={
+            'station_id': 1,
+            'camera_id': 1,
+            'reporter_name': '张三'
+        })
+
+        assert response.status_code == 201
+        fault_id = response.get_json()['fault_id']
+
+        conn = sqlite3.connect(test_db)
+        try:
+            row = conn.execute(
+                "SELECT fault_type FROM fault_reports WHERE id = ?",
+                (fault_id,)
+            ).fetchone()
+        finally:
+            conn.close()
+
+        assert row == ('待现场确认',)
+
     def test_idempotency_window_boundary(self, client, init_db, setup_with_camera):
         """5分钟窗口边界：14:59和15:01属于不同窗口，都应创建记录"""
         import time
@@ -641,3 +666,34 @@ class TestIdempotency:
 
         # 两次提交应该创建不同的故障记录
         assert fault_id_1 != fault_id_2
+
+    def test_multi_camera_submission_creates_multiple_faults(self, client, init_db, setup_with_camera, test_db):
+        response = client.post('/api/faults', json={
+            'station_id': 1,
+            'camera_ids': [1, 2],
+            'fault_type': '无图像',
+            'reporter_name': '张三'
+        })
+
+        assert response.status_code == 201
+        payload = response.get_json()
+        assert payload['fault_count'] == 2
+        assert len(payload['fault_ids']) == 2
+        assert payload['fault_group_key']
+
+        conn = sqlite3.connect(test_db)
+        try:
+            rows = conn.execute(
+                """
+                SELECT camera_id, fault_group_key, status
+                FROM fault_reports
+                ORDER BY id
+                """
+            ).fetchall()
+        finally:
+            conn.close()
+
+        assert rows == [
+            (1, payload['fault_group_key'], 'open'),
+            (2, payload['fault_group_key'], 'open'),
+        ]

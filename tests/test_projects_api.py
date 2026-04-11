@@ -435,6 +435,101 @@ def test_create_fault_uses_project_fault_type_version_and_camera_slot(client, se
     assert fault == (2, 1, "BLUR", "Blur", 10, "1")
 
 
+def test_create_fault_allows_missing_fault_type_and_defaults_to_pending(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    response = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_id": 1,
+            "project": "inspection",
+            "description": "type unknown before onsite inspection",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+
+    assert response.status_code == 201
+    fault_id = response.get_json()["fault_id"]
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        fault = conn.execute(
+            """
+            SELECT fault_type, fault_type_code, fault_type_label_snapshot, fault_type_version_id
+            FROM fault_reports
+            WHERE id = ?
+            """,
+            (fault_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert fault == ("待现场确认", None, "待现场确认", None)
+
+
+def test_create_fault_with_multiple_cameras_creates_project_scoped_group(client, seeded_project_schema, project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (4, 'INSPECT_2', 1, 2, 'inspection-slot-2', '', 2)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (4, 1, '2', '', 'inspection-slot-2', '10.0.0.4', 2, 4, 2, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+
+    response = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera blur detected",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+
+    assert response.status_code == 201
+    payload = response.get_json()
+    assert payload["fault_count"] == 2
+    assert len(payload["fault_ids"]) == 2
+    assert payload["fault_group_key"]
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        rows = conn.execute(
+            """
+            SELECT camera_id, project_id, camera_slot_id, fault_type_code, fault_type_version_id, fault_group_key
+            FROM fault_reports
+            WHERE id IN (?, ?)
+            ORDER BY camera_id
+            """,
+            tuple(payload["fault_ids"]),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert rows == [
+        (1, 2, 1, "BLUR", 10, payload["fault_group_key"]),
+        (4, 2, 4, "BLUR", 10, payload["fault_group_key"]),
+    ]
+
+
 def test_create_fault_rejects_camera_project_mismatch(client, seeded_project_schema):
     login(client, "admin1", "adminpass")
 
@@ -638,6 +733,83 @@ def test_station_slots_endpoint_returns_project_scoped_slot_view(client, seeded_
     assert slot["recent_faults"][0]["fault_label"] == "Blur"
     assert slot["recent_faults"][0]["description"] == "Lens blur on east yard camera"
     assert slot["recent_faults"][0]["handler_note"] == "Cleaned housing and restored focus"
+
+
+def test_station_slots_endpoint_dedupes_semantic_duplicate_slots(client, seeded_project_schema):
+    conn = sqlite3.connect(app.config["DATABASE_PATH"])
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES
+            (3, 'MIGRATED_119', 1, 2, '2#主变北侧', '', 9),
+            (4, 'LEGACY_unified_1_9_2#主变北侧-9#球机_dup', 1, 2, '2#主变北侧-9#球机', '', 9),
+            (5, 'LEGACY_unified_1_9_枪机_2#主变北侧-9#球机_dup', 1, 2, '2#主变北侧-9#球机', '枪机', 9)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, project_camera_code, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (3, 1, '9', '', '', '2#主变北侧', '10.0.0.9', 9, 3, 2, 'retired'),
+            (4, 1, '9', '2#主变北侧-9#球机', '', '2#主变北侧-9#球机', '10.0.0.253', 9, 4, 2, 'retired'),
+            (5, 1, '9', '', '枪机', '2#主变北侧-9#球机', '', 9, 5, 2, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+
+    response = client.get("/api/stations/1/slots?project=inspection")
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data["total"] == 2
+    duplicate_slot = next(
+        slot for slot in data["slots"] if slot["channel_number"] == 9
+    )
+    assert duplicate_slot["location_desc"] == "2#主变北侧"
+    assert duplicate_slot["current_camera"]["id"] == 5
+    assert duplicate_slot["history_camera_count"] == 1
+    assert [camera["id"] for camera in duplicate_slot["history_cameras"]] == [3]
+
+
+def test_station_slots_endpoint_drops_shadow_history_from_merged_slot(client, seeded_project_schema):
+    conn = sqlite3.connect(app.config["DATABASE_PATH"])
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES
+            (3, 'MIGRATED_113', 1, 2, '110kV场地西侧-3#球机', '', 3),
+            (4, 'LEGACY_unified_1_3_枪机_110kV场地西侧-3#球机_dup', 1, 2, '110kV场地西侧-3#球机', '枪机', 3)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, project_camera_code, area, location_desc, ip_address, channel_number, slot_id, project_id, status, replaced_by_camera_id)
+        VALUES
+            (3, 1, '3', NULL, '', '110kV场地西侧-3#球机', '10.0.0.131', 3, 3, 2, 'replaced', 4),
+            (4, 1, '3', '110kV场地西侧-3#球机', '', '110kV场地西侧-3#球机', '10.0.0.253', 3, 3, 2, 'retired', NULL),
+            (5, 1, '3', '', '枪机', '110kV场地西侧-3#球机', '', 3, 4, 2, 'active', NULL)
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+
+    response = client.get("/api/stations/1/slots?project=inspection")
+    assert response.status_code == 200
+    data = response.get_json()
+
+    duplicate_slot = next(
+        slot for slot in data["slots"] if slot["channel_number"] == 3
+    )
+    assert duplicate_slot["current_camera"]["id"] == 5
+    assert duplicate_slot["history_camera_count"] == 1
+    assert [camera["id"] for camera in duplicate_slot["history_cameras"]] == [3]
 
 
 def test_station_slots_endpoint_shows_history_after_replacement(client, seeded_project_schema):
@@ -1442,6 +1614,50 @@ def test_photos_endpoints_respect_project_scope(client, seeded_project_schema, t
     denied_file = client.get(f"/photos/file/{hidden_id}")
     assert denied_file.status_code == 403
     assert denied_file.get_json()["code"] == "PROJECT_ACCESS_DENIED"
+
+
+def test_photo_groups_fault_filter_respects_project_scope(client, seeded_project_schema, project_test_db, tmp_path, monkeypatch):
+    login(client, "operator1", "operatorpass")
+
+    photo_root = tmp_path / "photo-root"
+    photo_root.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr("config.Config.PHOTO_ROOT_PATH", str(photo_root))
+
+    fault_photo = photo_root / "fault-only.jpg"
+    fault_photo.write_bytes(b"\xff\xd8\xff\xd9")
+    no_fault_photo = photo_root / "no-fault.jpg"
+    no_fault_photo.write_bytes(b"\xff\xd8\xff\xd9")
+
+    conn = sqlite3.connect(project_test_db)
+    conn.execute(
+        """
+        INSERT INTO photos
+            (rel_path, abs_path, filename, ext, station_id, match_status, match_method, project_id, project_hint)
+        VALUES
+            (?, ?, 'fault-only.jpg', '.jpg', 1, 'matched', 'manual', 2, 'inspection'),
+            (?, ?, 'no-fault.jpg', '.jpg', 2, 'matched', 'manual', 2, 'inspection')
+        """,
+        (str(fault_photo.name), str(fault_photo), str(no_fault_photo.name), str(no_fault_photo)),
+    )
+    conn.execute(
+        """
+        INSERT INTO fault_reports
+            (station_id, camera_id, fault_type, reporter_name, status, project_id, fault_type_label_snapshot, source_type)
+        VALUES
+            (1, NULL, 'Blur', 'Carol', 'open', 2, 'Blur', 'manual'),
+            (2, NULL, 'Blur', 'Carol', 'open', 1, 'Blur', 'manual')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    response = client.get("/api/photos/groups?has_fault=1")
+    assert response.status_code == 200
+    payload = response.get_json()
+
+    assert payload["group_count"] == 1
+    assert payload["groups"][0]["station_id"] == 1
+    assert payload["groups"][0]["station_name"] == "Station A"
 
 
 def test_fault_detail_includes_same_slot_history(client, seeded_project_schema, project_test_db):

@@ -54,6 +54,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['WTF_CSRF_ENABLED'] = False
 
 # 注册蓝图
+DEFAULT_PENDING_FAULT_TYPE = '待现场确认'
+
 app.register_blueprint(admin_bp)
 app.register_blueprint(admin_fault_types_bp)
 app.register_blueprint(admin_notifications_bp)
@@ -184,6 +186,60 @@ def get_table_columns(db, table_name):
     """返回表字段集合，用于兼容旧 schema。"""
     rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
     return {row["name"] for row in rows}
+
+
+def ensure_fault_report_multi_camera_schema(db):
+    if not table_exists(db, "fault_reports"):
+        return set()
+    columns = get_table_columns(db, "fault_reports")
+    if "fault_group_key" not in columns:
+        db.execute("ALTER TABLE fault_reports ADD COLUMN fault_group_key TEXT")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_group_key ON fault_reports(fault_group_key)")
+        db.commit()
+        columns = get_table_columns(db, "fault_reports")
+    return columns
+
+
+def normalize_camera_ids(value):
+    if value in (None, ""):
+        return []
+    raw_items = value if isinstance(value, list) else [value]
+    normalized = []
+    seen = set()
+    for item in raw_items:
+        if item in (None, ""):
+            continue
+        try:
+            camera_id = int(item)
+        except (TypeError, ValueError):
+            raise ValueError("camera_id_invalid")
+        if camera_id in seen:
+            continue
+        seen.add(camera_id)
+        normalized.append(camera_id)
+    return normalized
+
+
+def fetch_camera_rows_by_ids(db, camera_ids, camera_columns):
+    if not camera_ids:
+        return []
+    select_fields = ["id", "station_id"]
+    for field_name in ("project_id", "slot_id", "project_camera_code", "camera_index", "location_desc", "area"):
+        if field_name in camera_columns:
+            select_fields.append(field_name)
+    placeholders = ", ".join(["?"] * len(camera_ids))
+    rows = db.execute(
+        f"SELECT {', '.join(select_fields)} FROM cameras WHERE id IN ({placeholders})",
+        camera_ids,
+    ).fetchall()
+    row_map = {int(row["id"]): row for row in rows}
+    ordered_rows = []
+    for camera_id in camera_ids:
+        row = row_map.get(camera_id)
+        if not row:
+            return None
+        ordered_rows.append(row)
+    return ordered_rows
 
 
 def ensure_fault_report_soft_delete_schema(db):
@@ -1823,34 +1879,31 @@ def create_fault():
     logger.info(f"Fault report: station={data.get('station_id')}, type={data.get('fault_type')}, reporter={data.get('reporter_name')}")
 
     # 必填字段验证
-    required = ['station_id', 'fault_type', 'reporter_name']
+    required = ['station_id', 'reporter_name']
     for field in required:
         if not data.get(field):
             return api_error(f'缺少必填字段: {field}')
 
     db = get_db()
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_multi_camera_schema(db)
     camera_columns = get_table_columns(db, "cameras")
     project = None
     project_id = None
     project_code = (data.get('project') or '').strip()
-    camera_id = data.get('camera_id')
-    camera_row = None
-    camera_slot_id = None
-    project_device_code = None
-    fault_type_label_snapshot = data.get('fault_type')
+    try:
+        selected_camera_ids = normalize_camera_ids(data.get('camera_ids'))
+        if not selected_camera_ids and data.get('camera_id') not in (None, ""):
+            selected_camera_ids = normalize_camera_ids([data.get('camera_id')])
+    except ValueError:
+        return api_error('摄像头参数无效', 400)
+    fault_type_value = str(data.get('fault_type') or '').strip() or DEFAULT_PENDING_FAULT_TYPE
+    fault_type_label_snapshot = fault_type_value
     fault_type_version_id = None
+    camera_rows = []
 
-    if camera_id:
-        select_fields = ["id", "station_id"]
-        for field_name in ('project_id', 'slot_id', 'project_camera_code', 'camera_index'):
-            if field_name in camera_columns:
-                select_fields.append(field_name)
-        camera_row = db.execute(
-            f"SELECT {', '.join(select_fields)} FROM cameras WHERE id = ?",
-            (camera_id,),
-        ).fetchone()
-        if not camera_row:
+    if selected_camera_ids:
+        camera_rows = fetch_camera_rows_by_ids(db, selected_camera_ids, camera_columns)
+        if not camera_rows:
             return api_error('摄像头不存在', 404)
 
     if project_code:
@@ -1861,8 +1914,15 @@ def create_fault():
             return project_access_denied()
         project_id = project['id']
     elif 'project_id' in fault_report_columns and projects_enabled(db):
-        if camera_row and 'project_id' in camera_columns and camera_row['project_id']:
-            project_id = camera_row['project_id']
+        inferred_project_ids = {
+            row['project_id']
+            for row in camera_rows
+            if 'project_id' in camera_columns and row['project_id'] is not None
+        }
+        if len(inferred_project_ids) > 1:
+            return api_error('摄像头不属于同一项目', 400)
+        if inferred_project_ids:
+            project_id = next(iter(inferred_project_ids))
         if project_id is None:
             default_project_code = get_default_project_code(
                 get_visible_projects(
@@ -1895,18 +1955,12 @@ def create_fault():
     if not station:
         return api_error('变电站不存在', 404)
 
-    if camera_row:
+    for camera_row in camera_rows:
         if camera_row['station_id'] != data['station_id']:
             return api_error('摄像头与变电站不匹配', 400)
         camera_project_id = camera_row['project_id'] if 'project_id' in camera_columns else None
         if project_id is not None and 'project_id' in camera_columns and camera_project_id not in (None, project_id):
             return api_error('摄像头与项目不匹配', 400)
-        if 'slot_id' in camera_columns:
-            camera_slot_id = camera_row['slot_id']
-        if 'project_camera_code' in camera_columns and camera_row['project_camera_code']:
-            project_device_code = camera_row['project_camera_code']
-        elif 'camera_index' in camera_columns:
-            project_device_code = camera_row['camera_index']
 
     if data.get('fault_type_code') and project and project.get('fault_type_version_id'):
         fault_type_row = db.execute(
@@ -1921,92 +1975,145 @@ def create_fault():
         ).fetchone()
         if not fault_type_row:
             return api_error('故障类型不存在或未发布', 400)
+        fault_type_value = fault_type_row['type_label']
         fault_type_label_snapshot = fault_type_row['type_label']
         fault_type_version_id = project['fault_type_version_id']
 
     # 计算幂等键（决策#7）
-    # 幂等键 = camera_id + FLOOR(report_time / 300秒)
+    # 幂等键 = 每个 camera_id + FLOOR(report_time / 300秒)
     report_time = data.get('report_time')
+    import time
+    current_time = int(report_time or time.time())
+    window = math.floor(current_time / 300)
 
-    if camera_id:
-        # 使用当前时间计算5分钟窗口（即使没有report_time也用camera_id做幂等）
-        import time
-        current_time = int(report_time or time.time())
-        window = math.floor(current_time / 300)
-        idempotency_key = f"{camera_id}_{window}"
+    if selected_camera_ids:
+        idempotency_keys = [f"{camera_id}_{window}" for camera_id in selected_camera_ids]
     else:
         # 使用IP文本的哈希
         import hashlib
         ip_text = data.get('camera_ip_free_text', '')
         if ip_text:
-            idempotency_key = hashlib.md5(ip_text.encode()).hexdigest()[:16]
+            idempotency_keys = [hashlib.md5(ip_text.encode()).hexdigest()[:16]]
         else:
-            idempotency_key = None
+            idempotency_keys = [None]
 
     # 检查幂等冲突
-    if idempotency_key:
-        existing = db.execute("""
-            SELECT id FROM fault_reports WHERE idempotency_key = ?
-        """, (idempotency_key,)).fetchone()
-
+    conflicting_camera_ids = []
+    for index, idempotency_key in enumerate(idempotency_keys):
+        if not idempotency_key:
+            continue
+        existing = db.execute(
+            "SELECT id FROM fault_reports WHERE idempotency_key = ?",
+            (idempotency_key,),
+        ).fetchone()
         if existing:
+            if selected_camera_ids:
+                conflicting_camera_ids.append(selected_camera_ids[index])
+            else:
+                return api_error('该摄像头5分钟内有报修记录，请勿重复提交', 409)
+
+    if conflicting_camera_ids:
+        if len(selected_camera_ids) == 1:
             return api_error('该摄像头5分钟内有报修记录，请勿重复提交', 409)
+        placeholders = ", ".join(["?"] * len(conflicting_camera_ids))
+        label_rows = db.execute(
+            f"""
+            SELECT id, COALESCE(NULLIF(TRIM(location_desc), ''), NULLIF(TRIM(area), ''), camera_index, CAST(id AS TEXT)) AS label
+            FROM cameras
+            WHERE id IN ({placeholders})
+            ORDER BY id
+            """,
+            conflicting_camera_ids,
+        ).fetchall()
+        labels = [row['label'] for row in label_rows]
+        suffix = f"：{'、'.join(labels)}" if labels else ''
+        return api_error(f'以下摄像头5分钟内已有报修记录，请勿重复提交{suffix}', 409)
 
     # 插入故障记录
     try:
-        insert_columns = [
-            'station_id', 'camera_id', 'fault_type', 'description',
-            'reporter_name', 'reporter_contact', 'status', 'idempotency_key'
-        ]
-        insert_values = [
-            data['station_id'],
-            data.get('camera_id'),
-            data['fault_type'],
-            data.get('description', ''),
-            data['reporter_name'],
-            data.get('reporter_contact', ''),
-            'open',
-            idempotency_key
-        ]
+        import hashlib
+        fault_group_key = None
+        if len(selected_camera_ids) > 1:
+            seed = f"{data['station_id']}|{project_id or ''}|{','.join(str(item) for item in selected_camera_ids)}|{current_time}"
+            fault_group_key = hashlib.md5(seed.encode('utf-8')).hexdigest()[:16]
 
-        if 'project_id' in fault_report_columns:
-            insert_columns.append('project_id')
-            insert_values.append(project_id)
-        if 'camera_slot_id' in fault_report_columns:
-            insert_columns.append('camera_slot_id')
-            insert_values.append(camera_slot_id)
-        if 'fault_type_label_snapshot' in fault_report_columns:
-            insert_columns.append('fault_type_label_snapshot')
-            insert_values.append(fault_type_label_snapshot)
-        if 'fault_type_code' in fault_report_columns and data.get('fault_type_code'):
-            insert_columns.append('fault_type_code')
-            insert_values.append(data.get('fault_type_code'))
-        if 'fault_type_version_id' in fault_report_columns:
-            insert_columns.append('fault_type_version_id')
-            insert_values.append(fault_type_version_id)
-        if 'project_device_code' in fault_report_columns:
-            insert_columns.append('project_device_code')
-            insert_values.append(project_device_code)
+        created_fault_ids = []
+        db.execute("BEGIN")
 
-        placeholders = ', '.join(['?'] * len(insert_columns))
-        cursor = db.execute(
-            f"""
-            INSERT INTO fault_reports ({', '.join(insert_columns)})
-            VALUES ({placeholders})
-            """,
-            insert_values,
-        )
+        if not camera_rows:
+            camera_rows = [None]
+
+        for index, camera_row in enumerate(camera_rows):
+            current_camera_id = camera_row['id'] if camera_row else None
+            current_camera_slot_id = camera_row['slot_id'] if camera_row and 'slot_id' in camera_columns else None
+            current_project_device_code = None
+            if camera_row and 'project_camera_code' in camera_columns and camera_row['project_camera_code']:
+                current_project_device_code = camera_row['project_camera_code']
+            elif camera_row and 'camera_index' in camera_columns:
+                current_project_device_code = camera_row['camera_index']
+
+            insert_columns = [
+                'station_id', 'camera_id', 'fault_type', 'description',
+                'reporter_name', 'reporter_contact', 'status', 'idempotency_key'
+            ]
+            insert_values = [
+                data['station_id'],
+                current_camera_id,
+                fault_type_value,
+                data.get('description', ''),
+                data['reporter_name'],
+                data.get('reporter_contact', ''),
+                'open',
+                idempotency_keys[index] if index < len(idempotency_keys) else None,
+            ]
+
+            if 'project_id' in fault_report_columns:
+                insert_columns.append('project_id')
+                insert_values.append(project_id)
+            if 'camera_slot_id' in fault_report_columns:
+                insert_columns.append('camera_slot_id')
+                insert_values.append(current_camera_slot_id)
+            if 'fault_type_label_snapshot' in fault_report_columns:
+                insert_columns.append('fault_type_label_snapshot')
+                insert_values.append(fault_type_label_snapshot)
+            if 'fault_type_code' in fault_report_columns and data.get('fault_type_code'):
+                insert_columns.append('fault_type_code')
+                insert_values.append(data.get('fault_type_code'))
+            if 'fault_type_version_id' in fault_report_columns:
+                insert_columns.append('fault_type_version_id')
+                insert_values.append(fault_type_version_id)
+            if 'project_device_code' in fault_report_columns:
+                insert_columns.append('project_device_code')
+                insert_values.append(current_project_device_code)
+            if 'fault_group_key' in fault_report_columns:
+                insert_columns.append('fault_group_key')
+                insert_values.append(fault_group_key)
+
+            placeholders = ', '.join(['?'] * len(insert_columns))
+            cursor = db.execute(
+                f"""
+                INSERT INTO fault_reports ({', '.join(insert_columns)})
+                VALUES ({placeholders})
+                """,
+                insert_values,
+            )
+            created_fault_ids.append(cursor.lastrowid)
+
         db.commit()
 
-        fault_id = cursor.lastrowid
-        _safe_dispatch_fault_notification(db, fault_id, 'fault_created')
+        for fault_id in created_fault_ids:
+            _safe_dispatch_fault_notification(db, fault_id, 'fault_created')
 
         return api_success({
-            'fault_id': fault_id,
+            'fault_id': created_fault_ids[0],
+            'fault_ids': created_fault_ids,
+            'fault_count': len(created_fault_ids),
+            'fault_group_key': fault_group_key,
             'message': '故障报修提交成功'
         }, 201)
 
     except Exception as e:
+        db.rollback()
         return api_error(f'提交失败: {e}', 500)
 
 # ============================================================
@@ -2414,6 +2521,11 @@ def get_photos():
         kw = f"%{keyword}%"
         params.extend([kw, kw, kw])
 
+    fault_only_clause, fault_only_params = _build_photo_fault_only_clause("p")
+    if fault_only_clause:
+        where.append(fault_only_clause)
+        params.extend(fault_only_params)
+
     where_sql = " AND ".join(where)
 
     total_row = db.execute(
@@ -2477,6 +2589,11 @@ def get_photo_groups():
         where.append("(p.filename LIKE ? OR p.rel_path LIKE ? OR p.station_hint LIKE ?)")
         kw = f"%{keyword}%"
         params.extend([kw, kw, kw])
+
+    fault_only_clause, fault_only_params = _build_photo_fault_only_clause("p")
+    if fault_only_clause:
+        where.append(fault_only_clause)
+        params.extend(fault_only_params)
 
     where_sql = " AND ".join(where)
 
@@ -2778,7 +2895,7 @@ def create_fault_scoped():
     if not data:
         return api_error('璇锋眰浣撴棤鏁�')
 
-    required = ['station_id', 'fault_type', 'reporter_name']
+    required = ['station_id', 'reporter_name']
     for field in required:
         if not data.get(field):
             return api_error(f'缂哄皯蹇呭～瀛楁: {field}')
@@ -2795,13 +2912,23 @@ def create_fault_scoped():
         if not ensure_project_write_access(db, project['code']):
             return project_access_denied()
     elif 'project_id' in fault_report_columns and projects_enabled(db):
-        camera_id = data.get('camera_id')
-        if camera_id and 'project_id' in camera_columns:
-            row = db.execute("SELECT project_id FROM cameras WHERE id = ?", (camera_id,)).fetchone()
-            if row and row['project_id']:
+        try:
+            camera_ids = normalize_camera_ids(data.get('camera_ids'))
+            if not camera_ids and data.get('camera_id') not in (None, ""):
+                camera_ids = normalize_camera_ids([data.get('camera_id')])
+        except ValueError:
+            return api_error('摄像头参数无效', 400)
+        if camera_ids and 'project_id' in camera_columns:
+            rows = fetch_camera_rows_by_ids(db, camera_ids, camera_columns)
+            if not rows:
+                return api_error('摄像头不存在', 404)
+            project_ids = {row['project_id'] for row in rows if row['project_id'] is not None}
+            if len(project_ids) > 1:
+                return api_error('摄像头不属于同一项目', 400)
+            if project_ids:
                 project_row = db.execute(
                     "SELECT code FROM projects WHERE id = ?",
-                    (row['project_id'],),
+                    (next(iter(project_ids)),),
                 ).fetchone()
                 if project_row and not ensure_project_write_access(db, project_row['code']):
                     return project_access_denied()
@@ -3142,6 +3269,25 @@ def _photos_project_scope_enabled(db):
     return projects_enabled(db) and 'project_id' in photo_columns, photo_columns
 
 
+def _build_photo_fault_only_clause(photo_alias: str, project_scope: dict | None = None):
+    has_fault = request.args.get('has_fault', '').strip().lower() in ('1', 'true', 'yes')
+    if not has_fault:
+        return "", []
+
+    db = get_db()
+    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_scope_sql = ""
+    fault_scope_params = []
+    if project_scope and project_scope.get('enabled') and 'project_id' in fault_report_columns:
+        fault_scope_sql, fault_scope_params = build_project_in_clause("f", project_scope['project_ids'])
+
+    return (
+        f"({photo_alias}.match_status = 'unmatched' "
+        f"OR EXISTS (SELECT 1 FROM fault_reports f WHERE f.station_id = {photo_alias}.station_id"
+        f"{fault_scope_sql} AND COALESCE(f.status, 'open') IN ('open', 'handling')))"
+    ), fault_scope_params
+
+
 def _apply_photo_project_filter(db, base_where, params, requested_project_code):
     enabled, photo_columns = _photos_project_scope_enabled(db)
     if not enabled:
@@ -3360,7 +3506,7 @@ def get_photos_scoped():
         where.append("(p.filename LIKE ? OR p.rel_path LIKE ? OR p.station_hint LIKE ?)")
         params.extend([kw, kw, kw])
 
-    where, params, _, error = _apply_photo_project_filter(
+    where, params, project_scope, error = _apply_photo_project_filter(
         db,
         where,
         params,
@@ -3368,6 +3514,11 @@ def get_photos_scoped():
     )
     if error:
         return error
+
+    fault_only_clause, fault_only_params = _build_photo_fault_only_clause("p", project_scope)
+    if fault_only_clause:
+        where.append(fault_only_clause)
+        params.extend(fault_only_params)
 
     where_sql = " AND ".join(where)
     total_row = db.execute(
@@ -3427,7 +3578,7 @@ def get_photo_groups_scoped():
         where.append("(p.filename LIKE ? OR p.rel_path LIKE ? OR p.station_hint LIKE ?)")
         params.extend([kw, kw, kw])
 
-    where, params, _, error = _apply_photo_project_filter(
+    where, params, project_scope, error = _apply_photo_project_filter(
         db,
         where,
         params,
@@ -3435,6 +3586,11 @@ def get_photo_groups_scoped():
     )
     if error:
         return error
+
+    fault_only_clause, fault_only_params = _build_photo_fault_only_clause("p", project_scope)
+    if fault_only_clause:
+        where.append(fault_only_clause)
+        params.extend(fault_only_params)
 
     rows = db.execute(
         f"""

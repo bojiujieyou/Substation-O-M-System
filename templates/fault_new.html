@@ -4,11 +4,236 @@
 
 {% block page_title %}故障报修{% endblock %}
 
+{% block extra_head %}
+<style>
+.report-entry-card {
+    margin-bottom: 24px;
+}
+
+.report-entry-card-quick {
+    border-color: rgba(26, 115, 232, 0.14);
+}
+
+.report-entry-card-standard {
+    border-color: rgba(255, 107, 53, 0.14);
+}
+
+.report-entry-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.report-entry-card-quick .report-entry-badge {
+    background: rgba(26, 115, 232, 0.08);
+    border-color: rgba(26, 115, 232, 0.14);
+}
+
+.report-entry-card-standard .report-entry-badge {
+    background: rgba(255, 107, 53, 0.08);
+    border-color: rgba(255, 107, 53, 0.14);
+}
+
+.ip-result-card {
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 3px solid var(--accent-primary);
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.ip-result-card-warning {
+    border-left-color: var(--accent-warning);
+    background: rgba(249, 171, 0, 0.12);
+}
+
+.ip-result-card-error {
+    border-left-color: var(--accent-danger);
+    background: rgba(217, 48, 37, 0.08);
+}
+
+.ip-result-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.ip-autofill-summary {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.05);
+}
+
+.ip-autofill-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ip-autofill-list {
+    display: grid;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.ip-autofill-item,
+.ip-autofill-next {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.ip-autofill-next {
+    margin-top: 8px;
+}
+
+.success-next-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.camera-multiselect {
+    position: relative;
+}
+
+.camera-multiselect-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.camera-multiselect-trigger:disabled {
+    cursor: not-allowed;
+}
+
+.camera-multiselect-trigger-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.camera-multiselect-arrow {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--text-secondary);
+    border-bottom: 2px solid var(--text-secondary);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    margin-right: 4px;
+}
+
+.camera-multiselect.is-open .camera-multiselect-arrow {
+    transform: rotate(-135deg);
+    margin-top: 6px;
+}
+
+.camera-multiselect-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.camera-multiselect-panel[hidden] {
+    display: none;
+}
+
+.camera-multiselect-options {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.camera-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.16s ease;
+}
+
+.camera-option:hover {
+    background: rgba(26, 115, 232, 0.06);
+}
+
+.camera-option input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--accent-primary);
+}
+
+.camera-option-content {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.camera-option-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.camera-option-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.camera-multiselect-empty {
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.camera-multiselect-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+#camera-select-note + #camera-loading + .field-note {
+    display: none;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- IP快速定位卡片 -->
-<div class="card" style="margin-bottom: 24px;">
+<div class="card report-entry-card report-entry-card-quick">
     <div class="card-header">
         <div>
+            <div class="report-entry-badge">快捷入口</div>
             <h3 class="card-title">按 IP 快速定位</h3>
             <p class="card-subtitle">输入摄像头IP地址快速查找</p>
         </div>
@@ -21,14 +246,14 @@
 </div>
 
 <!-- 报修表单卡片 -->
-<div class="card">
+<div class="card report-entry-card report-entry-card-standard" id="manual-report-card">
     <div class="card-header">
         <div>
+            <div class="report-entry-badge">标准入口</div>
             <h3 class="card-title">按项目上报故障</h3>
             <p class="card-subtitle">填写完整信息提交报修</p>
         </div>
     </div>
-
     <form id="fault-form">
         <div class="form-field-lg">
             <label class="form-label-strong">项目 <span class="required">*</span></label>
@@ -47,15 +272,36 @@
 
         <div class="form-field-lg">
             <label class="form-label-strong">摄像头</label>
-            <select id="camera-select" class="form-select-input">
-                <option value="">请先选择变电站</option>
-            </select>
+            <div class="camera-multiselect" id="camera-multiselect">
+                <button
+                    type="button"
+                    id="camera-select-trigger"
+                    class="form-select-input camera-multiselect-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    disabled
+                >
+                    <span id="camera-select-summary" class="camera-multiselect-trigger-text">请先选择变电站</span>
+                    <span class="camera-multiselect-arrow" aria-hidden="true"></span>
+                </button>
+                <div id="camera-select-panel" class="camera-multiselect-panel" hidden>
+                    <div id="camera-options" class="camera-multiselect-options">
+                        <div class="camera-multiselect-empty">请先选择变电站</div>
+                    </div>
+                    <div class="camera-multiselect-actions">
+                        <button type="button" class="btn-secondary" onclick="clearCameraSelection()">清空</button>
+                        <button type="button" class="btn-primary" onclick="closeCameraSelect()">确认</button>
+                    </div>
+                </div>
+            </div>
+            <select id="camera-select" multiple hidden aria-hidden="true"></select>
+            <div id="camera-select-note" class="field-note">在下拉列表中勾选需要关联的摄像头，不选则按站点级故障提交。</div>
             <div id="camera-loading" class="field-note" style="display:none;">加载摄像头中...</div>
         </div>
 
         <div class="form-field-lg">
-            <label class="form-label-strong">故障类型 <span class="required">*</span></label>
-            <select id="fault-type" class="form-select-input" required>
+            <label class="form-label-strong">故障类型</label>
+            <select id="fault-type" class="form-select-input">
                 <option value="">请先选择项目</option>
             </select>
             <div id="fault-type-help" class="field-note"></div>
@@ -113,6 +359,10 @@
                     <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(52, 199, 89, 0.1); color: var(--accent-success); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; margin: 0 auto 16px;">✓</div>
                     <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">故障报修已提交</p>
                     <p style="color: var(--text-secondary); font-size: 14px;" id="fault-id-display"></p>
+                    <div class="success-next-actions">
+                        <a id="success-view-fault-link" href="{{ url_for('faults') }}" class="btn btn-primary" data-project-link>查看刚提交故障</a>
+                        <a id="success-workbench-link" href="{{ url_for('faults') }}" class="btn btn-secondary" data-project-link>进入故障处理页</a>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -141,6 +391,160 @@ let selectedCamera = null;
 let currentProjectCode = '';
 let multiProjectEnabled = false;
 let currentFaultTypes = [];
+
+function buildFaultPageLink(extraParams = {}) {
+    return withProject('/faults', { project: currentProjectCode, ...extraParams });
+}
+
+function scrollToManualReportForm() {
+    const card = document.getElementById('manual-report-card');
+    if (!card) {
+        return;
+    }
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateSuccessActions(faultId) {
+    const viewFaultLink = document.getElementById('success-view-fault-link');
+    const workbenchLink = document.getElementById('success-workbench-link');
+    if (viewFaultLink) {
+        viewFaultLink.href = buildFaultPageLink({ fault_id: faultId, view: 'pending' });
+    }
+    if (workbenchLink) {
+        workbenchLink.href = buildFaultPageLink({ view: 'pending' });
+    }
+}
+
+function currentProjectName(projectCode = currentProjectCode) {
+    return availableProjects.find(project => project.code === projectCode)?.name || projectCode || '-';
+}
+
+function focusFaultTypeField() {
+    window.setTimeout(() => {
+        const select = document.getElementById('fault-type');
+        if (select) {
+            select.focus();
+        }
+    }, 180);
+}
+
+function renderCameraPlaceholder(message) {
+    const cameraSelect = document.getElementById('camera-select');
+    const trigger = document.getElementById('camera-select-trigger');
+    const summary = document.getElementById('camera-select-summary');
+    const options = document.getElementById('camera-options');
+    cameraSelect.innerHTML = '';
+    cameraSelect.disabled = true;
+    summary.textContent = message;
+    summary.dataset.placeholder = message;
+    options.innerHTML = `<div class="camera-multiselect-empty">${escapeHtml(message)}</div>`;
+    trigger.disabled = false;
+    closeCameraSelect();
+}
+
+function selectedCameraIds() {
+    return Array.from(document.getElementById('camera-select').selectedOptions)
+        .map(option => option.value)
+        .filter(Boolean)
+        .map(value => parseInt(value, 10))
+        .filter(Number.isFinite);
+}
+
+function selectedCameraLabels() {
+    return Array.from(document.getElementById('camera-select').selectedOptions)
+        .map(option => option.textContent.trim())
+        .filter(Boolean);
+}
+
+function setSelectedCameraIds(cameraIds) {
+    const selectedIds = new Set((cameraIds || []).map(item => String(item)));
+    const cameraSelect = document.getElementById('camera-select');
+    Array.from(cameraSelect.options).forEach(option => {
+        option.selected = selectedIds.has(option.value);
+    });
+    document.querySelectorAll('#camera-options input[type="checkbox"]').forEach(input => {
+        input.checked = selectedIds.has(input.value);
+    });
+    syncCameraSelectionSummary();
+}
+
+function syncCameraSelectionSummary() {
+    const cameraSelect = document.getElementById('camera-select');
+    const summary = document.getElementById('camera-select-summary');
+    const selectedOptions = Array.from(cameraSelect.selectedOptions);
+    const placeholder = summary.dataset.placeholder || '请选择摄像头（可选）';
+
+    if (cameraSelect.disabled || !selectedOptions.length) {
+        summary.textContent = placeholder;
+        return;
+    }
+
+    if (selectedOptions.length === 1) {
+        summary.textContent = selectedOptions[0].textContent.trim();
+        return;
+    }
+
+    summary.textContent = `已选 ${selectedOptions.length} 台摄像头`;
+}
+
+function openCameraSelect() {
+    const wrapper = document.getElementById('camera-multiselect');
+    const panel = document.getElementById('camera-select-panel');
+    const trigger = document.getElementById('camera-select-trigger');
+    if (trigger.disabled) {
+        return;
+    }
+    wrapper.classList.add('is-open');
+    panel.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+}
+
+function closeCameraSelect() {
+    const wrapper = document.getElementById('camera-multiselect');
+    const panel = document.getElementById('camera-select-panel');
+    const trigger = document.getElementById('camera-select-trigger');
+    wrapper.classList.remove('is-open');
+    panel.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+}
+
+function toggleCameraSelect() {
+    const panel = document.getElementById('camera-select-panel');
+    if (panel.hidden) {
+        openCameraSelect();
+    } else {
+        closeCameraSelect();
+    }
+}
+
+function clearCameraSelection() {
+    setSelectedCameraIds([]);
+}
+
+function renderCameraOptions(cameraList) {
+    const cameraSelect = document.getElementById('camera-select');
+    const options = document.getElementById('camera-options');
+    const trigger = document.getElementById('camera-select-trigger');
+
+    cameraSelect.innerHTML = cameraList.map(camera => `
+        <option value="${camera.id}">
+            ${escapeHtml(camera.location_desc || camera.area || '-')} (${escapeHtml(camera.ip_address || '-')})
+        </option>
+    `).join('');
+    options.innerHTML = cameraList.map(camera => `
+        <label class="camera-option">
+            <input type="checkbox" value="${camera.id}">
+            <span class="camera-option-content">
+                <span class="camera-option-name">${escapeHtml(camera.location_desc || camera.area || '-')}</span>
+                <span class="camera-option-meta">${escapeHtml(camera.ip_address || '-')}</span>
+            </span>
+        </label>
+    `).join('');
+    cameraSelect.disabled = false;
+    trigger.disabled = false;
+    document.getElementById('camera-select-summary').dataset.placeholder = '请选择摄像头（可选）';
+    syncCameraSelectionSummary();
+}
 
 function getUrlProjectCode() {
     return new URLSearchParams(window.location.search).get('project') || '';
@@ -188,12 +592,12 @@ function renderFaultTypes(faultTypes) {
     currentFaultTypes = faultTypes || [];
     const select = document.getElementById('fault-type');
     if (!currentFaultTypes.length) {
-        select.innerHTML = '<option value="">当前项目暂无已发布故障类型</option>';
-        select.disabled = true;
+        select.innerHTML = '<option value="">待现场确认（现场处理时补录）</option>';
+        select.disabled = false;
         return;
     }
     select.disabled = false;
-    select.innerHTML = '<option value="">请选择故障类型</option>' +
+    select.innerHTML = '<option value="">待现场确认（可不选）</option>' +
         currentFaultTypes.map(item => `
             <option value="${escapeHtml(item.type_code || item.type_label)}" data-label="${escapeHtml(item.type_label)}">
                 ${escapeHtml(item.type_label)}
@@ -279,7 +683,7 @@ async function loadStations() {
         } else {
             updateUrlState({ project: currentProjectCode, stationId: '' });
             cameras = [];
-            document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
+            renderCameraPlaceholder('请先选择变电站');
         }
     } catch (error) {
         stationSelect.innerHTML = '<option value="">加载失败</option>';
@@ -290,16 +694,19 @@ async function loadStations() {
 async function loadCameras(stationId) {
     const cameraSelect = document.getElementById('camera-select');
     const loading = document.getElementById('camera-loading');
+    const trigger = document.getElementById('camera-select-trigger');
 
     if (!stationId) {
-        cameraSelect.innerHTML = '<option value="">请先选择变电站</option>';
         cameras = [];
+        renderCameraPlaceholder('请先选择变电站');
         updateUrlState({ project: currentProjectCode, stationId: '' });
         return;
     }
 
     loading.style.display = 'block';
     cameraSelect.disabled = true;
+    trigger.disabled = true;
+    closeCameraSelect();
     updateUrlState({ project: currentProjectCode, stationId });
 
     try {
@@ -307,18 +714,20 @@ async function loadCameras(stationId) {
         if (!response.ok) throw new Error('加载摄像头失败');
         const data = await response.json();
         cameras = data.cameras || [];
-        cameraSelect.innerHTML = '<option value="">请选择摄像头（可选）</option>' +
-            cameras.map(camera => `
-                <option value="${camera.id}">
-                    ${escapeHtml(camera.location_desc || camera.area || '-')} (${escapeHtml(camera.ip_address || '-')})
-                </option>
-            `).join('');
+        if (!cameras.length) {
+            renderCameraPlaceholder('当前站点暂无可选摄像头');
+            return;
+        }
+        renderCameraOptions(cameras);
     } catch (error) {
-        cameraSelect.innerHTML = '<option value="">加载失败</option>';
+        renderCameraPlaceholder('加载失败');
         console.error(error);
     } finally {
         loading.style.display = 'none';
-        cameraSelect.disabled = false;
+        if (cameras.length) {
+            cameraSelect.disabled = false;
+            trigger.disabled = false;
+        }
     }
 }
 
@@ -327,7 +736,7 @@ async function searchByIp() {
     const resultDiv = document.getElementById('ip-search-result');
     const ip = ipInput.value.trim();
     if (!ip) {
-        resultDiv.innerHTML = '<p style="color: var(--text-muted);">请输入 IP 地址</p>';
+        resultDiv.innerHTML = '<p style="color: var(--text-muted);">请输入 IP 地址；如果不知道 IP，也可以直接按项目和站点手动上报。</p>';
         return;
     }
 
@@ -336,34 +745,67 @@ async function searchByIp() {
         const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}&project=${encodeURIComponent(currentProjectCode)}`);
         const data = await response.json();
         if (response.status === 404) {
-            resultDiv.innerHTML = `<p style="color: var(--accent-warning);">${escapeHtml(data.error || '未找到摄像头')}</p>`;
+            resultDiv.innerHTML = `
+                <div class="ip-result-card ip-result-card-warning">
+                    <p style="font-weight: 600; margin-bottom: 6px;">未查到对应摄像头</p>
+                    <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 0;">该 IP 暂未录入系统，这不影响继续报修，你可以直接按项目和站点手动上报。</p>
+                    <div class="ip-result-actions">
+                        <button type="button" class="btn-secondary" onclick="scrollToManualReportForm()">转到手动上报</button>
+                    </div>
+                </div>
+            `;
             selectedCamera = null;
             return;
         }
         if (!response.ok) throw new Error(data.error || '查询失败');
 
         const camera = data.camera;
+        const projectName = currentProjectName(camera.project_code || currentProjectCode);
+        const cameraLabel = camera.location_desc || camera.area || (camera.id ? `摄像头 #${camera.id}` : '-');
         selectedCamera = camera;
         resultDiv.innerHTML = `
-            <div style="padding: 16px; background: rgba(52, 199, 89, 0.1); border-radius: 10px; border-left: 3px solid var(--accent-success);">
+            <div class="ip-result-card">
                 <p style="font-weight: 600; margin-bottom: 4px;"><strong>${escapeHtml(camera.station_name)}</strong> - ${escapeHtml(camera.location_desc || camera.area || '-')}</p>
-                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">IP: ${escapeHtml(camera.ip_address || '-')}</p>
-                <button type="button" class="btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="selectFoundCamera()">选择此摄像头</button>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 0;">IP: ${escapeHtml(camera.ip_address || '-')}</p>
+                <div class="ip-autofill-summary">
+                    <div class="ip-autofill-title">已自动带入</div>
+                    <div class="ip-autofill-list">
+                        <div class="ip-autofill-item">项目：${escapeHtml(projectName)}</div>
+                        <div class="ip-autofill-item">站点：${escapeHtml(camera.station_name || '-')}</div>
+                        <div class="ip-autofill-item">摄像头：${escapeHtml(cameraLabel)}</div>
+                    </div>
+                    <div class="ip-autofill-next">还需补充：故障类型、报修人；可选补描述和联系方式。</div>
+                </div>
+                <div class="ip-result-actions">
+                    <button type="button" class="btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="selectFoundCamera()">继续填写报修</button>
+                    <button type="button" class="btn-secondary" style="padding: 6px 16px; font-size: 13px;" onclick="scrollToManualReportForm()">查看标准入口</button>
+                </div>
             </div>
         `;
 
         document.getElementById('station-select').value = camera.station_id;
         await loadCameras(camera.station_id);
-        document.getElementById('camera-select').value = camera.id;
+        setSelectedCameraIds([camera.id]);
     } catch (error) {
-        resultDiv.innerHTML = `<p style="color: var(--accent-danger);">${escapeHtml(error.message)}</p>`;
+        resultDiv.innerHTML = `
+            <div class="ip-result-card ip-result-card-error">
+                <p style="font-weight: 600; margin-bottom: 6px;">IP 查询失败</p>
+                <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 0;">${escapeHtml(error.message)}。你仍然可以直接按项目和站点继续提交报修。</p>
+                <div class="ip-result-actions">
+                    <button type="button" class="btn-secondary" onclick="scrollToManualReportForm()">继续手动上报</button>
+                </div>
+            </div>
+        `;
     }
 }
 
 function selectFoundCamera() {
     if (selectedCamera) {
-        document.getElementById('camera-select').value = selectedCamera.id;
+        setSelectedCameraIds([selectedCamera.id]);
     }
+    closeCameraSelect();
+    scrollToManualReportForm();
+    focusFaultTypeField();
 }
 
 function resetForm() {
@@ -373,7 +815,7 @@ function resetForm() {
     selectedCamera = null;
     cameras = [];
     document.getElementById('station-select').value = '';
-    document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
+    renderCameraPlaceholder('请先选择变电站');
     updateUrlState({ project: currentProjectCode, stationId: '' });
     renderFaultTypes(currentFaultTypes);
 }
@@ -417,10 +859,6 @@ document.getElementById('fault-form').addEventListener('submit', function(event)
         showFieldError('station-select', '请选择变电站');
         hasError = true;
     }
-    if (!faultTypeValue) {
-        showFieldError('fault-type', '请选择故障类型');
-        hasError = true;
-    }
     if (!reporterName) {
         showFieldError('reporter-name', '请输入报修人姓名');
         hasError = true;
@@ -430,10 +868,11 @@ document.getElementById('fault-form').addEventListener('submit', function(event)
     }
 
     const stationName = document.querySelector(`#station-select option[value="${stationId}"]`)?.textContent || '-';
-    const cameraSelect = document.getElementById('camera-select');
-    const cameraName = cameraSelect.value ? cameraSelect.options[cameraSelect.selectedIndex].text : '未选择';
+    const cameraNames = selectedCameraLabels();
+    const cameraSummary = cameraNames.length ? cameraNames.join('、') : '未选择';
+    const cameraCountLabel = cameraNames.length ? `${cameraNames.length} 台` : '未选择';
     const projectName = document.querySelector(`#project-select option[value="${projectCode}"]`)?.textContent || projectCode;
-    const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue;
+    const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue || '待现场确认';
 
     document.getElementById('confirm-body').innerHTML = `
         <div>
@@ -447,7 +886,11 @@ document.getElementById('fault-form').addEventListener('submit', function(event)
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
                 <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">摄像头</span>
-                <span style="font-weight: 600;">${escapeHtml(cameraName)}</span>
+                <span style="font-weight: 600;">${escapeHtml(cameraCountLabel)}</span>
+            </div>
+            <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">明细</span>
+                <span style="font-weight: 600; line-height: 1.7;">${escapeHtml(cameraSummary)}</span>
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
                 <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">故障类型</span>
@@ -472,17 +915,18 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
 
     try {
         const stationId = document.getElementById('station-select').value;
-        const cameraId = document.getElementById('camera-select').value || null;
+        const cameraIds = selectedCameraIds();
         const faultTypeOption = selectedFaultTypeOption();
         const faultTypeCode = document.getElementById('fault-type').value;
-        const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeCode;
+        const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeCode || '待现场确认';
 
         const response = await fetch('/api/faults', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 station_id: parseInt(stationId, 10),
-                camera_id: cameraId ? parseInt(cameraId, 10) : null,
+                camera_id: cameraIds.length === 1 ? cameraIds[0] : null,
+                camera_ids: cameraIds,
                 project: currentProjectCode,
                 fault_type: faultTypeLabel,
                 fault_type_code: faultTypeCode || null,
@@ -501,7 +945,12 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
             throw new Error(data.error || '提交失败');
         }
 
-        document.getElementById('fault-id-display').textContent = `报修单号: ${data.fault_id}`;
+        const faultIds = Array.isArray(data.fault_ids) && data.fault_ids.length ? data.fault_ids : [data.fault_id];
+        const faultCount = data.fault_count || faultIds.length;
+        document.getElementById('fault-id-display').textContent = faultCount > 1
+            ? `已创建 ${faultCount} 条报修：${faultIds.join('、')}`
+            : `报修单号: ${faultIds[0]}`;
+        updateSuccessActions(data.fault_id);
         bootstrap.Modal.getInstance(document.getElementById('confirm-modal')).hide();
         new bootstrap.Modal(document.getElementById('success-modal')).show();
     } catch (error) {
@@ -517,13 +966,39 @@ document.getElementById('project-select').addEventListener('change', async funct
     currentProjectCode = this.value;
     updateUrlState({ project: currentProjectCode, stationId: '' });
     document.getElementById('station-select').value = '';
-    document.getElementById('camera-select').innerHTML = '<option value="">请先选择变电站</option>';
+    renderCameraPlaceholder('请先选择变电站');
     await loadFaultTypes(currentProjectCode);
     await loadStations();
 });
 
 document.getElementById('station-select').addEventListener('change', function() {
     loadCameras(this.value);
+});
+
+document.getElementById('camera-select-trigger').addEventListener('click', function() {
+    toggleCameraSelect();
+});
+
+document.getElementById('camera-options').addEventListener('change', function(event) {
+    if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'checkbox') {
+        return;
+    }
+    const selectedIds = Array.from(document.querySelectorAll('#camera-options input[type="checkbox"]:checked'))
+        .map(input => input.value);
+    setSelectedCameraIds(selectedIds);
+});
+
+document.addEventListener('click', function(event) {
+    const wrapper = document.getElementById('camera-multiselect');
+    if (!wrapper.contains(event.target)) {
+        closeCameraSelect();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeCameraSelect();
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -533,6 +1008,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         await loadProjects();
         await loadFaultTypes(currentProjectCode);
+        renderCameraPlaceholder('请先选择变电站');
         await loadStations();
     } catch (error) {
         setProjectHelp(error.message, true);
