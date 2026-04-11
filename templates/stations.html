@@ -11,54 +11,11 @@
     gap: 16px;
 }
 
-.station-command-card {
-    padding: 20px 22px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
-}
-
-.station-command-main {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 18px;
-    flex-wrap: wrap;
-}
-
-.station-command-kicker {
-    margin: 0 0 6px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: var(--text-secondary);
-}
-
-.station-command-title {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--text-primary);
-}
-
-.station-command-text {
-    margin: 10px 0 0;
-    max-width: 760px;
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--text-secondary);
-}
-
-.station-command-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+.station-toolbar-card {
+    padding: 18px 20px;
 }
 
 .station-toolbar {
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -88,29 +45,10 @@
     color: var(--text-muted);
 }
 
-.station-view-panel {
-    padding: 16px 18px;
-}
-
-.station-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-}
-
-.station-view-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.station-view-subtitle {
-    margin: 4px 0 0;
-    font-size: 13px;
-    color: var(--text-secondary);
+.station-view-strip {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
 }
 
 .station-view-tabs {
@@ -277,6 +215,37 @@
     color: var(--text-primary);
 }
 
+.station-risk-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.station-reason-title {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.station-reason-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.station-reason-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
 .station-card-metrics {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -333,6 +302,10 @@
     line-height: 1.6;
 }
 
+.station-next-step strong {
+    color: var(--text-primary);
+}
+
 .station-actions {
     display: flex;
     align-items: center;
@@ -358,6 +331,10 @@
 .station-action-link.is-disabled {
     opacity: 0.45;
     pointer-events: none;
+}
+
+.station-action-link.is-recommended {
+    box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.16);
 }
 
 .station-list-empty {
@@ -497,14 +474,10 @@
         flex: 1 1 100%;
     }
 
-    .station-command-title {
-        font-size: 22px;
-    }
-
     .station-card,
     .station-detail-card,
     .station-detail-top,
-    .station-command-card {
+    .station-toolbar-card {
         padding: 16px;
     }
 
@@ -517,18 +490,7 @@
 
 {% block content %}
 <div class="station-page-shell">
-    <section class="card station-command-card">
-        <div class="station-command-main">
-            <div>
-                <p class="station-command-kicker">STATION DIAGNOSTICS</p>
-                <h2 id="station-command-title" class="station-command-title">站点诊断入口</h2>
-                <p id="station-command-text" class="station-command-text">进入站点页后，先看异常站点、最近故障和高风险站点，再决定是去看故障、地图定位还是直接报障。</p>
-            </div>
-            <div class="station-command-actions">
-                <a id="station-command-primary" href="#" class="btn-primary">查看异常站点</a>
-                <a id="station-command-secondary" href="#" class="btn-secondary">查看最近故障</a>
-            </div>
-        </div>
+    <section class="card station-toolbar-card">
         <div class="station-toolbar">
             <div class="station-filter-row">
                 <input id="station-search" type="search" class="form-input" placeholder="搜索站名 / 区县 / 电压等级 / 故障线索">
@@ -544,7 +506,7 @@
                     <option value="青田">青田</option>
                     <option value="龙泉">龙泉</option>
                 </select>
-                <span class="station-filter-note">默认按风险和最近故障排序，帮助值班人员先看需要处置的站点。</span>
+                <span class="station-filter-note">默认按风险和最近故障排序。</span>
             </div>
             {% if session.get('role') == 'admin' %}
             <button id="stations-create-btn" class="btn-primary" onclick="openCreateModal()">
@@ -555,20 +517,13 @@
             </button>
             {% endif %}
         </div>
-    </section>
-
-    <section class="card station-view-panel">
-        <div class="station-view-header">
-            <div>
-                <h3 class="station-view-title">快捷视图</h3>
-                <p class="station-view-subtitle">用预设视图直接切到异常、近期有故障或高风险站点，降低从列表中重新判断优先级的成本。</p>
+        <div class="station-view-strip">
+            <div id="station-view-tabs" class="station-view-tabs">
+                <button type="button" class="station-view-tab" data-view="all">全部站点</button>
+                <button type="button" class="station-view-tab" data-view="abnormal">只看异常站点</button>
+                <button type="button" class="station-view-tab" data-view="recent-fault">最近有故障的站点</button>
+                <button type="button" class="station-view-tab" data-view="top-risk">风险较高站点</button>
             </div>
-        </div>
-        <div id="station-view-tabs" class="station-view-tabs">
-            <button type="button" class="station-view-tab" data-view="all">全部站点</button>
-            <button type="button" class="station-view-tab" data-view="abnormal">只看异常站点</button>
-            <button type="button" class="station-view-tab" data-view="recent-fault">最近有故障的站点</button>
-            <button type="button" class="station-view-tab" data-view="top-risk">风险较高站点</button>
         </div>
     </section>
 
@@ -729,6 +684,12 @@ const STATION_VIEW_DEFINITIONS = {
 };
 const STATION_RECENT_DAYS = 7;
 const STATION_OVERDUE_MS = STATION_RECENT_DAYS * 24 * 60 * 60 * 1000;
+const STATION_HEALTH_LEVEL_SUMMARY = {
+    normal: '未触发明显风险信号，可按常规巡检。',
+    watch: `近 ${STATION_RECENT_DAYS} 天有故障，或出现 1 路异常摄像头。`,
+    abnormal: '存在未闭环故障，或异常摄像头达到 2 路及以上。',
+    serious: `存在超时未闭环，或未闭环故障达到 3 条，或异常摄像头达到 4 路及以上。`
+};
 
 function normalizeSearchText(value) {
     return String(value || '').trim().toLowerCase();
@@ -873,12 +834,23 @@ function isCameraPossiblyAbnormal(camera) {
     return !['active', 'online', 'normal', 'ok', '启用', '正常', '在用', 'running'].includes(status);
 }
 
+function getStationHealthMeaning(level) {
+    return STATION_HEALTH_LEVEL_SUMMARY[level] || STATION_HEALTH_LEVEL_SUMMARY.normal;
+}
+
+function getStationAssessmentReasons(station) {
+    if (Array.isArray(station?.risk_reasons) && station.risk_reasons.length) {
+        return station.risk_reasons.slice(0, 3);
+    }
+    return ['未触发超时未闭环、故障叠加或异常摄像头偏多规则'];
+}
+
 function buildStationHealthMeta(metrics) {
     if (metrics.overdue_fault_count > 0 || metrics.open_fault_count >= 3 || metrics.abnormal_camera_count >= 4) {
         return {
             level: 'serious',
             label: '严重',
-            note: '存在超时未闭环或多故障叠加，建议优先处置。'
+            note: '存在超时未闭环或多故障叠加。'
         };
     }
     if (metrics.open_fault_count > 0 || metrics.abnormal_camera_count >= 2) {
@@ -892,7 +864,7 @@ function buildStationHealthMeta(metrics) {
         return {
             level: 'watch',
             label: '关注',
-            note: '近期有故障或出现单点异常，建议继续观察。'
+            note: '近期有故障或出现单点异常。'
         };
     }
     return {
@@ -1038,53 +1010,6 @@ function updateStationOverview(stations) {
     document.getElementById('overview-risk').textContent = String(highRiskCount);
 }
 
-function setCommandLink(id, href, text) {
-    const element = document.getElementById(id);
-    if (!element) {
-        return;
-    }
-    element.href = href;
-    element.textContent = text;
-}
-
-function updateStationCommandPanel(stations) {
-    const currentView = getStationViewMode();
-    const title = document.getElementById('station-command-title');
-    const text = document.getElementById('station-command-text');
-    const highRiskStations = stations.filter(isHighRiskStation);
-    const abnormalStations = stations.filter((station) => station.health_level === 'abnormal' || station.health_level === 'serious');
-    const topStation = highRiskStations[0] || abnormalStations[0] || stations[0] || null;
-
-    if (!stations.length) {
-        title.textContent = `${STATION_VIEW_DEFINITIONS[currentView].label}暂无匹配站点`;
-        text.textContent = '可以切换到其他视图、放宽搜索条件，或先进入故障页查看待处理事项。';
-        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'all' }), '查看全部站点');
-        setCommandLink('station-command-secondary', withProject(getCurrentDesignFaultsPath(), { view: 'pending' }), '查看待处理故障');
-        return;
-    }
-
-    if (highRiskStations.length > 0) {
-        title.textContent = `当前有 ${highRiskStations.length} 个高风险站点需要优先关注`;
-        text.textContent = `优先检查 ${topStation?.name || '目标站点'}，它已经出现超时未闭环、多故障叠加或异常摄像头偏多的情况，适合作为值班首个处理入口。`;
-        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'top-risk' }), '查看高风险站点');
-        setCommandLink('station-command-secondary', buildStationFaultUrl(topStation, { view: topStation?.overdue_fault_count ? 'overdue' : 'pending' }), '进入站点故障');
-        return;
-    }
-
-    if (abnormalStations.length > 0) {
-        title.textContent = `当前有 ${abnormalStations.length} 个异常站点`;
-        text.textContent = `建议先看 ${topStation?.name || '异常站点'} 的未闭环故障和摄像头状态，再决定是否直接报障或进入地图定位。`;
-        setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'abnormal' }), '查看异常站点');
-        setCommandLink('station-command-secondary', buildStationFaultUrl(topStation, { view: 'pending' }), '查看站点故障');
-        return;
-    }
-
-    title.textContent = '当前站点整体平稳';
-    text.textContent = `当前视图覆盖 ${stations.length} 个站点，最近 ${STATION_RECENT_DAYS} 天有故障的站点为 ${stations.filter((station) => station.recent_fault_count > 0).length} 个，可继续通过最近故障视图做复核。`;
-    setCommandLink('station-command-primary', withProject(getCurrentDesignStationsPath(), { view: 'recent-fault' }), '查看最近故障站点');
-    setCommandLink('station-command-secondary', withProject(getCurrentDesignFaultsPath(), { view: 'pending' }), '查看待处理故障');
-}
-
 async function loadStations() {
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
@@ -1199,7 +1124,6 @@ function applyStationFilters() {
 
     updateStationViewTabs();
     updateStationOverview(filteredStations);
-    updateStationCommandPanel(filteredStations);
     renderStations(filteredStations);
 }
 
@@ -1280,8 +1204,12 @@ function resolveStationLocationCompactText(station) {
 }
 
 function buildStationFaultUrl(station, extraParams = {}) {
+    const defaultView = (station?.overdue_fault_count || 0) > 0
+        ? 'overdue'
+        : ((station?.open_fault_count || 0) > 0 ? 'pending' : 'all');
     return withProject(getCurrentDesignFaultsPath(), {
         station_id: station.id,
+        view: defaultView,
         ...extraParams,
     });
 }
@@ -1293,7 +1221,16 @@ function buildStationReportUrl(station) {
 }
 
 function renderHealthBadge(station) {
-    return `<span class="station-health-badge station-health-${escapeHtml(station.health_level || 'normal')}">${escapeHtml(station.health_label || '正常')}</span>`;
+    const level = station.health_level || 'normal';
+    return `<span class="station-health-badge station-health-${escapeHtml(level)}" title="${escapeHtml(`状态含义：${getStationHealthMeaning(level)}`)}">${escapeHtml(station.health_label || '正常')}</span>`;
+}
+
+function renderStationReasonChips(station) {
+    return `
+        <div class="station-reason-list">
+            ${getStationAssessmentReasons(station).map((reason) => `<span class="station-reason-chip">${escapeHtml(reason)}</span>`).join('')}
+        </div>
+    `;
 }
 
 function renderStationMetricCard(label, value, note, tone = '') {
@@ -1307,29 +1244,69 @@ function renderStationMetricCard(label, value, note, tone = '') {
     `;
 }
 
-function getStationNextStep(station) {
+function getStationRecommendedAction(station) {
     if ((station.overdue_fault_count || 0) > 0) {
-        return '下一步建议：先进入故障页查看超时未闭环故障，再回到站点详情核对受影响槽位。';
+        return {
+            key: 'fault',
+            label: '查看故障',
+            reason: '先清理超时未闭环故障',
+        };
     }
     if ((station.open_fault_count || 0) > 0) {
-        return '下一步建议：进入故障页处理待处理故障，并同步复核该站点当前摄像头状态。';
+        return {
+            key: 'fault',
+            label: '查看故障',
+            reason: '先接手当前未闭环故障',
+        };
+    }
+    if ((station.abnormal_camera_count || 0) > 0 && station.has_coordinates) {
+        return {
+            key: 'map',
+            label: '地图定位',
+            reason: '先定位异常摄像头所在站点',
+        };
     }
     if ((station.abnormal_camera_count || 0) > 0) {
-        return '下一步建议：打开站点详情，先看当前异常摄像头所在的录像机和槽位。';
+        return {
+            key: 'report',
+            label: '直接报障',
+            reason: '异常集中但暂无定位信息，可直接补报现场问题',
+        };
     }
     if ((station.recent_fault_count || 0) > 0) {
-        return '下一步建议：复核最近故障是否已稳定闭环，必要时继续观察。';
+        return {
+            key: 'fault',
+            label: '查看故障',
+            reason: '先复核最近故障是否已稳定闭环',
+        };
     }
-    return '下一步建议：该站点当前可作为常规巡检对象，必要时再进入详情核对设备分布。';
+    return {
+        key: station.has_coordinates ? 'map' : 'fault',
+        label: station.has_coordinates ? '地图定位' : '查看故障',
+        reason: station.has_coordinates ? '可先看站点位置' : '可先看历史故障',
+    };
+}
+
+function getStationNextStep(station) {
+    const recommended = getStationRecommendedAction(station);
+    if ((station.overdue_fault_count || 0) > 0) {
+        return `先点「${recommended.label}」，再回看站点详情。`;
+    }
+    if ((station.open_fault_count || 0) > 0) {
+        return `先点「${recommended.label}」，再复核摄像头状态。`;
+    }
+    if ((station.abnormal_camera_count || 0) > 0) {
+        return `先点「${recommended.label}」，再判断是否报障。`;
+    }
+    if ((station.recent_fault_count || 0) > 0) {
+        return `先点「${recommended.label}」，复核最近故障。`;
+    }
+    return `可先点「${recommended.label}」。`;
 }
 
 function renderStationCard(station) {
-    const riskNote = station.risk_reasons?.length
-        ? station.risk_reasons.join('，')
-        : station.health_note;
-    const faultLink = buildStationFaultUrl(station, {
-        view: station.overdue_fault_count > 0 ? 'overdue' : 'pending'
-    });
+    const recommendedAction = getStationRecommendedAction(station);
+    const faultLink = buildStationFaultUrl(station);
     const reportLink = buildStationReportUrl(station);
     const mapLink = station.has_coordinates ? buildStationMapUrl(station) : '';
     const latestFaultLabel = station.latest_fault_label || '暂无故障';
@@ -1349,7 +1326,9 @@ function renderStationCard(station) {
                 </div>
                 <div class="station-risk-note">
                     <strong>${escapeHtml(station.health_note || '当前状态平稳')}</strong>
-                    ${escapeHtml(riskNote)}
+                    <div class="station-risk-meta">状态含义：${escapeHtml(getStationHealthMeaning(station.health_level || 'normal'))}</div>
+                    <div class="station-reason-title">判定依据</div>
+                    ${renderStationReasonChips(station)}
                 </div>
             </div>
             <div class="station-card-metrics">
@@ -1379,11 +1358,11 @@ function renderStationCard(station) {
                 )}
             </div>
             <div class="station-card-footer">
-                <div class="station-next-step">${escapeHtml(getStationNextStep(station))}</div>
+                <div class="station-next-step"><strong>${escapeHtml(recommendedAction.reason)}</strong> ${escapeHtml(getStationNextStep(station))}</div>
                 <div class="station-actions">
-                    <a class="btn-primary station-action-link" href="${faultLink}">查看故障</a>
-                    <a class="btn-secondary station-action-link${station.has_coordinates ? '' : ' is-disabled'}" href="${station.has_coordinates ? mapLink : '#'}">地图定位</a>
-                    <a class="btn-secondary station-action-link" href="${reportLink}">直接报障</a>
+                    <a class="${recommendedAction.key === 'fault' ? 'btn-primary is-recommended' : 'btn-secondary'} station-action-link" href="${faultLink}">查看故障</a>
+                    <a class="${recommendedAction.key === 'map' ? 'btn-primary is-recommended' : 'btn-secondary'} station-action-link${station.has_coordinates ? '' : ' is-disabled'}" href="${station.has_coordinates ? mapLink : '#'}">地图定位</a>
+                    <a class="${recommendedAction.key === 'report' ? 'btn-primary is-recommended' : 'btn-secondary'} station-action-link" href="${reportLink}">直接报障</a>
                     <button class="btn-ghost station-action-button" type="button" onclick="showDetail(${station.id})">查看详情</button>
                 </div>
             </div>
@@ -1449,7 +1428,7 @@ function renderRecentFaults(slot) {
     }).join('');
 
     return `
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <div style="display: grid; gap: 8px;">
             ${faults.map((fault) => {
                 const status = fault.status || 'open';
                 const label = fault.fault_label || '未命名故障';
@@ -1462,7 +1441,7 @@ function renderRecentFaults(slot) {
                         type="button"
                         class="badge badge-${escapeHtml(status)}"
                         data-fault-toggle="${escapeHtml(detailId)}"
-                        style="margin-right: 0; border: 0; cursor: pointer;"
+                        style="display: flex; width: 100%; justify-content: flex-start; margin-right: 0; border: 0; cursor: pointer; text-align: left; white-space: normal; line-height: 1.5; padding: 8px 12px;"
                         title="${escapeHtml(`${label} / ${statusLabel}${createdAt ? ` / ${createdAt}` : ''} / 点击查看描述`)}"
                     >
                         ${escapeHtml(badgeText)}
@@ -1470,7 +1449,7 @@ function renderRecentFaults(slot) {
                 `;
             }).join('')}
         </div>
-        <div style="margin-top: 6px;">
+        <div style="display: grid; gap: 8px; margin-top: 8px;">
             ${detailItems}
         </div>
     `;
@@ -1629,47 +1608,67 @@ function renderSlotCardV3(slot) {
     });
     const currentMatchesSlotTitle = currentPrimaryLabel && currentPrimaryLabel.trim() === slotTitle.trim();
     const currentIpText = current && current.ip_address ? current.ip_address : '\u672a\u914d\u7f6eIP';
-    const emptyStateMeta = slot.history_camera_count
-        ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">\u5386\u53f2\u8bbe\u5907 ${escapeHtml(slot.history_camera_count)} \u53f0</div>`
-        : '';
+    const slotStateLabel = current
+        ? '\u5728\u7528'
+        : (historyCameras.length ? '\u4ec5\u5386\u53f2' : '\u7a7a\u69fd');
+    const slotStateBackground = current
+        ? 'rgba(58, 160, 94, 0.12)'
+        : (historyCameras.length ? 'rgba(26, 115, 232, 0.08)' : 'rgba(142, 142, 147, 0.12)');
+    const slotStateHint = current
+        ? '\u5f53\u524d\u69fd\u4f4d\u5b58\u5728\u5728\u7528\u8bbe\u5907'
+        : (historyCameras.length ? '\u5f53\u524d\u65e0\u5728\u7528\u8bbe\u5907\uff0c\u4ec5\u4fdd\u7559\u5386\u53f2\u8bb0\u5f55' : '\u5f53\u524d\u69fd\u4f4d\u6682\u65e0\u8bbe\u5907\u8bb0\u5f55');
+    const slotMetaBadges = [
+        `\u69fd\u4f4d ${slot.slot_code || '-'}`,
+        slot.channel_number !== null && slot.channel_number !== undefined ? `\u901a\u9053 ${slot.channel_number}` : '',
+    ].filter(Boolean);
+    const summaryBadges = [
+        slotStateLabel,
+        `\u5386\u53f2 ${slot.history_camera_count || 0}`,
+        `\u6545\u969c ${slot.fault_count || 0}`,
+    ];
 
     return `
         <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; background: var(--bg-card);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                <div>
-                    <div style="font-weight: 600; font-size: 14px;">${escapeHtml(slotTitle)}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-                        \u69fd\u4f4d\u7f16\u7801 ${escapeHtml(slot.slot_code || '-')}
-                        ${slot.channel_number !== null && slot.channel_number !== undefined ? ` | \u901a\u9053 ${escapeHtml(slot.channel_number)}` : ''}
-                    </div>
-                </div>
-                <div style="text-align: right; font-size: 12px; color: var(--text-secondary);">
-                    <div>\u5386\u53f2\u8bbe\u5907 ${slot.history_camera_count || 0}</div>
-                    <div>\u6545\u969c ${slot.fault_count || 0}</div>
+            <div style="margin-bottom: 14px;">
+                <div style="font-weight: 700; font-size: 15px; line-height: 1.45; color: var(--text-primary);">${escapeHtml(slotTitle)}</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
+                    ${slotMetaBadges.map((badge) => `
+                        <span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.78); color: var(--text-secondary); font-size: 12px; line-height: 1.2;">${escapeHtml(badge)}</span>
+                    `).join('')}
+                    ${summaryBadges.map((badge, index) => `
+                        <span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: ${index === 0 ? slotStateBackground : (index === 1 ? 'rgba(26, 115, 232, 0.08)' : 'rgba(255, 107, 53, 0.1)')}; color: var(--text-secondary); font-size: 12px; line-height: 1.2;">${escapeHtml(badge)}</span>
+                    `).join('')}
                 </div>
             </div>
-            <div style="padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 12px;">
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">\u5f53\u524d\u8bbe\u5907</div>
+            <div style="padding: 14px; background: linear-gradient(180deg, rgba(26, 115, 232, 0.04), rgba(26, 115, 232, 0.01)); border: 1px solid rgba(26, 115, 232, 0.08); border-radius: 10px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <div style="font-size: 11px; letter-spacing: 0.08em; color: var(--text-secondary);">\u8bbe\u5907\u72b6\u6001</div>
+                    <span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: ${slotStateBackground}; color: var(--text-secondary); font-size: 12px; line-height: 1.2;">${escapeHtml(slotStateLabel)}</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">${escapeHtml(slotStateHint)}</div>
                 ${current ? `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
                         <div style="min-width: 0; flex: 1;">
-                            <div style="font-weight: 600; line-height: 1.45;">${currentMatchesSlotTitle ? '\u5df2\u7ed1\u5b9a\u5f53\u524d\u69fd\u4f4d' : escapeHtml(currentPrimaryLabel)}</div>
-                            ${currentSecondaryMeta ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(currentSecondaryMeta)}</div>` : ''}
+                            <div style="font-weight: 600; line-height: 1.45; color: var(--text-primary);">${currentMatchesSlotTitle ? '\u5df2\u7ed1\u5b9a\u5f53\u524d\u69fd\u4f4d' : escapeHtml(currentPrimaryLabel)}</div>
+                            ${currentSecondaryMeta ? `<div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">${escapeHtml(currentSecondaryMeta)}</div>` : ''}
                         </div>
-                        <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">${escapeHtml(currentIpText)}</span>
+                        <span style="display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">${escapeHtml(currentIpText)}</span>
                     </div>
+                </div>
+            ` : (!historyCameras.length ? `
+                    <div style="padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border-color); background: rgba(255, 255, 255, 0.72); color: var(--text-muted); font-size: 13px;">\u5f53\u524d\u65e0\u5728\u7528\u8bbe\u5907</div>
                 ` : `
-                    <div style="color: var(--text-muted);">\u5f53\u524d\u65e0\u5728\u7528\u8bbe\u5907</div>
-                    ${emptyStateMeta}
-                `}
+                    <div style="padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.72); color: var(--text-muted); font-size: 13px;">\u8be5\u69fd\u4f4d\u5df2\u8f6c\u4e3a\u5386\u53f2\u8bb0\u5f55\uff0c\u8bf7\u5728\u4e0b\u65b9\u67e5\u770b\u66fe\u7528\u8bbe\u5907\u3002</div>
+                `)}
             </div>
             ${historyCameras.length && !shouldCollapseSingleHistoryCamera ? `
                 <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
+                    <div style="font-size: 11px; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 8px;">\u5386\u53f2\u8bbe\u5907</div>
                     ${historyCameras.map((camera) => `
-                        <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; gap: 8px;">
-                            <span>${escapeHtml(getCameraPrimaryLabel(camera))}</span>
-                            <span style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHtml(camera.ip_address || '-')}</span>
-                            <span style="text-transform: uppercase; color: var(--text-muted); font-size: 11px;">${escapeHtml(camera.status || '-')}</span>
+                        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; background: rgba(15, 23, 42, 0.02); margin-top: 8px; font-size: 13px;">
+                            <span style="min-width: 0; line-height: 1.4;">${escapeHtml(getCameraPrimaryLabel(camera))}</span>
+                            <span style="font-family: var(--font-mono); color: var(--text-secondary); white-space: nowrap;">${escapeHtml(camera.ip_address || '-')}</span>
+                            <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 68px; padding: 3px 8px; border-radius: 999px; background: rgba(15, 23, 42, 0.06); text-transform: uppercase; color: var(--text-muted); font-size: 11px; white-space: nowrap;">${escapeHtml(camera.status || '-')}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -1709,7 +1708,7 @@ function renderSlotGroups(slots) {
                 </span>
                 <span style="font-size: 12px; color: var(--text-secondary);">${group.slots.length} 个槽位</span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
                 ${group.slots.map(renderSlotCardV3).join('')}
             </div>
         </div>
@@ -1766,7 +1765,7 @@ function renderSlotGroupsV2(slots) {
                 </span>
                 <span style="font-size: 12px; color: var(--text-secondary);">${group.slots.length} 个槽位</span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
                 ${group.slots.map(renderSlotCardV3).join('')}
             </div>
         </div>
@@ -1938,17 +1937,17 @@ function renderSlotGroupsV3(slots, recorders) {
                                     <div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">${escapeHtml(sectionMeta || '暂无录像机信息')}</div>
                                     ${sectionNote ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">${escapeHtml(sectionNote)}</div>` : ''}
                                 </div>
-                                <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.08); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">${section.slots.length} 个槽位</span>
+                                ${section.slots.length ? `<span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.08); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">${section.slots.length} 个槽位</span>` : ''}
                             </div>
                             ${section.slots.length ? `
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
                                     ${section.slots.map(renderSlotCardV3).join('')}
                                 </div>
-                            ` : `
+                            ` : (section.kind === 'unassigned' ? `
                                 <div style="padding: 14px 16px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: 13px;">
                                     当前还没有匹配到摄像机槽位
                                 </div>
-                            `}
+                            ` : '')}
                         </div>
                     `;
                 }).join('')}
@@ -1959,6 +1958,226 @@ function renderSlotGroupsV3(slots, recorders) {
 
 function normalizeStationDetailSortValue(value) {
     return String(value || '').trim();
+}
+
+function normalizeStationDetailDedupText(value) {
+    const text = normalizeStationDetailSortValue(value).replace(/\s+/g, ' ');
+    if (!text || text === '-') {
+        return '';
+    }
+    return text.toLowerCase();
+}
+
+function buildStationDetailSlotDedupKey(slot) {
+    if (!slot) {
+        return '';
+    }
+    const locationLabel = normalizeStationDetailDedupText(slot.location_desc || slot.area);
+    const channelNumber = normalizeStationDetailDedupText(slot.channel_number);
+    if (!locationLabel || !channelNumber) {
+        return '';
+    }
+    const projectKey = normalizeStationDetailDedupText(slot.project_code || slot.project_id || '');
+    const stationKey = normalizeStationDetailDedupText(slot.station_id || '');
+    return [projectKey, stationKey, locationLabel, channelNumber].join('|');
+}
+
+function compareStationDetailSlotPriority(left, right) {
+    const leftCode = normalizeStationDetailSortValue(left && left.slot_code).toUpperCase();
+    const rightCode = normalizeStationDetailSortValue(right && right.slot_code).toUpperCase();
+    const checks = [
+        [!leftCode.startsWith('LEGACY_'), !rightCode.startsWith('LEGACY_')],
+        [leftCode.startsWith('MIGRATED_'), rightCode.startsWith('MIGRATED_')],
+        [Boolean(left && left.current_camera), Boolean(right && right.current_camera)],
+        [Number(left && left.fault_count) || 0, Number(right && right.fault_count) || 0],
+        [Number(left && left.history_camera_count) || 0, Number(right && right.history_camera_count) || 0],
+        [leftCode ? -leftCode.length : 0, rightCode ? -rightCode.length : 0],
+    ];
+
+    for (const [leftValue, rightValue] of checks) {
+        if (leftValue === rightValue) {
+            continue;
+        }
+        return leftValue > rightValue ? 1 : -1;
+    }
+    return 0;
+}
+
+function mergeStationDetailHistoryCameras(primary, secondary) {
+    const merged = new Map();
+    [...(primary || []), ...(secondary || [])].forEach((camera, index) => {
+        if (!camera) {
+            return;
+        }
+        const cameraKey = camera.id
+            ? `id:${camera.id}`
+            : normalizeStationDetailDedupText([
+                camera.project_camera_code,
+                camera.camera_index,
+                camera.ip_address,
+                getCameraPrimaryLabel(camera),
+            ].filter(Boolean).join('|')) || `fallback:${index}`;
+        if (!merged.has(cameraKey)) {
+            merged.set(cameraKey, camera);
+        }
+    });
+    return Array.from(merged.values());
+}
+
+function mergeStationDetailDuplicateSlot(primary, secondary) {
+    const preferred = compareStationDetailSlotPriority(primary, secondary) >= 0 ? primary : secondary;
+    const fallback = preferred === primary ? secondary : primary;
+    const mergedHistoryCameras = mergeStationDetailHistoryCameras(preferred.history_cameras, fallback.history_cameras);
+
+    return {
+        ...fallback,
+        ...preferred,
+        location_desc: preferred.location_desc || fallback.location_desc || '',
+        area: preferred.area || fallback.area || '',
+        recorder: preferred.recorder || fallback.recorder || null,
+        current_camera: preferred.current_camera || fallback.current_camera || null,
+        fault_count: Math.max(Number(preferred.fault_count) || 0, Number(fallback.fault_count) || 0),
+        history_camera_count: Math.max(
+            mergedHistoryCameras.length,
+            Number(preferred.history_camera_count) || 0,
+            Number(fallback.history_camera_count) || 0,
+        ),
+        history_cameras: mergedHistoryCameras,
+    };
+}
+
+function dedupeStationDetailSlots(slots) {
+    const dedupedSlots = [];
+    const keyIndexMap = new Map();
+
+    (slots || []).forEach((slot) => {
+        const dedupKey = buildStationDetailSlotDedupKey(slot);
+        if (!dedupKey) {
+            dedupedSlots.push(slot);
+            return;
+        }
+
+        if (!keyIndexMap.has(dedupKey)) {
+            keyIndexMap.set(dedupKey, dedupedSlots.length);
+            dedupedSlots.push(slot);
+            return;
+        }
+
+        const existingIndex = keyIndexMap.get(dedupKey);
+        dedupedSlots[existingIndex] = mergeStationDetailDuplicateSlot(dedupedSlots[existingIndex], slot);
+    });
+
+    return dedupedSlots;
+}
+
+function isPlatformRecorderSection(section) {
+    const recorderName = normalizeStationDetailSortValue(section && section.recorder && section.recorder.recorder_name);
+    return recorderName === '市公司平台' || recorderName === '省公司平台';
+}
+
+function getStationDetailRecorderUnitTitle(index) {
+    const chineseOrdinals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+    const displayNumber = chineseOrdinals[index] || String(index + 1);
+    return `第${displayNumber}台录像机`;
+}
+
+function getStationDetailRecorderSortOrder(section) {
+    if (!section || section.kind === 'unassigned') {
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+    const recorderNames = [];
+    if (section.recorder && section.recorder.recorder_name) {
+        recorderNames.push(section.recorder.recorder_name);
+    }
+    (section.recorders || []).forEach((recorder) => {
+        if (recorder && recorder.recorder_name) {
+            recorderNames.push(recorder.recorder_name);
+        }
+    });
+
+    for (const recorderName of recorderNames) {
+        const match = String(recorderName || '').trim().match(/(\d+)\s*$/);
+        if (!match) {
+            continue;
+        }
+        const parsed = Number(match[1]);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+            return parsed - 1;
+        }
+    }
+
+    return null;
+}
+
+function createMergedPlatformRecorderSection(group, recorderSections) {
+    const platformSections = recorderSections.filter((section) => section.kind === 'recorder' && isPlatformRecorderSection(section));
+    if (!platformSections.length) {
+        return null;
+    }
+
+    const mergedSlots = platformSections.flatMap((section) => section.slots || []);
+    const mergedRecorders = platformSections
+        .map((section) => section.recorder)
+        .filter(Boolean);
+    const platformNames = mergedRecorders
+        .map((recorder) => recorder.recorder_name)
+        .filter(Boolean)
+        .join(' / ');
+    const platformSearchText = mergedRecorders.map((recorder) => (
+        [
+            recorder.recorder_name,
+            recorder.ip_address,
+            recorder.port,
+            recorder.description,
+        ].filter(Boolean).join(' ')
+    )).join(' ');
+
+    return {
+        kind: 'recorder-unit',
+        recorders: mergedRecorders,
+        recorder: mergedRecorders[0] || null,
+        slots: mergedSlots,
+        section_key: `project-${group.project_id || group.project_code || 'unknown'}-physical-recorder-1`,
+        section_title: '第一台录像机',
+        section_meta: `同一台录像机 · ${mergedRecorders.length} 个平台接口`,
+        section_note: '',
+        search_text: [platformNames, platformSearchText].filter(Boolean).join(' ').toLowerCase(),
+    };
+}
+
+function renderPlatformInterfaceDetails(recorders) {
+    if (!Array.isArray(recorders) || !recorders.length) {
+        return '';
+    }
+
+    return `
+        <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; font-size: 12px; color: var(--accent-primary); user-select: none;">查看平台接口（${recorders.length}）</summary>
+            <div style="display: grid; gap: 8px; margin-top: 10px;">
+                ${recorders.map((recorder) => {
+                    const meta = [
+                        recorder.ip_address ? `IP ${recorder.ip_address}` : '',
+                        recorder.port ? `端口 ${recorder.port}` : '',
+                    ].filter(Boolean).join(' | ');
+                    return `
+                        <div style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(15, 23, 42, 0.02);">
+                            <div style="font-size: 13px; font-weight: 600;">${escapeHtml(recorder.recorder_name || '平台接口')}</div>
+                            ${meta ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">${escapeHtml(meta)}</div>` : ''}
+                            ${recorder.description ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">${escapeHtml(recorder.description)}</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </details>
+    `;
+}
+
+function getRenderedStationDetailRecorderCount(slots, recorders) {
+    return buildStationDetailProjectGroups(slots, recorders).reduce(
+        (total, group) => total + (group.display_sections || []).filter((section) => section.kind !== 'unassigned').length,
+        0,
+    );
 }
 
 function buildStationDetailProjectGroups(slots, recorders) {
@@ -2008,7 +2227,7 @@ function buildStationDetailProjectGroups(slots, recorders) {
         ensureProjectGroup(recorder).recorders.push(recorder);
     });
 
-    (slots || []).forEach((slot) => {
+    dedupeStationDetailSlots(slots).forEach((slot) => {
         ensureProjectGroup(slot).slots.push(slot);
     });
 
@@ -2073,21 +2292,64 @@ function buildStationDetailProjectGroups(slots, recorders) {
                 recorderSections.get(unassignedKey).slots.push(slot);
             });
 
-            const displaySections = Array.from(recorderSections.values())
+            const rawSections = Array.from(recorderSections.values());
+            const recorderOnlySections = rawSections.filter((section) => section.kind === 'recorder');
+            const nonRecorderSections = rawSections.filter((section) => section.kind !== 'recorder');
+            const shouldMergePlatformSections = recorderOnlySections.length > 0
+                && recorderOnlySections.every((section) => isPlatformRecorderSection(section));
+            const mergedPlatformSection = shouldMergePlatformSections
+                ? createMergedPlatformRecorderSection(group, rawSections)
+                : null;
+            const logicalSections = mergedPlatformSection
+                ? [mergedPlatformSection, ...nonRecorderSections]
+                : rawSections;
+
+            const sortedLogicalSections = logicalSections
+                .slice()
+                .sort((left, right) => {
+                    const leftOrder = getStationDetailRecorderSortOrder(left);
+                    const rightOrder = getStationDetailRecorderSortOrder(right);
+                    const leftHasOrder = leftOrder !== null && leftOrder !== Number.MAX_SAFE_INTEGER;
+                    const rightHasOrder = rightOrder !== null && rightOrder !== Number.MAX_SAFE_INTEGER;
+                    if (leftHasOrder && rightHasOrder && leftOrder !== rightOrder) {
+                        return leftOrder - rightOrder;
+                    }
+                    if (leftHasOrder !== rightHasOrder) {
+                        return leftHasOrder ? -1 : 1;
+                    }
+                    if (left.kind === 'unassigned' || right.kind === 'unassigned') {
+                        if (left.kind === right.kind) {
+                            return 0;
+                        }
+                        return left.kind === 'unassigned' ? 1 : -1;
+                    }
+                    const leftName = normalizeStationDetailSortValue((left.recorder || {}).recorder_name || left.section_title);
+                    const rightName = normalizeStationDetailSortValue((right.recorder || {}).recorder_name || right.section_title);
+                    return leftName.localeCompare(rightName, 'zh-Hans-CN', localeOptions);
+                });
+
+            let recorderUnitIndex = 0;
+            const displaySections = sortedLogicalSections
                 .map((section) => {
                     sortSlots(section.slots);
                     const recorder = section.recorder || null;
-                    const sectionTitle = recorder ? (recorder.recorder_name || '未命名录像机') : (section.label || '未匹配录像机');
-                    const sectionMeta = recorder
+                    const isRecorderSection = section.kind !== 'unassigned';
+                    const defaultTitle = recorder ? (recorder.recorder_name || '未命名录像机') : (section.label || '未匹配录像机');
+                    const assignedRecorderIndex = isRecorderSection ? recorderUnitIndex++ : null;
+                    const sectionTitle = isRecorderSection
+                        ? getStationDetailRecorderUnitTitle(assignedRecorderIndex)
+                        : (section.section_title || defaultTitle);
+                    const sectionMeta = section.section_meta || (recorder
                         ? [
+                            recorder.recorder_name ? `标识 ${recorder.recorder_name}` : '',
                             recorder.ip_address ? `IP ${recorder.ip_address}` : '',
                             recorder.port ? `端口 ${recorder.port}` : '',
                           ].filter(Boolean).join(' | ')
-                        : '这些槽位暂时没有匹配到对应录像机';
-                    const sectionNote = recorder && recorder.description ? recorder.description : '';
-                    const sectionKey = recorder && recorder.id
+                        : '这些槽位暂时没有匹配到对应录像机');
+                    const sectionNote = section.section_note || '';
+                    const sectionKey = section.section_key || (recorder && recorder.id
                         ? `project-${group.project_id || group.project_code || 'unknown'}-recorder-${recorder.id}`
-                        : `project-${group.project_id || group.project_code || 'unknown'}-unassigned`;
+                        : `project-${group.project_id || group.project_code || 'unknown'}-unassigned`);
                     const slotSearchText = (section.slots || []).map((slot) => (
                         [
                             slot.location_desc,
@@ -2112,11 +2374,6 @@ function buildStationDetailProjectGroups(slots, recorders) {
                         ].filter(Boolean).join(' ').toLowerCase(),
                     };
                 })
-                .sort((left, right) => {
-                    const leftName = normalizeStationDetailSortValue((left.recorder || {}).recorder_name || left.section_title);
-                    const rightName = normalizeStationDetailSortValue((right.recorder || {}).recorder_name || right.section_title);
-                    return leftName.localeCompare(rightName, 'zh-Hans-CN', localeOptions);
-                });
 
             return {
                 ...group,
@@ -2125,139 +2382,47 @@ function buildStationDetailProjectGroups(slots, recorders) {
         });
 }
 
-function getStationDetailLocatorOptions(projectGroups) {
-    return projectGroups.flatMap((group) => (
-        (group.display_sections || []).map((section) => ({
-            key: section.section_key,
-            label: section.section_title,
-            slotCount: (section.slots || []).length,
-            projectLabel: group.project_short_name || group.project_name || group.project_code || '项目',
-        }))
-    ));
-}
-
-function renderStationDetailGroups(slots, recorders, filters = {}) {
+function renderStationDetailGroups(slots, recorders) {
     const projectGroups = buildStationDetailProjectGroups(slots, recorders);
     if (!projectGroups.length) {
         return '<p style="color: var(--text-muted);">当前项目下暂无槽位数据</p>';
     }
 
-    const selectedRecorderKey = String(filters.selectedRecorderKey || '').trim();
-    const searchTerm = String(filters.searchTerm || '').trim().toLowerCase();
-    const visibleGroups = projectGroups.map((group) => ({
-        ...group,
-        display_sections: (group.display_sections || []).filter((section) => {
-            if (selectedRecorderKey && section.section_key !== selectedRecorderKey) {
-                return false;
-            }
-            if (searchTerm && !section.search_text.includes(searchTerm)) {
-                return false;
-            }
-            return true;
-        }),
-    })).filter((group) => group.display_sections.length);
-
-    if (!visibleGroups.length) {
-        return '<div style="padding: 14px 16px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: 13px;">没有找到匹配的录像机或槽位，请换个关键词再试。</div>';
-    }
-
-    return visibleGroups.map((group) => `
-        <div style="margin-bottom: 24px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap;">
-                <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; background: rgba(255, 107, 53, 0.1); color: #FF6B35; font-size: 12px; font-weight: 700;">
-                    ${escapeHtml(group.project_short_name || group.project_name || group.project_code || '项目')}
-                </span>
-                <span style="font-size: 12px; color: var(--text-secondary);">${group.recorders.length} 台录像机 | ${group.slots.length} 个槽位</span>
-            </div>
-            ${group.display_sections.map((section) => `
-                <div style="margin-bottom: 18px;">
-                    <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));">
-                        <div>
-                            <div style="font-size: 14px; font-weight: 700;">${escapeHtml(section.section_title)}</div>
-                            <div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">${escapeHtml(section.section_meta || '暂无录像机信息')}</div>
-                            ${section.section_note ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">${escapeHtml(section.section_note)}</div>` : ''}
-                        </div>
-                        <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.08); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">${section.slots.length} 个槽位</span>
-                    </div>
-                    ${section.slots.length ? `
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                            ${section.slots.map(renderSlotCardV3).join('')}
-                        </div>
-                    ` : `
-                        <div style="padding: 14px 16px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: 13px;">
-                            当前还没有匹配到摄像机槽位
-                        </div>
-                    `}
+    return projectGroups.map((group) => {
+        const recorderCount = (group.display_sections || []).filter((section) => section.kind !== 'unassigned').length;
+        return `
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap;">
+                    <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; background: rgba(255, 107, 53, 0.1); color: #FF6B35; font-size: 12px; font-weight: 700;">
+                        ${escapeHtml(group.project_short_name || group.project_name || group.project_code || '项目')}
+                    </span>
+                    <span style="font-size: 12px; color: var(--text-secondary);">${recorderCount} 台录像机 | ${group.slots.length} 个槽位</span>
                 </div>
-            `).join('')}
-        </div>
-    `).join('');
-}
-
-function renderStationDetailLocator(options, filters = {}) {
-    const searchTerm = String(filters.searchTerm || '').trim();
-    const selectedRecorderKey = String(filters.selectedRecorderKey || '').trim();
-    return `
-        <div style="margin-bottom: 18px; padding: 14px; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(26, 115, 232, 0.03);">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
-                <div style="font-size: 13px; font-weight: 700;">快速定位录像机</div>
-                <div style="font-size: 12px; color: var(--text-secondary);">支持按录像机名、IP、端口和槽位关键词筛选</div>
-            </div>
-            <input id="station-detail-filter" type="search" class="form-input" placeholder="输入录像机名 / IP / 槽位编码" value="${escapeHtml(searchTerm)}" style="margin-bottom: 12px;">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button
-                    type="button"
-                    data-recorder-filter-key=""
-                    style="border: 1px solid ${selectedRecorderKey ? 'var(--border-color)' : 'rgba(26, 115, 232, 0.35)'}; background: ${selectedRecorderKey ? '#fff' : 'rgba(26, 115, 232, 0.08)'}; color: ${selectedRecorderKey ? 'var(--text-secondary)' : 'var(--accent-primary)'}; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600;"
-                >全部</button>
-                ${options.map((option) => `
-                    <button
-                        type="button"
-                        data-recorder-filter-key="${escapeHtml(option.key)}"
-                        style="border: 1px solid ${selectedRecorderKey === option.key ? 'rgba(26, 115, 232, 0.35)' : 'var(--border-color)'}; background: ${selectedRecorderKey === option.key ? 'rgba(26, 115, 232, 0.08)' : '#fff'}; color: ${selectedRecorderKey === option.key ? 'var(--accent-primary)' : 'var(--text-secondary)'}; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600;"
-                    >${escapeHtml(option.projectLabel)} · ${escapeHtml(option.label)}${option.slotCount ? ` (${escapeHtml(option.slotCount)})` : ''}</button>
+                ${group.display_sections.map((section) => `
+                    <div style="margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));">
+                            <div style="min-width: 0; flex: 1;">
+                                <div style="font-size: 14px; font-weight: 700;">${escapeHtml(section.section_title)}</div>
+                                <div style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">${escapeHtml(section.section_meta || '暂无录像机信息')}</div>
+                                ${section.section_note ? `<div style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">${escapeHtml(section.section_note)}</div>` : ''}
+                                ${section.kind === 'recorder-unit' ? renderPlatformInterfaceDetails(section.recorders) : ''}
+                            </div>
+                            ${section.slots.length ? `<span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(26, 115, 232, 0.08); color: var(--text-secondary); font-size: 12px; white-space: nowrap;">${section.slots.length} 个槽位</span>` : ''}
+                        </div>
+                        ${section.slots.length ? `
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                                ${section.slots.map(renderSlotCardV3).join('')}
+                            </div>
+                        ` : (section.kind === 'unassigned' ? `
+                            <div style="padding: 14px 16px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: 13px;">
+                                当前还没有匹配到摄像机槽位
+                            </div>
+                        ` : '')}
+                    </div>
                 `).join('')}
             </div>
-        </div>
-    `;
-}
-
-function mountStationDetailLocator(modalBody, slots, recorders) {
-    const groups = buildStationDetailProjectGroups(slots, recorders);
-    const options = getStationDetailLocatorOptions(groups);
-    const locatorHost = modalBody.querySelector('#station-detail-locator');
-    const groupsHost = modalBody.querySelector('#station-detail-groups');
-    if (!groupsHost) {
-        return;
-    }
-
-    const filters = {
-        selectedRecorderKey: '',
-        searchTerm: '',
-    };
-
-    const render = () => {
-        if (locatorHost) {
-            locatorHost.innerHTML = options.length > 1 ? renderStationDetailLocator(options, filters) : '';
-            const filterInput = locatorHost.querySelector('#station-detail-filter');
-            if (filterInput) {
-                filterInput.addEventListener('input', (event) => {
-                    filters.searchTerm = event.target.value || '';
-                    render();
-                });
-            }
-            locatorHost.querySelectorAll('[data-recorder-filter-key]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const nextKey = button.getAttribute('data-recorder-filter-key') || '';
-                    filters.selectedRecorderKey = nextKey === filters.selectedRecorderKey ? '' : nextKey;
-                    render();
-                });
-            });
-        }
-        groupsHost.innerHTML = renderStationDetailGroups(slots, recorders, filters);
-    };
-
-    render();
+        `;
+    }).join('');
 }
 
 function renderStationDetailKeyval(label, value) {
@@ -2324,9 +2489,7 @@ async function showDetail(stationId) {
                 allFaults.filter((fault) => Number(fault?.station_id || 0) === Number(stationId))
             );
         const stationMapUrl = stationSnapshot.has_coordinates ? buildStationMapUrl(stationSnapshot) : '';
-        const stationFaultUrl = buildStationFaultUrl(stationSnapshot, {
-            view: stationSnapshot.overdue_fault_count > 0 ? 'overdue' : 'pending'
-        });
+        const stationFaultUrl = buildStationFaultUrl(stationSnapshot);
         const stationReportUrl = buildStationReportUrl(stationSnapshot);
 
         modalTitle.textContent = station.name || '变电站详情';
@@ -2339,8 +2502,11 @@ async function showDetail(stationId) {
                             <div class="station-detail-top-title">${escapeHtml(station.name || '变电站详情')}</div>
                             <div class="station-detail-top-text">
                                 ${escapeHtml(stationSnapshot.health_note || '当前站点暂无明显风险。')}
-                                ${stationSnapshot.risk_reasons?.length ? `当前关注点：${escapeHtml(stationSnapshot.risk_reasons.join('，'))}。` : ''}
+                                状态含义：${escapeHtml(getStationHealthMeaning(stationSnapshot.health_level || 'normal'))}
+                                下一步：${escapeHtml(getStationNextStep(stationSnapshot))}
                             </div>
+                            <div class="station-reason-title">当前判定依据</div>
+                            ${renderStationReasonChips(stationSnapshot)}
                         </div>
                         <div class="station-detail-actions">
                             <a href="${stationFaultUrl}" class="btn-primary">查看故障</a>
@@ -2365,7 +2531,7 @@ async function showDetail(stationId) {
                             ${renderStationDetailKeyval('未闭环故障', stationSnapshot.open_fault_count || 0)}
                             ${renderStationDetailKeyval('超时未闭环', stationSnapshot.overdue_fault_count || 0)}
                             ${renderStationDetailKeyval('摄像头总数 / 异常', `${stationSnapshot.camera_count || 0} / ${stationSnapshot.abnormal_camera_count || 0}`)}
-                            ${renderStationDetailKeyval('录像机数 / 槽位数', `${recorders.length} / ${slots.length}`)}
+                            ${renderStationDetailKeyval('录像机数 / 槽位数', `${getRenderedStationDetailRecorderCount(slots, recorders)} / ${slots.length}`)}
                         </div>
                     </section>
                     <section class="station-detail-card">
@@ -2377,12 +2543,10 @@ async function showDetail(stationId) {
                 </div>
                 <section class="station-detail-card">
                     <h4 class="station-detail-section-title">项目 / 录像机 / 槽位诊断</h4>
-                    <div id="station-detail-locator"></div>
                     <div id="station-detail-groups">${renderStationDetailGroups(slots, recorders)}</div>
                 </section>
             </div>
         `;
-        mountStationDetailLocator(modalBody, slots, recorders);
 
         modalReportBtn.href = stationReportUrl;
     } catch (err) {

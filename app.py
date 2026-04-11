@@ -853,6 +853,246 @@ def build_station_recorders_payload(db, station_id, project_scope):
     return [dict(row) for row in db.execute(query, params).fetchall()]
 
 
+def _normalize_station_slot_text(value):
+    return re.sub(r"\s+", " ", str(value or "").strip()).lower()
+
+
+def _is_legacy_station_slot_code(slot_code):
+    return _normalize_station_slot_text(slot_code).startswith("legacy_")
+
+
+def _canonicalize_station_slot_location(value, channel_number=None):
+    text = _normalize_station_slot_text(value)
+    if not text:
+        return ""
+
+    text = re.sub(r"(?<=\d)\s*kv", "", text, flags=re.IGNORECASE)
+    if channel_number not in (None, ""):
+        escaped_channel = re.escape(str(channel_number).strip())
+        text = re.sub(
+            rf"[-_\s#（）()]*?(?:通道\s*)?{escaped_channel}\s*#?\s*[-_\s#（）()]*?(?:球机|球|枪机|枪|半球|摄像机|摄像头)$",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+    text = re.sub(
+        r"[-_\s#（）()]*?(?:通道\s*)?\d+\s*#?\s*[-_\s#（）()]*?(?:球机|球|枪机|枪|半球|摄像机|摄像头)$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"[-_#（）()\s]+$", "", text)
+    return text.strip()
+
+
+def _build_station_slot_semantic_key(payload, channel_number=None):
+    if not payload:
+        return ""
+
+    resolved_channel = payload.get("channel_number", channel_number)
+    location_value = (
+        payload.get("location_desc")
+        or payload.get("source_slot_location_desc")
+        or payload.get("area")
+        or ""
+    )
+    canonical_location = _canonicalize_station_slot_location(location_value, resolved_channel)
+    if not canonical_location or resolved_channel in (None, ""):
+        return ""
+
+    station_key = payload.get("station_id")
+    project_key = payload.get("project_id")
+    return "|".join(
+        [
+            str(project_key or ""),
+            str(station_key or ""),
+            canonical_location,
+            str(resolved_channel),
+        ]
+    )
+
+
+def _station_slot_display_priority(label, channel_number):
+    normalized = _normalize_station_slot_text(label)
+    if not normalized:
+        return (0, 0)
+    canonical = _canonicalize_station_slot_location(label, channel_number)
+    suffix_removed = canonical and canonical != normalized
+    return (1 if not suffix_removed else 0, -len(str(label)))
+
+
+def _pick_station_slot_display_location(*slots):
+    best_label = ""
+    best_score = None
+    for slot in slots:
+        if not slot:
+            continue
+        label = str(slot.get("location_desc") or "").strip()
+        if not label:
+            continue
+        score = _station_slot_display_priority(label, slot.get("channel_number"))
+        if best_score is None or score > best_score:
+            best_label = label
+            best_score = score
+    return best_label
+
+
+def _station_slot_preference(slot):
+    slot_code = str(slot.get("slot_code") or "")
+    return (
+        1 if slot.get("current_camera") else 0,
+        1 if not _is_legacy_station_slot_code(slot_code) else 0,
+        1 if _station_slot_display_priority(slot.get("location_desc"), slot.get("channel_number"))[0] else 0,
+        int(slot.get("fault_count") or 0),
+        int(slot.get("history_camera_count") or 0),
+        -len(slot_code),
+    )
+
+
+def _merge_station_recent_faults(primary_faults, secondary_faults):
+    merged = {}
+    for fault in list(primary_faults or []) + list(secondary_faults or []):
+        if not fault or not fault.get("id"):
+            continue
+        merged[fault["id"]] = fault
+    return sorted(
+        merged.values(),
+        key=lambda item: (
+            str(item.get("created_at") or ""),
+            int(item.get("id") or 0),
+        ),
+        reverse=True,
+    )[:3]
+
+
+def _station_history_camera_priority(camera):
+    status = str(camera.get("status") or "").strip().lower()
+    return (
+        1 if camera.get("replaced_by_camera_id") else 0,
+        1 if status == "replaced" else 0,
+        1 if status == "retired" else 0,
+        1 if camera.get("ip_address") else 0,
+        -int(camera.get("id") or 0),
+    )
+
+
+def _filter_station_duplicate_history_cameras(history_cameras, current_camera=None):
+    deduped_by_id = []
+    seen_ids = set()
+    for camera in history_cameras or []:
+        if not camera:
+            continue
+        camera_id = camera.get("id")
+        if camera_id and camera_id in seen_ids:
+            continue
+        if camera_id:
+            seen_ids.add(camera_id)
+        deduped_by_id.append(camera)
+
+    current_key = _build_station_slot_semantic_key(current_camera) if current_camera else ""
+    buckets = {}
+    passthrough = []
+    for index, camera in enumerate(deduped_by_id):
+        semantic_key = _build_station_slot_semantic_key(camera)
+        if not semantic_key:
+            passthrough.append((index, camera))
+            continue
+        buckets.setdefault(semantic_key, []).append((index, camera))
+
+    filtered = [camera for _, camera in passthrough]
+    for semantic_key, bucket in buckets.items():
+        entries = [camera for _, camera in bucket]
+        if len(entries) == 1:
+            filtered.append(entries[0])
+            continue
+
+        non_legacy_entries = [
+            camera for camera in entries if not _is_legacy_station_slot_code(camera.get("source_slot_code"))
+        ]
+
+        if semantic_key == current_key:
+            replacement_linked = [
+                camera
+                for camera in entries
+                if camera.get("replaced_by_camera_id")
+            ]
+            if replacement_linked:
+                filtered.extend(replacement_linked)
+                continue
+
+            replaced_status_entries = [
+                camera
+                for camera in entries
+                if str(camera.get("status") or "").strip().lower() == "replaced"
+            ]
+            if replaced_status_entries:
+                filtered.extend(replaced_status_entries)
+                continue
+
+            if non_legacy_entries and len(non_legacy_entries) != len(entries):
+                filtered.extend(non_legacy_entries)
+                continue
+
+            filtered.append(max(entries, key=_station_history_camera_priority))
+            continue
+
+        if non_legacy_entries and len(non_legacy_entries) != len(entries):
+            filtered.extend(non_legacy_entries)
+            continue
+
+        filtered.extend(entries)
+
+    return sorted(
+        filtered,
+        key=lambda item: (
+            str(item.get("retired_at") or item.get("created_at") or ""),
+            int(item.get("id") or 0),
+        ),
+        reverse=True,
+    )
+
+
+def _merge_station_duplicate_slots(primary, secondary):
+    preferred = primary if _station_slot_preference(primary) >= _station_slot_preference(secondary) else secondary
+    fallback = secondary if preferred is primary else primary
+    merged_current_camera = preferred.get("current_camera") or fallback.get("current_camera")
+    merged_history = _filter_station_duplicate_history_cameras(
+        list(preferred.get("history_cameras") or []) + list(fallback.get("history_cameras") or []),
+        current_camera=merged_current_camera,
+    )
+    return {
+        **fallback,
+        **preferred,
+        "location_desc": _pick_station_slot_display_location(primary, secondary),
+        "area": preferred.get("area") or fallback.get("area") or "",
+        "current_camera": merged_current_camera,
+        "history_cameras": merged_history,
+        "history_camera_count": len(merged_history),
+        "fault_count": max(int(primary.get("fault_count") or 0), int(secondary.get("fault_count") or 0)),
+        "recent_faults": _merge_station_recent_faults(primary.get("recent_faults"), secondary.get("recent_faults")),
+        "recorder": preferred.get("recorder") or fallback.get("recorder"),
+    }
+
+
+def dedupe_station_slots_payload(slots):
+    deduped = []
+    key_index_map = {}
+    for slot in slots or []:
+        semantic_key = _build_station_slot_semantic_key(slot)
+        if not semantic_key:
+            deduped.append(slot)
+            continue
+
+        if semantic_key not in key_index_map:
+            key_index_map[semantic_key] = len(deduped)
+            deduped.append(slot)
+            continue
+
+        existing_index = key_index_map[semantic_key]
+        deduped[existing_index] = _merge_station_duplicate_slots(deduped[existing_index], slot)
+    return deduped
+
+
 def build_station_slots_payload(db, station_id, project_scope):
     ensure_camera_recorder_metadata_columns(db)
     camera_columns = get_table_columns(db, "cameras")
@@ -923,6 +1163,7 @@ def build_station_slots_payload(db, station_id, project_scope):
         SELECT
             c.id,
             c.slot_id,
+            c.station_id,
             c.project_id,
             c.project_camera_code,
             c.camera_index,
@@ -937,8 +1178,11 @@ def build_station_slots_payload(db, station_id, project_scope):
             c.status,
             c.replaced_by_camera_id,
             c.retired_at,
-            c.created_at
+            c.created_at,
+            s.slot_code AS source_slot_code,
+            s.location_desc AS source_slot_location_desc
         FROM cameras c
+        LEFT JOIN camera_slots s ON s.id = c.slot_id
         WHERE c.slot_id IN ({placeholders})
           AND c.status != 'active'
         ORDER BY COALESCE(c.retired_at, c.created_at) DESC, c.id DESC
@@ -1064,6 +1308,8 @@ def build_station_slots_payload(db, station_id, project_scope):
         if row['current_camera_id']:
             current_camera = {
                 'id': row['current_camera_id'],
+                'station_id': row['station_id'],
+                'project_id': row['project_id'],
                 'project_camera_code': row['current_project_camera_code'],
                 'camera_index': row['current_camera_index'],
                 'ip_address': row['current_ip_address'],
@@ -1076,6 +1322,8 @@ def build_station_slots_payload(db, station_id, project_scope):
                 'location_desc': row['current_location_desc'],
                 'created_at': row['current_created_at'],
                 'status': 'active',
+                'source_slot_code': row['slot_code'],
+                'source_slot_location_desc': row['location_desc'],
             }
 
         matched_recorder = match_slot_recorder(
@@ -1104,7 +1352,7 @@ def build_station_slots_payload(db, station_id, project_scope):
             'recent_faults': recent_faults_map.get(row['slot_id'], []),
             'recorder': matched_recorder,
         })
-    return slots
+    return dedupe_station_slots_payload(slots)
 
 # ============================================================
 # API: 项目列表

@@ -29,6 +29,7 @@ DEFAULT_CAMERA_IP_SOURCE_ROOT = Config.DATA_SOURCE_PATH
 RECORDER_SOURCE_SYSTEM = "recorder_inventory_csv"
 CAMERA_SOURCE_SYSTEM = "camera_inventory_csv"
 COUNTY_NAMES = ("丽水", "云和", "庆元", "景宁", "松阳", "缙云", "遂昌", "青田", "龙泉", "莲都")
+CITY_LEVEL_COUNTY = "丽水"
 STATION_SUFFIX_TOKENS = ("变电站", "安防", "一键顺控", "集控站", "集控")
 SPECIAL_STATION_LABELS = {
     "?洲变": "濛洲变",
@@ -61,9 +62,26 @@ def normalize_voltage(value):
 
 def infer_county(area_path):
     text = clean(area_path)
-    for county in COUNTY_NAMES:
-        if county in text:
-            return county
+    if not text:
+        return ""
+
+    matched = []
+    path_parts = [part.strip() for part in re.split(r"[\\/]+", text) if clean(part)]
+    for part in path_parts:
+        for county in COUNTY_NAMES:
+            if county in part and county not in matched:
+                matched.append(county)
+
+    if not matched:
+        for county in COUNTY_NAMES:
+            if county in text and county not in matched:
+                matched.append(county)
+
+    specific_matches = [county for county in matched if county != CITY_LEVEL_COUNTY]
+    if specific_matches:
+        return specific_matches[-1]
+    if matched:
+        return matched[-1]
     return ""
 
 
@@ -250,14 +268,14 @@ def parse_station_csv(path):
             {
                 "station_label": station_label,
                 "county": infer_county(area_path),
-                "voltage_level": infer_voltage(recorder_name) or infer_voltage(station_label),
+                "voltage_level": infer_voltage(station_label) or infer_voltage(area_path),
                 "recorders": [],
             },
         )
         if not bundle["county"]:
             bundle["county"] = infer_county(area_path)
         if not bundle["voltage_level"]:
-            bundle["voltage_level"] = infer_voltage(recorder_name) or infer_voltage(station_label)
+            bundle["voltage_level"] = infer_voltage(station_label) or infer_voltage(area_path)
         bundle["recorders"].append(
             {
                 "recorder_name": recorder_name or station_label,
@@ -299,14 +317,14 @@ def parse_camera_csv(path, camera_ip_reference=None):
             {
                 "station_label": station_label,
                 "county": infer_county(area_path),
-                "voltage_level": infer_voltage(recorder_name) or infer_voltage(station_label),
+                "voltage_level": infer_voltage(station_label) or infer_voltage(area_path),
                 "cameras": [],
             },
         )
         if not bundle["county"]:
             bundle["county"] = infer_county(area_path)
         if not bundle["voltage_level"]:
-            bundle["voltage_level"] = infer_voltage(recorder_name) or infer_voltage(station_label)
+            bundle["voltage_level"] = infer_voltage(station_label) or infer_voltage(area_path)
 
         bundle["cameras"].append(
             {
@@ -438,12 +456,13 @@ def upsert_station(conn, *, station_label, voltage_level="", county=""):
             UPDATE stations
             SET county = CASE
                     WHEN COALESCE(county, '') = '' AND COALESCE(?, '') <> '' THEN ?
+                    WHEN COALESCE(county, '') = ? AND COALESCE(?, '') <> '' AND ? <> ? THEN ?
                     ELSE county
                 END,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
             """,
-            (county, county, existing["id"]),
+            (county, county, CITY_LEVEL_COUNTY, county, county, CITY_LEVEL_COUNTY, county, existing["id"]),
         )
         return existing["id"], target_name, target_voltage, False
 
@@ -456,6 +475,7 @@ def upsert_station(conn, *, station_label, voltage_level="", county=""):
         ON CONFLICT(name, voltage_level) DO UPDATE SET
             county = CASE
                 WHEN COALESCE(stations.county, '') = '' AND COALESCE(excluded.county, '') <> '' THEN excluded.county
+                WHEN COALESCE(stations.county, '') = '丽水' AND COALESCE(excluded.county, '') <> '' AND excluded.county <> '丽水' THEN excluded.county
                 ELSE stations.county
             END,
             updated_at = CURRENT_TIMESTAMP

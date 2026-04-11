@@ -453,7 +453,7 @@ function openPublishModal(versionId) {
             const previousLabel = item.previous ? item.previous.type_label : '不存在';
             const candidateLabel = item.candidate ? item.candidate.type_label : '已删除';
             const selectOptions = item.allowed_decisions.map(decision => `
-                <option value="${decision}">${decision}</option>
+                <option value="${decision}">${formatPublishDecisionLabel(decision)}</option>
             `).join('');
             return `
                 <div class="card mb-3">
@@ -475,6 +475,14 @@ function openPublishModal(versionId) {
         publishModal = new bootstrap.Modal(document.getElementById('publish-modal'));
     }
     publishModal.show();
+}
+
+function formatPublishDecisionLabel(decision) {
+    return {
+        semantic_continuity: '语义延续：仍按同一类故障处理',
+        semantic_changed: '语义变更：按新的故障语义处理',
+        removed_type: '确认删除：该故障类型不再保留'
+    }[decision] || decision;
 }
 
 async function confirmPublish() {

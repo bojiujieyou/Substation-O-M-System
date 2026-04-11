@@ -29,6 +29,7 @@ from import_review_support import (
     update_import_batch_stats,
 )
 from utils import backup_sqlite_database, create_db_connection
+from worklog_fault_types import infer_worklog_fault_type
 
 
 SOURCE_FILE = r"e:\办公\图像监控\工作记录.xlsx"
@@ -157,11 +158,12 @@ def parse_time(value):
     return None
 
 
-def infer_fault_type(content):
-    text = str(content or "")
-    if any(token in text for token in ["网络", "断网", "掉线", "通信"]):
-        return "网络故障"
-    return "设备故障"
+def resolve_fault_type_payload(content):
+    fault_type = infer_worklog_fault_type(content)
+    return {
+        "fault_type": fault_type["type_label"],
+        "fault_type_code": fault_type["type_code"],
+    }
 
 
 def normalize_worklog_system_type(value):
@@ -389,6 +391,7 @@ def insert_fault_report(
     station_id,
     system_type,
     fault_type,
+    fault_type_code=None,
     description,
     handler_name,
     created_at,
@@ -441,6 +444,8 @@ def insert_fault_report(
         ("project_device_code", project_device_code),
         ("camera_location_text", camera_location_text),
         ("fault_type_label_snapshot", fault_type),
+        ("fault_type_code", fault_type_code),
+        ("fault_type_version_id", project_row.get("fault_type_version_id") if project_row else None),
         ("source_time_raw", str(raw_time_value) if raw_time_value is not None else None),
         ("source_timezone", timezone_default),
     ]
@@ -508,7 +513,9 @@ def import_worklog_file(
             location = str(row[3]).strip() if row[3] else ""
             content = str(row[4]).strip() if row[4] else ""
             handler_name = str(row[7]).strip() if len(row) > 7 and row[7] else None
-            fault_type = infer_fault_type(content)
+            fault_type_payload = resolve_fault_type_payload(content)
+            fault_type = fault_type_payload["fault_type"]
+            fault_type_code = fault_type_payload["fault_type_code"]
             description = build_description(location, content)
 
             if not station_text:
@@ -578,6 +585,7 @@ def import_worklog_file(
                     "content": content,
                     "description": description,
                     "fault_type": fault_type,
+                    "fault_type_code": fault_type_code,
                     "handler_name": handler_name,
                     "parsed_time": created_at,
                     "raw_time": str(raw_time) if raw_time is not None else None,
@@ -682,6 +690,7 @@ def import_worklog_file(
                             station_id=match["station_id"],
                             system_type=system_type,
                             fault_type=fault_type,
+                            fault_type_code=fault_type_code,
                             description=description,
                             handler_name=handler_name,
                             created_at=created_at,

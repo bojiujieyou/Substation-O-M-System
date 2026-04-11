@@ -60,7 +60,7 @@ def get_project_row(conn, project_code):
     if not project_code or not table_exists(conn, "projects"):
         return None
     row = conn.execute(
-        "SELECT id, code, name FROM projects WHERE code = ?",
+        "SELECT id, code, name, fault_type_version_id FROM projects WHERE code = ?",
         (project_code,),
     ).fetchone()
     if not row:
@@ -69,6 +69,7 @@ def get_project_row(conn, project_code):
         "id": row[0] if not hasattr(row, "keys") else row["id"],
         "code": row[1] if not hasattr(row, "keys") else row["code"],
         "name": row[2] if not hasattr(row, "keys") else row["name"],
+        "fault_type_version_id": row[3] if not hasattr(row, "keys") else row["fault_type_version_id"],
     }
 
 
