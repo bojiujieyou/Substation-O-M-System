@@ -29,7 +29,7 @@ from import_review_support import (
     update_import_batch_stats,
 )
 from utils import backup_sqlite_database, create_db_connection
-from worklog_fault_types import infer_worklog_fault_type
+from worklog_fault_types import classify_worklog_entry
 
 
 SOURCE_FILE = r"e:\办公\图像监控\工作记录.xlsx"
@@ -159,11 +159,18 @@ def parse_time(value):
 
 
 def resolve_fault_type_payload(content):
-    fault_type = infer_worklog_fault_type(content)
+    fault_type = classify_worklog_entry(content)
     return {
-        "fault_type": fault_type["type_label"],
-        "fault_type_code": fault_type["type_code"],
+        "is_fault": fault_type["is_fault"],
+        "non_fault_reason": fault_type["reason"] if not fault_type["is_fault"] else None,
+        "fault_type": fault_type["type_label"] if fault_type["is_fault"] else None,
+        "fault_type_code": fault_type["type_code"] if fault_type["is_fault"] else None,
     }
+
+
+def infer_fault_type(content):
+    payload = resolve_fault_type_payload(content)
+    return payload["fault_type"]
 
 
 def normalize_worklog_system_type(value):
@@ -494,6 +501,7 @@ def import_worklog_file(
         "queue_items_created": 0,
         "station_proposals_created": 0,
         "rows_skipped": 0,
+        "non_fault_rows_skipped": 0,
         "fail_count": 0,
         "errors": [],
     }
@@ -514,6 +522,24 @@ def import_worklog_file(
             content = str(row[4]).strip() if row[4] else ""
             handler_name = str(row[7]).strip() if len(row) > 7 and row[7] else None
             fault_type_payload = resolve_fault_type_payload(content)
+            if not fault_type_payload["is_fault"]:
+                row_result = {
+                    "row_index": row_index,
+                    "sequence": seq,
+                    "action": "skip",
+                    "reason": "non_fault_work_item",
+                    "non_fault_reason": fault_type_payload["non_fault_reason"],
+                }
+                stats["rows_skipped"] += 1
+                stats["non_fault_rows_skipped"] += 1
+                report_rows.append(row_result)
+                abort_import_if_needed(
+                    fail_on_rules=fail_on_rules,
+                    row_result=row_result,
+                    reason="non_fault_work_item",
+                    action="skip",
+                )
+                continue
             fault_type = fault_type_payload["fault_type"]
             fault_type_code = fault_type_payload["fault_type_code"]
             description = build_description(location, content)

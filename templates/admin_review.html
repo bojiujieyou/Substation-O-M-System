@@ -64,58 +64,6 @@
     align-items: stretch;
 }
 
-.review-hero-actions::after {
-    content: "适合在导入后集中处理未匹配站名、待确认故障和可指派站点，避免分散回查。";
-    padding: 14px 16px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.72);
-    color: var(--text-secondary);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.review-guide-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.review-guide-card {
-    padding: 18px 18px 16px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 18px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-}
-
-.review-guide-index {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin-bottom: 12px;
-    border-radius: 10px;
-    background: rgba(255, 107, 53, 0.12);
-    color: var(--accent-primary);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.review-guide-title {
-    margin-bottom: 6px;
-    color: var(--text-primary);
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.review-guide-text {
-    color: var(--text-secondary);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
 .review-panel {
     border-radius: 22px;
     box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
@@ -131,13 +79,6 @@
     background:
         radial-gradient(circle at top right, rgba(255, 107, 53, 0.14), transparent 40%),
         var(--bg-card);
-}
-
-.review-panel-intro {
-    margin-bottom: 14px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    line-height: 1.6;
 }
 
 .review-section-header {
@@ -180,12 +121,6 @@
     border-radius: 18px;
 }
 
-@media (max-width: 1200px) {
-    .review-guide-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 @media (max-width: 992px) {
     .review-hero {
         flex-direction: column;
@@ -216,7 +151,7 @@
         <div class="review-hero-main">
             <div class="review-hero-kicker">Review Center</div>
             <h2 class="page-title">导入审查中心</h2>
-            <p class="text-muted mb-0">统一处理站名映射提议与故障导入待确认队列。</p>
+            <p class="text-muted mb-0">集中处理导入待确认项。</p>
         </div>
         <div class="page-actions review-hero-actions">
             <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
@@ -244,40 +179,20 @@
         </div>
     </div>
 
-    <div class="review-guide-grid">
-        <div class="review-guide-card">
-            <div class="review-guide-index">01</div>
-            <div class="review-guide-title">先看当前重点</div>
-            <div class="review-guide-text">系统会根据待处理数量和类型，提示最值得优先处理的任务。</div>
-        </div>
-        <div class="review-guide-card">
-            <div class="review-guide-index">02</div>
-            <div class="review-guide-title">优先批量清理</div>
-            <div class="review-guide-text">高置信度提议和可统一处理的待确认记录，先批量通过或驳回会更高效。</div>
-        </div>
-        <div class="review-guide-card">
-            <div class="review-guide-index">03</div>
-            <div class="review-guide-title">再处理特殊个例</div>
-            <div class="review-guide-text">最后回头看未匹配站点、写入失败或字段异常的个别记录，减少人工来回切换。</div>
-        </div>
-    </div>
-
     <div class="row g-4 mb-4">
         <div class="col-lg-5">
             <div class="admin-section review-panel review-focus-panel h-100">
                 <h3 class="admin-section-title">当前重点</h3>
-                <div class="review-panel-intro">这里会总结当前最需要处理的导入问题，适合先判断是否需要立即分配站点或人工确认。</div>
                 <div class="status-hero" id="review-status-hero">
                     <div class="status-hero-badge badge badge-info" id="review-status-badge">加载中</div>
                     <div class="status-hero-title" id="review-status-title">正在分析审查工作量</div>
-                    <p class="form-hint mb-0 status-hero-note" id="review-status-note">加载后会给出当前应优先处理的事项。</p>
+                    <p class="form-hint mb-0 status-hero-note" id="review-status-note">加载后显示当前重点。</p>
                 </div>
             </div>
         </div>
         <div class="col-lg-7">
             <div class="admin-section review-panel review-plan-panel h-100">
                 <h3 class="admin-section-title">处理建议</h3>
-                <div class="review-panel-intro">把这块当成当前批次的处理指引。系统建议会跟随筛选结果与待办结构实时更新。</div>
                 <div id="review-primary-step" class="next-step-primary is-hidden">
                     <div class="next-step-primary-label">优先处理</div>
                     <div class="next-step-primary-text" id="review-primary-step-text">-</div>
@@ -294,7 +209,7 @@
                 <div class="admin-section-header review-section-header">
                     <div>
                         <h3 class="admin-section-header-title">站名映射提议</h3>
-                        <div class="review-section-caption">处理外部站名与平台站点之间的映射关系，优先消化高置信度候选。</div>
+                        <div class="review-section-caption">优先处理高置信度候选。</div>
                     </div>
                     <button class="btn btn-sm btn-secondary" onclick="loadProposals()">刷新</button>
                 </div>
@@ -330,7 +245,7 @@
                         <button class="btn btn-primary btn-sm" onclick="batchApproveProposals()">批量通过</button>
                         <button class="btn btn-secondary btn-sm" onclick="batchRejectProposals()">批量驳回</button>
                     </div>
-                    <div class="form-hint mb-0">适合先清理高置信度提议，再回头处理剩余人工判断项。</div>
+                    <div class="form-hint mb-0">可先批量处理高置信度提议。</div>
                 </div>
 
                 <div class="table-responsive review-table-shell review-table-shell-raised">
@@ -356,7 +271,7 @@
                 <div class="admin-section-header review-section-header">
                     <div>
                         <h3 class="admin-section-header-title">导入待确认队列</h3>
-                        <div class="review-section-caption">这里展示导入后仍需人工确认的记录，可按状态、项目和问题类型快速缩小范围。</div>
+                        <div class="review-section-caption">按状态、项目和问题类型筛选。</div>
                     </div>
                     <button class="btn btn-sm btn-secondary" onclick="loadQueue()">刷新</button>
                 </div>
@@ -401,7 +316,7 @@
                         <button class="btn btn-secondary btn-sm" onclick="batchApplyMapping()">批量套用映射</button>
                         <button class="btn btn-secondary btn-sm" onclick="batchRejectQueue()">批量驳回</button>
                     </div>
-                    <div class="form-hint mb-0">先批量指派或套用映射，再对确认为无效的数据统一驳回。</div>
+                    <div class="form-hint mb-0">可先批量指派或套用映射。</div>
                 </div>
 
                 <div class="table-responsive review-table-shell review-table-shell-raised">

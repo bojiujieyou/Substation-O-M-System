@@ -4,6 +4,262 @@
 
 {% block page_title %}照片分类展示{% endblock %}
 
+{% block extra_head %}
+<style>
+.photo-filter-grid .form-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+.photo-filter-grid .form-label {
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.photo-filter-grid .form-select-filter {
+    min-width: 150px;
+}
+
+.photo-filter-grid .form-input-modal {
+    width: 220px;
+    min-width: 220px;
+}
+
+.photo-filter-actions {
+    margin-left: auto;
+}
+
+.photo-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.photo-filter-toggle[aria-pressed="true"] {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.photo-preview-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+#photo-preview-modal .modal-dialog {
+    max-width: 100vw;
+    margin: 0;
+    height: 100vh;
+}
+
+#photo-preview-modal .modal-content {
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+    background: #08111f;
+    color: #e5edf8;
+    overflow: hidden;
+}
+
+#photo-preview-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 8px;
+    padding: 6px 8px 10px;
+}
+
+#photo-preview-modal .detail-info {
+    margin-top: 0 !important;
+    margin-bottom: 0;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    backdrop-filter: blur(14px);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px 16px;
+}
+
+#photo-preview-modal .detail-row {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border-bottom: 0;
+}
+
+#photo-preview-modal .detail-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: rgba(226, 232, 240, 0.72);
+}
+
+#photo-preview-modal .detail-value {
+    display: block;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#photo-preview-modal .modal-header {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    z-index: 20;
+    padding: 0;
+    border-bottom: 0;
+    background: transparent;
+    pointer-events: none;
+}
+
+#photo-preview-modal .modal-title {
+    display: none;
+}
+
+#photo-preview-modal .btn-close {
+    margin-left: auto;
+    pointer-events: auto;
+    filter: invert(1) grayscale(1);
+    border-radius: 999px;
+    background-color: rgba(15, 23, 42, 0.82);
+    opacity: 0.92;
+}
+
+#photo-preview-modal .photo-preview-toolbar {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 18;
+    margin-bottom: 0;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    backdrop-filter: blur(14px);
+}
+
+#photo-preview-modal .photo-preview-wrap {
+    min-height: calc(100vh - 92px);
+    max-height: calc(100vh - 92px);
+    padding: 0;
+    border-radius: 0;
+    background: rgba(2, 6, 23, 0.94);
+    border: 0;
+}
+
+#photo-preview-modal .photo-preview-wrap img {
+    max-width: none;
+    max-height: none;
+}
+
+.photo-preview-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.82);
+    color: #f8fafc;
+    font-size: 24px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    z-index: 2;
+}
+
+.photo-preview-nav:hover:not(:disabled) {
+    border-color: rgba(96, 165, 250, 0.42);
+    color: #93c5fd;
+}
+
+.photo-preview-nav:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.photo-preview-nav-prev {
+    left: 12px;
+}
+
+.photo-preview-nav-next {
+    right: 12px;
+}
+
+.photo-preview-sequence {
+    margin-left: auto;
+    color: rgba(226, 232, 240, 0.78);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .photo-filter-grid .form-group {
+        width: 100%;
+    }
+
+    .photo-filter-grid .form-input-modal,
+    .photo-filter-grid .form-select-filter {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .photo-filter-actions {
+        margin-left: 0;
+    }
+
+    .photo-preview-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
+    .photo-preview-nav-prev {
+        left: 8px;
+    }
+
+    .photo-preview-nav-next {
+        right: 8px;
+    }
+
+    #photo-preview-modal .modal-body {
+        padding: 6px 6px 8px;
+    }
+
+    #photo-preview-modal .photo-preview-wrap {
+        min-height: calc(100vh - 140px);
+        max-height: calc(100vh - 140px);
+    }
+
+    #photo-preview-modal .photo-preview-wrap img {
+        max-width: none;
+        max-height: none;
+    }
+
+    #photo-preview-modal .detail-info {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: flex-end;">
     <a href="{{ url_for('admin_page') }}" class="btn-secondary" data-project-link>进入管理后台索引</a>
@@ -41,6 +297,7 @@
                 <input id="filter-keyword" class="form-input-modal" placeholder="文件名/目录关键字">
             </div>
             <div class="form-group photo-filter-actions">
+                <button id="filter-fault-only" type="button" class="btn-secondary photo-filter-toggle" aria-pressed="false">只看故障站点</button>
                 <button id="filter-search" class="btn-primary">筛选</button>
                 <button id="filter-reset" class="btn-secondary">重置</button>
             </div>
@@ -74,7 +331,7 @@
 </section>
 
 <div class="modal fade" id="photo-preview-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="photo-preview-title">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen photo-preview-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="photo-preview-title">照片预览</h5>
@@ -86,9 +343,16 @@
                     <button type="button" class="btn-secondary btn-sm" id="photo-zoom-reset-btn">还原</button>
                     <button type="button" class="btn-secondary btn-sm" id="photo-zoom-in-btn">放大</button>
                     <span class="photo-zoom-indicator" id="photo-zoom-indicator">100%</span>
+                    <span class="photo-preview-sequence" id="photo-preview-sequence">- / -</span>
                 </div>
-                <div class="photo-preview-wrap">
-                    <img id="photo-preview-image" alt="照片预览">
+                <div class="photo-preview-stage">
+                    <button type="button" class="photo-preview-nav photo-preview-nav-prev" id="photo-preview-prev" aria-label="上一张">&#8249;</button>
+                    <div class="photo-preview-wrap">
+                        <div class="photo-preview-canvas" id="photo-preview-canvas">
+                            <img id="photo-preview-image" alt="照片预览">
+                        </div>
+                    </div>
+                    <button type="button" class="photo-preview-nav photo-preview-nav-next" id="photo-preview-next" aria-label="下一张">&#8250;</button>
                 </div>
                 <div id="photo-preview-meta" class="detail-info" style="margin-top:16px;"></div>
             </div>

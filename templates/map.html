@@ -6,33 +6,193 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+.map-filter-bar {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+}
+
+.map-filter-stack {
+    display: flex;
+    align-items: center;
+    gap: 6px 10px;
+    flex-wrap: wrap;
+}
+
+.map-filter-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.map-filter-hint,
+.map-filter-scope {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.map-filter-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.map-legend-card {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+}
+
+.map-legend-title {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.map-legend {
+    display: grid;
+    gap: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.legend-copy {
+    min-width: 0;
+}
+
+.legend-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.legend-note {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.legend-dot.high {
+    background: #d93025;
+}
+
+.legend-dot.medium {
+    background: #f9ab00;
+}
+
+.legend-dot.low {
+    background: #1e8e3e;
+}
+
+.station-popup {
+    min-width: 220px;
+}
+
+.station-popup h4 {
+    margin: 0 0 8px;
+}
+
+.station-popup .info,
+.station-popup .camera-count,
+.station-popup .hint {
+    margin-bottom: 4px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+}
+
+.station-popup .hint {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.05);
+}
+
+.station-popup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .map-filter-bar {
+        align-items: stretch;
+    }
+
+    .map-filter-stack {
+        align-items: flex-start;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <select id="year-filter" class="form-select-filter">
-            <option value="">全部年份</option>
-        </select>
-        <span class="text-muted" style="font-size: 13px; color: var(--text-secondary);">点击标记查看详情</span>
+<div class="map-filter-bar">
+    <div class="map-filter-stack">
+        <div class="map-filter-inline">
+            <select id="year-filter" class="form-select-filter">
+                <option value="">全部年份</option>
+            </select>
+            <span class="map-filter-hint">按年份看故障分布。</span>
+        </div>
+        <div id="map-filter-scope-note" class="map-filter-scope">当前为全部年份口径。</div>
+    </div>
+    <div class="map-filter-actions">
+        <a href="{{ url_for('stations') }}" class="btn btn-secondary" data-project-link>去站点诊断</a>
+        <a href="{{ url_for('faults') }}" class="btn btn-secondary" data-project-link>看故障列表</a>
     </div>
 </div>
 
 <div id="map-tile-warning" class="alert alert-warning" style="display: none; margin-bottom: 12px;"></div>
-<div id="map" style="height: calc(100vh - 200px); min-height: 400px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); z-index: 1;"></div>
+<div id="map" style="height: calc(100vh - 156px); min-height: 460px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); z-index: 1;"></div>
 
-<div class="map-legend">
-    <div class="legend-item">
-        <span class="legend-dot high"></span>
-        <span>故障次数 >= 10</span>
-    </div>
-    <div class="legend-item">
-        <span class="legend-dot medium"></span>
-        <span>故障次数 5-9</span>
-    </div>
-    <div class="legend-item">
-        <span class="legend-dot low"></span>
-        <span>故障次数 &lt; 5</span>
+<div class="map-legend-card">
+    <div class="map-legend-title">风险图例</div>
+    <div class="map-legend">
+        <div class="legend-item">
+            <span class="legend-dot high"></span>
+            <div class="legend-copy">
+                <div class="legend-title">高频故障站点</div>
+                <div class="legend-note">故障次数 ≥ 10。优先查看相关故障或进入站点诊断，必要时直接报障。</div>
+            </div>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot medium"></span>
+            <div class="legend-copy">
+                <div class="legend-title">中等风险站点</div>
+                <div class="legend-note">故障次数 5-9。结合当前年份继续判断，建议先复核站点状态。</div>
+            </div>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot low"></span>
+            <div class="legend-copy">
+                <div class="legend-title">低风险站点</div>
+                <div class="legend-note">故障次数 &lt; 5。通常先观察，若现场已出现异常再进入报障流程。</div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -77,6 +237,56 @@ let activeTileProviderIndex = 0;
 
 function getYearFilter() {
     return currentYear ? { year: currentYear } : {};
+}
+
+function normalizeStationSiteName(name) {
+    return String(name || '')
+        .trim()
+        .replace(/^\d+\s*kV/i, '')
+        .replace(/变电站/g, '变')
+        .replace(/电站/g, '')
+        .trim();
+}
+
+function buildStationSiteKey(name, county) {
+    return `${String(county || '').trim()}::${normalizeStationSiteName(name)}`;
+}
+
+async function fetchAllFaultsForMap() {
+    const pageSize = 200;
+    let page = 1;
+    let total = 0;
+    const faults = [];
+
+    do {
+        const response = await fetch(withProject('/api/faults', {
+            ...getYearFilter(),
+            page,
+            page_size: pageSize,
+        }));
+        if (!response.ok) {
+            throw new Error('加载故障数据失败');
+        }
+
+        const payload = await response.json();
+        const data = payload.data || payload;
+        const rows = data.faults || [];
+        total = Number(data.total || rows.length || 0);
+        faults.push(...rows);
+        page += 1;
+    } while (faults.length < total);
+
+    return faults;
+}
+
+function updateMapScopeNote() {
+    const note = document.getElementById('map-filter-scope-note');
+    if (!note) {
+        return;
+    }
+    note.textContent = currentYear
+        ? `当前展示的是 ${currentYear} 年范围内的故障分布和站点风险位置。`
+        : '当前展示的是全部年份范围内的故障分布和站点风险位置。';
 }
 
 function getFocusedStationId() {
@@ -182,24 +392,20 @@ async function initMap() {
     switchTileProvider(0);
 
     await populateYearFilter();
+    updateMapScopeNote();
     await loadStationsForMap();
 }
 
 async function populateYearFilter() {
     try {
-        const res = await fetch(withProject('/api/faults'));
+        const res = await fetch(withProject('/api/stats'));
         const data = await res.json();
-        const years = new Set();
-
-        (data.faults || []).forEach(fault => {
-            if (fault.created_at) {
-                years.add(fault.created_at.substring(0, 4));
-            }
-        });
-
         const select = document.getElementById('year-filter');
-        const sortedYears = [...years].sort((a, b) => b - a);
-        sortedYears.forEach(year => {
+        const stats = data.data || data;
+        const sortedYears = Array.isArray(stats.available_years)
+            ? [...stats.available_years].filter(Boolean).sort((a, b) => Number(b) - Number(a))
+            : [];
+        sortedYears.forEach((year) => {
             const opt = document.createElement('option');
             opt.value = year;
             opt.textContent = `${year} 年`;
@@ -220,15 +426,23 @@ async function loadStationsForMap() {
         const response = await fetch(withProject('/api/stations'));
         const data = await response.json();
         stationsData = data.stations || [];
+        const stationMetaById = new Map(
+            stationsData.map((station) => [Number(station.id), station])
+        );
 
-        const faultsResponse = await fetch(withProject('/api/faults', getYearFilter()));
-        const faultsData = await faultsResponse.json();
-        const faults = faultsData.faults || [];
+        const faults = await fetchAllFaultsForMap();
 
         const faultCountByStation = {};
-        faults.forEach(fault => {
-            if (fault.station_id) {
-                faultCountByStation[fault.station_id] = (faultCountByStation[fault.station_id] || 0) + 1;
+        const faultCountBySite = {};
+        faults.forEach((fault) => {
+            const stationId = Number(fault.station_id);
+            const stationMeta = stationMetaById.get(stationId);
+            if (stationId) {
+                faultCountByStation[stationId] = (faultCountByStation[stationId] || 0) + 1;
+            }
+            if (stationMeta) {
+                const siteKey = buildStationSiteKey(stationMeta.name, stationMeta.county);
+                faultCountBySite[siteKey] = (faultCountBySite[siteKey] || 0) + 1;
             }
         });
 
@@ -240,14 +454,21 @@ async function loadStationsForMap() {
         const cameras = camerasData.cameras || [];
 
         const cameraCountByStation = {};
-        cameras.forEach(camera => {
-            if (camera.station_id) {
-                cameraCountByStation[camera.station_id] = (cameraCountByStation[camera.station_id] || 0) + 1;
+        const cameraCountBySite = {};
+        cameras.forEach((camera) => {
+            const stationId = Number(camera.station_id);
+            const stationMeta = stationMetaById.get(stationId);
+            if (stationId) {
+                cameraCountByStation[stationId] = (cameraCountByStation[stationId] || 0) + 1;
+            }
+            if (stationMeta) {
+                const siteKey = buildStationSiteKey(stationMeta.name, stationMeta.county);
+                cameraCountBySite[siteKey] = (cameraCountBySite[siteKey] || 0) + 1;
             }
         });
 
         const countyGroups = {};
-        stationsData.forEach(station => {
+        stationsData.forEach((station) => {
             const county = station.county || '未知';
             if (!countyGroups[county]) {
                 countyGroups[county] = [];
@@ -259,10 +480,19 @@ async function loadStationsForMap() {
             const center = COUNTY_CENTERS[county] || { lat: 28.3, lng: 119.6 };
 
             stations.forEach((station, idx) => {
-                const faultCount = faultCountByStation[station.id] || 0;
-                const cameraCount = cameraCountByStation[station.id] || 0;
+                const siteKey = buildStationSiteKey(station.name, station.county);
+                const directFaultCount = faultCountByStation[station.id] || 0;
+                const directCameraCount = cameraCountByStation[station.id] || 0;
+                const faultCount = faultCountBySite[siteKey] || directFaultCount;
+                const cameraCount = cameraCountBySite[siteKey] || directCameraCount;
                 const faultRate = cameraCount > 0 ? (faultCount / cameraCount * 100).toFixed(1) : 0;
                 const color = faultCount >= 10 ? '#d93025' : (faultCount >= 5 ? '#f9ab00' : '#1e8e3e');
+                const mergedStats = faultCount !== directFaultCount || cameraCount !== directCameraCount;
+                const riskHint = faultCount >= 10
+                    ? '当前属于高频故障站点，建议先查看相关故障或进入站点诊断。'
+                    : (faultCount >= 5
+                        ? '当前风险处于中段，建议先结合站点状态继续复核。'
+                        : '当前风险相对较低，若现场已有异常可直接发起报障。');
 
                 let lat;
                 let lng;
@@ -290,22 +520,31 @@ async function loadStationsForMap() {
                         color: white;
                         font-size: 11px;
                         font-weight: bold;
-                    ">${stations.length > 1 ? (idx + 1) : ''}</div>`,
+                    " title="${escapeHtml(station.name)} · 故障 ${faultCount} 次" aria-label="${escapeHtml(station.name)} · 故障 ${faultCount} 次">${faultCount}</div>`,
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
                 });
 
                 const marker = L.marker([lat, lng], { icon }).addTo(stationMarkersLayer);
                 stationMarkersById.set(Number(station.id), marker);
+                marker.bindTooltip(`${escapeHtml(station.name)} · 故障 ${faultCount} 次`, {
+                    direction: 'top',
+                    offset: [0, -12],
+                    opacity: 0.96,
+                });
 
                 marker.bindPopup(`
                     <div class="station-popup">
                         <h4>${escapeHtml(station.name)}</h4>
                         <div class="info">电压等级: ${escapeHtml(station.voltage_level || '-')}</div>
-                        <div class="info">县区: ${escapeHtml(station.county || '-')}</div>
+                        <div class="info">区县: ${escapeHtml(station.county || '-')}</div>
                         <div class="camera-count">摄像头: ${cameraCount} 个</div>
                         <div class="camera-count">故障: ${faultCount} 次 (${faultRate}%)</div>
-                        <div class="action">
+                        ${mergedStats ? '<div class="info">当前统计已合并同区县同站名的站点记录。</div>' : ''}
+                        <div class="hint">${escapeHtml(riskHint)}</div>
+                        <div class="station-popup-actions">
+                            <a href="${withProject('/stations', { station_id: station.id, view: faultCount > 0 ? 'recent-fault' : 'all' })}" class="btn btn-sm btn-secondary">查看站点</a>
+                            <a href="${withProject('/faults', { station_id: station.id, view: 'all' })}" class="btn btn-sm btn-secondary">查看故障</a>
                             <a href="${withProject('/fault/new', { station_id: station.id })}" class="btn btn-sm btn-primary">报故障</a>
                         </div>
                     </div>
@@ -329,6 +568,7 @@ async function loadStationsForMap() {
 
 document.getElementById('year-filter').addEventListener('change', async function() {
     currentYear = this.value;
+    updateMapScopeNote();
     await loadStationsForMap();
 });
 

@@ -10,7 +10,7 @@ from pathlib import Path
 from import_review_support import get_project_row, table_exists
 from init_db import get_db_path
 from utils import backup_sqlite_database, create_db_connection
-from worklog_fault_types import get_catalog_for_project, infer_worklog_fault_type
+from worklog_fault_types import classify_worklog_entry, get_catalog_for_project
 
 
 PROJECT_CODES = ("unified", "inspection", "auxiliary")
@@ -23,13 +23,13 @@ def ensure_fault_type_tables(conn):
         raise RuntimeError(f"missing required tables: {', '.join(missing)}")
 
 
-def create_and_publish_version(conn, project_code: str, *, description: str):
+def create_and_publish_version(conn, project_code: str, *, description: str, force_new_version: bool = False):
     project = get_project_row(conn, project_code)
     if not project:
         raise RuntimeError(f"project not found: {project_code}")
 
     current_version_id = project.get("fault_type_version_id")
-    if current_version_id:
+    if current_version_id and not force_new_version:
         return {"project_code": project_code, "project_id": project["id"], "version_id": current_version_id, "created": False}
 
     next_version = (
@@ -47,6 +47,10 @@ def create_and_publish_version(conn, project_code: str, *, description: str):
         (project["id"], next_version, description),
     )
     version_id = cursor.lastrowid
+    conn.execute(
+        "UPDATE project_fault_type_versions SET is_published = 0 WHERE project_id = ? AND id != ?",
+        (project["id"], version_id),
+    )
     for item in get_catalog_for_project(project_code):
         conn.execute(
             """
@@ -77,10 +81,12 @@ def backfill_worklog_fault_reports(conn):
         SELECT id, project_id, system_type, description, fault_type, fault_type_label_snapshot
         FROM fault_reports
         WHERE source_type = 'import_worklog'
+          AND deleted_at IS NULL
         ORDER BY id
         """
     ).fetchall()
     updated = []
+    soft_deleted = []
     for row in rows:
         project_id = row["project_id"]
         if not project_id:
@@ -93,7 +99,25 @@ def backfill_worklog_fault_reports(conn):
         if not version_id:
             continue
 
-        fault_type = infer_worklog_fault_type(row["description"] or row["fault_type_label_snapshot"] or row["fault_type"])
+        fault_type = classify_worklog_entry(row["description"] or row["fault_type_label_snapshot"] or row["fault_type"])
+        if not fault_type["is_fault"]:
+            conn.execute(
+                """
+                UPDATE fault_reports
+                SET deleted_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (row["id"],),
+            )
+            soft_deleted.append(
+                {
+                    "id": row["id"],
+                    "project_id": project_id,
+                    "reason": fault_type["reason"],
+                }
+            )
+            continue
         conn.execute(
             """
             UPDATE fault_reports
@@ -121,7 +145,7 @@ def backfill_worklog_fault_reports(conn):
                 "fault_type_version_id": version_id,
             }
         )
-    return updated
+    return updated, soft_deleted
 
 
 def main():
@@ -129,6 +153,7 @@ def main():
     parser.add_argument("--database", default=get_db_path(), help="SQLite database path")
     parser.add_argument("--report", help="Optional JSON report path")
     parser.add_argument("--skip-backup", action="store_true", help="Skip automatic database backup")
+    parser.add_argument("--force-new-version", action="store_true", help="Create and publish a new fault-type version even if one already exists")
     args = parser.parse_args()
 
     database_path = Path(args.database).resolve()
@@ -148,10 +173,11 @@ def main():
                 create_and_publish_version(
                     conn,
                     project_code,
-                    description="Seeded from 工作记录.xlsx high-frequency worklog categories",
+                    description="Seeded from 工作记录.xlsx field terminology fault categories",
+                    force_new_version=args.force_new_version,
                 )
             )
-        updated_rows = backfill_worklog_fault_reports(conn)
+        updated_rows, soft_deleted_rows = backfill_worklog_fault_reports(conn)
         conn.commit()
     finally:
         conn.close()
@@ -161,6 +187,8 @@ def main():
         "versions": version_results,
         "backfilled_count": len(updated_rows),
         "backfilled_rows": updated_rows,
+        "soft_deleted_count": len(soft_deleted_rows),
+        "soft_deleted_rows": soft_deleted_rows,
     }
     if report_path:
         report_path.parent.mkdir(parents=True, exist_ok=True)

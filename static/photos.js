@@ -59,43 +59,125 @@ function buildGroupSection(group) {
 let groupsCache = [];
 let unmatchedCache = [];
 let photosFlatCache = [];
+const DEFAULT_FAULT_ONLY = false;
+let faultOnlyMode = DEFAULT_FAULT_ONLY;
 let previewZoom = 1;
 let previewDragState = null;
+let currentPreviewPhotoId = null;
 const PREVIEW_ZOOM_MIN = 1;
-const PREVIEW_ZOOM_MAX = 2.2;
-const PREVIEW_ZOOM_STEP = 0.1;
-const PREVIEW_WHEEL_STEP = 0.05;
-const PREVIEW_TAP_ZOOM = 1.35;
+const PREVIEW_ZOOM_MAX = 10;
+const PREVIEW_ZOOM_STEP = 0.2;
+const PREVIEW_WHEEL_STEP = 0.12;
 
 function previewElements() {
     return {
         wrap: document.querySelector('#photo-preview-modal .photo-preview-wrap'),
+        canvas: document.getElementById('photo-preview-canvas'),
         image: document.getElementById('photo-preview-image'),
         indicator: document.getElementById('photo-zoom-indicator'),
+        sequence: document.getElementById('photo-preview-sequence'),
+        prev: document.getElementById('photo-preview-prev'),
+        next: document.getElementById('photo-preview-next'),
+        modal: document.getElementById('photo-preview-modal'),
     };
 }
 
-function syncPreviewZoom() {
-    const { wrap, image, indicator } = previewElements();
-    if (!wrap || !image || !indicator) return;
-    image.style.transform = `scale(${previewZoom})`;
-    indicator.textContent = `${Math.round(previewZoom * 100)}%`;
-    wrap.classList.toggle('is-zoomed', previewZoom > 1.01);
-    if (previewZoom <= 1.01) {
-        wrap.scrollLeft = 0;
-        wrap.scrollTop = 0;
+function previewablePhotos() {
+    return [...groupsCache.flatMap((group) => group.photos || []), ...unmatchedCache]
+        .filter((photo) => photo && photo.is_image);
+}
+
+function previewIndex(photoId) {
+    return previewablePhotos().findIndex((photo) => photo.id === Number(photoId));
+}
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function syncPreviewNavigation() {
+    const { prev, next, sequence } = previewElements();
+    const photos = previewablePhotos();
+    const index = previewIndex(currentPreviewPhotoId);
+    const hasCurrent = index >= 0;
+
+    if (sequence) {
+        sequence.textContent = hasCurrent ? `${index + 1} / ${photos.length}` : '- / -';
+    }
+    if (prev) {
+        prev.disabled = !hasCurrent || index <= 0;
+    }
+    if (next) {
+        next.disabled = !hasCurrent || index >= photos.length - 1;
     }
 }
 
-function setPreviewZoom(nextZoom, options = {}) {
-    const { image } = previewElements();
-    if (image && Number.isFinite(options.originX) && Number.isFinite(options.originY)) {
-        image.style.transformOrigin = `${options.originX}% ${options.originY}%`;
-    } else if (image && Number(nextZoom) <= PREVIEW_ZOOM_MIN + 0.001) {
-        image.style.transformOrigin = 'center center';
+function resolvePreviewImageSize() {
+    const { wrap, image } = previewElements();
+    if (!wrap || !image || !image.naturalWidth || !image.naturalHeight) return null;
+
+    const wrapStyles = window.getComputedStyle(wrap);
+    const paddingX = (parseFloat(wrapStyles.paddingLeft) || 0) + (parseFloat(wrapStyles.paddingRight) || 0);
+    const paddingY = (parseFloat(wrapStyles.paddingTop) || 0) + (parseFloat(wrapStyles.paddingBottom) || 0);
+    const availableWidth = Math.max(120, wrap.clientWidth - paddingX);
+    const availableHeight = Math.max(120, wrap.clientHeight - paddingY);
+    const fitScale = Math.min(availableWidth / image.naturalWidth, availableHeight / image.naturalHeight);
+
+    return {
+        width: Math.max(1, image.naturalWidth * fitScale),
+        height: Math.max(1, image.naturalHeight * fitScale),
+        availableWidth,
+        availableHeight,
+    };
+}
+
+function syncPreviewZoom(options = {}) {
+    const { wrap, canvas, image, indicator } = previewElements();
+    if (!wrap || !canvas || !image || !indicator) return;
+    const imageSize = resolvePreviewImageSize();
+    if (!imageSize) return;
+
+    const focusOffsetX = Number.isFinite(options.offsetX) ? options.offsetX : wrap.clientWidth / 2;
+    const focusOffsetY = Number.isFinite(options.offsetY) ? options.offsetY : wrap.clientHeight / 2;
+    const currentImageWidth = image.offsetWidth || (imageSize.width * Math.max(previewZoom, PREVIEW_ZOOM_MIN));
+    const currentImageHeight = image.offsetHeight || (imageSize.height * Math.max(previewZoom, PREVIEW_ZOOM_MIN));
+    const cursorContentX = wrap.scrollLeft + focusOffsetX;
+    const cursorContentY = wrap.scrollTop + focusOffsetY;
+    const relativeX = currentImageWidth > 0
+        ? clamp((cursorContentX - image.offsetLeft) / currentImageWidth, 0, 1)
+        : 0.5;
+    const relativeY = currentImageHeight > 0
+        ? clamp((cursorContentY - image.offsetTop) / currentImageHeight, 0, 1)
+        : 0.5;
+
+    const scaledWidth = imageSize.width * previewZoom;
+    const scaledHeight = imageSize.height * previewZoom;
+    image.style.width = `${scaledWidth}px`;
+    image.style.height = `${scaledHeight}px`;
+    canvas.style.width = `${Math.max(imageSize.availableWidth, scaledWidth)}px`;
+    canvas.style.height = `${Math.max(imageSize.availableHeight, scaledHeight)}px`;
+    image.style.opacity = '1';
+    indicator.textContent = `${Math.round(previewZoom * 100)}%`;
+    const overflowing = scaledWidth > imageSize.availableWidth + 1 || scaledHeight > imageSize.availableHeight + 1;
+    wrap.classList.toggle('is-zoomed', overflowing);
+    canvas.classList.toggle('is-zoomed', overflowing);
+    if (previewZoom <= 1.01) {
+        wrap.scrollLeft = 0;
+        wrap.scrollTop = 0;
+        return;
     }
+
+    const nextImageWidth = image.offsetWidth || (imageSize.width * previewZoom);
+    const nextImageHeight = image.offsetHeight || (imageSize.height * previewZoom);
+    const maxScrollLeft = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+    const maxScrollTop = Math.max(0, wrap.scrollHeight - wrap.clientHeight);
+    wrap.scrollLeft = clamp(image.offsetLeft + (relativeX * nextImageWidth) - focusOffsetX, 0, maxScrollLeft);
+    wrap.scrollTop = clamp(image.offsetTop + (relativeY * nextImageHeight) - focusOffsetY, 0, maxScrollTop);
+}
+
+function setPreviewZoom(nextZoom, options = {}) {
     previewZoom = Math.min(PREVIEW_ZOOM_MAX, Math.max(PREVIEW_ZOOM_MIN, Number(nextZoom) || 1));
-    syncPreviewZoom();
+    syncPreviewZoom(options);
 }
 
 function adjustPreviewZoom(delta) {
@@ -108,7 +190,8 @@ function resetPreviewZoom() {
 
 function startPreviewDrag(event) {
     const { wrap } = previewElements();
-    if (!wrap || previewZoom <= 1.01) return;
+    if (!wrap || previewZoom <= 1.01 || event.button !== 0) return;
+    event.preventDefault();
     previewDragState = {
         startX: event.clientX,
         startY: event.clientY,
@@ -116,19 +199,32 @@ function startPreviewDrag(event) {
         scrollTop: wrap.scrollTop,
     };
     wrap.classList.add('is-dragging');
+    document.body.style.cursor = 'grabbing';
 }
 
 function movePreviewDrag(event) {
     const { wrap } = previewElements();
     if (!wrap || !previewDragState) return;
-    wrap.scrollLeft = previewDragState.scrollLeft - (event.clientX - previewDragState.startX);
-    wrap.scrollTop = previewDragState.scrollTop - (event.clientY - previewDragState.startY);
+    event.preventDefault();
+    const deltaX = event.clientX - previewDragState.startX;
+    const deltaY = event.clientY - previewDragState.startY;
+    wrap.scrollLeft = previewDragState.scrollLeft - deltaX;
+    wrap.scrollTop = previewDragState.scrollTop - deltaY;
 }
 
 function stopPreviewDrag() {
     const { wrap } = previewElements();
     previewDragState = null;
     if (wrap) wrap.classList.remove('is-dragging');
+    document.body.style.cursor = '';
+}
+
+function syncFaultOnlyToggle() {
+    const button = document.getElementById('filter-fault-only');
+    if (!button) return;
+    button.setAttribute('aria-pressed', faultOnlyMode ? 'true' : 'false');
+    button.textContent = faultOnlyMode ? '只看故障站点中' : '只看故障站点';
+    button.title = faultOnlyMode ? '当前仅显示存在未关闭故障的站点照片，点击恢复全部照片' : '点击后仅显示存在未关闭故障的站点照片';
 }
 
 async function loadPhotoGroups() {
@@ -153,6 +249,7 @@ async function loadPhotoGroups() {
         if (county) params.set('county', county);
         if (status) params.set('status', status);
         if (keyword) params.set('keyword', keyword);
+        if (faultOnlyMode) params.set('has_fault', '1');
         params.set('limit_per_group', '120');
 
         const response = await fetch(withProject('/api/photos/groups', Object.fromEntries(params.entries())));
@@ -175,6 +272,7 @@ async function loadPhotoGroups() {
 
         const hasData = groupsCache.length > 0 || unmatchedCache.length > 0;
         if (!hasData) {
+            syncPreviewNavigation();
             empty.style.display = 'block';
             loading.style.display = 'none';
             return;
@@ -186,6 +284,7 @@ async function loadPhotoGroups() {
         const unmatchedGrid = document.getElementById('photo-unmatched-grid');
         unmatchedGrid.innerHTML = unmatchedCache.map(photoCard).join('');
         unmatchedEl.style.display = unmatchedCache.length ? 'block' : 'none';
+        syncPreviewNavigation();
 
         loading.style.display = 'none';
 
@@ -210,11 +309,29 @@ function findPhotoById(photoId) {
 function openPreview(photoId) {
     const photo = findPhotoById(photoId);
     if (!photo || !photo.is_image) return;
+    currentPreviewPhotoId = photo.id;
 
     document.getElementById('photo-preview-title').textContent = photo.filename || '照片预览';
     const img = document.getElementById('photo-preview-image');
+    const canvas = document.getElementById('photo-preview-canvas');
+    img.style.opacity = '0';
+    img.style.width = '';
+    img.style.height = '';
+    if (canvas) {
+        canvas.style.width = '';
+        canvas.style.height = '';
+        canvas.classList.remove('is-zoomed');
+    }
+    img.onload = () => {
+        previewZoom = 1;
+        syncPreviewZoom();
+    };
     img.src = photoFileUrl(photo.id);
-    resetPreviewZoom();
+    if (img.complete) {
+        previewZoom = 1;
+        syncPreviewZoom();
+    }
+    syncPreviewNavigation();
 
     document.getElementById('photo-preview-meta').innerHTML = `
         <div class="detail-row"><span class="detail-label">文件名</span><span class="detail-value">${escapeHtml(photo.filename || '-')}</span></div>
@@ -223,19 +340,40 @@ function openPreview(photoId) {
         <div class="detail-row"><span class="detail-label">时间</span><span class="detail-value">${formatDate(photo.file_mtime)}</span></div>
     `;
 
-    const modal = new bootstrap.Modal(document.getElementById('photo-preview-modal'));
-    modal.show();
+    const modalEl = document.getElementById('photo-preview-modal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    if (!modalEl.classList.contains('show')) {
+        modal.show();
+    }
+}
+
+function stepPreview(offset) {
+    const photos = previewablePhotos();
+    const index = previewIndex(currentPreviewPhotoId);
+    if (index < 0) return;
+    const target = photos[index + offset];
+    if (!target) return;
+    openPreview(target.id);
 }
 
 function resetFilters() {
     document.getElementById('filter-county').value = '';
     document.getElementById('filter-status').value = '';
     document.getElementById('filter-keyword').value = '';
+    faultOnlyMode = DEFAULT_FAULT_ONLY;
+    syncFaultOnlyToggle();
+    loadPhotoGroups();
+}
+
+function toggleFaultOnlyMode() {
+    faultOnlyMode = !faultOnlyMode;
+    syncFaultOnlyToggle();
     loadPhotoGroups();
 }
 
 document.getElementById('filter-search').addEventListener('click', loadPhotoGroups);
 document.getElementById('filter-reset').addEventListener('click', resetFilters);
+document.getElementById('filter-fault-only')?.addEventListener('click', toggleFaultOnlyMode);
 document.getElementById('filter-keyword').addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
@@ -246,44 +384,61 @@ document.getElementById('filter-keyword').addEventListener('keydown', (event) =>
 document.getElementById('photo-zoom-in-btn')?.addEventListener('click', () => adjustPreviewZoom(PREVIEW_ZOOM_STEP));
 document.getElementById('photo-zoom-out-btn')?.addEventListener('click', () => adjustPreviewZoom(-PREVIEW_ZOOM_STEP));
 document.getElementById('photo-zoom-reset-btn')?.addEventListener('click', resetPreviewZoom);
-
-document.getElementById('photo-preview-image')?.addEventListener('click', () => {
-    if (previewZoom > 1.01) {
-        resetPreviewZoom();
-    } else {
-        setPreviewZoom(PREVIEW_TAP_ZOOM);
-    }
-});
+document.getElementById('photo-preview-prev')?.addEventListener('click', () => stepPreview(-1));
+document.getElementById('photo-preview-next')?.addEventListener('click', () => stepPreview(1));
 
 document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventListener('wheel', (event) => {
     event.preventDefault();
-    const { image } = previewElements();
-    if (image) {
-        const rect = image.getBoundingClientRect();
-        const originX = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
-        const originY = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
-        setPreviewZoom(
-            Math.round((previewZoom + (event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP)) * 100) / 100,
-            { originX, originY }
-        );
-        return;
-    }
-    adjustPreviewZoom(event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP);
+    const { wrap } = previewElements();
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    setPreviewZoom(
+        Math.round((previewZoom + (event.deltaY < 0 ? PREVIEW_WHEEL_STEP : -PREVIEW_WHEEL_STEP)) * 100) / 100,
+        {
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+        }
+    );
 }, { passive: false });
 
 document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventListener('mousedown', startPreviewDrag);
 document.addEventListener('mousemove', movePreviewDrag);
 document.addEventListener('mouseup', stopPreviewDrag);
 document.addEventListener('mouseleave', stopPreviewDrag);
+document.addEventListener('keydown', (event) => {
+    const { modal } = previewElements();
+    if (!modal || !modal.classList.contains('show')) return;
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        stepPreview(-1);
+    } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        stepPreview(1);
+    }
+});
 
 document.getElementById('photo-preview-modal')?.addEventListener('hidden.bs.modal', () => {
+    currentPreviewPhotoId = null;
     stopPreviewDrag();
     resetPreviewZoom();
+    syncPreviewNavigation();
+});
+
+document.getElementById('photo-preview-modal')?.addEventListener('shown.bs.modal', () => {
+    syncPreviewZoom();
+});
+
+window.addEventListener('resize', () => {
+    const { modal } = previewElements();
+    if (modal && modal.classList.contains('show')) {
+        syncPreviewZoom();
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
     }
+    syncFaultOnlyToggle();
     loadPhotoGroups();
 });

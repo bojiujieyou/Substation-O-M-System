@@ -860,6 +860,39 @@ def test_fault_status_update_requires_project_write_scope(client, seeded_project
     assert denied.get_json()["code"] == "PROJECT_ACCESS_DENIED"
 
 
+def test_fault_status_close_updates_catalog_fault_type(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    handling = client.put("/api/faults/2/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        "/api/faults/2/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "onsite diagnosis confirmed blur fault",
+            "fault_type": "待现场确认",
+            "fault_type_code": "BLUR",
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        row = conn.execute(
+            """
+            SELECT status, fault_type, fault_type_code, fault_type_label_snapshot, fault_type_version_id
+            FROM fault_reports
+            WHERE id = 2
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert row == ("closed", "Blur", "BLUR", "Blur", 10)
+
+
 def test_fault_tag_suggestions_follow_project_scope(client, seeded_project_schema):
     login(client, "operator1", "operatorpass")
 

@@ -9,7 +9,7 @@
     <div class="page-header">
         <div>
             <h2 class="page-title">导入结果摘要</h2>
-            <p class="text-muted mb-0" id="batch-subtitle">正在加载批次信息...</p>
+            <p class="text-muted mb-0" id="batch-subtitle">正在加载...</p>
         </div>
         <div class="page-actions">
             <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
@@ -68,7 +68,7 @@
                 <div class="status-hero" id="page-status-hero">
                     <div class="status-hero-badge badge badge-info" id="page-status-badge">加载中</div>
                     <div class="status-hero-title" id="page-status-title">正在分析本批次结果</div>
-                    <p class="form-hint mb-0 status-hero-note" id="page-status-note">结果加载后会在这里提示下一步动作。</p>
+                    <p class="form-hint mb-0 status-hero-note" id="page-status-note">结果加载后显示当前状态。</p>
                 </div>
                 <div class="detail-row"><span class="detail-label">当前状态</span><span class="detail-value" id="page-status-label">-</span></div>
                 <div class="detail-row"><span class="detail-label">待审查记录</span><span class="detail-value" id="pending-review-count">0</span></div>
@@ -81,7 +81,7 @@
         <div class="col-12">
             <div class="admin-section">
                 <h3 class="admin-section-title">来源摘要</h3>
-                <div id="source-summary-empty" class="text-muted">导入报告生成后，会在这里显示来源侧的处理摘要。</div>
+                <div id="source-summary-empty" class="text-muted">导入报告生成后显示来源摘要。</div>
                 <div id="source-summary-content" class="source-summary-content is-hidden">
                     <div class="row g-3 mb-3">
                         <div class="col-md-4"><div class="detail-row source-metric" id="source-metric-station"><span class="detail-label">站点处理数</span><span class="detail-value" id="source-station-count">-</span></div></div>
@@ -121,7 +121,7 @@
         <div class="col-12">
             <div class="admin-section">
                 <h3 class="admin-section-title">下一步动作</h3>
-                <div id="next-steps-empty" class="text-muted">结果加载后会给出建议动作。</div>
+                <div id="next-steps-empty" class="text-muted">结果加载后显示处理动作。</div>
                 <div id="next-step-primary" class="next-step-primary next-step-primary-emphasis is-hidden">
                     <div class="next-step-primary-label">优先处理</div>
                     <div class="next-step-primary-text" id="next-step-primary-text">-</div>
@@ -239,13 +239,13 @@ function resolveStatusNote(summary, batch) {
         return '当前批次已部分写入，仍需关注失败项和后续补录。';
     }
     if (summary.page_status === 'failed') {
-        return '当前批次未成功完成，请先检查导入报告和输入数据。';
+        return '当前批次未成功完成，请检查导入报告和输入数据。';
     }
     if (isExcel) {
         return '这次是台账导入，结果会更新站点和摄像头，不会直接出现在故障列表。';
     }
     if (isFaultLikeSource(batch.source_type)) {
-        return '这次是故障导入，结果应出现在故障列表中，建议立即抽查几条新记录。';
+        return '这次是故障导入，结果会出现在故障列表中。';
     }
     return '当前批次已完成，可以返回管理后台继续后续工作。';
 }
@@ -491,7 +491,7 @@ function renderNextSteps(steps) {
 
 function renderSummary(summary) {
     const batch = summary.batch || {};
-    setText('batch-subtitle', `${batch.project_name || batch.project_code || '未指定项目'} · 已生成批次结果与后续动作建议`);
+    setText('batch-subtitle', `${batch.project_name || batch.project_code || '未指定项目'} · 批次结果已生成`);
     setText('detail-batch-id', batch.id);
     setText('detail-project', batch.project_name || batch.project_code || '-');
     setText('detail-source-type', resolveSourceTypeLabel(batch.source_type));

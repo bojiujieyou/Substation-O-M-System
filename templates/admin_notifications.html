@@ -4,6 +4,87 @@
 
 {% block page_title %}项目通知配置{% endblock %}
 
+{% block extra_head %}
+<style>
+.notification-summary-card,
+.notification-log-note,
+.notification-target-hint {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 252, 0.94));
+}
+
+.notification-summary-card {
+    margin: 14px 0 18px;
+    padding: 14px 16px;
+}
+
+.notification-summary-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.notification-summary-text {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.notification-summary-points {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.notification-summary-point {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.notification-health-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.notification-health-item {
+    padding: 9px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.notification-health-item-warning {
+    background: rgba(249, 171, 0, 0.12);
+    color: #8a5a00;
+}
+
+.notification-health-item-ok {
+    background: rgba(52, 199, 89, 0.1);
+    color: #1f6f43;
+}
+
+.notification-target-hint,
+.notification-log-note {
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.notification-target-hint {
+    margin-top: 8px;
+}
+
+.notification-log-note {
+    margin-bottom: 12px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -24,6 +105,7 @@
                     <label class="form-label" for="notification-project-select">项目</label>
                     <select id="notification-project-select" class="form-select"></select>
                 </div>
+                <div id="notification-policy-summary" class="notification-summary-card"></div>
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="policy-active" checked>
                     <label class="form-check-label" for="policy-active">启用通知策略</label>
@@ -84,6 +166,7 @@
                     <div class="col-md-4">
                         <label class="form-label" for="config-target-value">目标值</label>
                         <input id="config-target-value" class="form-input" placeholder="手机号 / webhook / 邮箱">
+                        <div id="config-target-hint" class="notification-target-hint">按当前渠道填写目标值。手机号、Webhook 地址或邮箱都可以作为通知目标。</div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label" for="config-dedupe">去重分钟</label>
@@ -131,6 +214,7 @@
                     </div>
                 </div>
                 <div id="notification-log-message" class="form-hint mb-3"></div>
+                <div class="notification-log-note">预演只计算结果，不落计划；执行会生成新的升级通知。</div>
 
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
@@ -169,6 +253,69 @@ function setNotificationMessage(targetId, message, isError = false) {
     setInlineMessage(targetId, message, isError, 'text-success');
 }
 
+function formatNotificationChannel(channel) {
+    return {
+        sms: '短信',
+        webhook: 'Webhook',
+        email: '邮箱'
+    }[channel] || channel || '-';
+}
+
+function formatEventType(eventType) {
+    return {
+        fault_created: '故障创建',
+        fault_closed: '故障关闭',
+        escalation: '超时升级'
+    }[eventType] || eventType || '-';
+}
+
+function formatQuietHoursSummary(quietHours) {
+    if (!quietHours || (!quietHours.start && !quietHours.end)) {
+        return '未设置静默时段';
+    }
+    return `${quietHours.start || '--:--'} 至 ${quietHours.end || '--:--'}`;
+}
+
+function notificationStatusText(status) {
+    return {
+        pending: '待派发',
+        dispatched: '已派发',
+        suppressed: '已抑制',
+        skipped: '已跳过',
+        failed: '派发失败'
+    }[status] || status || '-';
+}
+
+function updateTargetValueHint() {
+    const channel = document.getElementById('config-channel')?.value || '';
+    const input = document.getElementById('config-target-value');
+    const hint = document.getElementById('config-target-hint');
+    if (!input || !hint) {
+        return;
+    }
+
+    const channelMeta = {
+        sms: {
+            placeholder: '例如 13800000000',
+            text: '填写手机号或值班短号。'
+        },
+        webhook: {
+            placeholder: '例如 https://example.com/webhook',
+            text: '填写完整回调地址。'
+        },
+        email: {
+            placeholder: '例如 ops@example.com',
+            text: '填写个人邮箱或值班组邮箱。'
+        }
+    };
+    const meta = channelMeta[channel] || {
+        placeholder: '手机号 / webhook / 邮箱',
+        text: '按当前渠道填写目标值。手机号、Webhook 地址或邮箱都可以作为通知目标。'
+    };
+    input.placeholder = meta.placeholder;
+    hint.textContent = meta.text;
+}
+
 function currentPolicy() {
     return notificationPolicies.find(item => item.project_code === currentNotificationProjectCode) || null;
 }
@@ -177,6 +324,61 @@ function currentConfigs() {
     const policy = currentPolicy();
     if (!policy) return [];
     return notificationConfigs.filter(item => item.policy_id === policy.id);
+}
+
+function currentPolicyDraft() {
+    const policy = currentPolicy();
+    if (!policy) {
+        return null;
+    }
+
+    const quietStart = document.getElementById('quiet-start')?.value.trim();
+    const quietEnd = document.getElementById('quiet-end')?.value.trim();
+    const escalateAfter = document.getElementById('escalate-after')?.value.trim();
+    const escalationTarget = document.getElementById('escalation-target')?.value || null;
+
+    return {
+        ...policy,
+        is_active: document.getElementById('policy-active') ? !!document.getElementById('policy-active').checked : !!policy.is_active,
+        notify_on_create: document.getElementById('notify-on-create') ? !!document.getElementById('notify-on-create').checked : !!policy.notify_on_create,
+        notify_on_close: document.getElementById('notify-on-close') ? !!document.getElementById('notify-on-close').checked : !!policy.notify_on_close,
+        quiet_hours: quietStart || quietEnd ? { start: quietStart, end: quietEnd } : null,
+        escalate_after_minutes: escalateAfter ? Number(escalateAfter) : null,
+        escalation_target_config_id: escalationTarget || null,
+    };
+}
+
+function buildPolicyHealthChecks(policy, configs) {
+    const checks = [];
+    const activeConfigs = (configs || []).filter(item => item.is_active);
+    const quietHours = policy.quiet_hours || {};
+    const quietHoursIncomplete = Boolean(quietHours.start) !== Boolean(quietHours.end);
+
+    if (policy.project_is_active && policy.is_active && activeConfigs.length === 0) {
+        checks.push({ type: 'warning', text: '策略已启用，但当前没有启用中的通知目标。' });
+    }
+
+    if (policy.escalate_after_minutes && !policy.escalation_target_config_id) {
+        checks.push({ type: 'warning', text: '已设置升级阈值，但还未指定升级通知目标。' });
+    }
+
+    if (quietHoursIncomplete) {
+        checks.push({ type: 'warning', text: '静默时段只填写了一端，请补全开始和结束时间。' });
+    }
+
+    if (checks.length) {
+        return checks;
+    }
+
+    if (!policy.project_is_active) {
+        return [{ type: 'ok', text: '当前项目已停用，通知策略暂不会向外派发。' }];
+    }
+
+    if (!policy.is_active) {
+        return [{ type: 'ok', text: '当前配置已保存；策略启用后即可按规则派发通知。' }];
+    }
+
+    return [{ type: 'ok', text: '当前配置完整，可以正常按策略派发通知。' }];
 }
 
 function fillSelect(selectId, values, formatter) {
@@ -218,6 +420,7 @@ function renderPolicy() {
     } else {
         setNotificationMessage('notification-policy-message', '');
     }
+    renderPolicySummary();
 }
 
 function renderConfigs() {
@@ -229,8 +432,8 @@ function renderConfigs() {
     }
     tbody.innerHTML = configs.map(item => `
         <tr>
-            <td>${escapeHtml(item.event_type)}</td>
-            <td>${escapeHtml(item.channel)}</td>
+            <td>${escapeHtml(formatEventType(item.event_type))}</td>
+            <td>${escapeHtml(formatNotificationChannel(item.channel))}</td>
             <td>${escapeHtml(item.target_value)}</td>
             <td>${escapeHtml(item.deduplication_window_minutes || 60)} 分钟</td>
             <td>${item.is_active ? '启用' : '停用'}</td>
@@ -242,6 +445,7 @@ function renderConfigs() {
             </td>
         </tr>
     `).join('');
+    renderPolicySummary();
 }
 
 function renderNotificationLogs() {
@@ -256,14 +460,61 @@ function renderNotificationLogs() {
         return `
             <tr>
                 <td>${escapeHtml(item.created_at || '-')}</td>
-                <td>${escapeHtml(item.event_type || '-')}</td>
-                <td>${escapeHtml(`${item.channel || '-'} / ${item.target_value || '-'}`)}</td>
+                <td>${escapeHtml(formatEventType(item.event_type))}</td>
+                <td>${escapeHtml(`${formatNotificationChannel(item.channel)} / ${item.target_value || '-'}`)}</td>
                 <td>#${escapeHtml(item.fault_id || '-')}</td>
                 <td>${escapeHtml(payload.station_name || '-')}</td>
-                <td>${escapeHtml(item.status || '-')}</td>
+                <td>${escapeHtml(notificationStatusText(item.status))}</td>
             </tr>
         `;
     }).join('');
+}
+
+function renderPolicySummary() {
+    const host = document.getElementById('notification-policy-summary');
+    const policy = currentPolicyDraft();
+    if (!host || !policy) {
+        return;
+    }
+
+    const configs = currentConfigs();
+    const escalationConfig = configs.find((item) => String(item.id) === String(policy.escalation_target_config_id || ''));
+    const healthChecks = buildPolicyHealthChecks(policy, configs);
+    const createText = policy.notify_on_create ? '故障创建时会通知' : '故障创建时不通知';
+    const closeText = policy.notify_on_close ? '故障关闭时会通知' : '故障关闭时不通知';
+    const quietText = formatQuietHoursSummary(policy.quiet_hours);
+    const escalationText = policy.escalate_after_minutes
+        ? `${policy.escalate_after_minutes} 分钟后触发升级巡检`
+        : '当前未设置升级阈值';
+    const escalationTargetText = escalationConfig
+        ? `${formatNotificationChannel(escalationConfig.channel)} / ${escalationConfig.target_value}`
+        : '当前未指定升级通知目标';
+
+    let summaryText = '';
+    if (!policy.project_is_active) {
+        summaryText = '当前项目已停用，这套通知策略不会继续向外派发。';
+    } else if (!policy.is_active) {
+        summaryText = '当前项目已保留策略配置，但通知策略本身处于停用状态。';
+    } else {
+        summaryText = `当前项目通知策略已启用，${createText}，${closeText}。`;
+    }
+
+    host.innerHTML = `
+        <div class="notification-summary-title">当前策略摘要</div>
+        <div class="notification-summary-text">${escapeHtml(summaryText)}</div>
+        <div class="notification-summary-points">
+            <div class="notification-summary-point">静默时段：${escapeHtml(quietText)}</div>
+            <div class="notification-summary-point">升级规则：${escapeHtml(escalationText)}</div>
+            <div class="notification-summary-point">升级去向：${escapeHtml(escalationTargetText)}</div>
+        </div>
+        <div class="notification-health-list">
+            ${healthChecks.map(item => `
+                <div class="notification-health-item notification-health-item-${item.type}">
+                    ${escapeHtml(item.text)}
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 async function loadNotificationLogs() {
@@ -302,6 +553,7 @@ async function loadNotificationData() {
 
     fillSelect('config-event-type', allowedEventTypes);
     fillSelect('config-channel', allowedChannels);
+    updateTargetValueHint();
     renderPolicy();
     renderConfigs();
     await loadNotificationLogs();
@@ -401,7 +653,7 @@ async function runNotificationMaintenance(apply) {
         const suppressed = (report.suppressed || []).length;
         setNotificationMessage(
             'notification-log-message',
-            `${apply ? '升级巡检已执行' : '升级巡检预演完成'}：候选 ${report.candidates || 0} 条，新增计划 ${report.dispatched || 0} 条，抑制 ${suppressed} 条。`
+            `${apply ? '升级巡检已执行' : '升级巡检预演完成'}：本次评估 ${report.candidates || 0} 条候选，实际新增 ${report.dispatched || 0} 条升级计划，抑制 ${suppressed} 条。`
         );
         await loadNotificationLogs();
     } catch (error) {
@@ -416,6 +668,14 @@ document.getElementById('notification-project-select').addEventListener('change'
     loadNotificationLogs().catch(error => {
         setNotificationMessage('notification-log-message', error.message, true);
     });
+});
+
+document.getElementById('config-channel').addEventListener('change', updateTargetValueHint);
+['policy-active', 'notify-on-create', 'notify-on-close', 'escalation-target'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', renderPolicySummary);
+});
+['quiet-start', 'quiet-end', 'escalate-after'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', renderPolicySummary);
 });
 
 document.addEventListener('DOMContentLoaded', async () => {

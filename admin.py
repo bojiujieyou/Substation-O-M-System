@@ -127,10 +127,30 @@ def admin_ai_status():
     return jsonify(probe_nvidia_health())
 
 
-def _validate_inventory_upload(data, filepath):
+def _validate_inventory_upload(data, filepath, *, selected_county=''):
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from parse_excel import validate_station_inventory_data
+    from parse_excel import ExcelParseError, validate_station_inventory_data
+
+    station = data.get('station') if isinstance(data, dict) else {}
+    cameras = data.get('cameras') if isinstance(data, dict) else None
+    station_county = (station or {}).get('county', '') if isinstance(station, dict) else ''
+    has_cameras = isinstance(cameras, list) and bool(cameras)
+    if not has_cameras and not str(station_county or '').strip() and not str(selected_county or '').strip():
+        station_name = str((station or {}).get('name', '') or '').strip() if isinstance(station, dict) else ''
+        voltage_level = str((station or {}).get('voltage_level', '') or '').strip() if isinstance(station, dict) else ''
+        existing_county = None
+        if station_name and voltage_level:
+            existing_row = get_db().execute(
+                "SELECT county FROM stations WHERE name = ? AND voltage_level = ?",
+                (station_name, voltage_level),
+            ).fetchone()
+            if existing_row:
+                existing_county = (existing_row["county"] if hasattr(existing_row, "keys") else existing_row[0]) or ''
+        if not str(existing_county or '').strip():
+            prefix = f"{filepath}: " if filepath else ''
+            raise ExcelParseError(f"{prefix}未能确定县区，请先选择县区或补全台账中的县区信息")
+
     return validate_station_inventory_data(data, filepath)
 
 
@@ -175,7 +195,7 @@ def upload_excel():
 
     try:
         data = parse_excel_admin(filepath)
-        _validate_inventory_upload(data, filepath)
+        _validate_inventory_upload(data, filepath, selected_county=county)
         station_county = county or data['station'].get('county', '')
 
         db = get_db()
@@ -852,7 +872,7 @@ def upload_excel_scoped():
 
     try:
         data = parse_excel_admin(filepath)
-        _validate_inventory_upload(data, filepath)
+        _validate_inventory_upload(data, filepath, selected_county=county)
         station_county = county or data['station'].get('county', '')
         cursor = db.cursor()
         cursor.execute(

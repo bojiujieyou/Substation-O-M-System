@@ -885,6 +885,8 @@ function buildStationDiagnostics(station, cameras, faults) {
     const stationCameras = Array.isArray(cameras) ? cameras : [];
     const stationFaults = Array.isArray(faults) ? faults : [];
     const unresolvedFaults = stationFaults.filter(isUnresolvedStationFault);
+    const pendingFaults = unresolvedFaults.filter((fault) => (fault.status || 'open') === 'open');
+    const handlingFaults = unresolvedFaults.filter((fault) => fault.status === 'handling');
     const overdueFaults = unresolvedFaults.filter(isOverdueStationFault);
     const recentFaults = stationFaults.filter(isRecentStationFault);
     const sortedFaults = [...stationFaults].sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0));
@@ -908,6 +910,8 @@ function buildStationDiagnostics(station, cameras, faults) {
         camera_count: stationCameras.length,
         abnormal_camera_count: abnormalCameraCount,
         open_fault_count: unresolvedFaults.length,
+        pending_fault_count: pendingFaults.length,
+        handling_fault_count: handlingFaults.length,
         overdue_fault_count: overdueFaults.length,
         recent_fault_count: recentFaults.length,
         latest_fault_at: latestFault?.created_at || '',
@@ -1204,9 +1208,9 @@ function resolveStationLocationCompactText(station) {
 }
 
 function buildStationFaultUrl(station, extraParams = {}) {
-    const defaultView = (station?.overdue_fault_count || 0) > 0
-        ? 'overdue'
-        : ((station?.open_fault_count || 0) > 0 ? 'pending' : 'all');
+    const defaultView = (station?.pending_fault_count || 0) > 0
+        ? 'pending'
+        : ((station?.handling_fault_count || 0) > 0 ? 'handling' : 'all');
     return withProject(getCurrentDesignFaultsPath(), {
         station_id: station.id,
         view: defaultView,

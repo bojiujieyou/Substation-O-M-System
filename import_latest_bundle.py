@@ -624,15 +624,27 @@ def import_inventory_bundle(
         for station_key in station_keys:
             station_info = station_groups.get(station_key, {})
             camera_info = camera_groups.get(station_key, {})
+            reference_station = camera_ip_reference.get(station_key, {})
+            voltage_level = (
+                station_info.get("voltage_level")
+                or camera_info.get("voltage_level")
+                or infer_voltage(reference_station.get("station_name"))
+                or ""
+            )
+            county = station_info.get("county") or camera_info.get("county") or ""
+
+            recorders = station_info.get("recorders", [])
+            cameras = camera_info.get("cameras", [])
+
+            if not voltage_level and reference_station.get("station_name"):
+                voltage_level = infer_voltage(reference_station.get("station_name")) or ""
+
             station_label = (
                 station_info.get("station_label")
                 or camera_info.get("station_label")
+                or clean_station_label(reference_station.get("station_name"))
                 or station_key
             )
-            voltage_level = station_info.get("voltage_level") or camera_info.get("voltage_level") or ""
-            county = station_info.get("county") or camera_info.get("county") or ""
-            recorders = station_info.get("recorders", [])
-            cameras = camera_info.get("cameras", [])
 
             station_id, station_name, _, created = upsert_station(
                 conn,

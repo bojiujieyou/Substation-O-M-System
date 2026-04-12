@@ -5,15 +5,28 @@
 {% block page_title %}统计报表{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <select id="year-filter" class="form-select-filter">
-            <option value="">全部年份</option>
-        </select>
+<div class="stats-toolbar">
+    <div class="stats-toolbar-main">
+        <div class="stats-toolbar-controls">
+            <select id="year-filter" class="form-select-filter">
+                <option value="">全部年份</option>
+            </select>
+            <button id="stats-brief-toggle" class="btn-secondary stats-brief-toggle" type="button" aria-expanded="false">
+                查看本期关注
+            </button>
+        </div>
+        <div id="stats-scope-note" class="stats-toolbar-note">当前页面 KPI、图表和 Top 排行均按当前筛选范围统计。</div>
     </div>
-    <button id="export-btn" class="btn-secondary" type="button" onclick="exportStats()">
-        导出 Excel
-    </button>
+    <div class="stats-toolbar-export">
+        <button id="export-btn" class="btn-secondary" type="button" onclick="exportStats()">
+            导出 Excel
+        </button>
+        <div id="stats-export-note" class="stats-toolbar-note stats-toolbar-note-export">导出当前筛选范围内的统计结果。</div>
+    </div>
+</div>
+
+<div class="stats-brief-panel" id="stats-brief-panel" hidden>
+    <div id="stats-briefing-text" class="stats-brief-panel-text">正在汇总当前统计范围...</div>
 </div>
 
 <div class="stats-grid">
@@ -138,6 +151,61 @@
     min-width: 140px;
 }
 
+.stats-toolbar {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.stats-toolbar-main,
+.stats-toolbar-export {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stats-toolbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.stats-toolbar-export {
+    align-items: flex-end;
+}
+
+.stats-toolbar-note {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.stats-toolbar-note-export {
+    text-align: right;
+}
+
+.stats-brief-toggle {
+    padding: 7px 12px;
+    font-size: 13px;
+}
+
+.stats-brief-panel {
+    margin: -4px 0 18px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.stats-brief-panel-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
 .kpi-grid {
     margin-top: 12px;
 }
@@ -183,6 +251,16 @@
     font-weight: bold;
     color: #d93025;
 }
+
+@media (max-width: 768px) {
+    .stats-toolbar-export {
+        align-items: flex-start;
+    }
+
+    .stats-toolbar-note-export {
+        text-align: left;
+    }
+}
 </style>
 <script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
 <script>
@@ -191,6 +269,7 @@ let faultTypeChart;
 let countyChart;
 let voltageChart;
 let currentYear = '';
+let currentBriefingText = '';
 
 function formatDuration(seconds) {
     if (seconds === null || seconds === undefined) {
@@ -216,6 +295,107 @@ function destroyChart(chart) {
     if (chart) {
         chart.destroy();
     }
+}
+
+function getScopeLabel() {
+    return currentYear ? `${currentYear} 年` : '全部年份';
+}
+
+function pickTopItem(items, valueKey = 'count') {
+    return (items || []).reduce((best, item) => {
+        if (!best || Number(item[valueKey] || 0) > Number(best[valueKey] || 0)) {
+            return item;
+        }
+        return best;
+    }, null);
+}
+
+function buildCompactStatsBriefing(payload) {
+    const scopeLabel = getScopeLabel();
+    const kpi = payload.kpi || {};
+    const unresolved = Number(kpi.open_count || 0) + Number(kpi.handling_count || 0);
+    const topMonth = pickTopItem(payload.monthly_trend, 'count');
+    const topCounty = pickTopItem(payload.county_distribution, 'count');
+    const topCamera = (payload.camera_ranking || [])[0] || null;
+    const timingParts = [];
+
+    if (kpi.avg_response_seconds !== null && kpi.avg_response_seconds !== undefined) {
+        timingParts.push(`平均响应 ${formatDuration(kpi.avg_response_seconds)}`);
+    }
+
+    if (kpi.avg_close_seconds !== null && kpi.avg_close_seconds !== undefined) {
+        timingParts.push(`平均关闭 ${formatDuration(kpi.avg_close_seconds)}`);
+    }
+
+    const parts = [
+        `${scopeLabel}共统计 ${payload.faults || 0} 起故障，KPI、图表和 Top 排行均跟随当前口径。`
+    ];
+
+    if (topMonth) {
+        parts.push(`故障集中在 ${topMonth.month}。`);
+    }
+
+    if (topCounty) {
+        parts.push(`${topCounty.county || '未标注县区'}为当前故障最多区域。`);
+    }
+
+    if (topCamera) {
+        parts.push(`${topCamera.station_name || '-'} ${topCamera.camera_location || '-'} 出现 ${topCamera.fault_count || 0} 次。`);
+    }
+
+    if (unresolved > 0) {
+        parts.push(`当前未关闭 ${unresolved} 起，其中打开 ${kpi.open_count || 0} 起、处理中 ${kpi.handling_count || 0} 起。`);
+    } else {
+        parts.push('当前无未关闭故障。');
+    }
+
+    if (timingParts.length) {
+        parts.push(`${timingParts.join('，')}。`);
+    }
+
+    return parts.join(' ');
+}
+
+function renderStatsBriefing(payload) {
+    const scopeLabel = getScopeLabel();
+    const scopeNote = document.getElementById('stats-scope-note');
+    const exportNote = document.getElementById('stats-export-note');
+    const briefingText = document.getElementById('stats-briefing-text');
+    const briefingToggle = document.getElementById('stats-brief-toggle');
+
+    if (scopeNote) {
+        scopeNote.textContent = `当前展示口径：${scopeLabel}，KPI、图表和 Top 排行均按该范围统计。`;
+    }
+
+    if (exportNote) {
+        exportNote.textContent = currentYear
+            ? `导出当前 ${currentYear} 年统计结果。`
+            : '导出全部年份统计结果。';
+    }
+
+    currentBriefingText = buildCompactStatsBriefing(payload);
+
+    if (briefingText) {
+        briefingText.textContent = currentBriefingText;
+    }
+
+    if (briefingToggle) {
+        briefingToggle.title = currentBriefingText;
+    }
+}
+
+function toggleStatsBriefing() {
+    const panel = document.getElementById('stats-brief-panel');
+    const button = document.getElementById('stats-brief-toggle');
+
+    if (!panel || !button) {
+        return;
+    }
+
+    const willOpen = panel.hidden;
+    panel.hidden = !willOpen;
+    button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    button.textContent = willOpen ? '收起本期关注' : '查看本期关注';
 }
 
 function renderCameraRanking(rows) {
@@ -340,6 +520,7 @@ async function loadStats() {
         document.getElementById('avg-close').textContent = formatDuration(kpi.avg_close_seconds);
 
         populateYearFilter(payload.available_years || []);
+        renderStatsBriefing(payload);
         renderCharts(payload);
         renderCameraRanking(payload.camera_ranking || []);
     } catch (error) {
@@ -366,5 +547,6 @@ function exportStats() {
 }
 
 document.addEventListener('DOMContentLoaded', initPage);
+document.getElementById('stats-brief-toggle').addEventListener('click', toggleStatsBriefing);
 </script>
 {% endblock %}

@@ -133,7 +133,7 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="top-bar-left">
-                    <button class="btn-icon hamburger-btn" id="hamburger-btn" aria-label="打开菜单">
+                    <button class="btn-icon hamburger-btn" id="hamburger-btn" aria-label="切换侧栏" title="切换侧栏">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
                         </svg>
@@ -196,6 +196,7 @@
         const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
         const logoutLink = document.getElementById('sidebar-logout-link');
         const notificationBtn = document.getElementById('notification-btn');
+        const SIDEBAR_COLLAPSED_KEY = 'style2-sidebar-collapsed';
 
         if (notificationBtn) {
             notificationBtn.addEventListener('click', function(event) {
@@ -207,6 +208,10 @@
         // 导航高亮
         navItems.forEach(item => {
             item.classList.remove('active');
+            const label = item.querySelector('span');
+            if (label) {
+                item.title = label.textContent.trim();
+            }
             const href = item.getAttribute('href');
             if (href && href !== '#') {
                 const linkPath = new URL(href, window.location.origin).pathname;
@@ -238,14 +243,33 @@
         const hamburger = document.getElementById('hamburger-btn');
         const sidebar = document.querySelector('.sidebar');
         if (hamburger && sidebar) {
+            const isMobileViewport = () => window.innerWidth <= 768;
+            const savedCollapsed = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+
+            if (!isMobileViewport() && savedCollapsed) {
+                sidebar.classList.add('collapsed');
+            }
+
             hamburger.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
+                if (isMobileViewport()) {
+                    sidebar.classList.toggle('open');
+                    return;
+                }
+                sidebar.classList.toggle('collapsed');
+                window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebar.classList.contains('collapsed') ? '1' : '0');
             });
             document.addEventListener('click', function(e) {
                 if (sidebar.classList.contains('open') &&
                     !sidebar.contains(e.target) &&
                     !hamburger.contains(e.target)) {
                     sidebar.classList.remove('open');
+                }
+            });
+            window.addEventListener('resize', function() {
+                if (isMobileViewport()) {
+                    sidebar.classList.remove('collapsed');
+                } else if (window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1') {
+                    sidebar.classList.add('collapsed');
                 }
             });
         }

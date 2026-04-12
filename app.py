@@ -242,6 +242,44 @@ def fetch_camera_rows_by_ids(db, camera_ids, camera_columns):
     return ordered_rows
 
 
+def resolve_fault_type_update_payload(db, fault_row, fault_report_columns, fault_type_value, fault_type_code):
+    resolved_type = str(fault_type_value or '').strip()
+    resolved_code = str(fault_type_code or '').strip() or None
+    resolved_version_id = None
+    project_id = fault_row['project_id'] if 'project_id' in fault_report_columns and 'project_id' in fault_row.keys() else None
+
+    if resolved_code and project_id:
+        project_row = db.execute(
+            "SELECT fault_type_version_id FROM projects WHERE id = ?",
+            (project_id,),
+        ).fetchone()
+        if project_row and project_row['fault_type_version_id']:
+            fault_type_row = db.execute(
+                """
+                SELECT type_label
+                FROM project_fault_types
+                WHERE version_id = ?
+                  AND type_code = ?
+                  AND is_active = 1
+                """,
+                (project_row['fault_type_version_id'], resolved_code),
+            ).fetchone()
+            if not fault_type_row:
+                raise ValueError('故障类型不存在或未发布')
+            resolved_type = fault_type_row['type_label']
+            resolved_version_id = project_row['fault_type_version_id']
+
+    if not resolved_type:
+        resolved_code = None
+        resolved_version_id = None
+
+    return {
+        'fault_type': resolved_type,
+        'fault_type_code': resolved_code,
+        'fault_type_version_id': resolved_version_id,
+    }
+
+
 def ensure_fault_report_soft_delete_schema(db):
     if not table_exists(db, "fault_reports"):
         return set()
@@ -2241,8 +2279,13 @@ def update_fault_status(fault_id):
     fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
 
-    fault = db.execute(f"SELECT id, status FROM fault_reports WHERE id = ?{deleted_clause}",
-                        (fault_id,)).fetchone()
+    select_fields = ["id", "status"]
+    if 'project_id' in fault_report_columns:
+        select_fields.append("project_id")
+    fault = db.execute(
+        f"SELECT {', '.join(select_fields)} FROM fault_reports WHERE id = ?{deleted_clause}",
+        (fault_id,),
+    ).fetchone()
 
     if not fault:
         return api_error('故障记录不存在', 404)
@@ -2269,21 +2312,54 @@ def update_fault_status(fault_id):
         if not handler_name or not handler_note:
             return api_error('关闭故障需要提供处理人姓名和处理备注')
 
+        update_fields = [
+            "status = 'closed'",
+            "handler_name = ?",
+            "handler_note = ?",
+            "closed_at = CURRENT_TIMESTAMP",
+            "updated_at = CURRENT_TIMESTAMP",
+        ]
+        update_params = [handler_name, handler_note]
+
         if {"equipment_type", "equipment_quantity"}.issubset(fault_report_columns):
-            db.execute("""
-                UPDATE fault_reports
-                SET status = 'closed', handler_name = ?, handler_note = ?,
-                    equipment_type = ?, equipment_quantity = ?,
-                    closed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            """, (handler_name, handler_note, equipment_type, equipment_quantity, fault_id))
-        else:
-            db.execute("""
-                UPDATE fault_reports
-                SET status = 'closed', handler_name = ?, handler_note = ?,
-                    closed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            """, (handler_name, handler_note, fault_id))
+            update_fields.append("equipment_type = ?")
+            update_fields.append("equipment_quantity = ?")
+            update_params.extend([equipment_type, equipment_quantity])
+
+        if 'fault_type' in data or 'fault_type_code' in data:
+            try:
+                resolved_fault_type = resolve_fault_type_update_payload(
+                    db,
+                    fault,
+                    fault_report_columns,
+                    data.get('fault_type'),
+                    data.get('fault_type_code'),
+                )
+            except ValueError as error:
+                return api_error(str(error), 400)
+
+            if 'fault_type' in fault_report_columns and resolved_fault_type['fault_type']:
+                update_fields.append("fault_type = ?")
+                update_params.append(resolved_fault_type['fault_type'])
+            if 'fault_type_label_snapshot' in fault_report_columns and resolved_fault_type['fault_type']:
+                update_fields.append("fault_type_label_snapshot = ?")
+                update_params.append(resolved_fault_type['fault_type'])
+            if 'fault_type_code' in fault_report_columns:
+                update_fields.append("fault_type_code = ?")
+                update_params.append(resolved_fault_type['fault_type_code'])
+            if 'fault_type_version_id' in fault_report_columns:
+                update_fields.append("fault_type_version_id = ?")
+                update_params.append(resolved_fault_type['fault_type_version_id'])
+
+        update_params.append(fault_id)
+        db.execute(
+            f"""
+            UPDATE fault_reports
+            SET {', '.join(update_fields)}
+            WHERE id = ?
+            """,
+            update_params,
+        )
     else:
         db.execute("""
             UPDATE fault_reports
@@ -3093,6 +3169,30 @@ def update_fault_status_scoped(fault_id):
         if 'equipment_quantity' in fault_report_columns:
             update_fields.append("equipment_quantity = ?")
             update_params.append(data.get('equipment_quantity', 0))
+        if 'fault_type' in data or 'fault_type_code' in data:
+            try:
+                resolved_fault_type = resolve_fault_type_update_payload(
+                    db,
+                    fault,
+                    fault_report_columns,
+                    data.get('fault_type'),
+                    data.get('fault_type_code'),
+                )
+            except ValueError as error:
+                return api_error(str(error), 400)
+
+            if 'fault_type' in fault_report_columns and resolved_fault_type['fault_type']:
+                update_fields.append("fault_type = ?")
+                update_params.append(resolved_fault_type['fault_type'])
+            if 'fault_type_label_snapshot' in fault_report_columns and resolved_fault_type['fault_type']:
+                update_fields.append("fault_type_label_snapshot = ?")
+                update_params.append(resolved_fault_type['fault_type'])
+            if 'fault_type_code' in fault_report_columns:
+                update_fields.append("fault_type_code = ?")
+                update_params.append(resolved_fault_type['fault_type_code'])
+            if 'fault_type_version_id' in fault_report_columns:
+                update_fields.append("fault_type_version_id = ?")
+                update_params.append(resolved_fault_type['fault_type_version_id'])
 
     update_params.append(fault_id)
     db.execute(

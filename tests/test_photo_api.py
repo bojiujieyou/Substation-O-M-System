@@ -105,6 +105,89 @@ def test_get_photo_groups_returns_grouped_and_unmatched(client):
     assert data['unmatched'][0]['filename'] == 'b.jpg'
 
 
+def test_get_photo_groups_can_default_to_fault_stations(client):
+    conn = _seed_station_and_photo("白云变电站", station_id=1)
+    conn.execute(
+        """
+        INSERT INTO stations (id, name, voltage_level, county)
+        VALUES (?, ?, '110kV', '丽水')
+        """,
+        (2, "南山变电站"),
+    )
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, county_hint)
+        VALUES
+            (?, ?, ?, ?, ?, 'matched', 'name_exact', ?),
+            (?, ?, ?, ?, ?, 'matched', 'name_exact', ?)
+        """,
+        (
+            "丽水/白云变电站/a.jpg", "E:/dummy/a.jpg", "a.jpg", ".jpg", 1, "丽水",
+            "丽水/南山变电站/b.jpg", "E:/dummy/b.jpg", "b.jpg", ".jpg", 2, "丽水",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO fault_reports (station_id, fault_type, reporter_name, status)
+        VALUES (?, '离线', 'tester', 'open')
+        """,
+        (1,),
+    )
+    conn.commit()
+    conn.close()
+
+    response = client.get('/api/photos/groups?has_fault=1')
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data['group_count'] == 1
+    assert len(data['groups']) == 1
+    assert data['groups'][0]['station_id'] == 1
+    assert data['groups'][0]['station_name'] == '白云变电站'
+
+
+def test_get_photo_groups_fault_filter_ignores_closed_faults(client):
+    conn = _seed_station_and_photo("白云变电站", station_id=1)
+    conn.execute(
+        """
+        INSERT INTO stations (id, name, voltage_level, county)
+        VALUES (?, ?, '110kV', '丽水')
+        """,
+        (2, "南山变电站"),
+    )
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, county_hint)
+        VALUES
+            (?, ?, ?, ?, ?, 'matched', 'name_exact', ?),
+            (?, ?, ?, ?, ?, 'matched', 'name_exact', ?)
+        """,
+        (
+            "丽水/白云变电站/a.jpg", "E:/dummy/a.jpg", "a.jpg", ".jpg", 1, "丽水",
+            "丽水/南山变电站/b.jpg", "E:/dummy/b.jpg", "b.jpg", ".jpg", 2, "丽水",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO fault_reports (station_id, fault_type, reporter_name, status)
+        VALUES
+            (?, '离线', 'tester', 'closed'),
+            (?, '离线', 'tester', 'handling')
+        """,
+        (1, 2),
+    )
+    conn.commit()
+    conn.close()
+
+    response = client.get('/api/photos/groups?has_fault=1')
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data['group_count'] == 1
+    assert data['groups'][0]['station_id'] == 2
+    assert data['groups'][0]['station_name'] == '南山变电站'
+
+
 def test_get_photo_file_requires_auth(client, temp_photo_root):
     """未登录时返回401"""
     response = client.get('/photos/file/1')

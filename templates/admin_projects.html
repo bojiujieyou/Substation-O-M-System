@@ -7,7 +7,12 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h2 class="page-title">项目管理中心</h2>
+        <div>
+            <h2 class="page-title">项目管理中心</h2>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin_page') }}" class="btn btn-secondary" data-project-link>返回管理后台</a>
+        </div>
     </div>
 
     <section class="admin-section">

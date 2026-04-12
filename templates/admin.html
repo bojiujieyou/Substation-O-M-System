@@ -90,6 +90,131 @@
     color: var(--text-secondary);
     font-size: 13px;
 }
+
+.admin-workbench {
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
+    gap: 16px;
+}
+
+.admin-recommend-card,
+.admin-maintenance-card {
+    padding: 20px 22px;
+    border-radius: var(--radius-lg);
+}
+
+.admin-recommend-card {
+    border: 1px solid rgba(26, 115, 232, 0.14);
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.08) 0%, rgba(52, 168, 83, 0.04) 100%);
+}
+
+.admin-maintenance-card {
+    border: 1px solid rgba(217, 48, 37, 0.16);
+    background: rgba(217, 48, 37, 0.04);
+}
+
+.admin-priority-badge,
+.admin-maintenance-label {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-priority-badge {
+    background: rgba(26, 115, 232, 0.12);
+    color: #185abc;
+}
+
+.admin-maintenance-label {
+    background: rgba(217, 48, 37, 0.12);
+    color: #b3261e;
+}
+
+.admin-recommend-card h3,
+.admin-maintenance-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: var(--text-primary);
+}
+
+.admin-recommend-description,
+.admin-maintenance-description,
+.admin-maintenance-hint,
+.admin-inline-flow {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.admin-next-actions {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-risk-btn {
+    border-color: rgba(217, 48, 37, 0.24);
+    color: #b3261e;
+    background: rgba(217, 48, 37, 0.06);
+}
+
+.admin-risk-btn:hover,
+.admin-risk-btn:focus {
+    border-color: rgba(217, 48, 37, 0.36);
+    background: rgba(217, 48, 37, 0.12);
+    color: #8c1d18;
+}
+
+.admin-inline-flow {
+    margin-top: 12px;
+}
+
+.station-manage-toolbar {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.station-county-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.station-county-btn {
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.station-county-btn:hover {
+    border-color: rgba(26, 115, 232, 0.28);
+    color: var(--text-primary);
+}
+
+.station-county-btn.is-active {
+    background: rgba(26, 115, 232, 0.1);
+    border-color: rgba(26, 115, 232, 0.24);
+    color: #185abc;
+}
+
+@media (max-width: 992px) {
+    .admin-workbench {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 {% endblock %}
 
@@ -102,15 +227,36 @@
             <a href="{{ url_for('admin_user_access.user_access_center_page') }}" class="btn btn-primary" data-project-link>用户项目授权</a>
             <a href="{{ url_for('admin_fault_types.fault_type_center_page') }}" class="btn btn-primary" data-project-link>故障类型版本</a>
             <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-primary" data-project-link>导入审查中心</a>
-            <button class="btn btn-secondary" onclick="backupDb()">备份数据库</button>
         </div>
+    </div>
+
+    <div class="admin-workbench">
+        <section class="admin-recommend-card">
+            <div id="admin-next-badge" class="admin-priority-badge">当前推荐处理事项</div>
+            <h3 id="admin-next-title">先确认当前项目与导入类型</h3>
+            <div id="admin-next-description" class="admin-recommend-description">先确认项目、导入类型和当前待办。</div>
+            <div id="admin-next-actions" class="admin-next-actions">
+                <a href="#upload-zone" class="btn btn-primary">去导入区</a>
+                <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-secondary" data-project-link>去导入审查中心</a>
+            </div>
+        </section>
+        <aside class="admin-maintenance-card">
+            <div class="admin-maintenance-label">维护 / 重操作</div>
+            <div class="admin-maintenance-title">备份和全量重建不要与日常处理混用</div>
+            <div class="admin-maintenance-description">备份数据库和全量重建索引仅在维护时使用。</div>
+            <div class="admin-next-actions">
+                <button class="btn btn-secondary admin-risk-btn" type="button" onclick="backupDb()">备份数据库</button>
+                <button class="btn btn-secondary admin-risk-btn" type="button" id="photo-index-full">全量重建索引</button>
+            </div>
+            <div class="admin-maintenance-hint">日常处理优先用导入、审查和增量刷新。</div>
+        </aside>
     </div>
 
     <div class="admin-section admin-import-section">
         <div class="admin-section-header admin-section-header-compact">
             <div>
                 <h3 class="admin-section-header-title">上传导入</h3>
-                <p class="card-subtitle mb-0">先确认项目和导入类型，再上传 Excel；导入完成后会自动跳转到结果摘要页。</p>
+                <p class="card-subtitle mb-0">确认项目和导入类型后上传 Excel。</p>
             </div>
         </div>
         <div class="row">
@@ -180,7 +326,8 @@
                             <label for="excel-file" class="form-label">Excel 文件</label>
                             <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input form-input-file" required>
                         </div>
-                        <div id="upload-readiness" class="form-hint import-readiness-hint">请选择项目、导入类型并上传 Excel 文件，县区可在需要补充归属时再选择。</div>
+                        <div id="upload-readiness" class="form-hint import-readiness-hint">请选择项目、导入类型并上传 Excel 文件。</div>
+                        <div class="admin-inline-flow">导入后进入结果摘要页。</div>
                         <div class="import-form-actions">
                             <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
                             <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-secondary" data-project-link>查看导入审查中心</a>
@@ -192,26 +339,26 @@
             </div>
             <div class="col-md-5">
                 <div class="admin-side-note-card admin-import-note-card">
-                    <h4 class="card-subtitle mb-2">导入规则与后续处理</h4>
+                    <h4 class="card-subtitle mb-2">导入说明</h4>
                     <div class="import-note-group">
                         <div class="import-note-title">导入影响</div>
                         <div class="review-secondary-steps admin-side-note-steps">
-                            <div class="review-secondary-step">台账导入会更新目标站点和摄像头数据，请先确认项目归属正确。</div>
-                            <div class="review-secondary-step">每日故障汇总导入会直接生成故障记录，无法自动识别的会进入导入审查中心。</div>
+                            <div class="review-secondary-step">台账导入会更新站点和摄像头。</div>
+                            <div class="review-secondary-step">故障汇总导入无法识别的记录会进入审查中心。</div>
                         </div>
                     </div>
                     <div class="import-note-group">
                         <div class="import-note-title">更新规则</div>
                         <div class="review-secondary-steps admin-side-note-steps">
-                            <div class="review-secondary-step">台账导入遇到不存在的变电站会新建，已存在则按导入内容更新。</div>
-                            <div class="review-secondary-step">每日故障汇总不自带县区字段，县区选择仅用于补充归属确认；仅支持 xlsx / xls。</div>
+                            <div class="review-secondary-step">不存在的变电站会新建，已存在则更新。</div>
+                            <div class="review-secondary-step">仅支持 xlsx / xls。</div>
                         </div>
                     </div>
                     <div class="import-note-group">
                         <div class="import-note-title">导入后处理</div>
                         <div class="review-secondary-steps admin-side-note-steps">
-                            <div class="review-secondary-step">导入完成后自动跳转结果摘要页，先看批次状态与异常项。</div>
-                            <div class="review-secondary-step">如有待确认冲突或异常记录，再进入导入审查中心继续处理。</div>
+                            <div class="review-secondary-step">导入完成后自动跳转结果摘要页。</div>
+                            <div class="review-secondary-step">有待确认项时再进入审查中心。</div>
                         </div>
                     </div>
                 </div>
@@ -221,6 +368,7 @@
 
     <div class="admin-section">
         <h3 class="admin-section-title">照片索引管理</h3>
+        <div class="admin-inline-flow">先看未匹配数量，再决定是否清洗。</div>
         <div class="row">
             <div class="col-md-6">
                 <div class="detail-info">
@@ -233,13 +381,13 @@
                 </div>
                 <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" id="photo-index-incremental">手动增量刷新</button>
-                    <button class="btn btn-secondary" id="photo-index-full">全量重建索引</button>
                 </div>
-                <p class="form-hint">访问照片页不会触发扫盘；建议部署侧按固定周期执行增量刷新。</p>
+                <p class="form-hint">日常优先做增量刷新。</p>
                 <div id="photo-index-result" class="form-hint"></div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6" id="photo-cleanup-section">
                 <h4 class="card-subtitle">未匹配照片清洗</h4>
+                <p class="form-hint">处理完成后可去照片页抽查。</p>
                 <div class="form-group">
                     <label for="unmatched-photo-select" class="form-label">未匹配照片</label>
                     <select id="unmatched-photo-select" class="form-select">
@@ -266,8 +414,9 @@
 
     <div class="admin-section">
         <h3 class="admin-section-title">变电站管理</h3>
-        <div class="mb-3">
+        <div class="station-manage-toolbar">
             <input type="text" id="search-station" class="form-input station-search-input" placeholder="搜索变电站...">
+            <div id="station-county-switch" class="station-county-switch"></div>
         </div>
         <div id="loading" class="loading-state">
             <div class="spinner"></div>
@@ -466,6 +615,12 @@ let stations = [];
 let unmatchedPhotos = [];
 let availableProjects = [];
 let replaceStationCameras = [];
+let lastImportQueuedCount = 0;
+let selectedStationCounty = '';
+const ADMIN_WORKBENCH_LINKS = {
+    photos: '{{ url_for("design_variant_photos", style="style2") }}',
+    review: '{{ url_for("admin_review.review_center_page") }}',
+};
 
 function getCurrentProjectCode() {
     if (window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function') {
@@ -476,6 +631,93 @@ function getCurrentProjectCode() {
 
 function getDefaultProjectCode() {
     return getCurrentProjectCode() || (availableProjects[0] && availableProjects[0].code) || '';
+}
+
+function buildProjectAwareHref(baseHref) {
+    const projectCode = getCurrentProjectCode() || getDefaultProjectCode();
+    return projectCode ? withProject(baseHref, { project: projectCode }) : withProject(baseHref);
+}
+
+function buildWorkbenchActions(actions) {
+    return (actions || []).map((action) => {
+        if (action.type === 'scroll') {
+            return `<button type="button" class="btn ${action.variant || 'btn-secondary'}" data-scroll-target="${escapeHtml(action.target)}">${escapeHtml(action.label)}</button>`;
+        }
+        return `<a class="btn ${action.variant || 'btn-secondary'}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`;
+    }).join('');
+}
+
+function renderAdminWorkbench() {
+    const badgeEl = document.getElementById('admin-next-badge');
+    const titleEl = document.getElementById('admin-next-title');
+    const descEl = document.getElementById('admin-next-description');
+    const actionsEl = document.getElementById('admin-next-actions');
+    if (!badgeEl || !titleEl || !descEl || !actionsEl) return;
+
+    const projectCode = getCurrentProjectCode() || getDefaultProjectCode();
+    const projectPrefix = projectCode ? '当前项目' : '当前页面';
+    const unmatchedCount = Number(document.getElementById('photo-unmatched')?.textContent || 0);
+    const projectValue = document.getElementById('upload-project-select')?.value || '';
+    const importType = document.getElementById('import-type-select')?.value || 'inventory';
+    const importLabel = getAdminImportTypeConfig(importType).label;
+    const fileReady = Boolean(document.getElementById('excel-file')?.files?.[0]);
+
+    let state = {
+        badge: '当前推荐处理事项',
+        title: '先确认当前项目与导入类型',
+        description: `${projectPrefix}还没有准备好的导入文件。先确认项目归属和导入类型。`,
+        actions: [
+            { type: 'scroll', target: 'upload-zone', label: '去导入区', variant: 'btn-primary' },
+            { href: buildProjectAwareHref(ADMIN_WORKBENCH_LINKS.review), label: '去导入审查中心', variant: 'btn-secondary' },
+        ],
+    };
+
+    if (unmatchedCount > 0) {
+        state = {
+            badge: '优先处理',
+            title: `先处理未匹配照片 (${unmatchedCount} 张)`,
+            description: `${projectPrefix}还有未匹配照片待清洗。可先在右侧完成手动关联。`,
+            actions: [
+                { type: 'scroll', target: 'photo-cleanup-section', label: '去未匹配清洗区', variant: 'btn-primary' },
+                { href: buildProjectAwareHref(ADMIN_WORKBENCH_LINKS.photos), label: '打开照片页抽查', variant: 'btn-secondary' },
+            ],
+        };
+    } else if (lastImportQueuedCount > 0) {
+        state = {
+            badge: '继续处理',
+            title: `先去导入审查中心处理待确认项 (${lastImportQueuedCount} 条)`,
+            description: `本次导入产生了待确认项。先看结果摘要，再进入导入审查中心。`,
+            actions: [
+                { href: buildProjectAwareHref(ADMIN_WORKBENCH_LINKS.review), label: '去导入审查中心', variant: 'btn-primary' },
+                { type: 'scroll', target: 'upload-result', label: '回到导入结果', variant: 'btn-secondary' },
+            ],
+        };
+    } else if (projectValue && fileReady) {
+        state = {
+            badge: '可直接开始',
+            title: `先发起${importLabel}`,
+            description: `${projectPrefix}的项目、导入类型和文件都已就绪，可以直接开始导入。`,
+            actions: [
+                { type: 'scroll', target: 'upload-zone', label: '去导入区提交', variant: 'btn-primary' },
+                { href: buildProjectAwareHref(ADMIN_WORKBENCH_LINKS.review), label: '查看导入审查中心', variant: 'btn-secondary' },
+            ],
+        };
+    } else if (projectValue) {
+        state = {
+            badge: '下一步',
+            title: '先补齐导入文件',
+            description: `${projectPrefix}已选定项目，补齐 Excel 文件后即可发起${importLabel}。`,
+            actions: [
+                { type: 'scroll', target: 'upload-zone', label: '继续准备导入', variant: 'btn-primary' },
+                { href: buildProjectAwareHref(ADMIN_WORKBENCH_LINKS.photos), label: '先去照片页抽查', variant: 'btn-secondary' },
+            ],
+        };
+    }
+
+    badgeEl.textContent = state.badge;
+    titleEl.textContent = state.title;
+    descEl.textContent = state.description;
+    actionsEl.innerHTML = buildWorkbenchActions(state.actions);
 }
 
 function renderUploadResult(state, options = {}) {
@@ -509,6 +751,7 @@ function renderUploadResult(state, options = {}) {
         ${details.length ? `<div class="review-secondary-steps upload-feedback-details">${details.map((detail) => `<div class="review-secondary-step">${escapeHtml(detail)}</div>`).join('')}</div>` : ''}
         ${actions.length ? `<div class="upload-feedback-actions">${actions.map((action) => `<a class="btn btn-sm ${action.variant || 'btn-secondary'}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`).join('')}</div>` : ''}
     `;
+    renderAdminWorkbench();
 }
 
 function renderEditStationCameras(cameras) {
@@ -759,6 +1002,8 @@ function updateImportContext() {
                 : '项目、文件和补充归属信息已就绪，可以开始导入台账。';
         }
     }
+
+    renderAdminWorkbench();
 }
 
 function bindImportContextEvents() {
@@ -852,7 +1097,8 @@ async function loadStations() {
         if (!response.ok) throw new Error('加载变电站列表失败');
         const data = await response.json();
         stations = data.stations || [];
-        renderStations(stations);
+        renderStationCountySwitch();
+        applyStationFilters();
         populateMatchStationSelect();
         loading.style.display = 'none';
         list.classList.remove('is-hidden');
@@ -885,22 +1131,57 @@ function renderStations(stationsToRender) {
     `).join('');
 }
 
-function filterStations(query) {
-    const q = (query || '').trim();
-    if (!q) {
-        renderStations(stations);
+function getStationCountyOptions() {
+    return [...new Set(
+        stations
+            .map((station) => String(station.county || '').trim())
+            .filter(Boolean)
+    )].sort((left, right) => left.localeCompare(right, 'zh-CN'));
+}
+
+function renderStationCountySwitch() {
+    const container = document.getElementById('station-county-switch');
+    if (!container) {
         return;
     }
-    const filtered = stations.filter(s =>
-        s.name.includes(q) ||
-        (s.county && s.county.includes(q)) ||
-        (s.voltage_level && s.voltage_level.includes(q))
-    );
+    const counties = getStationCountyOptions();
+    const activeCounty = counties.includes(selectedStationCounty) ? selectedStationCounty : '';
+    if (activeCounty !== selectedStationCounty) {
+        selectedStationCounty = activeCounty;
+    }
+    const options = ['全部', ...counties];
+    container.innerHTML = options.map((countyLabel) => {
+        const countyValue = countyLabel === '全部' ? '' : countyLabel;
+        const isActive = countyValue === selectedStationCounty;
+        return `<button type="button" class="station-county-btn${isActive ? ' is-active' : ''}" data-county="${escapeHtml(countyValue)}">${escapeHtml(countyLabel)}</button>`;
+    }).join('');
+}
+
+function applyStationFilters() {
+    const q = (document.getElementById('search-station')?.value || '').trim();
+    const filtered = stations.filter((s) => {
+        const matchesCounty = !selectedStationCounty || String(s.county || '').trim() === selectedStationCounty;
+        const matchesQuery = !q
+            || s.name.includes(q)
+            || (s.county && s.county.includes(q))
+            || (s.voltage_level && s.voltage_level.includes(q));
+        return matchesCounty && matchesQuery;
+    });
     renderStations(filtered);
 }
 
 document.getElementById('search-station').addEventListener('input', (e) => {
-    filterStations(e.target.value);
+    applyStationFilters();
+});
+
+document.getElementById('station-county-switch').addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-county]');
+    if (!button) {
+        return;
+    }
+    selectedStationCounty = button.dataset.county || '';
+    renderStationCountySwitch();
+    applyStationFilters();
 });
 
 document.getElementById('upload-form').addEventListener('submit', async function(e) {
@@ -928,6 +1209,7 @@ document.getElementById('upload-form').addEventListener('submit', async function
 
     btn.disabled = true;
     btn.textContent = '上传中...';
+    lastImportQueuedCount = 0;
     renderUploadResult('loading', {
         message: '文件已提交，正在执行导入并整理批次摘要。',
         details: [
@@ -942,6 +1224,7 @@ document.getElementById('upload-form').addEventListener('submit', async function
         const response = await fetch('/admin/upload', { method: 'POST', body: formData });
         const data = await response.json();
         if (response.ok) {
+            lastImportQueuedCount = Number(data.queued_count || 0);
             if (data.ai_status) {
                 renderAiStatus(data.ai_status);
             }
@@ -976,10 +1259,12 @@ document.getElementById('upload-form').addEventListener('submit', async function
             });
             await loadStations();
         } else {
+            lastImportQueuedCount = 0;
             const errorState = buildImportErrorState(data.error || '导入失败', formData.get('project'), countyValue);
             renderUploadResult('error', errorState);
         }
     } catch (error) {
+        lastImportQueuedCount = 0;
         renderAiStatus({
             status: 'error',
             message: '导入请求失败，无法确认 AI 是否可用。',
@@ -1285,6 +1570,7 @@ async function loadPhotoStats() {
         document.getElementById('photo-matched').textContent = stats.matched || 0;
         document.getElementById('photo-unmatched').textContent = stats.unmatched || 0;
         document.getElementById('photo-ignored').textContent = stats.ignored || 0;
+        renderAdminWorkbench();
     } catch (error) {
         document.getElementById('photo-index-result').textContent = error.message;
     }
@@ -1375,6 +1661,12 @@ document.getElementById('replace-camera-current').addEventListener('change', fil
 
 document.addEventListener('DOMContentLoaded', async () => {
     bindImportContextEvents();
+    document.body.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-scroll-target]');
+        if (!trigger) return;
+        event.preventDefault();
+        document.getElementById(trigger.dataset.scrollTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
     document.getElementById('upload-result').textContent = '';
     document.getElementById('photo-index-result').textContent = '';
@@ -1396,6 +1688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await Promise.allSettled(primaryTasks);
     Promise.allSettled(secondaryTasks);
+    renderAdminWorkbench();
 });
 
 // ============================================================

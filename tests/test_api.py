@@ -493,6 +493,27 @@ class TestFaultStatusTransition:
         })
         assert response.status_code == 200
 
+    def test_handling_to_closed_can_update_fault_type(self, client, init_db, setup_fault, test_db):
+        client.put('/api/faults/1/status', json={'status': 'handling'})
+
+        response = client.put('/api/faults/1/status', json={
+            'status': 'closed',
+            'handler_name': '李四',
+            'handler_note': '现场确认并修复',
+            'fault_type': '网络掉线/通信异常',
+        })
+        assert response.status_code == 200
+
+        conn = sqlite3.connect(test_db)
+        try:
+            row = conn.execute(
+                "SELECT status, fault_type, handler_name, handler_note FROM fault_reports WHERE id = 1"
+            ).fetchone()
+        finally:
+            conn.close()
+
+        assert row == ('closed', '网络掉线/通信异常', '李四', '现场确认并修复')
+
     def test_invalid_status(self, client, init_db, setup_fault):
         """无效状态值"""
         response = client.put('/api/faults/1/status',
