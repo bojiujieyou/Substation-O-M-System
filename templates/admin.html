@@ -269,7 +269,7 @@
                         </div>
                         <div class="import-context-row">
                             <span class="import-context-label">导入类型</span>
-                            <span class="import-context-value" id="import-type-preview">台账导入</span>
+                            <span class="import-context-value" id="import-type-preview">故障汇总导入</span>
                         </div>
                         <div class="import-context-row">
                             <span class="import-context-label">县区归属</span>
@@ -304,7 +304,7 @@
                             <label for="import-type-select" class="form-label">导入类型</label>
                             <select id="import-type-select" class="form-select">
                                 <option value="inventory">台账导入</option>
-                                <option value="daily_fault_summary">每日故障汇总导入</option>
+                                <option value="daily_fault_summary" selected>故障汇总导入</option>
                             </select>
                         </div>
                         <div class="form-group mb-3">
@@ -658,7 +658,7 @@ function renderAdminWorkbench() {
     const projectPrefix = projectCode ? '当前项目' : '当前页面';
     const unmatchedCount = Number(document.getElementById('photo-unmatched')?.textContent || 0);
     const projectValue = document.getElementById('upload-project-select')?.value || '';
-    const importType = document.getElementById('import-type-select')?.value || 'inventory';
+    const importType = document.getElementById('import-type-select')?.value || 'daily_fault_summary';
     const importLabel = getAdminImportTypeConfig(importType).label;
     const fileReady = Boolean(document.getElementById('excel-file')?.files?.[0]);
 
@@ -913,14 +913,14 @@ function getAdminImportTypeConfig(importType) {
             readinessReady: '已准备导入台账。若需补充归属可再选择县区，否则可直接提交。',
         },
         daily_fault_summary: {
-            label: '每日故障汇总导入',
-            readinessBase: '请选择项目并上传每日故障汇总 Excel，导入后会自动生成故障记录。',
-            readinessReady: '已准备导入每日故障汇总，县区可留空，系统会直接生成故障记录或待确认项。',
+            label: '故障汇总导入',
+            readinessBase: '请选择项目并上传故障汇总 Excel，导入后会自动生成故障记录。',
+            readinessReady: '已准备导入故障汇总，县区可留空，系统会直接生成故障记录或待确认项。',
         },
     }[importType] || {
-        label: '台账导入',
-        readinessBase: '请选择项目并上传 Excel 文件，县区可在需要补充归属时再选择。',
-        readinessReady: '已准备导入，可以直接提交。',
+        label: '故障汇总导入',
+        readinessBase: '请选择项目并上传故障汇总 Excel，导入后会自动生成故障记录。',
+        readinessReady: '已准备导入故障汇总，县区可留空，系统会直接生成故障记录或待确认项。',
     };
 }
 
@@ -966,7 +966,7 @@ function updateImportContext() {
         ? projectSelect.selectedOptions[0].textContent.trim()
         : '未选择项目';
     const projectValue = projectSelect ? projectSelect.value : '';
-    const importType = importTypeSelect ? importTypeSelect.value : 'inventory';
+    const importType = importTypeSelect ? importTypeSelect.value : 'daily_fault_summary';
     const importTypeConfig = getAdminImportTypeConfig(importType);
     const countyValue = countySelect ? countySelect.value : '';
     const fileName = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0].name : '';
@@ -990,7 +990,7 @@ function updateImportContext() {
             readinessEl.textContent = '还需选择项目，文件已就绪后即可导入。';
         } else if (!fileName) {
             readinessEl.textContent = importType === 'daily_fault_summary'
-                ? '项目和导入类型已确认，请上传每日故障汇总 Excel 文件。'
+                ? '项目和导入类型已确认，请上传故障汇总 Excel 文件。'
                 : (countyValue
                     ? '项目已确认，可直接上传台账 Excel 文件开始导入。'
                     : '项目已确认，请上传台账 Excel 文件；如需补充归属可再选择县区。');
@@ -998,7 +998,7 @@ function updateImportContext() {
             readinessEl.textContent = importTypeConfig.readinessReady;
         } else {
             readinessEl.textContent = importType === 'daily_fault_summary'
-                ? '项目、文件和补充信息已就绪，可以开始导入每日故障汇总。'
+                ? '项目、文件和补充信息已就绪，可以开始导入故障汇总。'
                 : '项目、文件和补充归属信息已就绪，可以开始导入台账。';
         }
     }
@@ -1195,7 +1195,7 @@ document.getElementById('upload-form').addEventListener('submit', async function
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
-    const importType = document.getElementById('import-type-select')?.value || 'inventory';
+    const importType = document.getElementById('import-type-select')?.value || 'daily_fault_summary';
     const countyValue = document.getElementById('county-select').value;
     formData.append('county', countyValue);
     formData.append('import_type', importType);

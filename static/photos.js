@@ -2,6 +2,10 @@ function photoFileUrl(photoId) {
     return withProject(`/photos/file/${photoId}`);
 }
 
+function photoThumbUrl(photoId) {
+    return withProject(`/photos/thumb/${photoId}`);
+}
+
 function statusText(status) {
     if (status === 'matched') return '已匹配';
     if (status === 'unmatched') return '未匹配';
@@ -22,7 +26,7 @@ function formatDate(value) {
 
 function photoCard(photo) {
     const imagePart = photo.is_image
-        ? `<img src="${photoFileUrl(photo.id)}" alt="${escapeHtml(photo.filename)}" loading="lazy">`
+        ? `<img src="${photoThumbUrl(photo.id)}" alt="${escapeHtml(photo.filename)}" loading="lazy">`
         : `<div class="photo-placeholder">非图片文件</div>`;
 
     return `

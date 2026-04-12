@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from config import Config
+from photo_thumbnails import build_thumbnail_payload, clear_thumbnail, ensure_photo_thumbnail_columns, persist_thumbnail
 from utils import create_db_connection
 
 
@@ -78,6 +79,7 @@ def _ensure_tables(conn):
         conn.execute("ALTER TABLE photos ADD COLUMN project_id INTEGER")
     if "project_hint" not in photo_columns:
         conn.execute("ALTER TABLE photos ADD COLUMN project_hint TEXT")
+    ensure_photo_thumbnail_columns(conn)
 
 
 def _load_stations(conn):
@@ -365,11 +367,13 @@ def index_photos(conn, full_rebuild=False):
                         now_text,
                     ),
                 )
+            clear_thumbnail(conn, rel_path)
             continue
 
         station_id, match_method, unmatched_reason = _match_station(station_hint, stations, alias_map)
         match_status = "matched" if station_id else "unmatched"
         project_id = _infer_project_id(conn, station_id, project_hint) if supports_photo_project else None
+        thumbnail_payload = build_thumbnail_payload(abs_path)
 
         if match_status == "matched":
             stats["matched"] += 1
@@ -461,6 +465,11 @@ def index_photos(conn, full_rebuild=False):
                     now_text,
                 ),
             )
+
+        if thumbnail_payload:
+            persist_thumbnail(conn, rel_path, thumbnail_payload, file_mtime)
+        else:
+            clear_thumbnail(conn, rel_path)
 
     if seen_rel_paths:
         placeholders = ",".join("?" for _ in seen_rel_paths)

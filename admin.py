@@ -98,7 +98,7 @@ def _upload_daily_fault_summary():
         )
         summary = report.get('summary') or {}
         payload = {
-            'message': '每日故障汇总导入完成',
+            'message': '故障汇总导入完成',
             'import_type': IMPORT_TYPE_DAILY_FAULT_SUMMARY,
             'project': project['code'],
             'batch_id': report.get('batch_id'),

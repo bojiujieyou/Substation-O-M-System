@@ -1,12 +1,20 @@
 # test_photo_api.py — 照片API与受控取图端点测试
 import sqlite3
+import base64
+import sqlite3
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from app import app
 from config import Config
 from init_db import init_db
+
+
+PNG_2X2 = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP8z/D/PwMDAwMjI2MAAEmWBAOqYh8iAAAAAElFTkSuQmCC"
+)
 
 
 @pytest.fixture
@@ -69,6 +77,11 @@ def _seed_station_and_photo(station_name: str, station_id: int = 1):
     )
     conn.commit()
     return conn
+
+
+def _write_test_image(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (8, 8), color=(32, 128, 224)).save(path, format="PNG")
 
 
 def test_get_photo_groups_returns_grouped_and_unmatched(client):
@@ -241,3 +254,64 @@ def test_get_photo_file_returns_image_under_root(auth_client, temp_photo_root):
     response = auth_client.get(f'/photos/file/{photo_id}')
     assert response.status_code == 200
     assert response.data == image_bytes
+
+
+def test_get_photo_thumbnail_requires_auth(client):
+    response = client.get('/photos/thumb/1')
+    assert response.status_code == 401
+    data = response.get_json()
+    assert '请先登录' in data['error']
+
+
+def test_get_photo_thumbnail_returns_generated_image(auth_client, temp_photo_root):
+    conn = _seed_station_and_photo("Thumbnail Station", station_id=1)
+
+    image_path = temp_photo_root / "Lishui" / "Thumbnail Station" / "thumb.png"
+    _write_test_image(image_path)
+
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, file_mtime)
+        VALUES (?, ?, ?, ?, ?, 'matched', 'name_exact', ?)
+        """,
+        ("Lishui/Thumbnail Station/thumb.png", str(image_path), "thumb.png", ".png", 1, str(image_path.stat().st_mtime)),
+    )
+    photo_id = conn.execute("SELECT id FROM photos WHERE filename='thumb.png'").fetchone()[0]
+    conn.commit()
+    conn.close()
+
+    response = auth_client.get(f'/photos/thumb/{photo_id}')
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('image/')
+    assert len(response.data) > 0
+
+
+def test_get_photo_file_falls_back_to_db_thumbnail_when_source_missing(auth_client, temp_photo_root):
+    conn = _seed_station_and_photo("Fallback Station", station_id=1)
+
+    image_path = temp_photo_root / "Lishui" / "Fallback Station" / "fallback.png"
+    _write_test_image(image_path)
+    file_mtime = str(image_path.stat().st_mtime)
+
+    conn.execute(
+        """
+        INSERT INTO photos (rel_path, abs_path, filename, ext, station_id, match_status, match_method, file_mtime)
+        VALUES (?, ?, ?, ?, ?, 'matched', 'name_exact', ?)
+        """,
+        ("Lishui/Fallback Station/fallback.png", str(image_path), "fallback.png", ".png", 1, file_mtime),
+    )
+    photo_id = conn.execute("SELECT id FROM photos WHERE filename='fallback.png'").fetchone()[0]
+    conn.commit()
+    conn.close()
+
+    thumb_response = auth_client.get(f'/photos/thumb/{photo_id}')
+    assert thumb_response.status_code == 200
+    thumb_bytes = thumb_response.data
+    thumb_type = thumb_response.headers['Content-Type']
+
+    image_path.unlink()
+
+    response = auth_client.get(f'/photos/file/{photo_id}')
+    assert response.status_code == 200
+    assert response.data == thumb_bytes
+    assert response.headers['Content-Type'] == thumb_type

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}变电站列表 - 变电站图像监控运维平台{% endblock %}
 
@@ -196,28 +196,6 @@
 .station-health-serious {
     background: rgba(220, 38, 38, 0.14);
     color: #b91c1c;
-}
-
-.station-risk-note {
-    min-width: 180px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(15, 23, 42, 0.04);
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.station-risk-note strong {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 13px;
-    color: var(--text-primary);
-}
-
-.station-risk-meta {
-    font-size: 12px;
-    color: var(--text-muted);
 }
 
 .station-reason-title {
@@ -1327,12 +1305,6 @@ function renderStationCard(station) {
                         ${escapeHtml(station.voltage_level || '-')} | ${escapeHtml(station.county || '未分配区县')} | ${escapeHtml(resolveStationLocationCompactText(station))}
                         ${station.latest_fault_at ? ` | 最近故障 ${escapeHtml(formatRelativeStationDate(station.latest_fault_at))}` : ''}
                     </div>
-                </div>
-                <div class="station-risk-note">
-                    <strong>${escapeHtml(station.health_note || '当前状态平稳')}</strong>
-                    <div class="station-risk-meta">状态含义：${escapeHtml(getStationHealthMeaning(station.health_level || 'normal'))}</div>
-                    <div class="station-reason-title">判定依据</div>
-                    ${renderStationReasonChips(station)}
                 </div>
             </div>
             <div class="station-card-metrics">

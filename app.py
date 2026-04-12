@@ -1,9 +1,10 @@
-# app.py — Flask应用入口
+﻿# app.py — Flask应用入口
 import os
 import math
 import logging
 import json
 import re
+from io import BytesIO
 from datetime import datetime
 from pathlib import Path
 from functools import wraps
@@ -27,6 +28,7 @@ from auth import auth_bp
 from import_review_support import normalize_station_name
 from notification_runtime import dispatch_notification_event
 from photo_indexer import IMAGE_EXTENSIONS
+from photo_thumbnails import build_thumbnail_payload, ensure_photo_thumbnail_columns
 from project_access import (
     can_user_write_project,
     can_user_access_project,
@@ -167,6 +169,92 @@ def normalize_photo_row(row):
     photo = dict(row)
     photo['is_image'] = (photo.get('ext', '').lower() in IMAGE_EXTENSIONS)
     return photo
+
+
+def _photo_thumbnail_fields(photo_columns):
+    available = set(photo_columns or [])
+    fields = []
+    for field_name in (
+        "thumbnail_data",
+        "thumbnail_content_type",
+        "thumbnail_width",
+        "thumbnail_height",
+        "thumbnail_source_mtime",
+        "thumbnail_generated_at",
+    ):
+        if field_name in available:
+            fields.append(field_name)
+    return fields
+
+
+def _fetch_photo_asset_row(db, photo_id, *, include_project=False):
+    photo_columns = ensure_photo_thumbnail_columns(db)
+    select_fields = ["id", "abs_path", "ext", "file_mtime"]
+    if include_project and "project_id" in photo_columns:
+        select_fields.append("project_id")
+    select_fields.extend(_photo_thumbnail_fields(photo_columns))
+    row = db.execute(
+        f"SELECT {', '.join(select_fields)} FROM photos WHERE id = ?",
+        (photo_id,),
+    ).fetchone()
+    return row, photo_columns
+
+
+def _persist_thumbnail_for_photo_id(db, photo_id, payload, file_mtime):
+    db.execute(
+        """
+        UPDATE photos
+        SET thumbnail_data = ?,
+            thumbnail_content_type = ?,
+            thumbnail_width = ?,
+            thumbnail_height = ?,
+            thumbnail_source_mtime = ?,
+            thumbnail_generated_at = ?
+        WHERE id = ?
+        """,
+        (
+            payload["thumbnail_data"],
+            payload["thumbnail_content_type"],
+            payload["thumbnail_width"],
+            payload["thumbnail_height"],
+            file_mtime,
+            payload["thumbnail_generated_at"],
+            photo_id,
+        ),
+    )
+    db.commit()
+
+
+def _send_photo_thumbnail(db, row, photo_columns):
+    thumbnail_data = row["thumbnail_data"] if "thumbnail_data" in photo_columns else None
+    thumbnail_type = row["thumbnail_content_type"] if "thumbnail_content_type" in photo_columns else None
+    thumbnail_source_mtime = row["thumbnail_source_mtime"] if "thumbnail_source_mtime" in photo_columns else None
+    file_mtime = row["file_mtime"] if "file_mtime" in row.keys() else None
+
+    if thumbnail_data and thumbnail_type and thumbnail_source_mtime == file_mtime:
+        return send_file(BytesIO(thumbnail_data), mimetype=thumbnail_type, conditional=True)
+
+    root = get_photo_root()
+    file_path = Path(row['abs_path']).resolve()
+    if not is_path_under_root(file_path, root):
+        logger.warning(f"Blocked photo traversal attempt: photo_id={row['id']}, path={file_path}")
+        return api_error('非法路径访问', 403)
+
+    if file_path.exists() and file_path.is_file():
+        payload = build_thumbnail_payload(file_path)
+        if payload:
+            _persist_thumbnail_for_photo_id(db, row['id'], payload, file_mtime)
+            return send_file(
+                BytesIO(payload["thumbnail_data"]),
+                mimetype=payload["thumbnail_content_type"],
+                conditional=True,
+            )
+        return send_file(str(file_path), conditional=True)
+
+    if thumbnail_data and thumbnail_type:
+        return send_file(BytesIO(thumbnail_data), mimetype=thumbnail_type, conditional=True)
+
+    return api_error('照片文件不存在', 404)
 
 
 def get_photo_root():
@@ -2721,9 +2809,13 @@ def get_photo_file(photo_id):
         return api_error('请先登录', 401)
 
     db = get_db()
-    row = db.execute("SELECT id, abs_path, ext FROM photos WHERE id = ?", (photo_id,)).fetchone()
+    row, photo_columns = _fetch_photo_asset_row(db, photo_id)
     if not row:
         return api_error('照片不存在', 404)
+
+    ext = (row['ext'] or '').lower()
+    if ext not in IMAGE_EXTENSIONS:
+        return api_error('文件类型不支持', 400)
 
     root = get_photo_root()
     file_path = Path(row['abs_path']).resolve()
@@ -2734,13 +2826,26 @@ def get_photo_file(photo_id):
         return api_error('非法路径访问', 403)
 
     if not file_path.exists() or not file_path.is_file():
-        return api_error('照片文件不存在', 404)
+        return _send_photo_thumbnail(db, row, photo_columns)
+
+    return send_file(str(file_path), conditional=True)
+
+
+@app.route('/photos/thumb/<int:photo_id>', methods=['GET'])
+def get_photo_thumbnail(photo_id):
+    if 'user_id' not in session:
+        return api_error('请先登录', 401)
+
+    db = get_db()
+    row, photo_columns = _fetch_photo_asset_row(db, photo_id)
+    if not row:
+        return api_error('照片不存在', 404)
 
     ext = (row['ext'] or '').lower()
     if ext not in IMAGE_EXTENSIONS:
         return api_error('文件类型不支持', 400)
 
-    return send_file(str(file_path), conditional=True)
+    return _send_photo_thumbnail(db, row, photo_columns)
 
 
 def get_stats_scoped():
@@ -3739,10 +3844,7 @@ def get_photo_file_scoped(photo_id):
     if 'user_id' not in session:
         return api_error('请先登录', 401)
 
-    row = db.execute(
-        "SELECT id, abs_path, ext, project_id FROM photos WHERE id = ?",
-        (photo_id,),
-    ).fetchone()
+    row, _ = _fetch_photo_asset_row(db, photo_id, include_project=True)
     if not row:
         return api_error('照片不存在', 404)
 
@@ -3751,18 +3853,28 @@ def get_photo_file_scoped(photo_id):
         if project_row and not ensure_project_read_access(db, project_row['code']):
             return project_access_denied()
 
-    root = get_photo_root()
-    file_path = Path(row['abs_path']).resolve()
-    if not is_path_under_root(file_path, root):
-        logger.warning(f"Blocked photo traversal attempt: photo_id={photo_id}, path={file_path}")
-        return api_error('非法路径访问', 403)
-    if not file_path.exists() or not file_path.is_file():
-        return api_error('照片文件不存在', 404)
+    return get_photo_file(photo_id)
 
-    ext = (row['ext'] or '').lower()
-    if ext not in IMAGE_EXTENSIONS:
-        return api_error('文件类型不支持', 400)
-    return send_file(str(file_path), conditional=True)
+
+def get_photo_thumbnail_scoped(photo_id):
+    db = get_db()
+    enabled, _ = _photos_project_scope_enabled(db)
+    if not enabled:
+        return get_photo_thumbnail(photo_id)
+
+    if 'user_id' not in session:
+        return api_error('请先登录', 401)
+
+    row, _ = _fetch_photo_asset_row(db, photo_id, include_project=True)
+    if not row:
+        return api_error('照片不存在', 404)
+
+    if row['project_id']:
+        project_row = db.execute("SELECT code FROM projects WHERE id = ?", (row['project_id'],)).fetchone()
+        if project_row and not ensure_project_read_access(db, project_row['code']):
+            return project_access_denied()
+
+    return get_photo_thumbnail(photo_id)
 
 
 def export_statistics_scoped():
@@ -3914,6 +4026,7 @@ app.view_functions['export_statistics'] = export_statistics_scoped
 app.view_functions['get_photos'] = get_photos_scoped
 app.view_functions['get_photo_groups'] = get_photo_groups_scoped
 app.view_functions['get_photo_file'] = get_photo_file_scoped
+app.view_functions['get_photo_thumbnail'] = get_photo_thumbnail_scoped
 
 
 # ============================================================

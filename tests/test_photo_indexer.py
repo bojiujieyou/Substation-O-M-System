@@ -1,12 +1,19 @@
+import base64
 import os
 import sqlite3
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from config import Config
 from init_db import init_db
 from photo_indexer import index_photos, manual_match_photo
+
+
+PNG_2X2 = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP8z/D/PwMDAwMjI2MAAEmWBAOqYh8iAAAAAElFTkSuQmCC"
+)
 
 
 @pytest.fixture
@@ -29,6 +36,11 @@ def photo_root(tmp_path, monkeypatch):
 def _write_file(path: Path, content: bytes = b"x"):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
+
+
+def _write_test_image(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (8, 8), color=(48, 160, 96)).save(path, format="PNG")
 
 
 def _insert_station(conn, station_id: int, name: str, county: str = "Lishui"):
@@ -222,3 +234,25 @@ def test_manual_match_photo_backfills_project_id_from_unique_station_project(db_
     assert matched["project_hint"] == ""
     assert matched["match_status"] == "matched"
     assert matched["match_method"] == "manual"
+
+
+def test_index_photos_persists_thumbnail_for_images(db_conn, photo_root):
+    _insert_station(db_conn, 1, "Thumbnail Persist Station")
+
+    _write_test_image(photo_root / "Lishui" / "Thumbnail Persist Station" / "thumb.png")
+
+    stats = index_photos(db_conn, full_rebuild=True)
+
+    assert stats["matched"] == 1
+    row = db_conn.execute(
+        """
+        SELECT thumbnail_data, thumbnail_content_type, thumbnail_width, thumbnail_height
+        FROM photos
+        WHERE filename = 'thumb.png'
+        """
+    ).fetchone()
+    assert row is not None
+    assert row["thumbnail_data"] is not None
+    assert row["thumbnail_content_type"] in {"image/jpeg", "image/png"}
+    assert row["thumbnail_width"] >= 1
+    assert row["thumbnail_height"] >= 1
