@@ -7,6 +7,8 @@ from config import Config
 from project_access import table_exists
 from utils import create_db_connection
 
+DEFAULT_ADMIN_PASSWORD = os.environ.get("INIT_ADMIN_PASSWORD", "change_me_admin_password")
+
 
 def hash_password(password, salt=None):
     if salt is None:
@@ -15,7 +17,7 @@ def hash_password(password, salt=None):
     return f"{salt}${digest}"
 
 
-def init_admin(username="admin", password="Txjk@1234"):
+def init_admin(username="admin", password=DEFAULT_ADMIN_PASSWORD):
     db_path = os.environ.get(
         "DATABASE_PATH",
         os.path.join(os.path.dirname(__file__), "station_monitor.db"),
@@ -58,7 +60,7 @@ def init_admin(username="admin", password="Txjk@1234"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="初始化管理员账户")
     parser.add_argument("--username", default="admin", help="管理员用户名")
-    parser.add_argument("--password", default="Txjk@1234", help="管理员密码")
+    parser.add_argument("--password", default=DEFAULT_ADMIN_PASSWORD, help="管理员密码")
     args = parser.parse_args()
 
     init_admin(args.username, args.password)

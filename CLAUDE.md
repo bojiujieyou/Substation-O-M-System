@@ -93,7 +93,7 @@ python init_admin.py
 # 4. 启动服务
 python app.py
 # 访问 http://localhost:5000
-# 默认管理员: admin / Txjk@1234
+# 默认管理员: admin / change_me_admin_password
 ```
 
 ## 关键规范

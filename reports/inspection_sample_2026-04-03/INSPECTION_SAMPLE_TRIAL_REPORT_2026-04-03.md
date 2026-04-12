@@ -1,8 +1,8 @@
-# Inspection Sample Trial Report
+﻿# Inspection Sample Trial Report
 
 ## 样本说明
 
-- 来源：`C:\Users\Administrator\Desktop\26.4.2`
+- 来源：`D:\sample-data\inspection`
 - 项目：`inspection`
 - 性质：测试样本，用户已说明“还不是很准确”
 - 目标：验证智慧巡视设备台账是否能被当前多项目导入链消费
@@ -77,3 +77,4 @@
 - [inventory_residual_review_checklist.json](/e:/项目/变电站图像监控运维平台/reports/inspection_sample_2026-04-03/inventory_residual_review_checklist.json)
 - [inventory_residual_review_checklist.md](/e:/项目/变电站图像监控运维平台/reports/inspection_sample_2026-04-03/inventory_residual_review_checklist.md)
 - [inventory_residual_review_checklist.csv](/e:/项目/变电站图像监控运维平台/reports/inspection_sample_2026-04-03/inventory_residual_review_checklist.csv)
+

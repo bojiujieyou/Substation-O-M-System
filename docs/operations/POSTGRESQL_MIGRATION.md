@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ```powershell
 $env:DATABASE_URL = "postgresql://station_monitor:change_me@127.0.0.1:5432/station_monitor"
-$env:APP_DATA_DIR = "E:\项目\变电站图像监控运维平台\data"
+$env:APP_DATA_DIR = "D:\station-monitor\data"
 ```
 
 说明：
@@ -33,7 +33,7 @@ $env:APP_DATA_DIR = "E:\项目\变电站图像监控运维平台\data"
 
 ```powershell
 python init_db.py --force
-python init_admin.py --username admin --password Txjk@1234
+python init_admin.py --username admin --password change_me_admin_password
 ```
 
 ## 5. 将 SQLite 数据迁入 PostgreSQL

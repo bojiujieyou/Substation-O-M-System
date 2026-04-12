@@ -1,6 +1,6 @@
-# Phase 1 DB Validation Summary
+﻿# Phase 1 DB Validation Summary
 
-- Database: `E:\项目\变电站图像监控运维平台\station_monitor.db`
+- Database: `D:\station-monitor\station_monitor.db`
 - Current version: `1`
 - Target version: `1`
 - Foreign keys: `1`
@@ -31,3 +31,4 @@
 - fault_reports_with_camera_slot_id: `265`
 - fault_reports_without_camera_slot_id: `170`
 - projects_count: `3`
+

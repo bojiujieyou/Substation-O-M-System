@@ -8,7 +8,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-station_monitor}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-change_me}
     volumes:
-      - /vol1/1000/Docker/Substation-O-M-System/postgres:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_DIR:-./docker/postgres}:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-station_monitor} -d ${POSTGRES_DB:-station_monitor}"]
       interval: 30s
@@ -36,10 +36,11 @@ services:
       - APP_DATA_DIR=/app/data
       - PHOTO_ROOT_PATH=/app/photos
       - DATA_SOURCE_PATH=/app/source_docs
+      - INIT_ADMIN_PASSWORD=${INIT_ADMIN_PASSWORD:-change_me_admin_password}
     volumes:
-      - /vol1/1000/Docker/Substation-O-M-System/data:/app/data
-      - /vol1/1000/澶囦唤/鍔炲叕/鍥惧儚鐩戞帶/鐓х墖:/app/photos:ro
-      - /vol1/1000/澶囦唤/鍔炲叕/鍥惧儚鐩戞帶/鍥惧儚鐩戞帶璁惧璧勬枡:/app/source_docs:ro
+      - ${APP_DATA_HOST_DIR:-./data}:/app/data
+      - ${PHOTO_ROOT_HOST_DIR:-./photos}:/app/photos:ro
+      - ${DATA_SOURCE_HOST_DIR:-./source_docs}:/app/source_docs:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=5)"]
       interval: 30s
@@ -47,4 +48,4 @@ services:
       retries: 3
       start_period: 15s
     env_file:
-      - /vol1/1000/Docker/Substation-O-M-System/.env
+      - ${ENV_FILE_PATH:-./.env}

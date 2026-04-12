@@ -1,4 +1,4 @@
-# Inventory Residual Review Checklist
+﻿# Inventory Residual Review Checklist
 
 - Source report: `reports\inspection_sample_2026-04-03\migration_rehearsal_v4\import_excel_dry_run_report.json`
 - Stations to review: `7`
@@ -12,7 +12,7 @@
 - Priority: `high`
 - Change summary: updated `5`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV海口变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽丽枫运检班\220kV海口变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
@@ -24,7 +24,7 @@
 - Priority: `high`
 - Change summary: updated `6`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV金亭变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽丽枫运检班\220kV金亭变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
@@ -36,7 +36,7 @@
 - Priority: `medium`
 - Change summary: updated `4`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽丽枫运检班\220kV青田变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽丽枫运检班\220kV青田变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
@@ -48,7 +48,7 @@
 - Priority: `low`
 - Change summary: updated `1`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV仙宫变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽宏山运检班\220kV仙宫变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
@@ -58,7 +58,7 @@
 - Priority: `high`
 - Change summary: updated `6`, replaced `0`, retired `0`
 - Issue types: `duplicate_device_code, duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV宏山变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽宏山运检班\220kV宏山变电站.xlsx`
 - Suggested actions:
   - 核对样本内是否存在同设备编号重复台账行，必要时先在源文件去重。
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
@@ -75,7 +75,7 @@
 - Priority: `medium`
 - Change summary: updated `3`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\丽宏山运检班\220kV濛洲变电站.xlsx`
+- Source file: `D:\sample-data\inspection\丽宏山运检班\220kV濛洲变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
@@ -87,9 +87,10 @@
 - Priority: `medium`
 - Change summary: updated `2`, replaced `0`, retired `0`
 - Issue types: `duplicate_slot_signature`
-- Source file: `C:\Users\Administrator\Desktop\26.4.2\遂昌县供电公司\110kV东亭变电站.xlsx`
+- Source file: `D:\sample-data\inspection\遂昌县供电公司\110kV东亭变电站.xlsx`
 - Suggested actions:
   - 核对同槽位记录是否应视为同一设备，确认 area/location/channel 的命名是否应规范化。
 - Duplicate slot signature examples:
   - `#1主变-东南-37# | - | CH37` x 2
   - `#2主变-北侧-42# | - | CH42` x 2
+
