@@ -38,7 +38,9 @@ EXPOSE 5000
 ENV FLASK_APP=app.py
 ENV FLASK_DEBUG=False
 ENV API_TOKEN=
+ENV DATABASE_URL=
 ENV DATABASE_PATH=/app/data/station_monitor.db
+ENV APP_DATA_DIR=/app/data
 ENV PHOTO_ROOT_PATH=/app/photos
 ENV DATA_SOURCE_PATH=/app/source_docs
 

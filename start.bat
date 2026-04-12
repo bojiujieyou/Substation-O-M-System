@@ -23,7 +23,7 @@ if not errorlevel 1 (
 cd /d "%~dp0"
 call :load_env_file
 
-if not exist "station_monitor.db" (
+if "%DATABASE_URL%"=="" if not exist "station_monitor.db" (
     echo [Warn] station_monitor.db was not found.
     echo [Hint] Run python init_db.py first if this is a new setup.
     echo.

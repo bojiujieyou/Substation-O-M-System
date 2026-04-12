@@ -1,6 +1,5 @@
 # app.py — Flask应用入口
 import os
-import sqlite3
 import math
 import logging
 import json

@@ -1,5 +1,7 @@
 import os
 
+from db import get_database_backend, get_default_app_data_dir
+
 
 def _csv_env(name: str, default: str) -> list[str]:
     raw = os.environ.get(name, default)
@@ -7,9 +9,16 @@ def _csv_env(name: str, default: str) -> list[str]:
 
 
 class Config:
+    BASE_DIR = os.path.dirname(__file__)
+    DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
     DATABASE_PATH = os.environ.get(
         'DATABASE_PATH',
-        os.path.join(os.path.dirname(__file__), 'station_monitor.db'),
+        os.path.join(BASE_DIR, 'station_monitor.db'),
+    )
+    DATABASE_BACKEND = get_database_backend(database_url=DATABASE_URL)
+    APP_DATA_DIR = os.environ.get(
+        'APP_DATA_DIR',
+        get_default_app_data_dir(BASE_DIR, database_url=DATABASE_URL, database_path=DATABASE_PATH),
     )
 
     SQLITE_WAL_MODE = True

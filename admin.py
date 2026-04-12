@@ -5,7 +5,6 @@
 import os
 import re
 import shutil
-import sqlite3
 import logging
 import json
 import hashlib
@@ -17,7 +16,7 @@ from werkzeug.utils import secure_filename
 from ai_fault_analysis import get_ai_runtime_status, probe_nvidia_health
 from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
 from project_access import get_project_by_code, projects_enabled, table_exists
-from utils import get_db
+from utils import get_data_dir, get_db, get_db_integrity_error, get_db_operational_error, is_postgres_app
 from import_batch_summary import build_import_batch_summary
 
 logger = logging.getLogger('station_monitor')
@@ -39,6 +38,18 @@ def require_admin(f):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _app_upload_dir() -> Path:
+    path = get_data_dir() / 'uploads'
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _app_report_dir() -> Path:
+    path = get_data_dir() / 'import_reports'
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def _normalize_admin_import_type(value):
@@ -76,9 +87,7 @@ def _upload_daily_fault_summary():
 
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
-    os.makedirs(upload_dir, exist_ok=True)
-    filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
+    filepath = str(_app_upload_dir() / f'{timestamp}_{filename}')
     file.save(filepath)
 
     try:
@@ -184,9 +193,7 @@ def upload_excel():
 
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
-    os.makedirs(upload_dir, exist_ok=True)
-    filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
+    filepath = str(_app_upload_dir() / f'{timestamp}_{filename}')
     file.save(filepath)
 
     db = None
@@ -251,9 +258,7 @@ def upload_excel():
         legacy_project = get_project_by_code(db, 'unified', include_inactive=False) if projects_enabled(db) else None
         if legacy_project and table_exists(db, 'import_batches'):
             batch_id = _create_excel_import_batch(cursor, legacy_project['id'], 1)
-            report_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'import_reports')
-            os.makedirs(report_dir, exist_ok=True)
-            report_path = os.path.join(report_dir, f'import_excel_batch_{batch_id}.json')
+            report_path = str(_app_report_dir() / f'import_excel_batch_{batch_id}.json')
             cursor.execute(
                 """
                 UPDATE import_batches
@@ -448,7 +453,7 @@ def delete_station(station_id):
 
         db.execute("DELETE FROM stations WHERE id = ?", (station_id,))
         db.commit()
-    except sqlite3.IntegrityError:
+    except get_db_integrity_error():
         db.rollback()
         logger.exception("Station delete blocked by related records: id=%s, name=%s", station_id, station["name"])
         return jsonify({'error': '删除失败：该变电站仍有关联数据未清理，请稍后重试或联系管理员检查。'}), 409
@@ -861,12 +866,9 @@ def upload_excel_scoped():
 
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    upload_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'uploads')
-    os.makedirs(upload_dir, exist_ok=True)
-    filepath = os.path.join(upload_dir, f'{timestamp}_{filename}')
+    filepath = str(_app_upload_dir() / f'{timestamp}_{filename}')
     file.save(filepath)
 
-    report_dir = os.path.join(os.path.dirname(current_app.config['DATABASE_PATH']), 'import_reports')
     batch_id = None
     report_path = None
 
@@ -909,8 +911,7 @@ def upload_excel_scoped():
 
         if table_exists(db, 'import_batches'):
             batch_id = _create_excel_import_batch(cursor, project['id'], 1)
-            os.makedirs(report_dir, exist_ok=True)
-            report_path = os.path.join(report_dir, f'import_excel_batch_{batch_id}.json')
+            report_path = str(_app_report_dir() / f'import_excel_batch_{batch_id}.json')
             cursor.execute(
                 """
                 UPDATE import_batches
@@ -1174,6 +1175,8 @@ def import_batch_result_summary(batch_id):
 @admin_bp.route('/backup', methods=['POST'])
 @require_admin
 def backup_db():
+    if is_postgres_app():
+        return jsonify({'error': '当前已切换为 PostgreSQL，请使用 pg_dump 或数据库快照做备份'}), 400
     """手动备份数据库"""
     db_path = current_app.config['DATABASE_PATH']
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -1236,7 +1239,7 @@ def photo_stats():
             'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),
             'cron_minutes': current_app.config.get('PHOTO_INDEX_CRON_MINUTES', 15)
         })
-    except sqlite3.OperationalError:
+    except get_db_operational_error():
         return jsonify({
             'stats': {'total': 0, 'matched': 0, 'unmatched': 0, 'ignored': 0},
             'photo_root': current_app.config.get('PHOTO_ROOT_PATH', ''),

@@ -1,6 +1,20 @@
-# docker-compose.yml - Substation Monitor Platform (fnOS/NAS)
-
 services:
+  postgres:
+    image: postgres:16
+    container_name: substation_monitor_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-station_monitor}
+      - POSTGRES_USER=${POSTGRES_USER:-station_monitor}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-change_me}
+    volumes:
+      - /vol1/1000/Docker/Substation-O-M-System/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-station_monitor} -d ${POSTGRES_DB:-station_monitor}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   app:
     build:
       context: .
@@ -8,38 +22,29 @@ services:
         PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.11-slim}
     container_name: substation_monitor
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "5000:5000"
     environment:
       - FLASK_DEBUG=False
       - API_TOKEN=${API_TOKEN:-}
       - SECRET_KEY=${SECRET_KEY:-}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://station_monitor:change_me@postgres:5432/station_monitor}
       - DATABASE_PATH=/app/data/station_monitor.db
+      - APP_DATA_DIR=/app/data
       - PHOTO_ROOT_PATH=/app/photos
       - DATA_SOURCE_PATH=/app/source_docs
     volumes:
       - /vol1/1000/Docker/Substation-O-M-System/data:/app/data
-      - /vol1/1000/备份/办公/图像监控/照片:/app/photos:ro
-      - /vol1/1000/备份/办公/图像监控/图像监控设备资料:/app/source_docs:ro
+      - /vol1/1000/澶囦唤/鍔炲叕/鍥惧儚鐩戞帶/鐓х墖:/app/photos:ro
+      - /vol1/1000/澶囦唤/鍔炲叕/鍥惧儚鐩戞帶/鍥惧儚鐩戞帶璁惧璧勬枡:/app/source_docs:ro
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request, sqlite3, os, sys; urllib.request.urlopen('http://localhost:5000/health', timeout=5); sqlite3.connect(os.environ.get('DATABASE_PATH', '/app/data/station_monitor.db')).close(); sys.exit(0)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
-    env_file:
-      - /vol1/1000/Docker/Substation-O-M-System/.env
-
-  backup:
-    build:
-      context: .
-      args:
-        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.11-slim}
-    container_name: substation_monitor_backup
-    volumes:
-      - /vol1/1000/Docker/Substation-O-M-System/data:/app/data:ro
-      - /vol1/1000/Docker/Substation-O-M-System/backups:/app/backups
-    entrypoint: ["python", "-c", "import time, sqlite3, os\nfrom datetime import datetime\n\ndef backup_db():\n    src = '/app/data/station_monitor.db'\n    dst = f'/app/backups/station_monitor_{datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.db'\n    if os.path.exists(src):\n        src_conn = sqlite3.connect(f'file:{src}?mode=ro', uri=True)\n        dst_conn = sqlite3.connect(dst)\n        src_conn.backup(dst_conn)\n        src_conn.close()\n        dst_conn.close()\n        print(f'Backup saved: {dst}')\n\nwhile True:\n    now = datetime.now()\n    if now.hour == 2 and now.minute == 0:\n        backup_db()\n    time.sleep(60)\n"]
-    restart: unless-stopped
     env_file:
       - /vol1/1000/Docker/Substation-O-M-System/.env
