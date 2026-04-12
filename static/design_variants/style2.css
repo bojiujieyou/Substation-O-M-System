@@ -711,29 +711,24 @@ body {
 }
 
 .photo-preview-canvas {
+    position: relative;
     min-width: 100%;
     min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.photo-preview-canvas.is-zoomed {
-    justify-content: flex-start;
-    align-items: flex-start;
 }
 
 .photo-preview-wrap img {
+    position: absolute;
+    left: 0;
+    top: 0;
     max-width: none;
     max-height: none;
     width: auto;
     height: auto;
-    flex: 0 0 auto;
     display: block;
     object-fit: contain;
     border-radius: var(--radius-md);
-    transition: width 0.12s ease, height 0.12s ease, opacity 0.12s ease;
-    will-change: width, height;
+    transition: opacity 0.08s ease;
+    will-change: width, height, left, top;
     pointer-events: none;
     user-select: none;
     -webkit-user-drag: none;

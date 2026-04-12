@@ -141,26 +141,36 @@ function syncPreviewZoom(options = {}) {
     const focusOffsetY = Number.isFinite(options.offsetY) ? options.offsetY : wrap.clientHeight / 2;
     const currentImageWidth = image.offsetWidth || (imageSize.width * Math.max(previewZoom, PREVIEW_ZOOM_MIN));
     const currentImageHeight = image.offsetHeight || (imageSize.height * Math.max(previewZoom, PREVIEW_ZOOM_MIN));
+    const currentImageLeft = image.offsetLeft || 0;
+    const currentImageTop = image.offsetTop || 0;
     const cursorContentX = wrap.scrollLeft + focusOffsetX;
     const cursorContentY = wrap.scrollTop + focusOffsetY;
     const relativeX = currentImageWidth > 0
-        ? clamp((cursorContentX - image.offsetLeft) / currentImageWidth, 0, 1)
+        ? clamp((cursorContentX - currentImageLeft) / currentImageWidth, 0, 1)
         : 0.5;
     const relativeY = currentImageHeight > 0
-        ? clamp((cursorContentY - image.offsetTop) / currentImageHeight, 0, 1)
+        ? clamp((cursorContentY - currentImageTop) / currentImageHeight, 0, 1)
         : 0.5;
 
     const scaledWidth = imageSize.width * previewZoom;
     const scaledHeight = imageSize.height * previewZoom;
+    const canvasWidth = Math.max(imageSize.availableWidth, scaledWidth);
+    const canvasHeight = Math.max(imageSize.availableHeight, scaledHeight);
+    const maxImageLeft = Math.max(0, canvasWidth - scaledWidth);
+    const maxImageTop = Math.max(0, canvasHeight - scaledHeight);
+    const nextImageLeft = clamp(focusOffsetX - (relativeX * scaledWidth), 0, maxImageLeft);
+    const nextImageTop = clamp(focusOffsetY - (relativeY * scaledHeight), 0, maxImageTop);
+
     image.style.width = `${scaledWidth}px`;
     image.style.height = `${scaledHeight}px`;
-    canvas.style.width = `${Math.max(imageSize.availableWidth, scaledWidth)}px`;
-    canvas.style.height = `${Math.max(imageSize.availableHeight, scaledHeight)}px`;
+    image.style.left = `${nextImageLeft}px`;
+    image.style.top = `${nextImageTop}px`;
+    canvas.style.width = `${canvasWidth}px`;
+    canvas.style.height = `${canvasHeight}px`;
     image.style.opacity = '1';
     indicator.textContent = `${Math.round(previewZoom * 100)}%`;
     const overflowing = scaledWidth > imageSize.availableWidth + 1 || scaledHeight > imageSize.availableHeight + 1;
     wrap.classList.toggle('is-zoomed', overflowing);
-    canvas.classList.toggle('is-zoomed', overflowing);
     if (previewZoom <= 1.01) {
         wrap.scrollLeft = 0;
         wrap.scrollTop = 0;
@@ -171,8 +181,8 @@ function syncPreviewZoom(options = {}) {
     const nextImageHeight = image.offsetHeight || (imageSize.height * previewZoom);
     const maxScrollLeft = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
     const maxScrollTop = Math.max(0, wrap.scrollHeight - wrap.clientHeight);
-    wrap.scrollLeft = clamp(image.offsetLeft + (relativeX * nextImageWidth) - focusOffsetX, 0, maxScrollLeft);
-    wrap.scrollTop = clamp(image.offsetTop + (relativeY * nextImageHeight) - focusOffsetY, 0, maxScrollTop);
+    wrap.scrollLeft = clamp(nextImageLeft + (relativeX * nextImageWidth) - focusOffsetX, 0, maxScrollLeft);
+    wrap.scrollTop = clamp(nextImageTop + (relativeY * nextImageHeight) - focusOffsetY, 0, maxScrollTop);
 }
 
 function setPreviewZoom(nextZoom, options = {}) {
@@ -320,7 +330,6 @@ function openPreview(photoId) {
     if (canvas) {
         canvas.style.width = '';
         canvas.style.height = '';
-        canvas.classList.remove('is-zoomed');
     }
     img.onload = () => {
         previewZoom = 1;
