@@ -27,6 +27,7 @@ echo.
 echo --------------------------------------------------------
 echo.
 echo  [1] Start Application
+echo  [6] Start Application Hidden
 echo  [2] Stop Application
 echo  [3] Restart Application
 echo  [4] View Logs
@@ -35,9 +36,10 @@ echo  [0] Exit
 echo.
 echo --------------------------------------------------------
 echo.
-set /p choice="Select [0-5]: "
+set /p choice="Select [0-6]: "
 
 if "%choice%"=="1" goto :start_app
+if "%choice%"=="6" goto :start_app_hidden
 if "%choice%"=="2" goto :stop_app
 if "%choice%"=="3" goto :restart_app
 if "%choice%"=="4" goto :view_logs
@@ -74,6 +76,21 @@ echo [Done] Application started
 echo [Access] http://localhost:5000
 echo.
 pause
+goto :menu
+
+:start_app_hidden
+cls
+echo [Start Application Hidden]
+echo.
+if "%APP_RUNNING%"=="1" (
+    echo [Warning] Already running (PID: %APP_PID%)
+    echo.
+    pause
+    goto :menu
+)
+
+cd /d "%~dp0"
+call start_hidden.bat
 goto :menu
 
 :stop_app

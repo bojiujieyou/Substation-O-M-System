@@ -274,16 +274,6 @@
     flex-wrap: wrap;
 }
 
-.station-next-step {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.station-next-step strong {
-    color: var(--text-primary);
-}
-
 .station-actions {
     display: flex;
     align-items: center;
@@ -1334,7 +1324,6 @@ function renderStationCard(station) {
                 )}
             </div>
             <div class="station-card-footer">
-                <div class="station-next-step"><strong>${escapeHtml(recommendedAction.reason)}</strong> ${escapeHtml(getStationNextStep(station))}</div>
                 <div class="station-actions">
                     <a class="${recommendedAction.key === 'fault' ? 'btn-primary is-recommended' : 'btn-secondary'} station-action-link" href="${faultLink}">查看故障</a>
                     <a class="${recommendedAction.key === 'map' ? 'btn-primary is-recommended' : 'btn-secondary'} station-action-link${station.has_coordinates ? '' : ' is-disabled'}" href="${station.has_coordinates ? mapLink : '#'}">地图定位</a>
