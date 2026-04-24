@@ -56,6 +56,84 @@ app.config['WTF_CSRF_ENABLED'] = False
 
 # 注册蓝图
 DEFAULT_PENDING_FAULT_TYPE = '待现场确认'
+FAULT_TYPE_MULTI_LABEL_SEPARATOR = ' | '
+FAULT_TYPE_MULTI_CODE_SEPARATOR = ','
+
+
+def normalize_fault_type_values(raw_value, *, is_code=False):
+    if raw_value is None:
+        return []
+
+    if isinstance(raw_value, (list, tuple, set)):
+        source_parts = list(raw_value)
+    else:
+        text = str(raw_value).strip()
+        if not text:
+            return []
+        separator = FAULT_TYPE_MULTI_CODE_SEPARATOR if is_code else FAULT_TYPE_MULTI_LABEL_SEPARATOR
+        if separator in text:
+            source_parts = [part.strip() for part in text.split(separator)]
+        elif is_code and ',' in text:
+            source_parts = [part.strip() for part in text.split(',')]
+        else:
+            source_parts = [text]
+
+    normalized = []
+    seen = set()
+    for part in source_parts:
+        value = str(part or '').strip()
+        if not value or value in seen:
+            continue
+        normalized.append(value)
+        seen.add(value)
+    return normalized
+
+
+def join_fault_type_values(values, *, is_code=False):
+    parts = normalize_fault_type_values(values, is_code=is_code)
+    separator = FAULT_TYPE_MULTI_CODE_SEPARATOR if is_code else FAULT_TYPE_MULTI_LABEL_SEPARATOR
+    return separator.join(parts)
+
+
+def expand_fault_type_distribution(rows):
+    aggregated = {}
+    for row in rows:
+        count = int(row['count'] or 0)
+        if count <= 0:
+            continue
+
+        raw_group = str(row['semantic_group'] or '').strip()
+        raw_label = str(row['fault_label'] or '').strip() or '未分类'
+        groups = normalize_fault_type_values(raw_group, is_code=True) if raw_group else []
+        labels = normalize_fault_type_values(raw_label) if raw_label else []
+
+        if not groups and not labels:
+            groups = ['UNCLASSIFIED']
+            labels = ['未分类']
+
+        if len(labels) > 1:
+            if len(groups) == len(labels):
+                pairs = list(zip(groups, labels))
+            else:
+                pairs = [(label, label) for label in labels]
+        else:
+            semantic_group = groups[0] if groups else raw_group or raw_label or 'UNCLASSIFIED'
+            fault_label = labels[0] if labels else raw_label or '未分类'
+            pairs = [(semantic_group, fault_label)]
+
+        for semantic_group, fault_label in pairs:
+            key = (semantic_group, fault_label)
+            aggregated[key] = aggregated.get(key, 0) + count
+
+    expanded = [
+        {'semantic_group': semantic_group, 'fault_label': fault_label, 'count': count}
+        for (semantic_group, fault_label), count in aggregated.items()
+    ]
+    expanded.sort(key=lambda item: (-item['count'], item['fault_label']))
+    return expanded
+
+
+CAMERA_REPLACEMENT_TYPE_KEYWORDS = ("摄像", "球机", "枪机", "半球", "云台")
 
 app.register_blueprint(admin_bp)
 app.register_blueprint(admin_fault_types_bp)
@@ -165,8 +243,46 @@ def api_success(data, status_code=200):
     return jsonify(data), status_code
 
 
+PUBLIC_GUEST_ENDPOINTS = {
+    'index',
+    'statistics',
+    'design_variant_index',
+    'design_variant_statistics',
+    'login_page',
+    'get_projects_api',
+    'get_stats',
+    'export_statistics',
+}
+
+
+@app.before_request
+def restrict_guest_access():
+    """未登录仅开放首页与统计报表，其余页面和数据接口需先登录。"""
+    if session.get('user_id'):
+        return None
+
+    endpoint = request.endpoint or ''
+    if endpoint == 'static' or endpoint.startswith('auth.'):
+        return None
+
+    if endpoint in PUBLIC_GUEST_ENDPOINTS:
+        return None
+
+    if request.path.startswith('/api/'):
+        return api_error('请先登录', 401)
+
+    return redirect('/login')
+
+
 def normalize_photo_row(row):
     photo = dict(row)
+    thumbnail_blob = photo.pop('thumbnail_data', None)
+    photo['has_thumbnail'] = bool(thumbnail_blob)
+    for key, value in list(photo.items()):
+        if isinstance(value, memoryview):
+            photo[key] = value.tobytes().decode('utf-8', errors='replace')
+        elif isinstance(value, bytes):
+            photo[key] = value.decode('utf-8', errors='replace')
     photo['is_image'] = (photo.get('ext', '').lower() in IMAGE_EXTENSIONS)
     return photo
 
@@ -330,31 +446,64 @@ def fetch_camera_rows_by_ids(db, camera_ids, camera_columns):
 
 
 def resolve_fault_type_update_payload(db, fault_row, fault_report_columns, fault_type_value, fault_type_code):
-    resolved_type = str(fault_type_value or '').strip()
-    resolved_code = str(fault_type_code or '').strip() or None
+    resolved_types = normalize_fault_type_values(fault_type_value)
+    resolved_codes = normalize_fault_type_values(fault_type_code, is_code=True)
+    resolved_type = join_fault_type_values(resolved_types) or None
+    resolved_code = join_fault_type_values(resolved_codes, is_code=True) or None
     resolved_version_id = None
     project_id = fault_row['project_id'] if 'project_id' in fault_report_columns and 'project_id' in fault_row.keys() else None
 
-    if resolved_code and project_id:
+    if resolved_codes and project_id:
         project_row = db.execute(
             "SELECT fault_type_version_id FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
         if project_row and project_row['fault_type_version_id']:
-            fault_type_row = db.execute(
+            fault_type_rows = db.execute(
                 """
-                SELECT type_label
+                SELECT type_code, type_label
                 FROM project_fault_types
                 WHERE version_id = ?
-                  AND type_code = ?
                   AND is_active = 1
                 """,
-                (project_row['fault_type_version_id'], resolved_code),
-            ).fetchone()
-            if not fault_type_row:
+                (project_row['fault_type_version_id'],),
+            ).fetchall()
+            fault_type_map = {row['type_code']: row['type_label'] for row in fault_type_rows}
+            fault_type_label_map = {row['type_label']: row['type_code'] for row in fault_type_rows}
+            canonical_codes = []
+            for raw_code in resolved_codes:
+                if raw_code in fault_type_map:
+                    canonical_codes.append(raw_code)
+                    continue
+                matched_code = fault_type_label_map.get(raw_code)
+                if matched_code:
+                    canonical_codes.append(matched_code)
+                    continue
                 raise ValueError('故障类型不存在或未发布')
-            resolved_type = fault_type_row['type_label']
+            resolved_types = [fault_type_map[code] for code in canonical_codes]
+            resolved_type = join_fault_type_values(resolved_types)
+            resolved_code = join_fault_type_values(canonical_codes, is_code=True)
             resolved_version_id = project_row['fault_type_version_id']
+    elif resolved_types and project_id:
+        project_row = db.execute(
+            "SELECT fault_type_version_id FROM projects WHERE id = ?",
+            (project_id,),
+        ).fetchone()
+        if project_row and project_row['fault_type_version_id']:
+            fault_type_rows = db.execute(
+                """
+                SELECT type_code, type_label
+                FROM project_fault_types
+                WHERE version_id = ?
+                  AND is_active = 1
+                """,
+                (project_row['fault_type_version_id'],),
+            ).fetchall()
+            label_to_code_map = {row['type_label']: row['type_code'] for row in fault_type_rows}
+            canonical_codes = [label_to_code_map.get(label) for label in resolved_types]
+            if canonical_codes and all(canonical_codes):
+                resolved_code = join_fault_type_values(canonical_codes, is_code=True)
+                resolved_version_id = project_row['fault_type_version_id']
 
     if not resolved_type:
         resolved_code = None
@@ -578,6 +727,22 @@ CASE COALESCE(f.status, 'open')
 END
 """
 
+OVERDUE_FAULT_THRESHOLD_DAYS = 7
+
+RESPONSE_BUCKET_DEFINITIONS = [
+    {'label': '2小时内', 'min_seconds': 0, 'max_seconds': 2 * 3600},
+    {'label': '2-8小时', 'min_seconds': 2 * 3600, 'max_seconds': 8 * 3600},
+    {'label': '8-24小时', 'min_seconds': 8 * 3600, 'max_seconds': 24 * 3600},
+    {'label': '24小时以上', 'min_seconds': 24 * 3600, 'max_seconds': None},
+]
+
+CLOSE_BUCKET_DEFINITIONS = [
+    {'label': '当天闭环', 'min_seconds': 0, 'max_seconds': 24 * 3600},
+    {'label': '1-3天', 'min_seconds': 24 * 3600, 'max_seconds': 3 * 24 * 3600},
+    {'label': '3-7天', 'min_seconds': 3 * 24 * 3600, 'max_seconds': 7 * 24 * 3600},
+    {'label': '7天以上', 'min_seconds': 7 * 24 * 3600, 'max_seconds': None},
+]
+
 
 def build_project_in_clause(alias: str, project_ids: list[int] | None):
     if project_ids is None:
@@ -605,6 +770,35 @@ def _count_with_alias(db, table_name: str, alias: str, project_ids: list[int] | 
     if active_only and 'status' in columns:
         query += f" AND {alias}.status = 'active'"
     return db.execute(query, params).fetchone()['count']
+
+
+def _bucketize_duration_rows(rows, definitions):
+    bucket_counts = []
+    for definition in definitions:
+        bucket_counts.append({
+            'label': definition['label'],
+            'count': 0,
+        })
+
+    for row in rows or []:
+        try:
+            duration_seconds = float(row['duration_seconds'])
+        except (TypeError, ValueError, KeyError):
+            continue
+        if duration_seconds < 0:
+            continue
+
+        for index, definition in enumerate(definitions):
+            min_seconds = definition['min_seconds']
+            max_seconds = definition['max_seconds']
+            if duration_seconds < min_seconds:
+                continue
+            if max_seconds is not None and duration_seconds >= max_seconds:
+                continue
+            bucket_counts[index]['count'] += 1
+            break
+
+    return bucket_counts
 
 
 def _build_statistics_payload(db, year: int | None, requested_project_code: str | None):
@@ -744,14 +938,19 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
     fault_type_rows = db.execute(
         f"""
         SELECT
-            {semantic_key_expr} AS semantic_group,
-            {semantic_label_select_expr} AS fault_label,
+            normalized.semantic_group,
+            normalized.fault_label,
             COUNT(*) AS count
-        FROM fault_reports f
-        {fault_type_join}
-        WHERE {selected_fault_where_sql}
-        GROUP BY semantic_group, fault_label
-        ORDER BY count DESC, fault_label ASC
+        FROM (
+            SELECT
+                {semantic_key_expr} AS semantic_group,
+                {semantic_label_select_expr} AS fault_label
+            FROM fault_reports f
+            {fault_type_join}
+            WHERE {selected_fault_where_sql}
+        ) AS normalized
+        GROUP BY normalized.semantic_group, normalized.fault_label
+        ORDER BY count DESC, normalized.fault_label ASC
         """,
         selected_fault_params,
     ).fetchall()
@@ -800,9 +999,29 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         selected_fault_params,
     ).fetchall()
 
+    station_ranking_rows = db.execute(
+        f"""
+        SELECT
+            f.station_id,
+            s.name AS station_name,
+            COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
+            COUNT(*) AS fault_count,
+            SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
+        FROM fault_reports f
+        JOIN stations s ON f.station_id = s.id
+        WHERE {selected_fault_where_sql}
+        GROUP BY f.station_id, s.name, county
+        ORDER BY fault_count DESC, unresolved_count DESC, s.name ASC
+        LIMIT 5
+        """,
+        selected_fault_params,
+    ).fetchall()
+
     status_expr = _column_expr(fault_report_columns, "f", "status", "'open'")
     handling_started_expr = _column_expr(fault_report_columns, "f", "handling_started_at")
     closed_at_expr = _column_expr(fault_report_columns, "f", "closed_at")
+    equipment_type_expr = _column_expr(fault_report_columns, "f", "equipment_type", "''")
+    equipment_quantity_expr = _column_expr(fault_report_columns, "f", "equipment_quantity", "0")
 
     kpi_row = db.execute(
         f"""
@@ -812,6 +1031,14 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
             SUM(CASE WHEN {status_expr} = 'closed' THEN 1 ELSE 0 END) AS closed_count,
             COUNT(CASE WHEN {handling_started_expr} IS NOT NULL THEN 1 END) AS response_sample_count,
             COUNT(CASE WHEN {closed_at_expr} IS NOT NULL THEN 1 END) AS close_sample_count,
+            SUM(
+                CASE
+                    WHEN COALESCE({status_expr}, 'open') != 'closed'
+                         AND (julianday('now') - julianday(f.created_at)) >= ?
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS overdue_unresolved_count,
             AVG(CASE
                 WHEN {handling_started_expr} IS NOT NULL
                 THEN (julianday({handling_started_expr}) - julianday(f.created_at)) * 86400.0
@@ -823,8 +1050,152 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         FROM fault_reports f
         WHERE {selected_fault_where_sql}
         """,
+        [OVERDUE_FAULT_THRESHOLD_DAYS, *selected_fault_params],
+    ).fetchone()
+
+    response_duration_rows = db.execute(
+        f"""
+        SELECT
+            (julianday({handling_started_expr}) - julianday(f.created_at)) * 86400.0 AS duration_seconds
+        FROM fault_reports f
+        WHERE {selected_fault_where_sql}
+          AND {handling_started_expr} IS NOT NULL
+        """,
+        selected_fault_params,
+    ).fetchall()
+
+    close_duration_rows = db.execute(
+        f"""
+        SELECT
+            (julianday({closed_at_expr}) - julianday(f.created_at)) * 86400.0 AS duration_seconds
+        FROM fault_reports f
+        WHERE {selected_fault_where_sql}
+          AND {closed_at_expr} IS NOT NULL
+        """,
+        selected_fault_params,
+    ).fetchall()
+
+    response_buckets = _bucketize_duration_rows(response_duration_rows, RESPONSE_BUCKET_DEFINITIONS)
+    close_buckets = _bucketize_duration_rows(close_duration_rows, CLOSE_BUCKET_DEFINITIONS)
+
+    camera_replacement_where = [f"1=1{fault_scope_sql}"]
+    camera_replacement_params = list(fault_scope_params)
+    camera_replacement_where.append(f"{status_expr} = 'closed'")
+    camera_replacement_where.append(f"{closed_at_expr} IS NOT NULL")
+    camera_replacement_where.append(f"NULLIF(TRIM({equipment_type_expr}), '') IS NOT NULL")
+    if year:
+        camera_replacement_where.append(f"strftime('%Y', {closed_at_expr}) = ?")
+        camera_replacement_params.append(str(year))
+    camera_replacement_keyword_sql = " OR ".join(
+        f"{equipment_type_expr} LIKE ?" for _ in CAMERA_REPLACEMENT_TYPE_KEYWORDS
+    )
+    camera_replacement_where.append(f"({camera_replacement_keyword_sql})")
+    camera_replacement_params.extend([f"%{keyword}%" for keyword in CAMERA_REPLACEMENT_TYPE_KEYWORDS])
+    camera_replacement_where_sql = " AND ".join(camera_replacement_where)
+
+    camera_replacement_row = db.execute(
+        f"""
+        SELECT
+            COUNT(*) AS replacement_record_count,
+            SUM(
+                CASE
+                    WHEN COALESCE({equipment_quantity_expr}, 0) > 0 THEN {equipment_quantity_expr}
+                    ELSE 1
+                END
+            ) AS replacement_camera_count,
+            COUNT(
+                CASE
+                    WHEN COALESCE({equipment_quantity_expr}, 0) <= 0 THEN 1
+                END
+            ) AS inferred_quantity_record_count
+        FROM fault_reports f
+        WHERE {camera_replacement_where_sql}
+        """,
+        camera_replacement_params,
+    ).fetchone()
+
+    fault_station_count_row = db.execute(
+        f"""
+        SELECT COUNT(DISTINCT f.station_id) AS fault_station_count
+        FROM fault_reports f
+        WHERE {selected_fault_where_sql}
+        """,
         selected_fault_params,
     ).fetchone()
+
+    covered_fault_station_count = 0
+    uncovered_station_rows = []
+    if table_exists(db, "photos"):
+        photo_columns = get_table_columns(db, "photos")
+        photo_scope_sql = ""
+        photo_scope_params = []
+        if project_scope['enabled'] and 'project_id' in photo_columns:
+            photo_scope_sql, photo_scope_params = build_project_in_clause("p", project_scope['project_ids'])
+
+        covered_fault_station_row = db.execute(
+            f"""
+            SELECT COUNT(DISTINCT p.station_id) AS covered_station_count
+            FROM photos p
+            WHERE p.match_status = 'matched'
+              AND p.station_id IS NOT NULL
+              {photo_scope_sql}
+              AND p.station_id IN (
+                  SELECT DISTINCT f.station_id
+                  FROM fault_reports f
+                  WHERE {selected_fault_where_sql}
+              )
+            """,
+            [*photo_scope_params, *selected_fault_params],
+        ).fetchone()
+        covered_fault_station_count = covered_fault_station_row['covered_station_count'] or 0
+
+        uncovered_station_rows = db.execute(
+            f"""
+            SELECT
+                f.station_id,
+                s.name AS station_name,
+                COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
+                COUNT(*) AS fault_count,
+                SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
+            FROM fault_reports f
+            JOIN stations s ON f.station_id = s.id
+            WHERE {selected_fault_where_sql}
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM photos p
+                  WHERE p.match_status = 'matched'
+                    AND p.station_id = f.station_id
+                    {photo_scope_sql}
+              )
+            GROUP BY f.station_id, s.name, county
+            ORDER BY unresolved_count DESC, fault_count DESC, s.name ASC
+            LIMIT 6
+            """,
+            [*selected_fault_params, *photo_scope_params],
+        ).fetchall()
+    else:
+        uncovered_station_rows = db.execute(
+            f"""
+            SELECT
+                f.station_id,
+                s.name AS station_name,
+                COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
+                COUNT(*) AS fault_count,
+                SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
+            FROM fault_reports f
+            JOIN stations s ON f.station_id = s.id
+            WHERE {selected_fault_where_sql}
+            GROUP BY f.station_id, s.name, county
+            ORDER BY unresolved_count DESC, fault_count DESC, s.name ASC
+            LIMIT 6
+            """,
+            selected_fault_params,
+        ).fetchall()
+
+    fault_station_count = fault_station_count_row['fault_station_count'] or 0
+    uncovered_station_count = max(fault_station_count - covered_fault_station_count, 0)
+    unresolved_total = (kpi_row['open_count'] or 0) + (kpi_row['handling_count'] or 0)
+    overdue_unresolved_count = kpi_row['overdue_unresolved_count'] or 0
 
     requested_project = project_scope.get('requested_project')
 
@@ -846,18 +1217,34 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
             {'month': month, 'count': count}
             for month, count in sorted(monthly_data.items())
         ],
-        'fault_type_distribution': [dict(row) for row in fault_type_rows],
+        'fault_type_distribution': expand_fault_type_distribution(fault_type_rows),
         'county_distribution': [dict(row) for row in county_rows],
         'voltage_distribution': [dict(row) for row in voltage_rows],
         'camera_ranking': [dict(row) for row in camera_ranking_rows],
+        'station_ranking': [dict(row) for row in station_ranking_rows],
+        'response_buckets': response_buckets,
+        'close_buckets': close_buckets,
+        'photo_coverage': {
+            'fault_station_count': fault_station_count,
+            'covered_station_count': covered_fault_station_count,
+            'uncovered_station_count': uncovered_station_count,
+            'coverage_ratio': round((covered_fault_station_count / fault_station_count) * 100, 2) if fault_station_count else 0,
+            'uncovered_stations': [dict(row) for row in uncovered_station_rows],
+        },
         'kpi': {
             'open_count': kpi_row['open_count'] or 0,
             'handling_count': kpi_row['handling_count'] or 0,
             'closed_count': kpi_row['closed_count'] or 0,
             'response_sample_count': kpi_row['response_sample_count'] or 0,
             'close_sample_count': kpi_row['close_sample_count'] or 0,
+            'overdue_unresolved_count': overdue_unresolved_count,
+            'overdue_unresolved_ratio': round((overdue_unresolved_count / unresolved_total) * 100, 2) if unresolved_total else 0,
+            'overdue_threshold_days': OVERDUE_FAULT_THRESHOLD_DAYS,
             'avg_response_seconds': round(kpi_row['avg_response_seconds'], 2) if kpi_row['avg_response_seconds'] is not None else None,
             'avg_close_seconds': round(kpi_row['avg_close_seconds'], 2) if kpi_row['avg_close_seconds'] is not None else None,
+            'camera_replacement_count': camera_replacement_row['replacement_camera_count'] or 0,
+            'camera_replacement_record_count': camera_replacement_row['replacement_record_count'] or 0,
+            'camera_replacement_inferred_record_count': camera_replacement_row['inferred_quantity_record_count'] or 0,
         },
     }, None
 
@@ -2583,6 +2970,31 @@ def update_fault(fault_id):
         update_fields.append(f"{column_name} = ?")
         update_params.append(value)
 
+    if 'closed_at' in payload and 'closed_at' in fault_report_columns:
+        raw_closed_at = payload.get('closed_at')
+        closed_at_value = None
+        if raw_closed_at not in (None, ''):
+            raw_closed_at_text = str(raw_closed_at).strip()
+            parsed_closed_at = None
+            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S'):
+                try:
+                    parsed_closed_at = datetime.strptime(raw_closed_at_text, fmt)
+                    break
+                except ValueError:
+                    continue
+            if parsed_closed_at is None:
+                return api_error('closed_at 格式不正确，请使用正确的日期时间')
+            closed_at_value = parsed_closed_at.strftime('%Y-%m-%d %H:%M:%S')
+        elif fault['status'] == 'closed':
+            return api_error('已关闭故障必须保留闭环时间')
+
+        if fault['status'] != 'closed' and closed_at_value:
+            return api_error('只有已关闭故障才能填写闭环时间')
+
+        update_fields.append("closed_at = ?")
+        update_params.append(closed_at_value)
+
+
     if 'fault_type' in payload and 'fault_type_label_snapshot' in fault_report_columns:
         update_fields.append("fault_type_label_snapshot = ?")
         update_params.append(str(payload.get('fault_type') or '').strip())
@@ -3578,6 +3990,7 @@ def export_statistics_scoped():
     for row in monthly_rows:
         monthly_data[row['month']] = row['cnt']
 
+    year_filter_sql = " AND strftime('%Y', f.created_at) = ?" if year else ""
     faults = db.execute(
         f"""
         SELECT f.id, s.name as station_name, s.voltage_level, s.county,
@@ -3588,12 +4001,12 @@ def export_statistics_scoped():
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
-        WHERE 1=1{fault_base_sql}
-        {'AND strftime(\'%Y\', f.created_at) = ?' if year else ''}
+        WHERE 1=1{fault_base_sql}{year_filter_sql}
         ORDER BY f.created_at DESC
         """,
         fault_base_params + ([str(year)] if year else []),
     ).fetchall()
+
 
     county_data = {}
     voltage_data = {}
@@ -3924,6 +4337,7 @@ def export_statistics_scoped():
             ('故障率', f"{payload['fault_rate']:.2f}%"),
             ('本月故障数', payload['faults_this_month']),
             ('本年故障数', payload['faults_this_year']),
+            ('更换摄像头数', payload['kpi']['camera_replacement_count']),
         ]
         ws1.append(['指标', '值'])
         for key, value in overview:
@@ -3938,6 +4352,9 @@ def export_statistics_scoped():
         ws2.append(['关闭样本数', payload['kpi']['close_sample_count']])
         ws2.append(['平均响应时长(秒)', payload['kpi']['avg_response_seconds']])
         ws2.append(['平均关闭时长(秒)', payload['kpi']['avg_close_seconds']])
+        ws2.append(['更换摄像头数量', payload['kpi']['camera_replacement_count']])
+        ws2.append(['更换摄像头记录数', payload['kpi']['camera_replacement_record_count']])
+        ws2.append(['未填数量按1台估算记录数', payload['kpi']['camera_replacement_inferred_record_count']])
 
         ws3 = wb.create_sheet('月度趋势')
         ws3.append(['月份', '故障数量'])

@@ -1,0 +1,1356 @@
+{
+  "database": ".\\station_monitor.db",
+  "source_root": "E:\\办公\\图像监控\\图像监控设备资料",
+  "project_code": "unified",
+  "dry_run": false,
+  "workbooks_seen": 71,
+  "stations_matched": 70,
+  "stations_skipped": 1,
+  "cameras_updated": 1357,
+  "cameras_skipped": 6,
+  "slot_channels_updated": 1357,
+  "recorders_added": 138,
+  "recorders_updated": 0,
+  "recorders_retired": 548,
+  "matched_stations": [
+    {
+      "workbook": "丽水变.xlsx",
+      "station_name": "220kV丽水变",
+      "station_id": 58,
+      "camera_updates": 19,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.0.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.0.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.216",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.222"
+        }
+      }
+    },
+    {
+      "workbook": "五丰变.xlsx",
+      "station_name": "110kV五丰变",
+      "station_id": 19,
+      "camera_updates": 21,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.73.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.73.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.99",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.75.97"
+        }
+      }
+    },
+    {
+      "workbook": "四都变.xlsx",
+      "station_name": "10kV四都变",
+      "station_id": 60,
+      "camera_updates": 21,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "192.168.2.4",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.2.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.81",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.94"
+        }
+      }
+    },
+    {
+      "workbook": "岩泉变.xlsx",
+      "station_name": "110kV岩泉变",
+      "station_id": 31,
+      "camera_updates": 11,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.11.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.11.126"
+        },
+        "省公司平台": {
+          "ip": "",
+          "mask": "",
+          "gateway": ""
+        }
+      }
+    },
+    {
+      "workbook": "张村变.xlsx",
+      "station_name": "10kV张村变",
+      "station_id": 62,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.12.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.12.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.120",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.113"
+        }
+      }
+    },
+    {
+      "workbook": "枫树变.xlsx",
+      "station_name": "110kV枫树变",
+      "station_id": 65,
+      "camera_updates": 34,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.0.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.0.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.73",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.94"
+        }
+      }
+    },
+    {
+      "workbook": "水阁变.xlsx",
+      "station_name": "110kV水阁变",
+      "station_id": 66,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.11.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.11.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.131",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.142"
+        }
+      }
+    },
+    {
+      "workbook": "海潮变.xlsx",
+      "station_name": "110kV海潮变",
+      "station_id": 32,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.10.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.10.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.181",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.177"
+        }
+      }
+    },
+    {
+      "workbook": "滨江变.xlsx",
+      "station_name": "110kV滨江变",
+      "station_id": 33,
+      "camera_updates": 17,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.10.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.10.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.116",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.126"
+        }
+      }
+    },
+    {
+      "workbook": "白云变.xlsx",
+      "station_name": "110kV白云变",
+      "station_id": 34,
+      "camera_updates": 11,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.13.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.13.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.133",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.142"
+        }
+      }
+    },
+    {
+      "workbook": "百果变.xlsx",
+      "station_name": "110kV百果变",
+      "station_id": 35,
+      "camera_updates": 26,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.14.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.14.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.67",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.75.65"
+        }
+      }
+    },
+    {
+      "workbook": "碧湖变.xlsx",
+      "station_name": "110kV碧湖变",
+      "station_id": 36,
+      "camera_updates": 15,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.13.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.13.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.199",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.206"
+        }
+      }
+    },
+    {
+      "workbook": "西寮变.xlsx",
+      "station_name": "110kV西寮变",
+      "station_id": 24,
+      "camera_updates": 21,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.72.1",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.72.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.83",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.75.81"
+        }
+      }
+    },
+    {
+      "workbook": "金亭变.xlsx",
+      "station_name": "220kV金亭变",
+      "station_id": 69,
+      "camera_updates": 31,
+      "camera_skips": 2,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.1.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.1.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.5",
+          "mask": "255.255.255.224",
+          "gateway": "10.147.75.1"
+        }
+      }
+    },
+    {
+      "workbook": "陶庄变.xlsx",
+      "station_name": "10kV陶庄变",
+      "station_id": 70,
+      "camera_updates": 27,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.75.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.75.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.131",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.75.129"
+        }
+      }
+    },
+    {
+      "workbook": "高溪变.xlsx",
+      "station_name": "110kV高溪变",
+      "station_id": 37,
+      "camera_updates": 23,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.76.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.76.1"
+        },
+        "省公司平台": {
+          "ip": "26.49.24.131",
+          "mask": "255.255.255.240",
+          "gateway": "26.49.24.129"
+        }
+      }
+    },
+    {
+      "workbook": "龙石变.xlsx",
+      "station_name": "110kV龙石变",
+      "station_id": 72,
+      "camera_updates": 15,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.12.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.12.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.149",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.158"
+        }
+      }
+    },
+    {
+      "workbook": "云和变.xlsx",
+      "station_name": "110kV云和变",
+      "station_id": 1,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.9.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.245",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.4.254"
+        }
+      }
+    },
+    {
+      "workbook": "杨柳变.xlsx",
+      "station_name": "110kV杨柳变",
+      "station_id": 2,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.43.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.214",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.222"
+        }
+      }
+    },
+    {
+      "workbook": "白龙变.xlsx",
+      "station_name": "110kV白龙变",
+      "station_id": 4,
+      "camera_updates": 12,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.8.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.6",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.14"
+        }
+      }
+    },
+    {
+      "workbook": "睦田变.xlsx",
+      "station_name": "220kV睦田变",
+      "station_id": 76,
+      "camera_updates": 28,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.5.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.5.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.37",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.62"
+        }
+      }
+    },
+    {
+      "workbook": "屏都变.xlsx",
+      "station_name": "110kV屏都变",
+      "station_id": 5,
+      "camera_updates": 14,
+      "camera_skips": 2,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.22.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.22.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.115.227",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.115.225"
+        }
+      }
+    },
+    {
+      "workbook": "庆元变.xlsx",
+      "station_name": "110kV庆元变",
+      "station_id": 6,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.29.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.183",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.190"
+        }
+      }
+    },
+    {
+      "workbook": "濛洲变.xlsx",
+      "station_name": "220kV濛洲变",
+      "station_id": 75,
+      "camera_updates": 26,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.4.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.4.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.167",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.160"
+        }
+      }
+    },
+    {
+      "workbook": "荷地变.xlsx",
+      "station_name": "110kV荷地变",
+      "station_id": 7,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.28.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.213",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.222"
+        }
+      }
+    },
+    {
+      "workbook": "景宁变.xlsx",
+      "station_name": "110kV景宁变",
+      "station_id": 9,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.53.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.66",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.174"
+        }
+      }
+    },
+    {
+      "workbook": "沙湾变.xlsx",
+      "station_name": "110kV沙湾变",
+      "station_id": 10,
+      "camera_updates": 22,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.74.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.74.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.75.115",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.75.113"
+        }
+      }
+    },
+    {
+      "workbook": "鹤溪变.xlsx",
+      "station_name": "220kV鹤溪变",
+      "station_id": 77,
+      "camera_updates": 27,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.4.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.4.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.37",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.62"
+        }
+      }
+    },
+    {
+      "workbook": "古市变.xlsx",
+      "station_name": "110kV古市变",
+      "station_id": 12,
+      "camera_updates": 15,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.10.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.229",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.238"
+        }
+      }
+    },
+    {
+      "workbook": "叶水变.xlsx",
+      "station_name": "110kV叶水变",
+      "station_id": 13,
+      "camera_updates": 26,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.80.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "26.49.25.19",
+          "mask": "255.255.255.240",
+          "gateway": "26.49.25.17"
+        }
+      }
+    },
+    {
+      "workbook": "延庆变.xlsx",
+      "station_name": "110kV延庆变",
+      "station_id": 14,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.54.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.117",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.126"
+        }
+      }
+    },
+    {
+      "workbook": "松阳变.xlsx",
+      "station_name": "110kV松阳变",
+      "station_id": 79,
+      "camera_updates": 26,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.6.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.6.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.72",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.78"
+        }
+      }
+    },
+    {
+      "workbook": "西屏变.xlsx",
+      "station_name": "110kV西屏变",
+      "station_id": 16,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.7.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.213",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.222"
+        }
+      }
+    },
+    {
+      "workbook": "黄南变.xlsx",
+      "station_name": "110kV黄南变",
+      "station_id": 17,
+      "camera_updates": 12,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.21.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.21.254"
+        },
+        "省公司平台": {
+          "ip": "",
+          "mask": "",
+          "gateway": ""
+        }
+      }
+    },
+    {
+      "workbook": "东山变.xlsx",
+      "station_name": "110kV东山变",
+      "station_id": 18,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.16.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.16.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.198",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.206"
+        }
+      }
+    },
+    {
+      "workbook": "仙都变.xlsx",
+      "station_name": "110kV仙都变",
+      "station_id": 59,
+      "camera_updates": 31,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.1.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.1.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.235",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.224"
+        }
+      }
+    },
+    {
+      "workbook": "壶镇变.xlsx",
+      "station_name": "110kV壶镇变",
+      "station_id": 20,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.14.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.14.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.23",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.30"
+        }
+      }
+    },
+    {
+      "workbook": "好溪变.xlsx",
+      "station_name": "220kV好溪变",
+      "station_id": 61,
+      "camera_updates": 48,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.104.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.104.126"
+        },
+        "省公司平台": {
+          "ip": "26.49.26.67",
+          "mask": "255.255.255.224",
+          "gateway": "26.49.26.65"
+        }
+      }
+    },
+    {
+      "workbook": "河阳变.xlsx",
+      "station_name": "35kV河阳变",
+      "station_id": 67,
+      "camera_updates": 31,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.2.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.2.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.105",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.97"
+        }
+      }
+    },
+    {
+      "workbook": "缙云变.xlsx",
+      "station_name": "110kV缙云变",
+      "station_id": 23,
+      "camera_updates": 17,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.17.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.17.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.149",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.158"
+        }
+      }
+    },
+    {
+      "workbook": "里隆变.xlsx",
+      "station_name": "110kV里隆变",
+      "station_id": 25,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.15.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.15.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.181",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.190"
+        }
+      }
+    },
+    {
+      "workbook": "问渔变.xlsx",
+      "station_name": "110kV问渔变",
+      "station_id": 27,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.17.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.17.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.115.214",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.115.209"
+        }
+      }
+    },
+    {
+      "workbook": "雁门变.xlsx",
+      "station_name": "110kV雁门变",
+      "station_id": 28,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.15.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.15.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.148",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.158"
+        }
+      }
+    },
+    {
+      "workbook": "黄龙变.xlsx",
+      "station_name": "110kV黄龙变",
+      "station_id": 29,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.16.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.16.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.165",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.174"
+        }
+      }
+    },
+    {
+      "workbook": "东亭变.xlsx",
+      "station_name": "110kV东亭变",
+      "station_id": 38,
+      "camera_updates": 30,
+      "camera_skips": 2,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.106.124",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.101.126"
+        },
+        "省公司平台": {
+          "ip": "26.49.27.4",
+          "mask": "255.255.255.224",
+          "gateway": "26.49.27.1"
+        }
+      }
+    },
+    {
+      "workbook": "古院变.xlsx",
+      "station_name": "110kV古院变",
+      "station_id": 39,
+      "camera_updates": 27,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.101.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.101.126"
+        },
+        "省公司平台": {
+          "ip": "26.49.25.99",
+          "mask": "255.255.255.240",
+          "gateway": "26.49.25.97"
+        }
+      }
+    },
+    {
+      "workbook": "桃园变.xlsx",
+      "station_name": "110kV桃园变",
+      "station_id": 40,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.39.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.22",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.30"
+        }
+      }
+    },
+    {
+      "workbook": "洋浩变.xlsx",
+      "station_name": "110kV洋浩变",
+      "station_id": 41,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.21.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.21.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.20",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.30"
+        }
+      }
+    },
+    {
+      "workbook": "焦滩变.xlsx",
+      "station_name": "110kV焦滩变",
+      "station_id": 42,
+      "camera_updates": 15,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.14.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.6",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.14"
+        }
+      }
+    },
+    {
+      "workbook": "石练变.xlsx",
+      "station_name": "110kV石练变",
+      "station_id": 43,
+      "camera_updates": 11,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.8.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.53",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.62"
+        }
+      }
+    },
+    {
+      "workbook": "遂昌变.xlsx",
+      "station_name": "220kV遂昌变",
+      "station_id": 81,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.5.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.5.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.99",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.126"
+        }
+      }
+    },
+    {
+      "workbook": "金溪变.xlsx",
+      "station_name": "110kV金溪变",
+      "station_id": 44,
+      "camera_updates": 11,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.17.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.69",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.78"
+        }
+      }
+    },
+    {
+      "workbook": "东源变.xlsx",
+      "station_name": "110kV东源变",
+      "station_id": 45,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.18.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.18.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.98",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.110"
+        }
+      }
+    },
+    {
+      "workbook": "侨乡变.xlsx",
+      "station_name": "110kV侨乡变",
+      "station_id": 46,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.18.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.18.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.229",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.225"
+        }
+      }
+    },
+    {
+      "workbook": "油竹变.xlsx",
+      "station_name": "110kV油竹变",
+      "station_id": 47,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.19.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.19.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.5",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.14"
+        }
+      }
+    },
+    {
+      "workbook": "海口变.xlsx",
+      "station_name": "220kV海口变",
+      "station_id": 68,
+      "camera_updates": 29,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.3.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.3.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.7",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.30"
+        }
+      }
+    },
+    {
+      "workbook": "温溪变.xlsx",
+      "station_name": "110kV温溪变",
+      "station_id": 48,
+      "camera_updates": 8,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.21.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.196",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.206"
+        }
+      }
+    },
+    {
+      "workbook": "港头变.xlsx",
+      "station_name": "110kV港头变",
+      "station_id": 49,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.20.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.73.81",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.94"
+        }
+      }
+    },
+    {
+      "workbook": "石郭变.xlsx",
+      "station_name": "110kV石郭变",
+      "station_id": 50,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.22.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.22.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.115.224",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.115.241"
+        }
+      }
+    },
+    {
+      "workbook": "秋桐变.xlsx",
+      "station_name": "110kV秋桐变",
+      "station_id": 51,
+      "camera_updates": 25,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.68.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.68.1"
+        },
+        "省公司平台": {
+          "ip": "26.49.25.51",
+          "mask": "255.255.255.240",
+          "gateway": "26.49.25.49"
+        }
+      }
+    },
+    {
+      "workbook": "青田变.xlsx",
+      "station_name": "220kV青田变",
+      "station_id": 71,
+      "camera_updates": 35,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.2.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.2.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.50",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.62"
+        }
+      }
+    },
+    {
+      "workbook": "高湖变.xlsx",
+      "station_name": "110kV高湖变",
+      "station_id": 52,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.19.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.19.126"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.85",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.81"
+        }
+      }
+    },
+    {
+      "workbook": "安仁变.xlsx",
+      "station_name": "110kV安仁变",
+      "station_id": 53,
+      "camera_updates": 14,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.52.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.102",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.110"
+        }
+      }
+    },
+    {
+      "workbook": "宏山变.xlsx",
+      "station_name": "220kV宏山变",
+      "station_id": 74,
+      "camera_updates": 18,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.3.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.3.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.113.35",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.113.62"
+        }
+      }
+    },
+    {
+      "workbook": "官桥变.xlsx",
+      "station_name": "110kV官桥变",
+      "station_id": 54,
+      "camera_updates": 26,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.100.125",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.100.126"
+        },
+        "省公司平台": {
+          "ip": "26.49.25.67",
+          "mask": "255.255.255.240",
+          "gateway": "26.49.25.65"
+        }
+      }
+    },
+    {
+      "workbook": "牛门变.xlsx",
+      "station_name": "110kV牛门变",
+      "station_id": 55,
+      "camera_updates": 16,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.20.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.20.254"
+        },
+        "省公司平台": {
+          "ip": "10.147.74.67",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.74.78"
+        }
+      }
+    },
+    {
+      "workbook": "芳野变.xlsx",
+      "station_name": "110kV芳野变",
+      "station_id": 56,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.44.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.0.1"
+        },
+        "省公司平台": {
+          "ip": "10.147.114.131",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.114.142"
+        }
+      }
+    },
+    {
+      "workbook": "龙南变.xlsx",
+      "station_name": "110kV龙南变",
+      "station_id": 78,
+      "camera_updates": 49,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "110.49.102.253",
+          "mask": "255.255.255.128",
+          "gateway": "110.49.102.254"
+        },
+        "省公司平台": {
+          "ip": "26.49.25.163",
+          "mask": "255.255.255.224",
+          "gateway": "26.49.25.161"
+        }
+      }
+    },
+    {
+      "workbook": "龙山变.xlsx",
+      "station_name": "110kV龙山变",
+      "station_id": 8,
+      "camera_updates": 23,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "26.49.25.35",
+          "mask": "255.255.255.0",
+          "gateway": "26.49.25.33"
+        },
+        "省公司平台": {
+          "ip": "20.180.69.2",
+          "mask": "255.255.0.0",
+          "gateway": "20.180.69.1"
+        }
+      }
+    },
+    {
+      "workbook": "龙泉变.xlsx",
+      "station_name": "110kV龙泉变",
+      "station_id": 57,
+      "camera_updates": 13,
+      "camera_skips": 0,
+      "platforms": {
+        "市公司平台": {
+          "ip": "20.180.12.2",
+          "mask": "",
+          "gateway": ""
+        },
+        "省公司平台": {
+          "ip": "10.147.73.38",
+          "mask": "255.255.255.240",
+          "gateway": "10.147.73.46"
+        }
+      }
+    }
+  ],
+  "skipped_stations": [
+    {
+      "workbook": "寿元变.xlsx",
+      "station_name": "110kV白云变",
+      "county": "丽水",
+      "reason": "workbook_station_name_mismatch"
+    }
+  ],
+  "backup_path": "station_monitor.import_device_workbook_ips_20260411_175820.db"
+}

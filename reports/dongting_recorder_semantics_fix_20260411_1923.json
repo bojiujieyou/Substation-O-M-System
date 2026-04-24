@@ -1,0 +1,487 @@
+{
+  "station_id": 38,
+  "camera_updates": [
+    {
+      "camera_id": 766,
+      "label": "室外-大门口-1#枪机",
+      "channel_number": 1,
+      "camera_index": "1",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 767,
+      "label": "室外-北侧-2#球机",
+      "channel_number": 2,
+      "camera_index": "2",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 768,
+      "label": "室外-东侧-3#球机",
+      "channel_number": 3,
+      "camera_index": "3",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 769,
+      "label": "室外-南侧-4#球机",
+      "channel_number": 4,
+      "camera_index": "4",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 770,
+      "label": "室外-西侧-5#球机",
+      "channel_number": 5,
+      "camera_index": "5",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 771,
+      "label": "室外-泵房-6#球机",
+      "channel_number": 6,
+      "camera_index": "6",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 772,
+      "label": "室外-东侧2-7#全景球机",
+      "channel_number": 39,
+      "camera_index": "39",
+      "old_recorder_name": "110kV东亭变1",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 773,
+      "label": "室外-东侧2-7#全景球机",
+      "channel_number": 40,
+      "camera_index": "40",
+      "old_recorder_name": "110kV东亭变1",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 774,
+      "label": "室外-东侧3-7#全景球机",
+      "channel_number": 9,
+      "camera_index": "9",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 775,
+      "label": "室外-东侧4-7#全景球机",
+      "channel_number": 10,
+      "camera_index": "10",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 776,
+      "label": "室外-西侧1-7#全景球机",
+      "channel_number": 11,
+      "camera_index": "11",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 777,
+      "label": "室外-西侧2-7#全景球机",
+      "channel_number": 12,
+      "camera_index": "12",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 778,
+      "label": "室外-西侧3-7#全景球机",
+      "channel_number": 13,
+      "camera_index": "13",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 779,
+      "label": "室外-西侧4-8#全景球机",
+      "channel_number": 14,
+      "camera_index": "14",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 780,
+      "label": "室外-北侧-9#枪机",
+      "channel_number": 15,
+      "camera_index": "15",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 781,
+      "label": "主控室-东北-10#球机",
+      "channel_number": 16,
+      "camera_index": "16",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 782,
+      "label": "主控室-南侧-11#球机",
+      "channel_number": 17,
+      "camera_index": "17",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 783,
+      "label": "主控室-东南-12#球机",
+      "channel_number": 18,
+      "camera_index": "18",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 784,
+      "label": "主控室-西南-13#球机",
+      "channel_number": 19,
+      "camera_index": "19",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 785,
+      "label": "主控室-西南-14#球机",
+      "channel_number": 20,
+      "camera_index": "20",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 786,
+      "label": "主控室-西北-15#球机",
+      "channel_number": 21,
+      "camera_index": "21",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 787,
+      "label": "110kVGIS室-东侧-16#球机",
+      "channel_number": 22,
+      "camera_index": "22",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 788,
+      "label": "110kVGIS室-东南-17#球机",
+      "channel_number": 23,
+      "camera_index": "23",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 789,
+      "label": "110kVGIS室-东南-18#球机",
+      "channel_number": 24,
+      "camera_index": "24",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 790,
+      "label": "110kVGIS室-南侧-19#球机",
+      "channel_number": 25,
+      "camera_index": "25",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 791,
+      "label": "110kVGIS室-西侧-20#球机",
+      "channel_number": 26,
+      "camera_index": "26",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 792,
+      "label": "110kVGIS室-西北-21#球机",
+      "channel_number": 27,
+      "camera_index": "27",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 793,
+      "label": "1#电容器室-南侧-22#球机",
+      "channel_number": 28,
+      "camera_index": "28",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 794,
+      "label": "2#电容器室-南侧-23#球机",
+      "channel_number": 29,
+      "camera_index": "29",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 795,
+      "label": "3#电容器室-南侧-24#球机",
+      "channel_number": 30,
+      "camera_index": "30",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 796,
+      "label": "工器具室-南侧-25#球机",
+      "channel_number": 31,
+      "camera_index": "31",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 797,
+      "label": "10kV开关室-北侧-26#球机",
+      "channel_number": 32,
+      "camera_index": "32",
+      "old_recorder_name": "市公司平台",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 798,
+      "label": "10kV开关室-东侧-28#枪机",
+      "channel_number": 28,
+      "camera_index": "28",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 799,
+      "label": "10kV开关室-东南侧-29#球机",
+      "channel_number": 29,
+      "camera_index": "29",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 800,
+      "label": "10kV开关室-东南侧-30#球机",
+      "channel_number": 30,
+      "camera_index": "30",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 801,
+      "label": "10kV开关室-西南-31#球机",
+      "channel_number": 31,
+      "camera_index": "31",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 802,
+      "label": "10kV开关室-西北-32#球机",
+      "channel_number": 32,
+      "camera_index": "32",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 803,
+      "label": "10kV开关室-西北-33#球机",
+      "channel_number": 33,
+      "camera_index": "33",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 804,
+      "label": "泵房-东南-34#球机",
+      "channel_number": 34,
+      "camera_index": "34",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 805,
+      "label": "蓄电池室-东北-36#防爆球机",
+      "channel_number": 36,
+      "camera_index": "36",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 806,
+      "label": "#1主变-东南-37#热成像（可见光）",
+      "channel_number": 37,
+      "camera_index": "37",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 807,
+      "label": "#1主变-东南-37#热成像",
+      "channel_number": 37,
+      "camera_index": "37",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 808,
+      "label": "#1主变-东-38#枪机",
+      "channel_number": 38,
+      "camera_index": "38",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 809,
+      "label": "#1主变-东南-39#云台",
+      "channel_number": 39,
+      "camera_index": "39",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 810,
+      "label": "#1主变-西南-40#云台",
+      "channel_number": 40,
+      "camera_index": "40",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 811,
+      "label": "#1主变-西-41#球机",
+      "channel_number": 41,
+      "camera_index": "41",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 812,
+      "label": "#2主变-北侧-42#热成像（可见光）",
+      "channel_number": 42,
+      "camera_index": "42",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 813,
+      "label": "#2主变-北侧-42#热成像",
+      "channel_number": 42,
+      "camera_index": "42",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 814,
+      "label": "#2主变-东侧-43#枪机",
+      "channel_number": 43,
+      "camera_index": "43",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 815,
+      "label": "#2主变-东南-44#云台",
+      "channel_number": 44,
+      "camera_index": "44",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 816,
+      "label": "#2主变-南侧-45#云台",
+      "channel_number": 45,
+      "camera_index": "45",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 817,
+      "label": "#2主变-西侧-46#球机",
+      "channel_number": 46,
+      "camera_index": "46",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 818,
+      "label": "#3主变-东侧-48#枪机",
+      "channel_number": 48,
+      "camera_index": "48",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 819,
+      "label": "#3主变-东南-49#云台",
+      "channel_number": 49,
+      "camera_index": "49",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 820,
+      "label": "#3主变-南侧-50#云台",
+      "channel_number": 50,
+      "camera_index": "50",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 821,
+      "label": "#3主变-西侧-51#球机",
+      "channel_number": 51,
+      "camera_index": "51",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    },
+    {
+      "camera_id": 822,
+      "label": "开关室-东北-27#球机",
+      "channel_number": 57,
+      "camera_index": "57",
+      "old_recorder_name": "110kV东亭变2",
+      "new_recorder_name": "110kV???1"
+    },
+    {
+      "camera_id": 823,
+      "label": "室内-门卫室-35#球机",
+      "channel_number": 35,
+      "camera_index": "35",
+      "old_recorder_name": "?????",
+      "new_recorder_name": "110kV???2"
+    }
+  ],
+  "recorders_added": [
+    "110kV???1",
+    "110kV???2"
+  ],
+  "recorders_retired": [
+    {
+      "id": 857,
+      "recorder_name": "市公司平台",
+      "ip_address": "110.49.106.124",
+      "port": 8000
+    },
+    {
+      "id": 858,
+      "recorder_name": "省公司平台",
+      "ip_address": "26.49.27.4",
+      "port": 8000
+    }
+  ]
+}

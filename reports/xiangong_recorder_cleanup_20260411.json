@@ -1,0 +1,84 @@
+{
+  "station_id": 73,
+  "station_name": "220kV仙宫变",
+  "retired_inventory_count": 41,
+  "retired_inventory_ids": [
+    450,
+    451,
+    452,
+    453,
+    454,
+    455,
+    456,
+    457,
+    458,
+    459,
+    460,
+    461,
+    462,
+    463,
+    464,
+    465,
+    466,
+    467,
+    468,
+    469,
+    470,
+    471,
+    472,
+    473,
+    474,
+    475,
+    476,
+    477,
+    478,
+    479,
+    480,
+    481,
+    482,
+    483,
+    484,
+    485,
+    486,
+    487,
+    488,
+    489,
+    490
+  ],
+  "inserted_recorders": [
+    {
+      "id": 911,
+      "recorder_name": "220kV仙宫变1",
+      "ip_address": "110.49.101.253",
+      "port": 8000,
+      "camera_count": 21
+    },
+    {
+      "id": 912,
+      "recorder_name": "220kV仙宫变2",
+      "ip_address": "110.49.101.252",
+      "port": 8000,
+      "camera_count": 20
+    }
+  ],
+  "active_recorders_after": [
+    {
+      "id": 911,
+      "recorder_name": "220kV仙宫变1",
+      "ip_address": "110.49.101.253",
+      "port": 8000,
+      "source_type": "manual_local_recorder"
+    },
+    {
+      "id": 912,
+      "recorder_name": "220kV仙宫变2",
+      "ip_address": "110.49.101.252",
+      "port": 8000,
+      "source_type": "manual_local_recorder"
+    }
+  ],
+  "slot_recorder_names_after": [
+    "220kV仙宫变1",
+    "220kV仙宫变2"
+  ]
+}

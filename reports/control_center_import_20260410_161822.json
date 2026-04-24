@@ -1,0 +1,40 @@
+{
+  "imported_at": "20260410_161822",
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "backup_path": "E:\\项目\\变电站图像监控运维平台\\station_monitor.control_center_import_20260410_161822.db",
+  "project": "unified",
+  "source_files": [
+    "丽丽枫集控站.csv",
+    "丽宏山集控站.csv",
+    "丽遂松集控站.csv"
+  ],
+  "source_rows": 770,
+  "station_groups": 24,
+  "before": {
+    "stations": 137,
+    "station_recorders_unified": 90,
+    "camera_slots_unified": 2985,
+    "active_cameras_unified": 1861,
+    "station_external_names": 161
+  },
+  "stations_created": 2,
+  "stations_matched": 22,
+  "recorders_added": 3,
+  "recorders_updated": 25,
+  "recorders_retired": 0,
+  "cameras_added": 770,
+  "cameras_updated": 0,
+  "cameras_replaced": 0,
+  "cameras_retired": 698,
+  "new_station_names": [
+    "220kV仙宫变",
+    "110kV彩虹变"
+  ],
+  "after": {
+    "stations": 139,
+    "station_recorders_unified": 93,
+    "camera_slots_unified": 3755,
+    "active_cameras_unified": 1933,
+    "station_external_names": 163
+  }
+}

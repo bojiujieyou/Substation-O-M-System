@@ -1,0 +1,53 @@
+{
+  "station_id": 38,
+  "active_recorders": [
+    {
+      "id": 909,
+      "recorder_name": "110kV东亭变1",
+      "ip_address": "",
+      "port": null,
+      "description": "本地录像机分组。用户确认市公司/省公司平台地址是平台网络接口，不应作为独立录像机显示。",
+      "source_type": "manual_local_recorder"
+    },
+    {
+      "id": 910,
+      "recorder_name": "110kV东亭变2",
+      "ip_address": "",
+      "port": null,
+      "description": "本地录像机分组。用户确认市公司/省公司平台地址是平台网络接口，不应作为独立录像机显示。",
+      "source_type": "manual_local_recorder"
+    }
+  ],
+  "retired_recorders": [
+    {
+      "id": 857,
+      "recorder_name": "市公司平台",
+      "ip_address": "110.49.106.124",
+      "port": 8000,
+      "description": "来源工作簿: 东亭变.xlsx | 网络配置: 110.49.106.124/255.255.255.128/110.49.101.126 | 子网掩码: 255.255.255.128 | 网关: 110.49.101.126",
+      "source_type": "device_workbook_platform"
+    },
+    {
+      "id": 858,
+      "recorder_name": "省公司平台",
+      "ip_address": "26.49.27.4",
+      "port": 8000,
+      "description": "来源工作簿: 东亭变.xlsx | 网络配置: 26.49.27.4/255.255.255.224/26.49.27.1 | 子网掩码: 255.255.255.224 | 网关: 26.49.27.1",
+      "source_type": "device_workbook_platform"
+    }
+  ],
+  "camera_groups": [
+    {
+      "recorder_name": "110kV东亭变1",
+      "camera_count": 33,
+      "min_channel": 1,
+      "max_channel": 57
+    },
+    {
+      "recorder_name": "110kV东亭变2",
+      "camera_count": 25,
+      "min_channel": 28,
+      "max_channel": 51
+    }
+  ]
+}

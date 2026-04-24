@@ -1,0 +1,3650 @@
+{
+  "summary": {
+    "project": "unified",
+    "generated_at": "2026-04-14",
+    "record_count": 197,
+    "formal_registered_record_count": 2,
+    "formal_registered_quantity_sum": 2,
+    "suggested_quantity_sum": 197,
+    "year_breakdown": {
+      "2023": 34,
+      "2024": 87,
+      "2025": 54,
+      "2026": 22
+    },
+    "top_stations": [
+      {
+        "station_name": "220kV海口变",
+        "count": 14
+      },
+      {
+        "station_name": "220kV睦田变",
+        "count": 12
+      },
+      {
+        "station_name": "110kV延庆变",
+        "count": 9
+      },
+      {
+        "station_name": "220kV仙都变",
+        "count": 9
+      },
+      {
+        "station_name": "110kV洋浩变",
+        "count": 8
+      },
+      {
+        "station_name": "220kV枫树变",
+        "count": 7
+      },
+      {
+        "station_name": "110kV桃园变",
+        "count": 7
+      },
+      {
+        "station_name": "110kV水阁变",
+        "count": 6
+      },
+      {
+        "station_name": "110kV滨江变",
+        "count": 6
+      },
+      {
+        "station_name": "110kV壶镇变",
+        "count": 6
+      },
+      {
+        "station_name": "110kV缙云变",
+        "count": 5
+      },
+      {
+        "station_name": "220kV宏山变",
+        "count": 5
+      },
+      {
+        "station_name": "220kV鹤溪变",
+        "count": 5
+      },
+      {
+        "station_name": "220kV河阳变",
+        "count": 5
+      },
+      {
+        "station_name": "220kV濛洲变",
+        "count": 5
+      },
+      {
+        "station_name": "110kV云和变",
+        "count": 4
+      },
+      {
+        "station_name": "110kV焦滩变",
+        "count": 4
+      },
+      {
+        "station_name": "220kV龙南变",
+        "count": 4
+      },
+      {
+        "station_name": "110kV官桥变",
+        "count": 4
+      },
+      {
+        "station_name": "110kV黄龙变",
+        "count": 4
+      }
+    ],
+    "rules": {
+      "candidate_rule": "???? + ???????????? + ?????/??/??????",
+      "suggested_quantity_rule": "???????? equipment_quantity??????????????????????????????? 1 ?"
+    }
+  },
+  "records": [
+    {
+      "fault_id": 413,
+      "closed_date": "2026/04/14",
+      "closed_year": 2026,
+      "station_name": "110kV西屏变",
+      "fault_type": "摄像机/球机/枪机故障 | 光纤收发器异常",
+      "equipment_type": "摄像机",
+      "equipment_quantity": 1,
+      "is_formal_registered": true,
+      "suggested_quantity": 1,
+      "quantity_basis": "formal_equipment_quantity",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "摄像机故障更换"
+      ],
+      "confidence": "high",
+      "handler_note": "摄像机故障更换"
+    },
+    {
+      "fault_id": 412,
+      "closed_date": "2026/04/14",
+      "closed_year": 2026,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "摄像机",
+      "equipment_quantity": 0,
+      "is_formal_registered": true,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换故障摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换故障摄像机"
+    },
+    {
+      "fault_id": 410,
+      "closed_date": "2026/04/10",
+      "closed_year": 2026,
+      "station_name": "110kV云和变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门-5#球机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门-5#球机故障更换 | 地点: 云和"
+    },
+    {
+      "fault_id": 409,
+      "closed_date": "2026/04/09",
+      "closed_year": 2026,
+      "station_name": "110kV雁门变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西北侧球机更换电源接口，电容器场地南侧-4#球机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西北侧球机更换电源接口，电容器场地南侧-4#球机故障更换 | 地点: 缙云"
+    },
+    {
+      "fault_id": 407,
+      "closed_date": "2026/04/02",
+      "closed_year": 2026,
+      "station_name": "110kV延庆变",
+      "fault_type": "网线/尾纤/链路异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧1#摄像机重新放网线；110kV场地西侧2#摄像机水晶头重做；电容器室北侧9#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧1#摄像机重新放网线；110kV场地西侧2#摄像机水晶头重做；电容器室北侧9#摄像机故障更换 | 地点: 松阳"
+    },
+    {
+      "fault_id": 406,
+      "closed_date": "2026/04/01",
+      "closed_year": 2026,
+      "station_name": "110kV黄南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室7#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室7#摄像机故障更换 | 地点: 松阳"
+    },
+    {
+      "fault_id": 405,
+      "closed_date": "2026/03/31",
+      "closed_year": 2026,
+      "station_name": "110kV侨乡变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变南侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变南侧2#摄像机故障更换 | 地点: 青田"
+    },
+    {
+      "fault_id": 401,
+      "closed_date": "2026/03/23",
+      "closed_year": 2026,
+      "station_name": "220kV仙宫变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1-2#电容器东侧32#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1-2#电容器东侧32#摄像机故障更换 | 地点: 云和"
+    },
+    {
+      "fault_id": 400,
+      "closed_date": "2026/03/19",
+      "closed_year": 2026,
+      "station_name": "110kV缙云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变北侧8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变北侧8#摄像机故障更换 | 地点: 缙云"
+    },
+    {
+      "fault_id": 399,
+      "closed_date": "2026/03/18",
+      "closed_year": 2026,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "就地继保室外墙8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "就地继保室外墙8#摄像机故障更换 | 地点: 莲都"
+    },
+    {
+      "fault_id": 398,
+      "closed_date": "2026/03/17",
+      "closed_year": 2026,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变西南侧10#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变西南侧10#摄像机故障更换 | 地点: 缙云"
+    },
+    {
+      "fault_id": 396,
+      "closed_date": "2026/02/28",
+      "closed_year": 2026,
+      "station_name": "110kV碧湖变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控楼楼顶南侧6#摄像机、主控楼楼顶东南侧7#摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控楼楼顶南侧6#摄像机、主控楼楼顶东南侧7#摄像机更换 | 地点: 莲都"
+    },
+    {
+      "fault_id": 395,
+      "closed_date": "2026/02/05",
+      "closed_year": 2026,
+      "station_name": "110kV侨乡变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#主变东南侧1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#主变东南侧1#摄像机故障更换 | 地点: 青田"
+    },
+    {
+      "fault_id": 394,
+      "closed_date": "2026/02/04",
+      "closed_year": 2026,
+      "station_name": "110kV缙云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变北侧8#摄像机故障更换未恢复，怀疑光纤中断"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变北侧8#摄像机故障更换未恢复，怀疑光纤中断 | 地点: 缙云"
+    },
+    {
+      "fault_id": 393,
+      "closed_date": "2026/02/03",
+      "closed_year": 2026,
+      "station_name": "110kV高湖变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变北侧摄像机故障更换 | 地点: 青田"
+    },
+    {
+      "fault_id": 392,
+      "closed_date": "2026/02/02",
+      "closed_year": 2026,
+      "station_name": "110kV白龙变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地南侧1#摄像机、110kV场地南侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地南侧1#摄像机、110kV场地南侧2#摄像机故障更换 | 地点: 云和"
+    },
+    {
+      "fault_id": 391,
+      "closed_date": "2026/01/29",
+      "closed_year": 2026,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门南侧12#枪机、大门东侧5#枪机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门南侧12#枪机、大门东侧5#枪机故障更换 | 地点: 遂昌"
+    },
+    {
+      "fault_id": 390,
+      "closed_date": "2026/01/28",
+      "closed_year": 2026,
+      "station_name": "110kV石练变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧1#摄像机故障更换 | 地点: 遂昌"
+    },
+    {
+      "fault_id": 387,
+      "closed_date": "2026/01/08",
+      "closed_year": 2026,
+      "station_name": "110kV寿元变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#电容器室南侧16#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#电容器室南侧16#摄像机故障更换 | 地点: 莲都"
+    },
+    {
+      "fault_id": 386,
+      "closed_date": "2026/01/07",
+      "closed_year": 2026,
+      "station_name": "110kV东源变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧摄像机故障更换 | 地点: 青田"
+    },
+    {
+      "fault_id": 385,
+      "closed_date": "2026/01/06",
+      "closed_year": 2026,
+      "station_name": "110kV里隆变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室南侧13#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室南侧13#摄像机故障更换 | 地点: 缙云"
+    },
+    {
+      "fault_id": 384,
+      "closed_date": "2026/01/05",
+      "closed_year": 2026,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控楼门厅侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控楼门厅侧摄像机故障更换 | 地点: 缙云"
+    },
+    {
+      "fault_id": 381,
+      "closed_date": "2025/12/10",
+      "closed_year": 2025,
+      "station_name": "110kV焦滩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地北侧3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地北侧3#摄像机故障更换"
+    },
+    {
+      "fault_id": 379,
+      "closed_date": "2025/12/08",
+      "closed_year": 2025,
+      "station_name": "220kV宏山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧8#摄像机改名35kV开关室东侧外墙8#摄像机并更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧8#摄像机改名35kV开关室东侧外墙8#摄像机并更换"
+    },
+    {
+      "fault_id": 376,
+      "closed_date": "2025/12/02",
+      "closed_year": 2025,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门南侧12#枪机、大门东侧5#枪机因支架备件不足未更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门南侧12#枪机、大门东侧5#枪机因支架备件不足未更换"
+    },
+    {
+      "fault_id": 375,
+      "closed_date": "2025/12/01",
+      "closed_year": 2025,
+      "station_name": "110kV桃园变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变西侧2#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变西侧2#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 373,
+      "closed_date": "2025/11/19",
+      "closed_year": 2025,
+      "station_name": "110kV东山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室6#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室6#摄像机故障更换"
+    },
+    {
+      "fault_id": 372,
+      "closed_date": "2025/11/18",
+      "closed_year": 2025,
+      "station_name": "220kV宏山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室外墙9#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室外墙9#摄像机故障更换"
+    },
+    {
+      "fault_id": 370,
+      "closed_date": "2025/10/23",
+      "closed_year": 2025,
+      "station_name": "220kV睦田变",
+      "fault_type": "光纤收发器异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变东侧4#摄像机光纤收发器电源更换，10kV场地-8#摄像机光纤收发器水晶头重新制作"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变东侧4#摄像机光纤收发器电源更换，10kV场地-8#摄像机光纤收发器水晶头重新制作"
+    },
+    {
+      "fault_id": 369,
+      "closed_date": "2025/10/22",
+      "closed_year": 2025,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 368,
+      "closed_date": "2025/10/21",
+      "closed_year": 2025,
+      "station_name": "110kV桃园变",
+      "fault_type": "光纤收发器异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变西南侧2#摄像机更换光纤收发器并更换尾纤"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变西南侧2#摄像机更换光纤收发器并更换尾纤"
+    },
+    {
+      "fault_id": 367,
+      "closed_date": "2025/10/20",
+      "closed_year": 2025,
+      "station_name": "110kV焦滩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室北侧6#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室北侧6#摄像机故障更换"
+    },
+    {
+      "fault_id": 366,
+      "closed_date": "2025/10/14",
+      "closed_year": 2025,
+      "station_name": "110kV延庆变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 365,
+      "closed_date": "2025/10/13",
+      "closed_year": 2025,
+      "station_name": "220kV松阳变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门南侧11#摄像机水晶头更换，硬盘增加一块8T，录像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门南侧11#摄像机水晶头更换，硬盘增加一块8T，录像机故障更换"
+    },
+    {
+      "fault_id": 364,
+      "closed_date": "2025/09/19",
+      "closed_year": 2025,
+      "station_name": "220kV鹤溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室北侧29#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室北侧29#摄像机故障更换"
+    },
+    {
+      "fault_id": 363,
+      "closed_date": "2025/09/17",
+      "closed_year": 2025,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室9#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室9#摄像机故障更换"
+    },
+    {
+      "fault_id": 362,
+      "closed_date": "2025/09/16",
+      "closed_year": 2025,
+      "station_name": "110kV焦滩变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变北侧5#摄像机故障更换，硬盘增加一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变北侧5#摄像机故障更换，硬盘增加一块8T"
+    },
+    {
+      "fault_id": 360,
+      "closed_date": "2025/09/05",
+      "closed_year": 2025,
+      "station_name": "110kV滨江变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室南侧11#摄像机故障更换，硬盘增加一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室南侧11#摄像机故障更换，硬盘增加一块8T"
+    },
+    {
+      "fault_id": 359,
+      "closed_date": "2025/09/04",
+      "closed_year": 2025,
+      "station_name": "110kV洋浩变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#电容器室南侧6#摄像机故障更换，硬盘增加一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#电容器室南侧6#摄像机故障更换，硬盘增加一块8T"
+    },
+    {
+      "fault_id": 358,
+      "closed_date": "2025/09/02",
+      "closed_year": 2025,
+      "station_name": "220kV鹤溪变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室北侧29#摄像机故障未更换，更换8T故障硬盘两块"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室北侧29#摄像机故障未更换，更换8T故障硬盘两块"
+    },
+    {
+      "fault_id": 357,
+      "closed_date": "2025/08/28",
+      "closed_year": 2025,
+      "station_name": "220kV龙南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室东侧13#摄像机电源线损坏更换后正常"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室东侧13#摄像机电源线损坏更换后正常"
+    },
+    {
+      "fault_id": 356,
+      "closed_date": "2025/08/27",
+      "closed_year": 2025,
+      "station_name": "110kV庆元变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 355,
+      "closed_date": "2025/08/20",
+      "closed_year": 2025,
+      "station_name": "110kV金溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室东侧11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室东侧11#摄像机故障更换"
+    },
+    {
+      "fault_id": 354,
+      "closed_date": "2025/08/19",
+      "closed_year": 2025,
+      "station_name": "110kV官桥变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "GIS室北侧12#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "GIS室北侧12#摄像机故障更换"
+    },
+    {
+      "fault_id": 353,
+      "closed_date": "2025/08/12",
+      "closed_year": 2025,
+      "station_name": "220kV鹤溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧5#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧5#摄像机故障更换"
+    },
+    {
+      "fault_id": 352,
+      "closed_date": "2025/08/11",
+      "closed_year": 2025,
+      "station_name": "110kV黄龙变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#1主变南侧3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#1主变南侧3#摄像机故障更换"
+    },
+    {
+      "fault_id": 351,
+      "closed_date": "2025/08/11",
+      "closed_year": 2025,
+      "station_name": "220kV河阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室东南侧21#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室东南侧21#摄像机故障更换"
+    },
+    {
+      "fault_id": 347,
+      "closed_date": "2025/07/30",
+      "closed_year": 2025,
+      "station_name": "110kV金溪变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室东侧11#摄像机光纤故障未恢复，录像机故障更换，增加硬盘一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室东侧11#摄像机光纤故障未恢复，录像机故障更换，增加硬盘一块8T"
+    },
+    {
+      "fault_id": 346,
+      "closed_date": "2025/07/29",
+      "closed_year": 2025,
+      "station_name": "110kV云和变",
+      "fault_type": "网络掉线/通信异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "通信机房南侧1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "通信机房南侧1#摄像机故障更换"
+    },
+    {
+      "fault_id": 345,
+      "closed_date": "2025/07/23",
+      "closed_year": 2025,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地8#摄像机故障更换"
+    },
+    {
+      "fault_id": 344,
+      "closed_date": "2025/07/22",
+      "closed_year": 2025,
+      "station_name": "220kV海口变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2蓄电池室北侧23#摄像机故障更换，硬盘增加一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2蓄电池室北侧23#摄像机故障更换，硬盘增加一块8T"
+    },
+    {
+      "fault_id": 343,
+      "closed_date": "2025/07/16",
+      "closed_year": 2025,
+      "station_name": "110kV龙石变",
+      "fault_type": "录像机/硬盘异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室北侧11#球机故障更换，硬盘增加一块8T"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室北侧11#球机故障更换，硬盘增加一块8T"
+    },
+    {
+      "fault_id": 340,
+      "closed_date": "2025/07/11",
+      "closed_year": 2025,
+      "station_name": "110kV缙云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV外墙17#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV外墙17#摄像机故障更换"
+    },
+    {
+      "fault_id": 338,
+      "closed_date": "2025/06/27",
+      "closed_year": 2025,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换蓄电池室1#北侧23#故障摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换蓄电池室1#北侧23#故障摄像机"
+    },
+    {
+      "fault_id": 337,
+      "closed_date": "2025/06/26",
+      "closed_year": 2025,
+      "station_name": "110kV侨乡变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换10kV开关室南侧故障摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换10kV开关室南侧故障摄像机"
+    },
+    {
+      "fault_id": 335,
+      "closed_date": "2025/06/24",
+      "closed_year": 2025,
+      "station_name": "220kV遂昌变",
+      "fault_type": "网络掉线/通信异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器场地东南侧3#摄像机掉线，更换集中电源单路开关后恢复"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器场地东南侧3#摄像机掉线，更换集中电源单路开关后恢复"
+    },
+    {
+      "fault_id": 332,
+      "closed_date": "2025/05/28",
+      "closed_year": 2025,
+      "station_name": "110kV石郭变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换#1主变东侧8#摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换#1主变东侧8#摄像机"
+    },
+    {
+      "fault_id": 331,
+      "closed_date": "2025/05/27",
+      "closed_year": 2025,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换主控室东侧19#摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换主控室东侧19#摄像机"
+    },
+    {
+      "fault_id": 330,
+      "closed_date": "2025/05/13",
+      "closed_year": 2025,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换大门北侧17#摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换大门北侧17#摄像机"
+    },
+    {
+      "fault_id": 329,
+      "closed_date": "2025/05/08",
+      "closed_year": 2025,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换1#电容器室南侧6#摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换1#电容器室南侧6#摄像机"
+    },
+    {
+      "fault_id": 327,
+      "closed_date": "2025/05/07",
+      "closed_year": 2025,
+      "station_name": "110kV滨江变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换1#2#电容器室北侧4#摄像机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换1#2#电容器室北侧4#摄像机"
+    },
+    {
+      "fault_id": 326,
+      "closed_date": "2025/04/29",
+      "closed_year": 2025,
+      "station_name": "110kV官桥变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变东侧7#摄像机线路故障，后续更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变东侧7#摄像机线路故障，后续更换"
+    },
+    {
+      "fault_id": 323,
+      "closed_date": "2025/04/23",
+      "closed_year": 2025,
+      "station_name": "220kV龙南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换#3主变东侧7#摄像机、大门口11#枪机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换#3主变东侧7#摄像机、大门口11#枪机"
+    },
+    {
+      "fault_id": 321,
+      "closed_date": "2025/04/21",
+      "closed_year": 2025,
+      "station_name": "220kV遂昌变",
+      "fault_type": "网线/尾纤/链路异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地1#摄像机更换尾纤，光纤熔接电容器场地东南侧3#摄像机并调试。"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地1#摄像机更换尾纤，光纤熔接电容器场地东南侧3#摄像机并调试。"
+    },
+    {
+      "fault_id": 319,
+      "closed_date": "2025/04/15",
+      "closed_year": 2025,
+      "station_name": "110kV官桥变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变东侧7#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变东侧7#摄像机故障更换"
+    },
+    {
+      "fault_id": 317,
+      "closed_date": "2025/04/09",
+      "closed_year": 2025,
+      "station_name": "110kV延庆变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV西侧场地2#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV西侧场地2#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 315,
+      "closed_date": "2025/03/28",
+      "closed_year": 2025,
+      "station_name": "220kV龙南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "水泵房49#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "水泵房49#摄像机故障更换"
+    },
+    {
+      "fault_id": 310,
+      "closed_date": "2025/03/11",
+      "closed_year": 2025,
+      "station_name": "110kV杨柳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变东南侧6#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变东南侧6#摄像机故障更换"
+    },
+    {
+      "fault_id": 308,
+      "closed_date": "2025/02/27",
+      "closed_year": 2025,
+      "station_name": "110kV滨江变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室西侧6#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室西侧6#摄像机故障更换"
+    },
+    {
+      "fault_id": 307,
+      "closed_date": "2025/02/26",
+      "closed_year": 2025,
+      "station_name": "110kV秋桐变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kVGIS室东南侧23#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kVGIS室东南侧23#摄像机故障更换"
+    },
+    {
+      "fault_id": 306,
+      "closed_date": "2025/02/25",
+      "closed_year": 2025,
+      "station_name": "220kV龙南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "水泵房49#摄像机故障，因无法找到电源位置未能更换。"
+      ],
+      "confidence": "medium",
+      "handler_note": "水泵房49#摄像机故障，因无法找到电源位置未能更换。"
+    },
+    {
+      "fault_id": 304,
+      "closed_date": "2025/01/17",
+      "closed_year": 2025,
+      "station_name": "110kV黄龙变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室东南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室东南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 302,
+      "closed_date": "2025/01/15",
+      "closed_year": 2025,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 300,
+      "closed_date": "2025/01/09",
+      "closed_year": 2025,
+      "station_name": "110kV叶水变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门外枪机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门外枪机故障更换"
+    },
+    {
+      "fault_id": 299,
+      "closed_date": "2025/01/08",
+      "closed_year": 2025,
+      "station_name": "110kV黄南变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室门外5#枪机故障更换12V电源"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室门外5#枪机故障更换12V电源"
+    },
+    {
+      "fault_id": 298,
+      "closed_date": "2025/01/07",
+      "closed_year": 2025,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室北侧13#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室北侧13#摄像机故障更换"
+    },
+    {
+      "fault_id": 296,
+      "closed_date": "2024/12/17",
+      "closed_year": 2024,
+      "station_name": "110kV缙云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 295,
+      "closed_date": "2024/12/05",
+      "closed_year": 2024,
+      "station_name": "110kV海潮变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室摄像机故障更换"
+    },
+    {
+      "fault_id": 294,
+      "closed_date": "2024/12/04",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器西南侧9#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器西南侧9#摄像机故障更换"
+    },
+    {
+      "fault_id": 293,
+      "closed_date": "2024/12/03",
+      "closed_year": 2024,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "就地继保室南侧、电容器场地西北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "就地继保室南侧、电容器场地西北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 291,
+      "closed_date": "2024/11/20",
+      "closed_year": 2024,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧3#摄像机故障更换"
+    },
+    {
+      "fault_id": 290,
+      "closed_date": "2024/11/19",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地南侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地南侧2#摄像机故障更换"
+    },
+    {
+      "fault_id": 289,
+      "closed_date": "2024/11/18",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室西南侧9#摄像机故障，人员不足未更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室西南侧9#摄像机故障，人员不足未更换"
+    },
+    {
+      "fault_id": 288,
+      "closed_date": "2024/11/11",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室外墙东侧14#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室外墙东侧14#摄像机故障更换"
+    },
+    {
+      "fault_id": 286,
+      "closed_date": "2024/11/07",
+      "closed_year": 2024,
+      "station_name": "110kV焦滩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门北侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门北侧2#摄像机故障更换"
+    },
+    {
+      "fault_id": 285,
+      "closed_date": "2024/11/06",
+      "closed_year": 2024,
+      "station_name": "110kV石练变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变东北侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变东北侧2#摄像机故障更换"
+    },
+    {
+      "fault_id": 283,
+      "closed_date": "2024/10/31",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地南侧2#、2#主变西侧5#摄像机故障，光纤收发器电源故障，更换光纤收发器通道后恢复"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地南侧2#、2#主变西侧5#摄像机故障，光纤收发器电源故障，更换光纤收发器通道后恢复"
+    },
+    {
+      "fault_id": 282,
+      "closed_date": "2024/10/30",
+      "closed_year": 2024,
+      "station_name": "110kV黄龙变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室东侧11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室东侧11#摄像机故障更换"
+    },
+    {
+      "fault_id": 281,
+      "closed_date": "2024/10/29",
+      "closed_year": 2024,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室西侧15#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室西侧15#摄像机故障更换"
+    },
+    {
+      "fault_id": 276,
+      "closed_date": "2024/10/16",
+      "closed_year": 2024,
+      "station_name": "110kV高溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kVGIS室西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kVGIS室西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 275,
+      "closed_date": "2024/10/15",
+      "closed_year": 2024,
+      "station_name": "220kV河阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器场地西北侧4#、电容器场地西侧7#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器场地西北侧4#、电容器场地西侧7#摄像机故障更换"
+    },
+    {
+      "fault_id": 274,
+      "closed_date": "2024/10/11",
+      "closed_year": 2024,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室西南侧15#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室西南侧15#摄像机故障更换"
+    },
+    {
+      "fault_id": 273,
+      "closed_date": "2024/10/10",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室北侧18#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室北侧18#摄像机故障更换"
+    },
+    {
+      "fault_id": 271,
+      "closed_date": "2024/09/27",
+      "closed_year": 2024,
+      "station_name": "110kV云和变",
+      "fault_type": "网络掉线/通信异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "12路摄像机掉线更换光纤收发器插槽电源"
+      ],
+      "confidence": "medium",
+      "handler_note": "12路摄像机掉线更换光纤收发器插槽电源"
+    },
+    {
+      "fault_id": 270,
+      "closed_date": "2024/09/26",
+      "closed_year": 2024,
+      "station_name": "110kV屏都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门枪机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门枪机故障更换"
+    },
+    {
+      "fault_id": 269,
+      "closed_date": "2024/09/25",
+      "closed_year": 2024,
+      "station_name": "110kV金溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变摄像机故障更换"
+    },
+    {
+      "fault_id": 268,
+      "closed_date": "2024/09/24",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "网线/尾纤/链路异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地8#摄像机故障，更换电源和水晶头"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地8#摄像机故障，更换电源和水晶头"
+    },
+    {
+      "fault_id": 267,
+      "closed_date": "2024/09/20",
+      "closed_year": 2024,
+      "station_name": "110kV桃园变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器东北侧5#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器东北侧5#摄像机故障更换"
+    },
+    {
+      "fault_id": 266,
+      "closed_date": "2024/09/19",
+      "closed_year": 2024,
+      "station_name": "110kV秋桐变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室外墙24#全景摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室外墙24#全景摄像机故障更换"
+    },
+    {
+      "fault_id": 265,
+      "closed_date": "2024/09/18",
+      "closed_year": 2024,
+      "station_name": "110kV安仁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地北侧2#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地北侧2#摄像机故障更换"
+    },
+    {
+      "fault_id": 262,
+      "closed_date": "2024/09/10",
+      "closed_year": 2024,
+      "station_name": "220kV濛洲变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地东侧3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地东侧3#摄像机故障更换"
+    },
+    {
+      "fault_id": 261,
+      "closed_date": "2024/09/09",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室南侧21#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室南侧21#摄像机故障更换"
+    },
+    {
+      "fault_id": 260,
+      "closed_date": "2024/09/09",
+      "closed_year": 2024,
+      "station_name": "110kV龙山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#电容器室南8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#电容器室南8#摄像机故障更换"
+    },
+    {
+      "fault_id": 257,
+      "closed_date": "2024/08/29",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "光纤收发器异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变南侧摄像机故障，更换光纤收发器电源"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变南侧摄像机故障，更换光纤收发器电源"
+    },
+    {
+      "fault_id": 256,
+      "closed_date": "2024/08/28",
+      "closed_year": 2024,
+      "station_name": "110kV桃园变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变西南侧-1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变西南侧-1#摄像机故障更换"
+    },
+    {
+      "fault_id": 255,
+      "closed_date": "2024/08/27",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 254,
+      "closed_date": "2024/08/21",
+      "closed_year": 2024,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室楼顶1#、2#球机（补强）故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室楼顶1#、2#球机（补强）故障更换"
+    },
+    {
+      "fault_id": 253,
+      "closed_date": "2024/08/20",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#2主变西侧、电容器场地西北侧、220kV场地东南侧20#摄像机光纤收发器电源故障更换通道"
+      ],
+      "confidence": "medium",
+      "handler_note": "#2主变西侧、电容器场地西北侧、220kV场地东南侧20#摄像机光纤收发器电源故障更换通道"
+    },
+    {
+      "fault_id": 252,
+      "closed_date": "2024/08/19",
+      "closed_year": 2024,
+      "station_name": "220kV金亭变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室东北侧29#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室东北侧29#摄像机故障更换"
+    },
+    {
+      "fault_id": 251,
+      "closed_date": "2024/08/15",
+      "closed_year": 2024,
+      "station_name": "220kV宏山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室北侧19#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室北侧19#摄像机故障更换"
+    },
+    {
+      "fault_id": 250,
+      "closed_date": "2024/08/14",
+      "closed_year": 2024,
+      "station_name": "110kV芳野变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地南侧1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地南侧1#摄像机故障更换"
+    },
+    {
+      "fault_id": 248,
+      "closed_date": "2024/08/05",
+      "closed_year": 2024,
+      "station_name": "110kV温溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室5#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室5#摄像机故障更换"
+    },
+    {
+      "fault_id": 247,
+      "closed_date": "2024/07/25",
+      "closed_year": 2024,
+      "station_name": "110kV延庆变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 246,
+      "closed_date": "2024/07/24",
+      "closed_year": 2024,
+      "station_name": "110kV桃园变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变西南侧2#摄像机、大门东北侧3#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变西南侧2#摄像机、大门东北侧3#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 245,
+      "closed_date": "2024/07/23",
+      "closed_year": 2024,
+      "station_name": "220kV濛洲变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地西北侧2#摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地西北侧2#摄像机更换"
+    },
+    {
+      "fault_id": 244,
+      "closed_date": "2024/07/18",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变南侧12#摄像机电源转换器故障备件不足，35kV开关室外墙北侧13#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变南侧12#摄像机电源转换器故障备件不足，35kV开关室外墙北侧13#摄像机故障更换"
+    },
+    {
+      "fault_id": 243,
+      "closed_date": "2024/07/16",
+      "closed_year": 2024,
+      "station_name": "220kV河阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外大门西北侧11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外大门西北侧11#摄像机故障更换"
+    },
+    {
+      "fault_id": 242,
+      "closed_date": "2024/07/11",
+      "closed_year": 2024,
+      "station_name": "110kV张村变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外场地西侧2#摄像机故障更换，电源转接器故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外场地西侧2#摄像机故障更换，电源转接器故障更换"
+    },
+    {
+      "fault_id": 240,
+      "closed_date": "2024/07/09",
+      "closed_year": 2024,
+      "station_name": "110kV东源变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室8#摄像机故障更换"
+    },
+    {
+      "fault_id": 239,
+      "closed_date": "2024/07/08",
+      "closed_year": 2024,
+      "station_name": "110kV景宁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西南侧1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西南侧1#摄像机故障更换"
+    },
+    {
+      "fault_id": 234,
+      "closed_date": "2024/06/12",
+      "closed_year": 2024,
+      "station_name": "110kV景宁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西南侧1#摄像机，因下雨未更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西南侧1#摄像机，因下雨未更换"
+    },
+    {
+      "fault_id": 233,
+      "closed_date": "2024/06/04",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变东北侧-3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变东北侧-3#摄像机故障更换"
+    },
+    {
+      "fault_id": 232,
+      "closed_date": "2024/05/31",
+      "closed_year": 2024,
+      "station_name": "110kV延庆变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧2#摄像机光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 231,
+      "closed_date": "2024/05/29",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室东北侧11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室东北侧11#摄像机故障更换"
+    },
+    {
+      "fault_id": 230,
+      "closed_date": "2024/05/29",
+      "closed_year": 2024,
+      "station_name": "110kV雁门变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控室西南侧14#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控室西南侧14#摄像机故障更换"
+    },
+    {
+      "fault_id": 229,
+      "closed_date": "2024/05/21",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变北侧摄像机故障，因下雨未更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变北侧摄像机故障，因下雨未更换"
+    },
+    {
+      "fault_id": 228,
+      "closed_date": "2024/05/20",
+      "closed_year": 2024,
+      "station_name": "110kV延庆变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地3#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地3#摄像机故障更换"
+    },
+    {
+      "fault_id": 225,
+      "closed_date": "2024/05/13",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室西北侧10#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室西北侧10#摄像机故障更换"
+    },
+    {
+      "fault_id": 224,
+      "closed_date": "2024/04/29",
+      "closed_year": 2024,
+      "station_name": "110kV白云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室东侧8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室东侧8#摄像机故障更换"
+    },
+    {
+      "fault_id": 223,
+      "closed_date": "2024/04/28",
+      "closed_year": 2024,
+      "station_name": "220kV仙都变",
+      "fault_type": "网络掉线/通信异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1楼通信机房北侧15#摄像机故障更换，排除市公司上传故障"
+      ],
+      "confidence": "medium",
+      "handler_note": "1楼通信机房北侧15#摄像机故障更换，排除市公司上传故障"
+    },
+    {
+      "fault_id": 222,
+      "closed_date": "2024/04/28",
+      "closed_year": 2024,
+      "station_name": "110kV缙云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室北侧4#摄像机、电容器室（3#、4#）摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室北侧4#摄像机、电容器室（3#、4#）摄像机故障更换"
+    },
+    {
+      "fault_id": 220,
+      "closed_date": "2024/04/25",
+      "closed_year": 2024,
+      "station_name": "110kV油竹变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室北侧7#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室北侧7#摄像机故障更换"
+    },
+    {
+      "fault_id": 219,
+      "closed_date": "2024/04/24",
+      "closed_year": 2024,
+      "station_name": "110kV港头变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室东侧16#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室东侧16#摄像机故障更换"
+    },
+    {
+      "fault_id": 218,
+      "closed_date": "2024/04/23",
+      "closed_year": 2024,
+      "station_name": "110kV桃园变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV开关室北侧11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV开关室北侧11#摄像机故障更换"
+    },
+    {
+      "fault_id": 213,
+      "closed_date": "2024/03/28",
+      "closed_year": 2024,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 212,
+      "closed_date": "2024/03/27",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 211,
+      "closed_date": "2024/03/25",
+      "closed_year": 2024,
+      "station_name": "110kV油竹变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 210,
+      "closed_date": "2024/03/20",
+      "closed_year": 2024,
+      "station_name": "220kV海口变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#电容器南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#电容器南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 209,
+      "closed_date": "2024/03/19",
+      "closed_year": 2024,
+      "station_name": "110kV黄龙变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外大门摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外大门摄像机故障更换"
+    },
+    {
+      "fault_id": 208,
+      "closed_date": "2024/03/18",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变东侧-4#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变东侧-4#摄像机故障更换"
+    },
+    {
+      "fault_id": 207,
+      "closed_date": "2024/03/14",
+      "closed_year": 2024,
+      "station_name": "110kV白云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "蓄电池室北侧-7#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "蓄电池室北侧-7#摄像机故障更换"
+    },
+    {
+      "fault_id": 206,
+      "closed_date": "2024/03/14",
+      "closed_year": 2024,
+      "station_name": "110kV张村变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变东南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变东南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 205,
+      "closed_date": "2024/03/13",
+      "closed_year": 2024,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外西北侧-16#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外西北侧-16#摄像机故障更换"
+    },
+    {
+      "fault_id": 204,
+      "closed_date": "2024/03/12",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变南侧-11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变南侧-11#摄像机故障更换"
+    },
+    {
+      "fault_id": 203,
+      "closed_date": "2024/03/11",
+      "closed_year": 2024,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室西北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室西北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 202,
+      "closed_date": "2024/03/06",
+      "closed_year": 2024,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室东南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室东南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 201,
+      "closed_date": "2024/03/06",
+      "closed_year": 2024,
+      "station_name": "110kV壶镇变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室东南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室东南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 200,
+      "closed_date": "2024/03/04",
+      "closed_year": 2024,
+      "station_name": "220kV濛洲变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 197,
+      "closed_date": "2024/01/31",
+      "closed_year": 2024,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室东北侧-26#、35kV开关室东南侧-29#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室东北侧-26#、35kV开关室东南侧-29#摄像机故障更换"
+    },
+    {
+      "fault_id": 194,
+      "closed_date": "2024/01/19",
+      "closed_year": 2024,
+      "station_name": "110kV岩泉变",
+      "fault_type": "施工/调试/接入",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器智能投切装置室摄像机已拆除，无需更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器智能投切装置室摄像机已拆除，无需更换"
+    },
+    {
+      "fault_id": 193,
+      "closed_date": "2024/01/18",
+      "closed_year": 2024,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 192,
+      "closed_date": "2024/01/18",
+      "closed_year": 2024,
+      "station_name": "110kV张村变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外场地东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外场地东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 190,
+      "closed_date": "2024/01/16",
+      "closed_year": 2024,
+      "station_name": "110kV庆元变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控楼西南外侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控楼西南外侧摄像机故障更换"
+    },
+    {
+      "fault_id": 189,
+      "closed_date": "2024/01/15",
+      "closed_year": 2024,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 188,
+      "closed_date": "2024/01/11",
+      "closed_year": 2024,
+      "station_name": "110kV滨江变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室南侧-5#、蓄电池室-8#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室南侧-5#、蓄电池室-8#摄像机故障更换"
+    },
+    {
+      "fault_id": 187,
+      "closed_date": "2024/01/10",
+      "closed_year": 2024,
+      "station_name": "110kV延庆变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东北侧-1#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东北侧-1#摄像机故障更换"
+    },
+    {
+      "fault_id": 186,
+      "closed_date": "2024/01/10",
+      "closed_year": 2024,
+      "station_name": "220kV松阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "大门南侧-11#摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "大门南侧-11#摄像机故障更换"
+    },
+    {
+      "fault_id": 185,
+      "closed_date": "2024/01/09",
+      "closed_year": 2024,
+      "station_name": "110kV桃园变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 184,
+      "closed_date": "2024/01/09",
+      "closed_year": 2024,
+      "station_name": "220kV遂昌变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 183,
+      "closed_date": "2024/01/05",
+      "closed_year": 2024,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控楼场地东南角、#1主变东侧摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控楼场地东南角、#1主变东侧摄像机更换"
+    },
+    {
+      "fault_id": 182,
+      "closed_date": "2024/01/04",
+      "closed_year": 2024,
+      "station_name": "110kV云和变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#1主变西北侧、10kV开关室东南侧摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#1主变西北侧、10kV开关室东南侧摄像机更换"
+    },
+    {
+      "fault_id": 181,
+      "closed_date": "2024/01/04",
+      "closed_year": 2024,
+      "station_name": "110kV龙泉变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室西南侧、电容器室东南侧摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室西南侧、电容器室东南侧摄像机更换"
+    },
+    {
+      "fault_id": 180,
+      "closed_date": "2024/01/03",
+      "closed_year": 2024,
+      "station_name": "220kV濛洲变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地西侧、#2主变北侧、电抗器场地西南侧摄像机更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地西侧、#2主变北侧、电抗器场地西南侧摄像机更换"
+    },
+    {
+      "fault_id": 177,
+      "closed_date": "2023/11/16",
+      "closed_year": 2023,
+      "station_name": "110kV官桥变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "继保室西侧摄像机、10kV、35kV开关室西侧故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "继保室西侧摄像机、10kV、35kV开关室西侧故障更换"
+    },
+    {
+      "fault_id": 175,
+      "closed_date": "2023/11/14",
+      "closed_year": 2023,
+      "station_name": "110kV里隆变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控室西南侧摄像机故障更换、110kV场地西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控室西南侧摄像机故障更换、110kV场地西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 174,
+      "closed_date": "2023/11/13",
+      "closed_year": 2023,
+      "station_name": "110kV滨江变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#-4#电容器室北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#-4#电容器室北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 173,
+      "closed_date": "2023/11/13",
+      "closed_year": 2023,
+      "station_name": "110kV港头变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 172,
+      "closed_date": "2023/11/01",
+      "closed_year": 2023,
+      "station_name": "110kV问渔变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "1#主变南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "1#主变南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 170,
+      "closed_date": "2023/10/31",
+      "closed_year": 2023,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "室外西北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "室外西北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 169,
+      "closed_date": "2023/10/30",
+      "closed_year": 2023,
+      "station_name": "220kV宏山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "就地继保室南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "就地继保室南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 167,
+      "closed_date": "2023/10/24",
+      "closed_year": 2023,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地西南侧、西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地西南侧、西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 166,
+      "closed_date": "2023/10/23",
+      "closed_year": 2023,
+      "station_name": "110kV洋浩变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#主变东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#主变东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 164,
+      "closed_date": "2023/10/19",
+      "closed_year": 2023,
+      "station_name": "220kV仙都变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室西南侧摄像头、35kV开关室楼顶（补强）摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室西南侧摄像头、35kV开关室楼顶（补强）摄像机故障更换"
+    },
+    {
+      "fault_id": 163,
+      "closed_date": "2023/10/18",
+      "closed_year": 2023,
+      "station_name": "110kV海潮变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 160,
+      "closed_date": "2023/10/17",
+      "closed_year": 2023,
+      "station_name": "110kV芳野变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控室东南墙摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控室东南墙摄像机故障更换"
+    },
+    {
+      "fault_id": 159,
+      "closed_date": "2023/10/16",
+      "closed_year": 2023,
+      "station_name": "220kV濛洲变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#主变摄像机、220kV西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#主变摄像机、220kV西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 156,
+      "closed_date": "2023/10/10",
+      "closed_year": 2023,
+      "station_name": "110kV水阁变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 154,
+      "closed_date": "2023/09/14",
+      "closed_year": 2023,
+      "station_name": "220kV枫树变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#主变西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#主变西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 153,
+      "closed_date": "2023/09/14",
+      "closed_year": 2023,
+      "station_name": "220kV睦田变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "220kV场地东侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "220kV场地东侧摄像机故障更换"
+    },
+    {
+      "fault_id": 151,
+      "closed_date": "2023/09/05",
+      "closed_year": 2023,
+      "station_name": "110kV港头变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地摄像机故障更换"
+    },
+    {
+      "fault_id": 149,
+      "closed_date": "2023/09/04",
+      "closed_year": 2023,
+      "station_name": "110kV滨江变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "场地外围西北侧16号摄像机电源转换器故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "场地外围西北侧16号摄像机电源转换器故障更换"
+    },
+    {
+      "fault_id": 146,
+      "closed_date": "2023/08/22",
+      "closed_year": 2023,
+      "station_name": "220kV仙都变",
+      "fault_type": "网络掉线/通信异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "2#通信机房西北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "2#通信机房西北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 143,
+      "closed_date": "2023/08/18",
+      "closed_year": 2023,
+      "station_name": "220kV海口变",
+      "fault_type": "集中电源/供电异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西南侧摄像机故障更换，光纤收发器电源故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西南侧摄像机故障更换，光纤收发器电源故障更换"
+    },
+    {
+      "fault_id": 142,
+      "closed_date": "2023/08/17",
+      "closed_year": 2023,
+      "station_name": "110kV延庆变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 141,
+      "closed_date": "2023/08/16",
+      "closed_year": 2023,
+      "station_name": "110kV杨柳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 140,
+      "closed_date": "2023/08/16",
+      "closed_year": 2023,
+      "station_name": "220kV鹤溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "3#主变东北侧摄像机、220kV场地东南侧故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "3#主变东北侧摄像机、220kV场地东南侧故障更换"
+    },
+    {
+      "fault_id": 137,
+      "closed_date": "2023/08/14",
+      "closed_year": 2023,
+      "station_name": "110kV东山变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 136,
+      "closed_date": "2023/08/14",
+      "closed_year": 2023,
+      "station_name": "220kV河阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kV场地东侧（补强）摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kV场地东侧（补强）摄像机故障更换"
+    },
+    {
+      "fault_id": 134,
+      "closed_date": "2023/08/10",
+      "closed_year": 2023,
+      "station_name": "110kV海潮变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kVGIS室西北侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kVGIS室西北侧摄像机故障更换"
+    },
+    {
+      "fault_id": 133,
+      "closed_date": "2023/08/09",
+      "closed_year": 2023,
+      "station_name": "110kV高溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "110kVGIS室西侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "110kVGIS室西侧摄像机故障更换"
+    },
+    {
+      "fault_id": 132,
+      "closed_date": "2023/08/08",
+      "closed_year": 2023,
+      "station_name": "110kV白云变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "电容器室西侧、10kV开关室东南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "电容器室西侧、10kV开关室东南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 125,
+      "closed_date": "2023/07/26",
+      "closed_year": 2023,
+      "station_name": "110kV雁门变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "10kV开关室西南侧摄像机故障更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "10kV开关室西南侧摄像机故障更换"
+    },
+    {
+      "fault_id": 120,
+      "closed_date": "2023/07/19",
+      "closed_year": 2023,
+      "station_name": "110kV延庆变",
+      "fault_type": "光纤收发器异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "主控室北侧摄像机故障更换、110kV场地西侧光纤收发器故障更换。"
+      ],
+      "confidence": "medium",
+      "handler_note": "主控室北侧摄像机故障更换、110kV场地西侧光纤收发器故障更换。"
+    },
+    {
+      "fault_id": 62,
+      "closed_date": "2023/03/06",
+      "closed_year": 2023,
+      "station_name": "220kV鹤溪变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "#主变北侧-1#球机、1#主变东南侧-9#球机、110kV场地北侧-1#球机故障，现场排查球机故障，计划下次更换"
+      ],
+      "confidence": "medium",
+      "handler_note": "#主变北侧-1#球机、1#主变东南侧-9#球机、110kV场地北侧-1#球机故障，现场排查球机故障，计划下次更换"
+    },
+    {
+      "fault_id": 47,
+      "closed_date": "2023/02/15",
+      "closed_year": 2023,
+      "station_name": "220kV宏山变",
+      "fault_type": "网线/尾纤/链路异常",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "35kV开关室18#球机故障和光纤被咬坏，更换球机并重新布置光纤"
+      ],
+      "confidence": "medium",
+      "handler_note": "35kV开关室18#球机故障和光纤被咬坏，更换球机并重新布置光纤"
+    },
+    {
+      "fault_id": 44,
+      "closed_date": "2023/01/13",
+      "closed_year": 2023,
+      "station_name": "220kV河阳变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换35kV开关室20#球机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换35kV开关室20#球机"
+    },
+    {
+      "fault_id": 43,
+      "closed_date": "2023/01/12",
+      "closed_year": 2023,
+      "station_name": "220kV遂昌变",
+      "fault_type": "摄像机/球机/枪机故障",
+      "equipment_type": "",
+      "equipment_quantity": 0,
+      "is_formal_registered": false,
+      "suggested_quantity": 1,
+      "quantity_basis": "camera_name_mentions",
+      "camera_name_mention_count": 1,
+      "camera_name_mentions": [
+        "更换220kV场地1#球机，35kV开关室南侧19#球机"
+      ],
+      "confidence": "medium",
+      "handler_note": "更换220kV场地1#球机，35kV开关室南侧19#球机"
+    }
+  ]
+}

@@ -1,9 +1,148 @@
+function photoThumbUrl(photoId) {
+    return withProject(`/photos/thumb/${photoId}`);
+}
+
 function photoFileUrl(photoId) {
     return withProject(`/photos/file/${photoId}`);
 }
 
-function photoThumbUrl(photoId) {
-    return withProject(`/photos/thumb/${photoId}`);
+function getCurrentFilters() {
+    return {
+        county: document.getElementById('filter-county')?.value || '',
+        status: document.getElementById('filter-status')?.value || '',
+        keyword: document.getElementById('filter-keyword')?.value.trim() || '',
+        faultOnly: faultOnlyMode,
+    };
+}
+
+
+function buildSummaryText(filters, counts) {
+    const countyLabel = filters.county || '全部县区';
+    const statusLabel = filters.status ? statusText(filters.status) : '全部状态';
+    const modeLabel = filters.faultOnly ? '只看故障站点' : '全部站点';
+    const keywordLabel = filters.keyword ? `，关键词“${filters.keyword}”` : '';
+    return `当前范围：${countyLabel} / ${statusLabel} / ${modeLabel}${keywordLabel}；共 ${counts.groupCount} 个站点分组、${counts.photoCount} 张照片${counts.unmatchedCount ? `，其中未匹配 ${counts.unmatchedCount} 张` : ''}。`;
+}
+
+function updateResultSummary(filters, counts) {
+    const card = document.getElementById('photo-result-summary');
+    const title = document.getElementById('photo-result-summary-title');
+    const text = document.getElementById('photo-result-summary-text');
+    if (!card || !title || !text) return;
+    title.textContent = counts.photoCount > 0 ? '当前筛选结果' : '当前筛选范围';
+    text.textContent = buildSummaryText(filters, counts);
+    card.classList.add('is-visible');
+}
+
+function hideResultSummary() {
+    const card = document.getElementById('photo-result-summary');
+    if (card) card.classList.remove('is-visible');
+}
+
+function setEmptyState({ title, text, showReset = false }) {
+    const empty = document.getElementById('photo-empty');
+    const titleEl = document.getElementById('photo-empty-title');
+    const textEl = document.getElementById('photo-empty-text');
+    const resetBtn = document.getElementById('photo-empty-reset');
+    if (!empty || !titleEl || !textEl || !resetBtn) return;
+    titleEl.textContent = title;
+    textEl.textContent = text;
+    resetBtn.style.display = showReset ? 'inline-flex' : 'none';
+    empty.style.display = 'block';
+    empty.classList.add('is-visible');
+}
+
+function hideEmptyState() {
+    const empty = document.getElementById('photo-empty');
+    if (!empty) return;
+    empty.style.display = 'none';
+    empty.classList.remove('is-visible');
+}
+
+function hasActiveFilters(filters) {
+    return Boolean(filters.county || filters.status || filters.keyword || filters.faultOnly);
+}
+
+function getEmptyStateConfig(filters, data) {
+    if (hasActiveFilters(filters)) {
+        return {
+            title: '当前筛选条件下没有照片',
+            text: '可以先清空筛选条件后重试，或切换到全部站点继续查看。',
+            showReset: true,
+        };
+    }
+    if ((data.group_count || 0) === 0 && (data.unmatched_count || 0) === 0) {
+        return {
+            title: '当前项目还没有照片索引',
+            text: '请先去管理后台执行照片索引或增量刷新，完成后再回来查看。',
+            showReset: false,
+        };
+    }
+    return {
+        title: '当前项目暂无可展示照片',
+        text: '当前项目暂时没有可用照片数据；如果刚完成导入，建议先检查后台索引状态或稍后重试。',
+        showReset: false,
+    };
+}
+
+function updateUnmatchedGuide(count) {
+    const text = document.getElementById('photo-unmatched-count-text');
+    if (!text) return;
+    text.textContent = count > 0
+        ? `当前还有 ${count} 张未匹配照片，优先处理还没归到站点或资料目录的记录。`
+        : '这里优先处理还没归到站点或资料目录的照片。';
+}
+
+function triggerPhotoFilterSearch() {
+    const searchButton = document.getElementById('filter-search');
+    if (searchButton) {
+        searchButton.click();
+        return;
+    }
+    loadPhotoGroups();
+}
+
+function bindPhotoQuickActions() {
+    const quickUnmatched = document.getElementById('photo-quick-unmatched');
+    if (quickUnmatched) {
+        quickUnmatched.addEventListener('click', () => {
+            const statusSelect = document.getElementById('filter-status');
+            const countySelect = document.getElementById('filter-county');
+            const keywordInput = document.getElementById('filter-keyword');
+            if (statusSelect) statusSelect.value = 'unmatched';
+            if (countySelect) countySelect.value = '';
+            if (keywordInput) keywordInput.value = '';
+            faultOnlyMode = false;
+            syncFaultOnlyToggle();
+            triggerPhotoFilterSearch();
+        });
+    }
+
+    const quickFault = document.getElementById('photo-quick-fault');
+    if (quickFault) {
+        quickFault.addEventListener('click', () => {
+            const statusSelect = document.getElementById('filter-status');
+            if (statusSelect) statusSelect.value = '';
+            faultOnlyMode = true;
+            syncFaultOnlyToggle();
+            triggerPhotoFilterSearch();
+        });
+    }
+
+    const quickReset = document.getElementById('photo-quick-reset');
+    if (quickReset) {
+        quickReset.addEventListener('click', () => {
+            const countySelect = document.getElementById('filter-county');
+            const statusSelect = document.getElementById('filter-status');
+            const keywordInput = document.getElementById('filter-keyword');
+            if (countySelect) countySelect.value = '';
+            if (statusSelect) statusSelect.value = '';
+            if (keywordInput) keywordInput.value = '';
+            faultOnlyMode = DEFAULT_FAULT_ONLY;
+            syncFaultOnlyToggle();
+            triggerPhotoFilterSearch();
+        });
+    }
 }
 
 function statusText(status) {
@@ -244,26 +383,22 @@ function syncFaultOnlyToggle() {
 async function loadPhotoGroups() {
     const loading = document.getElementById('photo-loading');
     const error = document.getElementById('photo-error');
-    const empty = document.getElementById('photo-empty');
     const groupsEl = document.getElementById('photo-groups');
     const unmatchedEl = document.getElementById('photo-unmatched');
+    const filters = getCurrentFilters();
 
     loading.style.display = 'flex';
     error.style.display = 'none';
-    empty.style.display = 'none';
+    hideEmptyState();
     groupsEl.style.display = 'none';
     unmatchedEl.style.display = 'none';
 
     try {
-        const county = document.getElementById('filter-county').value;
-        const status = document.getElementById('filter-status').value;
-        const keyword = document.getElementById('filter-keyword').value.trim();
-
         const params = new URLSearchParams();
-        if (county) params.set('county', county);
-        if (status) params.set('status', status);
-        if (keyword) params.set('keyword', keyword);
-        if (faultOnlyMode) params.set('has_fault', '1');
+        if (filters.county) params.set('county', filters.county);
+        if (filters.status) params.set('status', filters.status);
+        if (filters.keyword) params.set('keyword', filters.keyword);
+        if (filters.faultOnly) params.set('has_fault', '1');
         params.set('limit_per_group', '120');
 
         const response = await fetch(withProject('/api/photos/groups', Object.fromEntries(params.entries())));
@@ -275,6 +410,7 @@ async function loadPhotoGroups() {
 
         groupsCache = data.groups || [];
         unmatchedCache = data.unmatched || [];
+        updateUnmatchedGuide(data.unmatched_count || unmatchedCache.length || 0);
 
         const flatResponse = await fetch(withProject('/api/photos', {
             ...Object.fromEntries(params.entries()),
@@ -284,10 +420,17 @@ async function loadPhotoGroups() {
         const flatData = await flatResponse.json();
         photosFlatCache = flatResponse.ok ? (flatData.photos || []) : [];
 
+        const counts = {
+            groupCount: groupsCache.length,
+            photoCount: photosFlatCache.length || groupsCache.reduce((sum, group) => sum + (group.photos || []).length, 0) + unmatchedCache.length,
+            unmatchedCount: data.unmatched_count || unmatchedCache.length,
+        };
+        updateResultSummary(filters, counts);
+
         const hasData = groupsCache.length > 0 || unmatchedCache.length > 0;
         if (!hasData) {
             syncPreviewNavigation();
-            empty.style.display = 'block';
+            setEmptyState(getEmptyStateConfig(filters, data));
             loading.style.display = 'none';
             return;
         }
@@ -304,6 +447,8 @@ async function loadPhotoGroups() {
 
     } catch (e) {
         loading.style.display = 'none';
+        hideResultSummary();
+        hideEmptyState();
         error.style.display = 'flex';
         document.getElementById('photo-error-text').textContent = e.message || '加载失败';
     }
@@ -399,6 +544,7 @@ document.getElementById('photo-zoom-out-btn')?.addEventListener('click', () => a
 document.getElementById('photo-zoom-reset-btn')?.addEventListener('click', resetPreviewZoom);
 document.getElementById('photo-preview-prev')?.addEventListener('click', () => stepPreview(-1));
 document.getElementById('photo-preview-next')?.addEventListener('click', () => stepPreview(1));
+document.getElementById('photo-empty-reset')?.addEventListener('click', resetFilters);
 
 document.querySelector('#photo-preview-modal .photo-preview-wrap')?.addEventListener('wheel', (event) => {
     event.preventDefault();
@@ -452,6 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
     }
+    bindPhotoQuickActions();
     syncFaultOnlyToggle();
     loadPhotoGroups();
 });

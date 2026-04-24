@@ -1,0 +1,2896 @@
+{
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "versions": [
+    {
+      "project_code": "unified",
+      "project_id": 1,
+      "version_id": 1,
+      "created": true
+    },
+    {
+      "project_code": "inspection",
+      "project_id": 2,
+      "version_id": 2,
+      "created": true
+    },
+    {
+      "project_code": "auxiliary",
+      "project_id": 3,
+      "version_id": 3,
+      "created": true
+    }
+  ],
+  "backfilled_count": 410,
+  "backfilled_rows": [
+    {
+      "id": 1,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 2,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 3,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 4,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 5,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 6,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 7,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 8,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 9,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 10,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 11,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 12,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 13,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 14,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 15,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 16,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 17,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 18,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 19,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 20,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 21,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 22,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 23,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 24,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 25,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 26,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 27,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 28,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 29,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 30,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 31,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 32,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 33,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 34,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 35,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 36,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 37,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 38,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 39,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 40,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 41,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 42,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 43,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 44,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 45,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 46,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 47,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 48,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 49,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 50,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 51,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 52,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 53,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 54,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 55,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 56,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 57,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 58,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 59,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 60,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 61,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 62,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 63,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 64,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 65,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 66,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 67,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 68,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 69,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 70,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 71,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 72,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 73,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 74,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 75,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 76,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 77,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 78,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 79,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 80,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 81,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 82,
+      "project_id": 1,
+      "fault_type": "平台图像异常",
+      "fault_type_code": "PLATFORM_DISPLAY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 83,
+      "project_id": 1,
+      "fault_type": "平台图像异常",
+      "fault_type_code": "PLATFORM_DISPLAY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 84,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 85,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 86,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 87,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 88,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 89,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 90,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 91,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 92,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 93,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 94,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 95,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 96,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 97,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 98,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 99,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 100,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 101,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 102,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 103,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 104,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 105,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 106,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 107,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 108,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 109,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 110,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 111,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 112,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 113,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 114,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 115,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 116,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 117,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 118,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 119,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 120,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 121,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 122,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 123,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 124,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 125,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 126,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 127,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 128,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 129,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 130,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 131,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 132,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 133,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 134,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 135,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 136,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 137,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 138,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 139,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 140,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 141,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 142,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 143,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 144,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 145,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 146,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 147,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 148,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 149,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 150,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 151,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 152,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 153,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 154,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 155,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 156,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 157,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 158,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 159,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 160,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 161,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 162,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 163,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 164,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 165,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 166,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 167,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 168,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 169,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 170,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 171,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 172,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 173,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 174,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 175,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 176,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 177,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 178,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 179,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 180,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 181,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 182,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 183,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 184,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 185,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 186,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 187,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 188,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 189,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 190,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 191,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 192,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 193,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 194,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 195,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 196,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 197,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 198,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 199,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 200,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 201,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 202,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 203,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 204,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 205,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 206,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 207,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 208,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 209,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 210,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 211,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 212,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 213,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 214,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 215,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 216,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 217,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 218,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 219,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 220,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 221,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 222,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 223,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 224,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 225,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 226,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 227,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 228,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 229,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 230,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 231,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 232,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 233,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 234,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 235,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 236,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 237,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 238,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 239,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 240,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 241,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 242,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 243,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 244,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 245,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 246,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 247,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 248,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 249,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 250,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 251,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 252,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 253,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 254,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 255,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 256,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 257,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 258,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 259,
+      "project_id": 2,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 260,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 261,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 262,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 263,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 264,
+      "project_id": 2,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 265,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 266,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 267,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 268,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 269,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 270,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 271,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 272,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 273,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 274,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 275,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 276,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 277,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 278,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 279,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 280,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 281,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 282,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 283,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 284,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 285,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 286,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 287,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 288,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 289,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 290,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 291,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 292,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 293,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 294,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 295,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 296,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 297,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 298,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 299,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 300,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 301,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 302,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 303,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 304,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 305,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 306,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 307,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 308,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 309,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 310,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 311,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 312,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 313,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 314,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 315,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 316,
+      "project_id": 1,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 317,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 318,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 319,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 320,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 321,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 322,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 323,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 324,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 325,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 326,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 327,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 328,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 329,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 330,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 331,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 332,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 333,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 334,
+      "project_id": 1,
+      "fault_type": "交换机故障",
+      "fault_type_code": "SWITCH_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 335,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 336,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 337,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 338,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 339,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 340,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 341,
+      "project_id": 2,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 342,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 343,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 344,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 345,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 346,
+      "project_id": 1,
+      "fault_type": "网络通信故障",
+      "fault_type_code": "NETWORK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 347,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 348,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 349,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 350,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 351,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 352,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 353,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 354,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 355,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 356,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 357,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 358,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 359,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 360,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 361,
+      "project_id": 2,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 362,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 363,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 364,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 365,
+      "project_id": 1,
+      "fault_type": "硬盘录像机/存储故障",
+      "fault_type_code": "RECORDER_STORAGE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 366,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 367,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 368,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 369,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 370,
+      "project_id": 1,
+      "fault_type": "光纤收发器故障",
+      "fault_type_code": "FIBER_TXRX_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 371,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 372,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 373,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 374,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 375,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 376,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 377,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 378,
+      "project_id": 1,
+      "fault_type": "供电故障",
+      "fault_type_code": "POWER_SUPPLY_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 379,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 380,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 381,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 382,
+      "project_id": 1,
+      "fault_type": "验收/勘察",
+      "fault_type_code": "SITE_SURVEY_ACCEPTANCE",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 383,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 384,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 385,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 386,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 387,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 388,
+      "project_id": 2,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 389,
+      "project_id": 2,
+      "fault_type": "巡检维护",
+      "fault_type_code": "INSPECTION_MAINTENANCE",
+      "fault_type_version_id": 2
+    },
+    {
+      "id": 390,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 391,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 392,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 393,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 394,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 395,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 396,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 397,
+      "project_id": 3,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 3
+    },
+    {
+      "id": 398,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 399,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 400,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 401,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 402,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 403,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 404,
+      "project_id": 1,
+      "fault_type": "设备故障",
+      "fault_type_code": "DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 405,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 406,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 407,
+      "project_id": 1,
+      "fault_type": "网线/光纤链路故障",
+      "fault_type_code": "CABLE_LINK_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 408,
+      "project_id": 1,
+      "fault_type": "施工/调试/接入",
+      "fault_type_code": "INSTALLATION_DEBUG",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 409,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    },
+    {
+      "id": 410,
+      "project_id": 1,
+      "fault_type": "摄像机故障",
+      "fault_type_code": "CAMERA_DEVICE_FAULT",
+      "fault_type_version_id": 1
+    }
+  ]
+}

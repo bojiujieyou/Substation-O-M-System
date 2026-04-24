@@ -239,16 +239,17 @@
                 <a href="#upload-zone" class="btn btn-primary">去导入区</a>
                 <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-secondary" data-project-link>去导入审查中心</a>
             </div>
+            <div id="admin-next-flow" class="admin-inline-flow">当前流程：先导入，再看结果摘要；如果出现待确认项，再进入导入审查中心继续处理。</div>
         </section>
         <aside class="admin-maintenance-card">
             <div class="admin-maintenance-label">维护 / 重操作</div>
-            <div class="admin-maintenance-title">备份和全量重建不要与日常处理混用</div>
-            <div class="admin-maintenance-description">备份数据库和全量重建索引仅在维护时使用。</div>
+            <div class="admin-maintenance-title">备份和全量重建只在维护窗口处理</div>
+            <div class="admin-maintenance-description">这两项会改变系统级数据或索引状态，不建议和日常导入、审查、未匹配清洗混在一起做。</div>
             <div class="admin-next-actions">
                 <button class="btn btn-secondary admin-risk-btn" type="button" onclick="backupDb()">备份数据库</button>
                 <button class="btn btn-secondary admin-risk-btn" type="button" id="photo-index-full">全量重建索引</button>
             </div>
-            <div class="admin-maintenance-hint">日常处理优先用导入、审查和增量刷新。</div>
+            <div class="admin-maintenance-hint">日常处理优先用导入、审查和增量刷新；只有在维护窗口或明确异常排查时才做这两项。</div>
         </aside>
     </div>
 
@@ -256,7 +257,7 @@
         <div class="admin-section-header admin-section-header-compact">
             <div>
                 <h3 class="admin-section-header-title">上传导入</h3>
-                <p class="card-subtitle mb-0">确认项目和导入类型后上传 Excel。</p>
+                <p class="card-subtitle mb-0">先确认项目和导入类型，再上传 Excel；导入完成后先看结果摘要，有待确认项再继续进导入审查中心。</p>
             </div>
         </div>
         <div class="row">
@@ -290,7 +291,7 @@
                             <div class="import-step-item">1. 确认当前项目</div>
                             <div class="import-step-item">2. 选择导入类型并上传 Excel 文件</div>
                             <div class="import-step-item">3. 如需补充归属，再选择县区</div>
-                            <div class="import-step-item">4. 跳转结果摘要页查看导入状态</div>
+                            <div class="import-step-item">4. 先看结果摘要，再决定是否进入导入审查中心</div>
                         </div>
                     </div>
                     <form id="upload-form" enctype="multipart/form-data">
@@ -327,7 +328,7 @@
                             <input type="file" id="excel-file" name="file" accept=".xlsx,.xls" class="form-input form-input-file" required>
                         </div>
                         <div id="upload-readiness" class="form-hint import-readiness-hint">请选择项目、导入类型并上传 Excel 文件。</div>
-                        <div class="admin-inline-flow">导入后进入结果摘要页。</div>
+                        <div class="admin-inline-flow">日常入口顺序：先导入，再看结果摘要；如果有待确认项，再进入导入审查中心继续处理。</div>
                         <div class="import-form-actions">
                             <button type="submit" class="btn btn-primary" id="upload-btn">上传并导入</button>
                             <a href="{{ url_for('admin_review.review_center_page') }}" class="btn btn-secondary" data-project-link>查看导入审查中心</a>
@@ -357,8 +358,8 @@
                     <div class="import-note-group">
                         <div class="import-note-title">导入后处理</div>
                         <div class="review-secondary-steps admin-side-note-steps">
-                            <div class="review-secondary-step">导入完成后自动跳转结果摘要页。</div>
-                            <div class="review-secondary-step">有待确认项时再进入审查中心。</div>
+                            <div class="review-secondary-step">导入完成后先看结果摘要页，确认批次状态、异常项和 AI 识别情况。</div>
+                            <div class="review-secondary-step">只有出现待确认冲突或异常记录时，再进入导入审查中心继续处理。</div>
                         </div>
                     </div>
                 </div>
@@ -368,7 +369,7 @@
 
     <div class="admin-section">
         <h3 class="admin-section-title">照片索引管理</h3>
-        <div class="admin-inline-flow">先看未匹配数量，再决定是否清洗。</div>
+        <div class="admin-inline-flow">先看未匹配数量，再决定是否清洗；清洗完成后再去照片页抽查结果，不建议一上来就做全量重建。</div>
         <div class="row">
             <div class="col-md-6">
                 <div class="detail-info">
@@ -382,12 +383,12 @@
                 <div class="form-actions form-actions-start">
                     <button class="btn btn-primary" id="photo-index-incremental">手动增量刷新</button>
                 </div>
-                <p class="form-hint">日常优先做增量刷新。</p>
+                <p class="form-hint">日常优先做增量刷新；只有在索引明显异常或维护窗口才考虑全量重建。</p>
                 <div id="photo-index-result" class="form-hint"></div>
             </div>
             <div class="col-md-6" id="photo-cleanup-section">
                 <h4 class="card-subtitle">未匹配照片清洗</h4>
-                <p class="form-hint">处理完成后可去照片页抽查。</p>
+                <p class="form-hint">这里先处理未归站点的照片；处理完成后再去照片页做抽查，不用在后台来回切很多次。</p>
                 <div class="form-group">
                     <label for="unmatched-photo-select" class="form-label">未匹配照片</label>
                     <select id="unmatched-photo-select" class="form-select">

@@ -12,10 +12,10 @@
                 <option value="">全部年份</option>
             </select>
             <button id="stats-brief-toggle" class="btn-secondary stats-brief-toggle" type="button" aria-expanded="false">
-                查看本期关注
+                查看本期摘要
             </button>
         </div>
-        <div id="stats-scope-note" class="stats-toolbar-note">当前页面 KPI、图表和 Top 排行均按当前筛选范围统计。</div>
+        <div id="stats-scope-note" class="stats-toolbar-note">当前页的 KPI、图表和 Top 排行都按当前筛选范围统计。</div>
     </div>
     <div class="stats-toolbar-export">
         <button id="export-btn" class="btn-secondary" type="button" onclick="exportStats()">
@@ -64,10 +64,65 @@
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="avg-response">-</div>
         <div class="stat-label">平均响应时长</div>
+        <div class="chart-subtitle" id="avg-response-note">按已开始处理故障统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="avg-close">-</div>
-        <div class="stat-label">平均关闭时长</div>
+        <div class="stat-label">平均闭环时长</div>
+        <div class="chart-subtitle" id="avg-close-note">按已关闭故障统计</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="overdue-unresolved-count">-</div>
+        <div class="stat-label">超期未闭环</div>
+        <div class="chart-subtitle" id="overdue-unresolved-note">按未关闭故障统计</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="fault-photo-coverage-rate">-</div>
+        <div class="stat-label">故障站点照片覆盖</div>
+        <div class="chart-subtitle" id="fault-photo-coverage-note">按已匹配照片统计</div>
+        <button id="photo-coverage-toggle" class="stats-inline-link" type="button" hidden aria-expanded="false">
+            查看未覆盖站点
+        </button>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="camera-replacement-count">-</div>
+        <div class="stat-label">更换摄像头</div>
+        <div class="chart-subtitle" id="camera-replacement-note">按闭环记录统计</div>
+    </div>
+</div>
+
+<div class="stats-followup-panel" id="uncovered-stations-panel" hidden>
+    <div class="stats-followup-header">
+        <div>
+            <h3>待补照片站点</h3>
+            <div class="chart-subtitle" id="uncovered-stations-summary">当前范围内暂无待补站点</div>
+        </div>
+    </div>
+    <div class="stats-followup-list" id="uncovered-stations-list"></div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>响应时长分布</h3>
+                <div class="chart-subtitle">帮助判断首响是否变慢</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="responseBucketChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>闭环时长分布</h3>
+                <div class="chart-subtitle">帮助判断积压是否偏多</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="closeBucketChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -129,9 +184,35 @@
 <div class="row">
     <div class="col-md-6">
         <div class="chart-section">
-            <h3>故障语义分组</h3>
+            <h3>故障语义分布</h3>
             <div class="chart-container">
                 <canvas id="faultTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>故障站点排行 Top 5</h3>
+                <div class="chart-subtitle">看哪些站点需要优先盯防</div>
+            </div>
+            <div class="chart-container chart-container-table">
+                <div class="table-card">
+                    <table class="data-table" id="station-ranking-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>变电站</th>
+                                <th>县区</th>
+                                <th>故障次数</th>
+                                <th>未闭环</th>
+                            </tr>
+                        </thead>
+                        <tbody id="station-ranking-body">
+                            <tr><td colspan="5" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -230,6 +311,72 @@
     font-size: 13px;
 }
 
+.stats-inline-link {
+    margin-top: 8px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #1a73e8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+
+.stats-followup-panel {
+    margin: 14px 0 18px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+    border: 1px solid rgba(26, 115, 232, 0.12);
+}
+
+.stats-followup-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.stats-followup-header h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.stats-followup-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.stats-followup-item {
+    padding: 12px;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.stats-followup-item-name {
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.stats-followup-item-meta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.stats-followup-item-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #374151;
+}
+
 .chart-container-table {
     height: auto;
     min-height: 220px;
@@ -252,6 +399,11 @@
     color: #d93025;
 }
 
+.subtle-count {
+    font-weight: 600;
+    color: #1f2937;
+}
+
 @media (max-width: 768px) {
     .stats-toolbar-export {
         align-items: flex-start;
@@ -259,6 +411,11 @@
 
     .stats-toolbar-note-export {
         text-align: left;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 </style>
@@ -268,23 +425,39 @@ let monthlyChart;
 let faultTypeChart;
 let countyChart;
 let voltageChart;
+let responseBucketChart;
+let closeBucketChart;
 let currentYear = '';
 let currentBriefingText = '';
+let uncoveredStationsExpanded = false;
 
 function formatDuration(seconds) {
     if (seconds === null || seconds === undefined) {
         return '-';
     }
     if (seconds < 60) {
-        return `${Math.round(seconds)}秒`;
+        return `${Math.round(seconds)} 秒`;
     }
     if (seconds < 3600) {
-        return `${(seconds / 60).toFixed(1)}分钟`;
+        return `${(seconds / 60).toFixed(1)} 分钟`;
     }
     if (seconds < 86400) {
-        return `${(seconds / 3600).toFixed(1)}小时`;
+        return `${(seconds / 3600).toFixed(1)} 小时`;
     }
-    return `${(seconds / 86400).toFixed(1)}天`;
+    return `${(seconds / 86400).toFixed(1)} 天`;
+}
+
+function formatPercent(value) {
+    return `${Number(value || 0).toFixed(2)}%`;
+}
+
+function escapeCell(value) {
+    if (typeof window.escapeHtml === 'function') {
+        return window.escapeHtml(value || '-');
+    }
+    const div = document.createElement('div');
+    div.textContent = value || '-';
+    return div.innerHTML;
 }
 
 function getYearFilter() {
@@ -314,43 +487,44 @@ function buildCompactStatsBriefing(payload) {
     const scopeLabel = getScopeLabel();
     const kpi = payload.kpi || {};
     const unresolved = Number(kpi.open_count || 0) + Number(kpi.handling_count || 0);
+    const overdueCount = Number(kpi.overdue_unresolved_count || 0);
+    const photoCoverage = payload.photo_coverage || {};
+    const uncoveredStations = Number(photoCoverage.uncovered_station_count || 0);
     const topMonth = pickTopItem(payload.monthly_trend, 'count');
     const topCounty = pickTopItem(payload.county_distribution, 'count');
-    const topCamera = (payload.camera_ranking || [])[0] || null;
-    const timingParts = [];
-
-    if (kpi.avg_response_seconds !== null && kpi.avg_response_seconds !== undefined) {
-        timingParts.push(`平均响应 ${formatDuration(kpi.avg_response_seconds)}`);
-    }
-
-    if (kpi.avg_close_seconds !== null && kpi.avg_close_seconds !== undefined) {
-        timingParts.push(`平均关闭 ${formatDuration(kpi.avg_close_seconds)}`);
-    }
-
+    const topStation = (payload.station_ranking || [])[0] || null;
     const parts = [
-        `${scopeLabel}共统计 ${payload.faults || 0} 起故障，KPI、图表和 Top 排行均跟随当前口径。`
+        `${scopeLabel}共统计 ${payload.faults || 0} 起故障，KPI、图表和 Top 排行都按当前口径同步更新。`
     ];
 
     if (topMonth) {
-        parts.push(`故障集中在 ${topMonth.month}。`);
+        parts.push(`故障集中在 ${topMonth.month}，当月共 ${topMonth.count || 0} 起。`);
     }
 
     if (topCounty) {
-        parts.push(`${topCounty.county || '未标注县区'}为当前故障最多区域。`);
+        parts.push(`${topCounty.county || '未知县区'} 当前故障最多，共 ${topCounty.count || 0} 起。`);
     }
 
-    if (topCamera) {
-        parts.push(`${topCamera.station_name || '-'} ${topCamera.camera_location || '-'} 出现 ${topCamera.fault_count || 0} 次。`);
+    if (topStation) {
+        parts.push(`${topStation.station_name || '-'} 需要优先盯防，累计 ${topStation.fault_count || 0} 起，其中未闭环 ${topStation.unresolved_count || 0} 起。`);
     }
 
     if (unresolved > 0) {
-        parts.push(`当前未关闭 ${unresolved} 起，其中打开 ${kpi.open_count || 0} 起、处理中 ${kpi.handling_count || 0} 起。`);
+        parts.push(`当前未闭环 ${unresolved} 起，打开中 ${kpi.open_count || 0} 起、处理中 ${kpi.handling_count || 0} 起。`);
     } else {
-        parts.push('当前无未关闭故障。');
+        parts.push('当前没有未闭环故障。');
     }
 
-    if (timingParts.length) {
-        parts.push(`${timingParts.join('，')}。`);
+    if (overdueCount > 0) {
+        parts.push(`其中 ${overdueCount} 起已超过 ${kpi.overdue_threshold_days || 7} 天，需优先核查。`);
+    }
+
+    if (Number(photoCoverage.fault_station_count || 0) > 0) {
+        parts.push(`故障站点照片覆盖率 ${formatPercent(photoCoverage.coverage_ratio)}，已覆盖 ${photoCoverage.covered_station_count || 0} / ${photoCoverage.fault_station_count || 0} 个站点。`);
+    }
+
+    if (uncoveredStations > 0) {
+        parts.push(`仍有 ${uncoveredStations} 个故障站点未补照片，建议优先补齐未闭环站点。`);
     }
 
     return parts.join(' ');
@@ -364,13 +538,13 @@ function renderStatsBriefing(payload) {
     const briefingToggle = document.getElementById('stats-brief-toggle');
 
     if (scopeNote) {
-        scopeNote.textContent = `当前展示口径：${scopeLabel}，KPI、图表和 Top 排行均按该范围统计。`;
+        scopeNote.textContent = `当前展示口径：${scopeLabel}。KPI、图表和 Top 排行都按这一范围统计。`;
     }
 
     if (exportNote) {
         exportNote.textContent = currentYear
-            ? `导出当前 ${currentYear} 年统计结果。`
-            : '导出全部年份统计结果。';
+            ? `导出当前 ${currentYear} 年范围内的统计结果。`
+            : '导出全部年份范围内的统计结果。';
     }
 
     currentBriefingText = buildCompactStatsBriefing(payload);
@@ -395,11 +569,28 @@ function toggleStatsBriefing() {
     const willOpen = panel.hidden;
     panel.hidden = !willOpen;
     button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-    button.textContent = willOpen ? '收起本期关注' : '查看本期关注';
+    button.textContent = willOpen ? '收起本期摘要' : '查看本期摘要';
+}
+
+function toggleUncoveredStations() {
+    const panel = document.getElementById('uncovered-stations-panel');
+    const button = document.getElementById('photo-coverage-toggle');
+    if (!panel || !button || button.hidden) {
+        return;
+    }
+
+    const willOpen = panel.hidden;
+    uncoveredStationsExpanded = willOpen;
+    panel.hidden = !willOpen;
+    button.setAttribute('aria-expanded', uncoveredStationsExpanded ? 'true' : 'false');
+    button.textContent = uncoveredStationsExpanded ? '收起未覆盖站点' : button.dataset.closedLabel || '查看未覆盖站点';
 }
 
 function renderCameraRanking(rows) {
     const tbody = document.getElementById('camera-ranking-body');
+    if (!tbody) {
+        return;
+    }
     if (!rows || rows.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无数据</td></tr>';
         return;
@@ -409,15 +600,81 @@ function renderCameraRanking(rows) {
     tbody.innerHTML = rows.map((row, index) => `
         <tr>
             <td data-label="排名"><span class="rank-badge" style="background:${rankColors[index] || '#5f6368'}">${index + 1}</span></td>
-            <td data-label="摄像头位置">${escapeHtml(row.camera_location || '-')}</td>
-            <td data-label="变电站">${escapeHtml(row.station_name || '-')}</td>
+            <td data-label="摄像头位置">${escapeCell(row.camera_location || '-')}</td>
+            <td data-label="变电站">${escapeCell(row.station_name || '-')}</td>
             <td data-label="故障次数"><span class="fault-count">${row.fault_count || 0}</span></td>
         </tr>
     `).join('');
 }
 
+function renderStationRanking(rows) {
+    const tbody = document.getElementById('station-ranking-body');
+    if (!tbody) {
+        return;
+    }
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    const rankColors = ['#d93025', '#f9ab00', '#1e8e3e', '#1a73e8', '#5f6368'];
+    tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+            <td data-label="排名"><span class="rank-badge" style="background:${rankColors[index] || '#5f6368'}">${index + 1}</span></td>
+            <td data-label="变电站">${escapeCell(row.station_name || '-')}</td>
+            <td data-label="县区">${escapeCell(row.county || '-')}</td>
+            <td data-label="故障次数"><span class="fault-count">${row.fault_count || 0}</span></td>
+            <td data-label="未闭环"><span class="subtle-count">${row.unresolved_count || 0}</span></td>
+        </tr>
+    `).join('');
+}
+
+function renderUncoveredStations(photoCoverage) {
+    const panel = document.getElementById('uncovered-stations-panel');
+    const list = document.getElementById('uncovered-stations-list');
+    const summary = document.getElementById('uncovered-stations-summary');
+    const button = document.getElementById('photo-coverage-toggle');
+    if (!panel || !list || !summary || !button) {
+        return;
+    }
+
+    const uncoveredStations = photoCoverage.uncovered_stations || [];
+    const uncoveredCount = Number(photoCoverage.uncovered_station_count || 0);
+    if (uncoveredCount <= 0 || uncoveredStations.length === 0) {
+        uncoveredStationsExpanded = false;
+        panel.hidden = true;
+        button.hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+        list.innerHTML = '';
+        summary.textContent = '当前范围内暂无待补站点';
+        return;
+    }
+
+    button.hidden = false;
+    button.dataset.closedLabel = `查看未覆盖站点（${uncoveredCount}）`;
+    button.textContent = uncoveredStationsExpanded ? '收起未覆盖站点' : button.dataset.closedLabel;
+    button.setAttribute('aria-expanded', uncoveredStationsExpanded ? 'true' : 'false');
+    panel.hidden = !uncoveredStationsExpanded;
+
+    const visibleCount = uncoveredStations.length;
+    summary.textContent = `当前共有 ${uncoveredCount} 个故障站点还没有匹配照片，这里先列出最需要优先补齐的 ${visibleCount} 个。`;
+    list.innerHTML = uncoveredStations.map((station) => `
+        <div class="stats-followup-item">
+            <div class="stats-followup-item-name">${escapeCell(station.station_name || '-')}</div>
+            <div class="stats-followup-item-meta">${escapeCell(station.county || '未知县区')}</div>
+            <div class="stats-followup-item-stats">
+                <span>故障 ${station.fault_count || 0} 起</span>
+                <span>未闭环 ${station.unresolved_count || 0} 起</span>
+            </div>
+        </div>
+    `).join('');
+}
+
 function populateYearFilter(availableYears) {
     const select = document.getElementById('year-filter');
+    if (!select) {
+        return;
+    }
     select.innerHTML = '<option value="">全部年份</option>';
     (availableYears || []).forEach((year) => {
         const option = document.createElement('option');
@@ -428,11 +685,50 @@ function populateYearFilter(availableYears) {
     select.value = currentYear || '';
 }
 
+function renderBucketChart(canvasId, rows, label, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+        return null;
+    }
+
+    return new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: (rows || []).map((item) => item.label),
+            datasets: [{
+                label,
+                data: (rows || []).map((item) => item.count),
+                backgroundColor: color,
+                borderRadius: 6,
+                maxBarThickness: 46
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+}
+
 function renderCharts(payload) {
     destroyChart(monthlyChart);
     destroyChart(faultTypeChart);
     destroyChart(countyChart);
     destroyChart(voltageChart);
+    destroyChart(responseBucketChart);
+    destroyChart(closeBucketChart);
+
+    responseBucketChart = renderBucketChart('responseBucketChart', payload.response_buckets || [], '故障数量', '#1a73e8');
+    closeBucketChart = renderBucketChart('closeBucketChart', payload.close_buckets || [], '故障数量', '#34a853');
 
     monthlyChart = new Chart(document.getElementById('monthlyChart'), {
         type: 'bar',
@@ -510,19 +806,57 @@ async function loadStats() {
         document.getElementById('total-stations').textContent = payload.stations || 0;
         document.getElementById('total-cameras').textContent = payload.cameras || 0;
         document.getElementById('total-faults').textContent = payload.faults || 0;
-        document.getElementById('fault-rate').textContent = `${(payload.fault_rate || 0).toFixed(2)}%`;
+        document.getElementById('fault-rate').textContent = formatPercent(payload.fault_rate || 0);
 
         const kpi = payload.kpi || {};
+        const photoCoverage = payload.photo_coverage || {};
+
         document.getElementById('open-count').textContent = kpi.open_count || 0;
         document.getElementById('handling-count').textContent = kpi.handling_count || 0;
         document.getElementById('closed-count').textContent = kpi.closed_count || 0;
         document.getElementById('avg-response').textContent = formatDuration(kpi.avg_response_seconds);
         document.getElementById('avg-close').textContent = formatDuration(kpi.avg_close_seconds);
+        document.getElementById('overdue-unresolved-count').textContent = kpi.overdue_unresolved_count || 0;
+        document.getElementById('fault-photo-coverage-rate').textContent = formatPercent(photoCoverage.coverage_ratio || 0);
+        document.getElementById('camera-replacement-count').textContent = kpi.camera_replacement_count || 0;
+
+        const avgResponseNote = document.getElementById('avg-response-note');
+        if (avgResponseNote) {
+            avgResponseNote.textContent = `样本 ${kpi.response_sample_count || 0} 起`;
+        }
+
+        const avgCloseNote = document.getElementById('avg-close-note');
+        if (avgCloseNote) {
+            avgCloseNote.textContent = `样本 ${kpi.close_sample_count || 0} 起`;
+        }
+
+        const overdueNote = document.getElementById('overdue-unresolved-note');
+        if (overdueNote) {
+            overdueNote.textContent = `未闭环中 ${formatPercent(kpi.overdue_unresolved_ratio || 0)} 已超过 ${kpi.overdue_threshold_days || 7} 天`;
+        }
+
+        const coverageNote = document.getElementById('fault-photo-coverage-note');
+        if (coverageNote) {
+            const uncoveredCount = Number(photoCoverage.uncovered_station_count || 0);
+            coverageNote.textContent = uncoveredCount > 0
+                ? `${photoCoverage.covered_station_count || 0} / ${photoCoverage.fault_station_count || 0} 个故障站点已有匹配照片，仍有 ${uncoveredCount} 个待补`
+                : `${photoCoverage.covered_station_count || 0} / ${photoCoverage.fault_station_count || 0} 个故障站点已有匹配照片`;
+        }
+
+        const replacementNote = document.getElementById('camera-replacement-note');
+        if (replacementNote) {
+            const inferredRecords = Number(kpi.camera_replacement_inferred_record_count || 0);
+            replacementNote.textContent = inferredRecords > 0
+                ? `按闭环记录统计，${inferredRecords} 条未填数量按 1 台估算`
+                : '按闭环记录统计';
+        }
 
         populateYearFilter(payload.available_years || []);
         renderStatsBriefing(payload);
         renderCharts(payload);
         renderCameraRanking(payload.camera_ranking || []);
+        renderStationRanking(payload.station_ranking || []);
+        renderUncoveredStations(photoCoverage);
     } catch (error) {
         console.error('加载统计失败:', error);
         showToast('加载统计数据失败，请刷新重试', 'error');
@@ -548,5 +882,6 @@ function exportStats() {
 
 document.addEventListener('DOMContentLoaded', initPage);
 document.getElementById('stats-brief-toggle').addEventListener('click', toggleStatsBriefing);
+document.getElementById('photo-coverage-toggle').addEventListener('click', toggleUncoveredStations);
 </script>
 {% endblock %}

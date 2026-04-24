@@ -6,6 +6,94 @@
 
 {% block extra_head %}
 <style>
+.photo-page-topbar {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.photo-page-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.14);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.photo-page-title {
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.photo-page-text {
+    margin-top: 6px;
+    max-width: 760px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.photo-quick-actions {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.photo-quick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.photo-quick-chip:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: rgba(255, 107, 53, 0.06);
+}
+
+.photo-filter-card {
+    margin-bottom: 18px;
+}
+
+.photo-filter-intro {
+    margin-bottom: 14px;
+}
+
+.photo-filter-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.photo-filter-text {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
 .photo-filter-grid .form-group {
     display: flex;
     align-items: center;
@@ -42,6 +130,112 @@
 .photo-filter-toggle[aria-pressed="true"] {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+}
+
+.photo-result-summary {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid rgba(26, 115, 232, 0.14);
+    border-radius: var(--radius-md);
+    background: rgba(26, 115, 232, 0.05);
+    display: none;
+}
+
+.photo-result-summary.is-visible {
+    display: block;
+}
+
+.photo-result-summary-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.photo-result-summary-text {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.photo-empty-state {
+    display: none;
+}
+
+.photo-empty-state.is-visible {
+    display: block;
+}
+
+.photo-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.photo-empty-text {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.photo-empty-actions {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.photo-unmatched-actions {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.photo-unmatched-tip strong {
+    color: var(--text-primary);
+}
+
+.photo-next-step-card {
+    margin-top: 18px;
+}
+
+.photo-next-step-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.photo-next-step-list {
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+}
+
+.photo-next-step-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.photo-next-step-link {
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.photo-next-step-link:hover {
+    text-decoration: underline;
 }
 
 .photo-preview-stage {
@@ -208,6 +402,10 @@
 }
 
 @media (max-width: 768px) {
+    .photo-page-topbar {
+        align-items: stretch;
+    }
+
     .photo-filter-grid .form-group {
         width: 100%;
     }
@@ -261,12 +459,26 @@
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: flex-end;">
+<div class="photo-page-topbar">
+    <div>
+        <div class="photo-page-kicker">Photo Index</div>
+        <div class="photo-page-title">这页主要用来核对照片索引、优先排查未匹配照片，再决定是否回后台继续清洗或进入站点查看。</div>
+        <div class="photo-page-text">如果你现在在处理导入后的资料归档，优先先看未匹配照片；如果只是想核对某个县区、站点或最近新增照片，再用下面筛选区切入。</div>
+        <div class="photo-quick-actions">
+            <button type="button" class="photo-quick-chip" id="photo-quick-unmatched">先看未匹配照片</button>
+            <button type="button" class="photo-quick-chip" id="photo-quick-fault">先看故障站点照片</button>
+            <button type="button" class="photo-quick-chip" id="photo-quick-reset">恢复全部照片</button>
+        </div>
+    </div>
     <a href="{{ url_for('admin_page') }}" class="btn-secondary" data-project-link>进入管理后台索引</a>
 </div>
 
 <section class="card photo-filter-card">
     <div class="card-body">
+        <div class="photo-filter-intro">
+            <div class="photo-filter-title">推荐先用筛选确认处理范围</div>
+            <div class="photo-filter-text">先按县区、匹配状态或关键词收窄范围；如果当前主要任务是补资料，优先看“未匹配”或“故障站点”。</div>
+        </div>
         <div class="photo-filter-grid">
             <div class="form-group">
                 <label for="filter-county" class="form-label">县区</label>
@@ -305,6 +517,11 @@
     </div>
 </section>
 
+<section id="photo-result-summary" class="photo-result-summary" aria-live="polite">
+    <div class="photo-result-summary-title" id="photo-result-summary-title">当前结果</div>
+    <div class="photo-result-summary-text" id="photo-result-summary-text">正在整理当前筛选结果...</div>
+</section>
+
 <div id="photo-loading" class="loading-state">
     <div class="spinner"></div>
     <span>加载照片索引中...</span>
@@ -316,9 +533,13 @@
     <button class="btn-secondary" onclick="loadPhotoGroups()">重试</button>
 </div>
 
-<div id="photo-empty" class="empty-state" style="display:none;">
-    <p>暂无照片索引数据</p>
-    <p class="text-muted">请到管理后台执行照片索引</p>
+<div id="photo-empty" class="empty-state photo-empty-state" style="display:none;">
+    <div class="photo-empty-title" id="photo-empty-title">暂无照片索引数据</div>
+    <div class="photo-empty-text" id="photo-empty-text">请到管理后台执行照片索引。</div>
+    <div class="photo-empty-actions">
+        <button type="button" class="btn-secondary" id="photo-empty-reset" style="display:none;">清空筛选后重试</button>
+        <a href="{{ url_for('admin_page') }}" class="btn-primary" data-project-link>去管理后台处理</a>
+    </div>
 </div>
 
 <section id="photo-groups" class="photo-groups" style="display:none;"></section>
@@ -326,7 +547,32 @@
 <section id="photo-unmatched" class="card photo-unmatched" style="display:none;">
     <div class="card-body">
         <h3 class="card-title">未匹配照片</h3>
+        <div class="photo-unmatched-tip"><strong id="photo-unmatched-count-text">这里优先处理还没归到站点或资料目录的照片。</strong> 看完后建议直接回管理后台继续手动关联、补别名或执行增量刷新。</div>
+        <div class="photo-unmatched-actions">
+            <a href="{{ url_for('admin_page') }}#photo-cleanup-section" class="btn-primary" data-project-link>去后台处理未匹配</a>
+            <a href="{{ url_for('admin_page') }}" class="btn-secondary" data-project-link>回后台看索引状态</a>
+        </div>
         <div id="photo-unmatched-grid" class="photo-grid"></div>
+    </div>
+</section>
+
+<section class="card photo-next-step-card">
+    <div class="card-body">
+        <div class="photo-next-step-title">看完这页后，下一步一般去哪</div>
+        <div class="photo-next-step-list">
+            <div class="photo-next-step-item">
+                <span>发现有未匹配照片，优先回管理后台继续做手动关联和索引清洗。</span>
+                <a href="{{ url_for('admin_page') }}" class="photo-next-step-link" data-project-link>去后台处理</a>
+            </div>
+            <div class="photo-next-step-item">
+                <span>想继续判断某个站点的故障和现场情况，再去站点页查看关联信息。</span>
+                <a href="{{ url_for('stations') }}" class="photo-next-step-link" data-project-link>去站点页</a>
+            </div>
+            <div class="photo-next-step-item">
+                <span>如果照片已经定位到故障现场，下一步就进入故障报修或处理列表继续推进。</span>
+                <a href="{{ url_for('faults') }}" class="photo-next-step-link" data-project-link>去故障列表</a>
+            </div>
+        </div>
     </div>
 </section>
 

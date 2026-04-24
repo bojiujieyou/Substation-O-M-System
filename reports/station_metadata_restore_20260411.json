@@ -1,0 +1,1255 @@
+{
+  "updated_count": 60,
+  "name_or_voltage_changes": 7,
+  "county_changes": 56,
+  "changes": [
+    {
+      "id": 1,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV云和变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV云和变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      },
+      "backup": {
+        "id": 19,
+        "name": "110kV云和变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      }
+    },
+    {
+      "id": 2,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV杨柳变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV杨柳变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      },
+      "backup": {
+        "id": 20,
+        "name": "110kV杨柳变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      }
+    },
+    {
+      "id": 3,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV椤林变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV椤林变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 83,
+        "name": "110kV椤林变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 4,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV白龙变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV白龙变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      },
+      "backup": {
+        "id": 21,
+        "name": "110kV白龙变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      }
+    },
+    {
+      "id": 5,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV屏都变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV屏都变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      },
+      "backup": {
+        "id": 23,
+        "name": "110kV屏都变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      }
+    },
+    {
+      "id": 6,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV庆元变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV庆元变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      },
+      "backup": {
+        "id": 24,
+        "name": "110kV庆元变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      }
+    },
+    {
+      "id": 7,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV荷地变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV荷地变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      },
+      "backup": {
+        "id": 26,
+        "name": "110kV荷地变",
+        "voltage_level": "110kV",
+        "county": "庆元"
+      }
+    },
+    {
+      "id": 8,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV龙山变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV龙山变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 70,
+        "name": "110kV龙山变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 9,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV景宁变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV景宁变",
+        "voltage_level": "110kV",
+        "county": "景宁"
+      },
+      "backup": {
+        "id": 27,
+        "name": "110kV景宁变",
+        "voltage_level": "110kV",
+        "county": "景宁"
+      }
+    },
+    {
+      "id": 10,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV沙湾变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV沙湾变",
+        "voltage_level": "110kV",
+        "county": "景宁"
+      },
+      "backup": {
+        "id": 28,
+        "name": "110kV沙湾变",
+        "voltage_level": "110kV",
+        "county": "景宁"
+      }
+    },
+    {
+      "id": 12,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV古市变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV古市变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 30,
+        "name": "110kV古市变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 13,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV叶水变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV叶水变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 31,
+        "name": "35kV叶水变",
+        "voltage_level": "35kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 14,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV延庆变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV延庆变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 32,
+        "name": "110kV延庆变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 15,
+      "match_method": "base_unique",
+      "current": {
+        "name": "110kV楼塘变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV楼塘变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 142,
+        "name": "110kV楼塘变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 16,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV西屏变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV西屏变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 34,
+        "name": "110kV西屏变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 17,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV黄南变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV黄南变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 35,
+        "name": "110kV黄南变",
+        "voltage_level": "110kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 18,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV东山变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV东山变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 36,
+        "name": "110kV东山变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 20,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV壶镇变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV壶镇变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 38,
+        "name": "110kV壶镇变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 23,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV缙云变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV缙云变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 41,
+        "name": "110kV缙云变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 25,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV里隆变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV里隆变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 42,
+        "name": "110kV里隆变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 27,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV问渔变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV问渔变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 43,
+        "name": "110kV问渔变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 28,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV雁门变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV雁门变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 44,
+        "name": "110kV雁门变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 29,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV黄龙变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV黄龙变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 45,
+        "name": "110kV黄龙变",
+        "voltage_level": "110kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 39,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV古院变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV古院变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 47,
+        "name": "110kV古院变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 40,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV桃园变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV桃园变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 48,
+        "name": "110kV桃园变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 41,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV洋浩变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV洋浩变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 49,
+        "name": "110kV洋浩变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 42,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV焦滩变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV焦滩变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 50,
+        "name": "110kV焦滩变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 43,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV石练变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV石练变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 51,
+        "name": "110kV石练变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 44,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV金溪变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV金溪变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 53,
+        "name": "110kV金溪变",
+        "voltage_level": "110kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 45,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV东源变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV东源变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 54,
+        "name": "110kV东源变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 46,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV侨乡变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV侨乡变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 55,
+        "name": "110kV侨乡变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 47,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV油竹变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV油竹变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 56,
+        "name": "110kV油竹变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 48,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV温溪变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV温溪变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 58,
+        "name": "110kV温溪变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 49,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV港头变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV港头变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 59,
+        "name": "110kV港头变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 50,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV石郭变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV石郭变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 60,
+        "name": "110kV石郭变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 51,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV秋桐变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV秋桐变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 61,
+        "name": "110kV秋桐变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 52,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV高湖变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV高湖变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 63,
+        "name": "110kV高湖变",
+        "voltage_level": "110kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 53,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV安仁变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV安仁变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 64,
+        "name": "110kV安仁变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 54,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV官桥变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV官桥变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 66,
+        "name": "110kV官桥变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 55,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV牛门变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV牛门变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 67,
+        "name": "110kV牛门变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 56,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV芳野变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV芳野变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 68,
+        "name": "110kV芳野变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 57,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV龙泉变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV龙泉变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 71,
+        "name": "110kV龙泉变",
+        "voltage_level": "110kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 59,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV仙都变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV仙都变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 37,
+        "name": "220kV仙都变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 60,
+      "match_method": "coord",
+      "current": {
+        "name": "10kV四都变",
+        "voltage_level": "10kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV四都变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "backup": {
+        "id": 3,
+        "name": "110kV四都变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      }
+    },
+    {
+      "id": 61,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV好溪变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV好溪变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 39,
+        "name": "220kV好溪变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 62,
+      "match_method": "coord",
+      "current": {
+        "name": "10kV张村变",
+        "voltage_level": "10kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV张村变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "backup": {
+        "id": 6,
+        "name": "110kV张村变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      }
+    },
+    {
+      "id": 63,
+      "match_method": "base_unique",
+      "current": {
+        "name": "10kV彩虹变",
+        "voltage_level": "10kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV彩虹变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "backup": {
+        "id": 146,
+        "name": "110kV彩虹变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      }
+    },
+    {
+      "id": 67,
+      "match_method": "coord",
+      "current": {
+        "name": "35kV河阳变",
+        "voltage_level": "35kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV河阳变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      },
+      "backup": {
+        "id": 40,
+        "name": "220kV河阳变",
+        "voltage_level": "220kV",
+        "county": "缙云"
+      }
+    },
+    {
+      "id": 68,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV海口变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV海口变",
+        "voltage_level": "220kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 57,
+        "name": "220kV海口变",
+        "voltage_level": "220kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 70,
+      "match_method": "coord",
+      "current": {
+        "name": "10kV陶庄变",
+        "voltage_level": "10kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "110kV陶庄变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "backup": {
+        "id": 16,
+        "name": "110kV陶庄变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      }
+    },
+    {
+      "id": 71,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV青田变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV青田变",
+        "voltage_level": "220kV",
+        "county": "青田"
+      },
+      "backup": {
+        "id": 62,
+        "name": "220kV青田变",
+        "voltage_level": "220kV",
+        "county": "青田"
+      }
+    },
+    {
+      "id": 73,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV仙宫变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV仙宫变",
+        "voltage_level": "220kV",
+        "county": "云和"
+      },
+      "backup": {
+        "id": 73,
+        "name": "110kV仙宫变",
+        "voltage_level": "110kV",
+        "county": "云和"
+      }
+    },
+    {
+      "id": 74,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV宏山变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV宏山变",
+        "voltage_level": "220kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 65,
+        "name": "220kV宏山变",
+        "voltage_level": "220kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 75,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV濛洲变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV濛洲变",
+        "voltage_level": "220kV",
+        "county": "庆元"
+      },
+      "backup": {
+        "id": 25,
+        "name": "220kV濛洲变",
+        "voltage_level": "220kV",
+        "county": "庆元"
+      }
+    },
+    {
+      "id": 76,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV睦田变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV睦田变",
+        "voltage_level": "220kV",
+        "county": "云和"
+      },
+      "backup": {
+        "id": 22,
+        "name": "220kV睦田变",
+        "voltage_level": "220kV",
+        "county": "云和"
+      }
+    },
+    {
+      "id": 77,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV鹤溪变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV鹤溪变",
+        "voltage_level": "220kV",
+        "county": "景宁"
+      },
+      "backup": {
+        "id": 29,
+        "name": "220kV鹤溪变",
+        "voltage_level": "220kV",
+        "county": "景宁"
+      }
+    },
+    {
+      "id": 78,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV龙南变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV龙南变",
+        "voltage_level": "220kV",
+        "county": "龙泉"
+      },
+      "backup": {
+        "id": 69,
+        "name": "220kV龙南变",
+        "voltage_level": "220kV",
+        "county": "龙泉"
+      }
+    },
+    {
+      "id": 79,
+      "match_method": "coord",
+      "current": {
+        "name": "110kV松阳变",
+        "voltage_level": "110kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV松阳变",
+        "voltage_level": "220kV",
+        "county": "松阳"
+      },
+      "backup": {
+        "id": 33,
+        "name": "220kV松阳变",
+        "voltage_level": "220kV",
+        "county": "松阳"
+      }
+    },
+    {
+      "id": 80,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV汤公变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV汤公变",
+        "voltage_level": "220kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 84,
+        "name": "220kV汤公变",
+        "voltage_level": "220kV",
+        "county": "遂昌"
+      }
+    },
+    {
+      "id": 81,
+      "match_method": "coord",
+      "current": {
+        "name": "220kV遂昌变",
+        "voltage_level": "220kV",
+        "county": "丽水"
+      },
+      "desired": {
+        "name": "220kV遂昌变",
+        "voltage_level": "220kV",
+        "county": "遂昌"
+      },
+      "backup": {
+        "id": 52,
+        "name": "220kV遂昌变",
+        "voltage_level": "220kV",
+        "county": "遂昌"
+      }
+    }
+  ],
+  "county_distribution_after": [
+    {
+      "county": "丽水",
+      "cnt": 24
+    },
+    {
+      "county": "缙云",
+      "cnt": 10
+    },
+    {
+      "county": "遂昌",
+      "cnt": 10
+    },
+    {
+      "county": "青田",
+      "cnt": 10
+    },
+    {
+      "county": "龙泉",
+      "cnt": 8
+    },
+    {
+      "county": "松阳",
+      "cnt": 7
+    },
+    {
+      "county": "云和",
+      "cnt": 5
+    },
+    {
+      "county": "庆元",
+      "cnt": 4
+    },
+    {
+      "county": "景宁",
+      "cnt": 3
+    }
+  ],
+  "voltage_distribution_after": [
+    {
+      "voltage_level": "110kV",
+      "cnt": 64
+    },
+    {
+      "voltage_level": "220kV",
+      "cnt": 17
+    }
+  ]
+}

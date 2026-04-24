@@ -1,0 +1,43 @@
+{
+  "applied_at": "2026-04-15T15:04:45",
+  "applied": [
+    {
+      "fault_id": 151,
+      "before": {
+        "station_name": "110kV港头变",
+        "camera_id": null,
+        "camera_slot_id": null,
+        "camera_location_text": "110kV场地",
+        "project_device_code": ""
+      },
+      "after": {
+        "station_name": "110kV港头变",
+        "camera_id": 977,
+        "camera_slot_id": 977,
+        "camera_location_text": "110kV?????-4#??",
+        "project_device_code": "4",
+        "slot_location_desc": "110kV场地西南侧-4#球机"
+      }
+    },
+    {
+      "fault_id": 164,
+      "before": {
+        "station_name": "220kV仙都变",
+        "camera_id": null,
+        "camera_slot_id": null,
+        "camera_location_text": "35kV??????",
+        "project_device_code": ""
+      },
+      "after": {
+        "station_name": "220kV仙都变",
+        "camera_id": 1168,
+        "camera_slot_id": 1168,
+        "camera_location_text": "35kV??????1-28#?",
+        "project_device_code": "24",
+        "slot_location_desc": "35kV开关室西南侧1-28#球"
+      }
+    }
+  ],
+  "resolved_target_count": 2,
+  "remaining_unbound_import_worklog_faults": 185
+}

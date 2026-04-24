@@ -19,9 +19,19 @@ APP_SCRIPT = APP_DIR / "app.py"
 ENV_FILE = APP_DIR / ".env"
 STDOUT_LOG = APP_DIR / "flask.log"
 STDERR_LOG = APP_DIR / "flask.err.log"
+APP_ICON = APP_DIR / "station-monitor.ico"
 HOST = "127.0.0.1"
 PORT = 5000
 APP_URL = f"http://{HOST}:{PORT}"
+
+
+def apply_window_icon(window) -> None:
+    if not APP_ICON.exists():
+        return
+    try:
+        window.iconbitmap(default=str(APP_ICON))
+    except Exception:
+        pass
 
 
 def load_env_file() -> dict[str, str]:
@@ -143,6 +153,7 @@ class LogViewer(Toplevel):
         self.geometry("860x560")
         self.configure(bg="#f3f6fb")
         self.log_path = log_path
+        apply_window_icon(self)
 
         container = ttk.Frame(self, style="Panel.TFrame", padding=16)
         container.pack(fill=BOTH, expand=True)
@@ -183,6 +194,7 @@ class StationMonitorControlPanel:
         self.root.geometry("960x640")
         self.root.minsize(900, 600)
         self.root.configure(bg="#eef3fb")
+        apply_window_icon(self.root)
 
         self.status_var = StringVar(value="正在检查服务状态...")
         self.pid_var = StringVar(value="-")

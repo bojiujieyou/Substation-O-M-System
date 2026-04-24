@@ -1,0 +1,30 @@
+{
+  "source": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "backup": "E:\\项目\\变电站图像监控运维平台\\backups\\station_monitor.pre_postgres_migration_20260412_172611.db",
+  "target": "postgresql://station_monitor:Txjk%401234@127.0.0.1:5432/station_monitor",
+  "reset_target": true,
+  "tables": {
+    "notification_dispatch_logs": 0,
+    "projects": 3,
+    "schema_migrations": 1,
+    "stations": 81,
+    "users": 1,
+    "import_batches": 3,
+    "project_fault_type_versions": 6,
+    "project_notification_policies": 0,
+    "user_project_scopes": 0,
+    "camera_slots": 1892,
+    "photos": 414,
+    "station_aliases": 0,
+    "station_external_names": 105,
+    "station_recorders": 912,
+    "fault_import_review_queue": 30,
+    "station_name_mapping_proposals": 23,
+    "project_fault_types": 63,
+    "project_notification_configs": 0,
+    "cameras": 1892,
+    "fault_reports": 420
+  },
+  "index_count": 11,
+  "finished_at": "2026-04-12T17:26:12"
+}

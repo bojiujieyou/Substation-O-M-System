@@ -1,0 +1,260 @@
+{
+  "source_csv": "reports\\suspected_camera_replacements_review_20260414.csv",
+  "applied_at": "2026-04-14T22:28:04",
+  "project": "unified",
+  "candidate_update_count": 166,
+  "candidate_quantity_sum": 189,
+  "applied_update_count": 165,
+  "unchanged_count": 1,
+  "missing_count": 0,
+  "updated_rows_sample": [
+    {
+      "fault_id": 412,
+      "station_name": "220kV枫树变",
+      "before_equipment_type": "摄像机",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 410,
+      "station_name": "110kV云和变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 409,
+      "station_name": "110kV雁门变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 407,
+      "station_name": "110kV延庆变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 406,
+      "station_name": "110kV黄南变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 405,
+      "station_name": "110kV侨乡变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 401,
+      "station_name": "220kV仙宫变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 400,
+      "station_name": "110kV缙云变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 399,
+      "station_name": "220kV枫树变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 398,
+      "station_name": "220kV仙都变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 396,
+      "station_name": "110kV碧湖变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 2
+    },
+    {
+      "fault_id": 395,
+      "station_name": "110kV侨乡变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 393,
+      "station_name": "110kV高湖变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 392,
+      "station_name": "110kV白龙变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 2
+    },
+    {
+      "fault_id": 391,
+      "station_name": "110kV洋浩变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 2
+    },
+    {
+      "fault_id": 390,
+      "station_name": "110kV石练变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 387,
+      "station_name": "110kV寿元变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 386,
+      "station_name": "110kV东源变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 385,
+      "station_name": "110kV里隆变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 384,
+      "station_name": "220kV仙都变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 381,
+      "station_name": "110kV焦滩变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 379,
+      "station_name": "220kV宏山变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 373,
+      "station_name": "110kV东山变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 372,
+      "station_name": "220kV宏山变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 369,
+      "station_name": "110kV水阁变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 367,
+      "station_name": "110kV焦滩变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 364,
+      "station_name": "220kV鹤溪变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 363,
+      "station_name": "110kV洋浩变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 362,
+      "station_name": "110kV焦滩变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    },
+    {
+      "fault_id": 360,
+      "station_name": "110kV滨江变",
+      "before_equipment_type": "",
+      "before_equipment_quantity": 0,
+      "after_equipment_type": "摄像机",
+      "after_equipment_quantity": 1
+    }
+  ],
+  "unchanged_ids_sample": [
+    413
+  ],
+  "missing_ids": [],
+  "post_stats": {
+    "camera_replacement_record_count": 0,
+    "camera_replacement_count": 0
+  }
+}

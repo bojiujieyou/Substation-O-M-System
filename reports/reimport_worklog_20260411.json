@@ -1,0 +1,3582 @@
+{
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "source": "C:\\Users\\Administrator\\Desktop\\新建文件夹\\工作记录.xlsx",
+  "source_type": "import_worklog",
+  "mode": "best-effort",
+  "dry_run": false,
+  "fail_on": [],
+  "timezone_default": "Asia/Shanghai",
+  "aborted": false,
+  "inserted": 410,
+  "duplicates_skipped": 7,
+  "queue_items_created": 30,
+  "station_proposals_created": 30,
+  "rows_skipped": 4,
+  "fail_count": 30,
+  "errors": [],
+  "rows": [
+    {
+      "row_index": 7,
+      "sequence": 5,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66
+    },
+    {
+      "row_index": 8,
+      "sequence": 6,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32
+    },
+    {
+      "row_index": 10,
+      "sequence": 8,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 11,
+      "sequence": 9,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 13,
+      "sequence": 11,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66
+    },
+    {
+      "row_index": 13,
+      "sequence": 11,
+      "station_token": "龙石变",
+      "action": "insert",
+      "station_id": 72
+    },
+    {
+      "row_index": 14,
+      "sequence": 12,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 15,
+      "sequence": 13,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 16,
+      "sequence": 14,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 17,
+      "sequence": 15,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 18,
+      "sequence": 16,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49
+    },
+    {
+      "row_index": 19,
+      "sequence": 17,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45
+    },
+    {
+      "row_index": 20,
+      "sequence": 18,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9
+    },
+    {
+      "row_index": 21,
+      "sequence": 19,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 22,
+      "sequence": 20,
+      "station_token": "岩泉变",
+      "action": "insert",
+      "station_id": 31
+    },
+    {
+      "row_index": 23,
+      "sequence": 21,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 24,
+      "sequence": 22,
+      "station_token": "庆元变",
+      "action": "insert",
+      "station_id": 6
+    },
+    {
+      "row_index": 25,
+      "sequence": 23,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32
+    },
+    {
+      "row_index": 26,
+      "sequence": 24,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 27,
+      "sequence": 25,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1
+    },
+    {
+      "row_index": 28,
+      "sequence": 26,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 29,
+      "sequence": 27,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 30,
+      "sequence": 28,
+      "station_token": "龙石变",
+      "action": "insert",
+      "station_id": 72
+    },
+    {
+      "row_index": 31,
+      "sequence": 29,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32
+    },
+    {
+      "row_index": 35,
+      "sequence": 33,
+      "station_token": "四都变",
+      "action": "insert",
+      "station_id": 60
+    },
+    {
+      "row_index": 36,
+      "sequence": 34,
+      "station_token": "岩泉变",
+      "action": "insert",
+      "station_id": 31
+    },
+    {
+      "row_index": 37,
+      "sequence": 35,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49,
+      "camera_location_text": "更换大门"
+    },
+    {
+      "row_index": 38,
+      "sequence": 36,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45,
+      "camera_location_text": "1#主变南侧"
+    },
+    {
+      "row_index": 39,
+      "sequence": 37,
+      "station_token": "丽水变",
+      "action": "insert",
+      "station_id": 58
+    },
+    {
+      "row_index": 40,
+      "sequence": 38,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "35kV开关室"
+    },
+    {
+      "row_index": 41,
+      "sequence": 39,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_location_text": "更换电容器室南侧"
+    },
+    {
+      "row_index": 43,
+      "sequence": 41,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 45,
+      "sequence": 43,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 52,
+      "sequence": 50,
+      "station_token": "庆元变",
+      "action": "insert",
+      "station_id": 6
+    },
+    {
+      "row_index": 53,
+      "sequence": 51,
+      "station_token": "荷地变",
+      "action": "insert",
+      "station_id": 7
+    },
+    {
+      "row_index": 54,
+      "sequence": 52,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_slot_id": 14,
+      "camera_id": 14,
+      "camera_location_text": "电容器室南侧-14#球机"
+    },
+    {
+      "row_index": 55,
+      "sequence": 53,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 60,
+      "sequence": 58,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 61,
+      "sequence": 59,
+      "station_token": "石练变",
+      "action": "insert",
+      "station_id": 43
+    },
+    {
+      "row_index": 63,
+      "sequence": 1,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_location_text": "就地继保室南侧"
+    },
+    {
+      "row_index": 64,
+      "sequence": 2,
+      "station_token": "四都变",
+      "action": "insert",
+      "station_id": 60
+    },
+    {
+      "row_index": 65,
+      "sequence": 3,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 66,
+      "sequence": 4,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81,
+      "camera_slot_id": 1892,
+      "camera_id": 1892,
+      "camera_location_text": "35kV开关室南侧-19#球机"
+    },
+    {
+      "row_index": 67,
+      "sequence": 5,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 68,
+      "sequence": 6,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 69,
+      "sequence": 7,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75
+    },
+    {
+      "row_index": 70,
+      "sequence": 8,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 71,
+      "sequence": 9,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56,
+      "camera_location_text": "#2主变东南侧"
+    },
+    {
+      "row_index": 72,
+      "sequence": 10,
+      "station_token": "安仁变",
+      "action": "insert",
+      "station_id": 53,
+      "camera_slot_id": 1041,
+      "camera_id": 1041,
+      "camera_location_text": "110kV场地西侧-1#球机"
+    },
+    {
+      "row_index": 73,
+      "sequence": 11,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2,
+      "camera_location_text": "#3主变东北侧"
+    },
+    {
+      "row_index": 74,
+      "sequence": 12,
+      "station_token": "高湖变",
+      "action": "insert",
+      "station_id": 52
+    },
+    {
+      "row_index": 75,
+      "sequence": 13,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71
+    },
+    {
+      "row_index": 76,
+      "sequence": 14,
+      "station_token": "温溪变",
+      "action": "insert",
+      "station_id": 48
+    },
+    {
+      "row_index": 77,
+      "sequence": 15,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23,
+      "camera_location_text": "#1主变北侧"
+    },
+    {
+      "row_index": 78,
+      "sequence": 16,
+      "station_token": "问渔变",
+      "action": "insert",
+      "station_id": 27,
+      "camera_location_text": "#1主变南侧"
+    },
+    {
+      "row_index": 79,
+      "sequence": 17,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25
+    },
+    {
+      "row_index": 80,
+      "sequence": 18,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62
+    },
+    {
+      "row_index": 81,
+      "sequence": 19,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "110kV场地东侧"
+    },
+    {
+      "row_index": 82,
+      "sequence": 20,
+      "station_token": "白云变",
+      "action": "insert",
+      "station_id": 34,
+      "camera_location_text": "2#主变南侧"
+    },
+    {
+      "row_index": 83,
+      "sequence": 21,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 84,
+      "sequence": 22,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32
+    },
+    {
+      "row_index": 85,
+      "sequence": 23,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_slot_id": 1687,
+      "camera_id": 1687,
+      "camera_location_text": "110kV场地北侧-1#球机"
+    },
+    {
+      "row_index": 86,
+      "sequence": 24,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9,
+      "camera_slot_id": 184,
+      "camera_id": 184,
+      "camera_location_text": "电容器室东侧-12#球机"
+    },
+    {
+      "row_index": 87,
+      "sequence": 25,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40,
+      "camera_slot_id": 851,
+      "camera_id": 851,
+      "camera_location_text": "1#主变西南侧-1#球机"
+    },
+    {
+      "row_index": 88,
+      "sequence": 26,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 271,
+      "camera_id": 271,
+      "camera_location_text": "110kV场地东北侧-1#球机"
+    },
+    {
+      "row_index": 89,
+      "sequence": 27,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 90,
+      "sequence": 28,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "蓄电池室"
+    },
+    {
+      "row_index": 91,
+      "sequence": 29,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_location_text": "蓄电池室东北侧"
+    },
+    {
+      "row_index": 92,
+      "sequence": 30,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75
+    },
+    {
+      "row_index": 93,
+      "sequence": 31,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "35kV开关室"
+    },
+    {
+      "row_index": 94,
+      "sequence": 32,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2
+    },
+    {
+      "row_index": 95,
+      "sequence": 33,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56,
+      "camera_location_text": "蓄电池室"
+    },
+    {
+      "row_index": 96,
+      "sequence": 34,
+      "station_token": "龙山变",
+      "action": "insert",
+      "station_id": 8
+    },
+    {
+      "row_index": 98,
+      "sequence": 36,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "220kV场地西侧"
+    },
+    {
+      "row_index": 99,
+      "sequence": 37,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2,
+      "camera_location_text": "#3主变东北侧"
+    },
+    {
+      "row_index": 100,
+      "sequence": 38,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_location_text": "#1主变东北侧"
+    },
+    {
+      "row_index": 101,
+      "sequence": 39,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_location_text": "1#主变东侧"
+    },
+    {
+      "row_index": 102,
+      "sequence": 40,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56,
+      "camera_location_text": "#2主变东南侧"
+    },
+    {
+      "row_index": 103,
+      "sequence": 41,
+      "station_token": "安仁变",
+      "action": "insert",
+      "station_id": 53,
+      "camera_location_text": "110kV场地西侧"
+    },
+    {
+      "row_index": 104,
+      "sequence": 42,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 685,
+      "camera_id": 685,
+      "camera_location_text": "主控室西侧-12#球机"
+    },
+    {
+      "row_index": 105,
+      "sequence": 43,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62,
+      "camera_slot_id": 1247,
+      "camera_id": 1247,
+      "camera_location_text": "1#主变东南侧-3#球机"
+    },
+    {
+      "row_index": 106,
+      "sequence": 44,
+      "station_token": "沙湾变",
+      "action": "insert",
+      "station_id": 10
+    },
+    {
+      "row_index": 107,
+      "sequence": 45,
+      "station_token": "陶庄变",
+      "action": "insert",
+      "station_id": 70
+    },
+    {
+      "row_index": 108,
+      "sequence": 46,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33
+    },
+    {
+      "row_index": 109,
+      "sequence": 47,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 110,
+      "sequence": 48,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71
+    },
+    {
+      "row_index": 111,
+      "sequence": 49,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 113,
+      "sequence": 51,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 114,
+      "sequence": 52,
+      "station_token": "百果变",
+      "action": "insert",
+      "station_id": 35
+    },
+    {
+      "row_index": 115,
+      "sequence": 53,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20
+    },
+    {
+      "row_index": 116,
+      "sequence": 54,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25
+    },
+    {
+      "row_index": 117,
+      "sequence": 55,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28
+    },
+    {
+      "row_index": 118,
+      "sequence": 56,
+      "station_token": "东山变",
+      "action": "insert",
+      "station_id": 18
+    },
+    {
+      "row_index": 119,
+      "sequence": 57,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 120,
+      "sequence": 58,
+      "station_token": "黄龙变",
+      "action": "insert",
+      "station_id": 29
+    },
+    {
+      "row_index": 121,
+      "sequence": 59,
+      "station_token": "问渔变",
+      "action": "insert",
+      "station_id": 27
+    },
+    {
+      "row_index": 122,
+      "sequence": 60,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 123,
+      "sequence": 61,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45
+    },
+    {
+      "row_index": 124,
+      "sequence": 62,
+      "station_token": "油竹变",
+      "action": "insert",
+      "station_id": 47
+    },
+    {
+      "row_index": 125,
+      "sequence": 63,
+      "station_token": "高湖变",
+      "action": "insert",
+      "station_id": 52
+    },
+    {
+      "row_index": 126,
+      "sequence": 64,
+      "station_token": "侨乡变",
+      "action": "insert",
+      "station_id": 46
+    },
+    {
+      "row_index": 127,
+      "sequence": 65,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 128,
+      "sequence": 66,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 129,
+      "sequence": 67,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77
+    },
+    {
+      "row_index": 130,
+      "sequence": 68,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 131,
+      "sequence": 69,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 132,
+      "sequence": 70,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75
+    },
+    {
+      "row_index": 133,
+      "sequence": 71,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 134,
+      "sequence": 72,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 135,
+      "sequence": 73,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32
+    },
+    {
+      "row_index": 136,
+      "sequence": 74,
+      "station_token": "丽水变",
+      "action": "insert",
+      "station_id": 58
+    },
+    {
+      "row_index": 137,
+      "sequence": 75,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 138,
+      "sequence": 76,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 139,
+      "sequence": 77,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2,
+      "camera_slot_id": 17,
+      "camera_id": 17,
+      "camera_location_text": "电容器场地南侧-3#球机"
+    },
+    {
+      "row_index": 140,
+      "sequence": 78,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1684,
+      "camera_id": 1684,
+      "camera_location_text": "35kV开关室西侧-28#球机"
+    },
+    {
+      "row_index": 141,
+      "sequence": 79,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_location_text": "2#主变西南侧"
+    },
+    {
+      "row_index": 142,
+      "sequence": 80,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9,
+      "camera_slot_id": 185,
+      "camera_id": 185,
+      "camera_location_text": "电容器室西侧-13#球机"
+    },
+    {
+      "row_index": 143,
+      "sequence": 81,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40
+    },
+    {
+      "row_index": 144,
+      "sequence": 82,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 145,
+      "sequence": 83,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_location_text": "主控室北侧"
+    },
+    {
+      "row_index": 146,
+      "sequence": 84,
+      "station_token": "古市变",
+      "action": "insert",
+      "station_id": 12,
+      "camera_slot_id": 238,
+      "camera_id": 238,
+      "camera_location_text": "电容器室-12#球机"
+    },
+    {
+      "row_index": 147,
+      "sequence": 85,
+      "station_token": "油竹变",
+      "action": "insert",
+      "station_id": 47,
+      "camera_location_text": "35kV开关室北侧"
+    },
+    {
+      "row_index": 148,
+      "sequence": 86,
+      "station_token": "高湖变",
+      "action": "insert",
+      "station_id": 52,
+      "camera_slot_id": 1030,
+      "camera_id": 1030,
+      "camera_location_text": "1#主变西侧-3#球机"
+    },
+    {
+      "row_index": 149,
+      "sequence": 87,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45,
+      "camera_location_text": "主控室南侧"
+    },
+    {
+      "row_index": 150,
+      "sequence": 88,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28,
+      "camera_location_text": "10kV开关室西南侧"
+    },
+    {
+      "row_index": 151,
+      "sequence": 89,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 152,
+      "sequence": 90,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56,
+      "camera_location_text": "10kV开关室东侧"
+    },
+    {
+      "row_index": 153,
+      "sequence": 91,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1669,
+      "camera_id": 1669,
+      "camera_location_text": "35kV开关室外墙北侧-13#球机"
+    },
+    {
+      "row_index": 154,
+      "sequence": 92,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_slot_id": 1421,
+      "camera_id": 1421,
+      "camera_location_text": "35kV开关室北侧-22球机"
+    },
+    {
+      "row_index": 155,
+      "sequence": 93,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_location_text": "35kV场地西北侧"
+    },
+    {
+      "row_index": 156,
+      "sequence": 94,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33
+    },
+    {
+      "row_index": 157,
+      "sequence": 95,
+      "station_token": "白云变",
+      "action": "insert",
+      "station_id": 34,
+      "camera_location_text": "10kV开关室东南侧"
+    },
+    {
+      "row_index": 158,
+      "sequence": 96,
+      "station_token": "高溪变",
+      "action": "insert",
+      "station_id": 37,
+      "camera_location_text": "110kVGIS室西侧"
+    },
+    {
+      "row_index": 159,
+      "sequence": 97,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32,
+      "camera_location_text": "110kVGIS室西北侧"
+    },
+    {
+      "row_index": 160,
+      "sequence": 98,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 161,
+      "sequence": 99,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_slot_id": 1428,
+      "camera_id": 1428,
+      "camera_location_text": "110kV场地东侧-球机(补强)"
+    },
+    {
+      "row_index": 162,
+      "sequence": 100,
+      "station_token": "东山变",
+      "action": "insert",
+      "station_id": 18,
+      "camera_location_text": "10kV开关室北侧"
+    },
+    {
+      "row_index": 163,
+      "sequence": 101,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 164,
+      "sequence": 102,
+      "station_token": "问渔变",
+      "action": "insert",
+      "station_id": 27
+    },
+    {
+      "row_index": 165,
+      "sequence": 103,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_location_text": "3#主变东北侧"
+    },
+    {
+      "row_index": 166,
+      "sequence": 104,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2,
+      "camera_location_text": "110kV场地南侧"
+    },
+    {
+      "row_index": 167,
+      "sequence": 105,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_location_text": "110kV场地西侧"
+    },
+    {
+      "row_index": 168,
+      "sequence": 106,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68,
+      "camera_location_text": "110kV场地西南侧"
+    },
+    {
+      "row_index": 169,
+      "sequence": 107,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 170,
+      "sequence": 108,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_location_text": "35kV开关室北侧"
+    },
+    {
+      "row_index": 171,
+      "sequence": 109,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "2#通信机房西北侧"
+    },
+    {
+      "row_index": 172,
+      "sequence": 110,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 173,
+      "sequence": 111,
+      "station_token": "温溪变",
+      "action": "insert",
+      "station_id": 48
+    },
+    {
+      "row_index": 174,
+      "sequence": 112,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33
+    },
+    {
+      "row_index": 175,
+      "sequence": 113,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_location_text": "主控室西南侧"
+    },
+    {
+      "row_index": 176,
+      "sequence": 114,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49,
+      "camera_location_text": "110kV场地"
+    },
+    {
+      "row_index": 177,
+      "sequence": 115,
+      "station_token": "沙湾变",
+      "action": "insert",
+      "station_id": 10
+    },
+    {
+      "row_index": 178,
+      "sequence": 116,
+      "station_token": "新兴变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 179,
+      "sequence": 117,
+      "station_token": "若寮变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 180,
+      "sequence": 118,
+      "station_token": "叶村变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 181,
+      "sequence": 119,
+      "station_token": "大东坝变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 182,
+      "sequence": 120,
+      "station_token": "玉岩变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 183,
+      "sequence": 121,
+      "station_token": "赤寿变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 184,
+      "sequence": 122,
+      "station_token": "象溪变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 185,
+      "sequence": 123,
+      "station_token": "城关变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 186,
+      "sequence": 124,
+      "station_token": "靖居变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 187,
+      "sequence": 125,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "220kV场地东侧"
+    },
+    {
+      "row_index": 188,
+      "sequence": 126,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_location_text": "2#主变西侧"
+    },
+    {
+      "row_index": 189,
+      "sequence": 127,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 190,
+      "sequence": 128,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "110kV场地西南侧"
+    },
+    {
+      "row_index": 191,
+      "sequence": 129,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28,
+      "camera_location_text": "主控室西南侧"
+    },
+    {
+      "row_index": 192,
+      "sequence": 130,
+      "station_token": "问渔变",
+      "action": "insert",
+      "station_id": 27
+    },
+    {
+      "row_index": 193,
+      "sequence": 131,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_location_text": "220kV西南侧"
+    },
+    {
+      "row_index": 194,
+      "sequence": 132,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56
+    },
+    {
+      "row_index": 195,
+      "sequence": 133,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 196,
+      "sequence": 134,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69,
+      "camera_location_text": "220kV场地西南侧"
+    },
+    {
+      "row_index": 197,
+      "sequence": 135,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32,
+      "camera_location_text": "电容器室北侧"
+    },
+    {
+      "row_index": 198,
+      "sequence": 136,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "35kV开关室西南侧"
+    },
+    {
+      "row_index": 199,
+      "sequence": 137,
+      "station_token": "岩泉变",
+      "action": "insert",
+      "station_id": 31
+    },
+    {
+      "row_index": 200,
+      "sequence": 138,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_location_text": "3#主变东侧"
+    },
+    {
+      "row_index": 201,
+      "sequence": 139,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "西侧"
+    },
+    {
+      "row_index": 202,
+      "sequence": 140,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "110kV场地西南侧"
+    },
+    {
+      "row_index": 203,
+      "sequence": 141,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74,
+      "camera_location_text": "就地继保室南侧"
+    },
+    {
+      "row_index": 204,
+      "sequence": 142,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_location_text": "室外西北侧"
+    },
+    {
+      "row_index": 205,
+      "sequence": 143,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_location_text": "西侧"
+    },
+    {
+      "row_index": 206,
+      "sequence": 144,
+      "station_token": "问渔变",
+      "action": "insert",
+      "station_id": 27,
+      "camera_location_text": "1#主变南侧"
+    },
+    {
+      "row_index": 207,
+      "sequence": 145,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49,
+      "camera_location_text": "110kV场地东北侧"
+    },
+    {
+      "row_index": 208,
+      "sequence": 146,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_location_text": "3#-4#电容器室北侧"
+    },
+    {
+      "row_index": 209,
+      "sequence": 147,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_location_text": "主控室西南侧"
+    },
+    {
+      "row_index": 210,
+      "sequence": 148,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_location_text": "110kV场地西侧"
+    },
+    {
+      "row_index": 211,
+      "sequence": 149,
+      "station_token": "官桥变",
+      "action": "insert",
+      "station_id": 54,
+      "camera_location_text": "继保室西侧"
+    },
+    {
+      "row_index": 218,
+      "sequence": 156,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81
+    },
+    {
+      "row_index": 220,
+      "sequence": 1,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_location_text": "10kV开关室东侧"
+    },
+    {
+      "row_index": 221,
+      "sequence": 2,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_location_text": "电抗器场地西南侧"
+    },
+    {
+      "row_index": 222,
+      "sequence": 3,
+      "station_token": "龙泉变",
+      "action": "insert",
+      "station_id": 57,
+      "camera_location_text": "电容器室东南侧"
+    },
+    {
+      "row_index": 223,
+      "sequence": 4,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_location_text": "10kV开关室东南侧"
+    },
+    {
+      "row_index": 224,
+      "sequence": 5,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "#1主变东侧"
+    },
+    {
+      "row_index": 225,
+      "sequence": 6,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81,
+      "camera_location_text": "110kV场地西南侧"
+    },
+    {
+      "row_index": 226,
+      "sequence": 7,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40,
+      "camera_location_text": "2#主变西南侧"
+    },
+    {
+      "row_index": 227,
+      "sequence": 8,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 228,
+      "sequence": 9,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 271,
+      "camera_id": 271,
+      "camera_location_text": "110kV场地东北侧-1#球机"
+    },
+    {
+      "row_index": 229,
+      "sequence": 10,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 678,
+      "camera_id": 678,
+      "camera_location_text": "10kV开关室南侧-5#球机"
+    },
+    {
+      "row_index": 230,
+      "sequence": 11,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_location_text": "220kV场地南侧"
+    },
+    {
+      "row_index": 231,
+      "sequence": 12,
+      "station_token": "庆元变",
+      "action": "insert",
+      "station_id": 6,
+      "camera_location_text": "主控楼西南外侧"
+    },
+    {
+      "row_index": 232,
+      "sequence": 13,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1
+    },
+    {
+      "row_index": 233,
+      "sequence": 14,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62,
+      "camera_location_text": "室外场地东侧"
+    },
+    {
+      "row_index": 234,
+      "sequence": 15,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "10kV开关室南侧"
+    },
+    {
+      "row_index": 235,
+      "sequence": 16,
+      "station_token": "岩泉变",
+      "action": "insert",
+      "station_id": 31,
+      "camera_location_text": "电容器智能投切装置室"
+    },
+    {
+      "row_index": 236,
+      "sequence": 17,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49,
+      "camera_location_text": "35kV开关室东侧"
+    },
+    {
+      "row_index": 237,
+      "sequence": 18,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 238,
+      "sequence": 19,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 239,
+      "sequence": 20,
+      "station_token": "叶水变",
+      "action": "insert",
+      "station_id": 13,
+      "camera_location_text": "10kV开关室西侧"
+    },
+    {
+      "row_index": 240,
+      "sequence": 21,
+      "station_token": "屏都变",
+      "action": "insert",
+      "station_id": 5
+    },
+    {
+      "row_index": 241,
+      "sequence": 22,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_location_text": "35kV开关室西南侧"
+    },
+    {
+      "row_index": 242,
+      "sequence": 23,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20,
+      "camera_location_text": "电容器室东南侧"
+    },
+    {
+      "row_index": 243,
+      "sequence": 24,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "10kV开关室东南侧"
+    },
+    {
+      "row_index": 244,
+      "sequence": 25,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "35kV开关室西北侧"
+    },
+    {
+      "row_index": 245,
+      "sequence": 26,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1667,
+      "camera_id": 1667,
+      "camera_location_text": "1#主变南侧-11#球机"
+    },
+    {
+      "row_index": 246,
+      "sequence": 27,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 880,
+      "camera_id": 880,
+      "camera_location_text": "室外西北侧-16#球机"
+    },
+    {
+      "row_index": 247,
+      "sequence": 28,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62,
+      "camera_location_text": "2#主变东南侧"
+    },
+    {
+      "row_index": 248,
+      "sequence": 29,
+      "station_token": "白云变",
+      "action": "insert",
+      "station_id": 34,
+      "camera_slot_id": 697,
+      "camera_id": 697,
+      "camera_location_text": "蓄电池室北侧-7#球机"
+    },
+    {
+      "row_index": 249,
+      "sequence": 30,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 250,
+      "sequence": 31,
+      "station_token": "黄龙变",
+      "action": "insert",
+      "station_id": 29,
+      "camera_location_text": "室外大门"
+    },
+    {
+      "row_index": 251,
+      "sequence": 32,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68,
+      "camera_location_text": "3#电容器南侧"
+    },
+    {
+      "row_index": 252,
+      "sequence": 33,
+      "station_token": "油竹变",
+      "action": "insert",
+      "station_id": 47,
+      "camera_location_text": "2#主变西南侧"
+    },
+    {
+      "row_index": 253,
+      "sequence": 34,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "1#主变北侧"
+    },
+    {
+      "row_index": 254,
+      "sequence": 35,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "110kV场地东侧"
+    },
+    {
+      "row_index": 255,
+      "sequence": 36,
+      "station_token": "丽水变",
+      "action": "insert",
+      "station_id": 58
+    },
+    {
+      "row_index": 256,
+      "sequence": 37,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 683,
+      "camera_id": 683,
+      "camera_location_text": "继保室北侧-10#球机"
+    },
+    {
+      "row_index": 257,
+      "sequence": 38,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78
+    },
+    {
+      "row_index": 258,
+      "sequence": 39,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 259,
+      "sequence": 40,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40,
+      "camera_slot_id": 861,
+      "camera_id": 861,
+      "camera_location_text": "110kV开关室北侧-11#球机"
+    },
+    {
+      "row_index": 260,
+      "sequence": 41,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49,
+      "camera_slot_id": 988,
+      "camera_id": 988,
+      "camera_location_text": "35kV开关室东侧-16#球机"
+    },
+    {
+      "row_index": 261,
+      "sequence": 42,
+      "station_token": "油竹变",
+      "action": "insert",
+      "station_id": 47,
+      "camera_slot_id": 956,
+      "camera_id": 956,
+      "camera_location_text": "电容器室北侧-7#球机"
+    },
+    {
+      "row_index": 262,
+      "sequence": 43,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 263,
+      "sequence": 44,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23,
+      "camera_slot_id": 510,
+      "camera_id": 510,
+      "camera_location_text": "35kV开关室北侧-4#球机"
+    },
+    {
+      "row_index": 264,
+      "sequence": 45,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_slot_id": 1157,
+      "camera_id": 1157,
+      "camera_location_text": "1楼通信机房北侧-15#球机"
+    },
+    {
+      "row_index": 265,
+      "sequence": 46,
+      "station_token": "白云变",
+      "action": "insert",
+      "station_id": 34,
+      "camera_slot_id": 698,
+      "camera_id": 698,
+      "camera_location_text": "10kV开关室东侧-8#球机"
+    },
+    {
+      "row_index": 266,
+      "sequence": 47,
+      "station_token": "缙云",
+      "action": "skip",
+      "reason": "station_skipped"
+    },
+    {
+      "row_index": 267,
+      "sequence": 48,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20,
+      "camera_slot_id": 410,
+      "camera_id": 410,
+      "camera_location_text": "10kV开关室西北侧-10#球机"
+    },
+    {
+      "row_index": 268,
+      "sequence": 49,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28,
+      "camera_slot_id": 612,
+      "camera_id": 612,
+      "camera_location_text": "主控室西南侧-14#球机"
+    },
+    {
+      "row_index": 269,
+      "sequence": 50,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 270,
+      "sequence": 51,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14
+    },
+    {
+      "row_index": 271,
+      "sequence": 52,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68,
+      "camera_location_text": "2#主变北侧"
+    },
+    {
+      "row_index": 272,
+      "sequence": 53,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28,
+      "camera_slot_id": 612,
+      "camera_id": 612,
+      "camera_location_text": "主控室西南侧-14#球机"
+    },
+    {
+      "row_index": 273,
+      "sequence": 54,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20,
+      "camera_slot_id": 411,
+      "camera_id": 411,
+      "camera_location_text": "10kV开关室东北侧-11#球机"
+    },
+    {
+      "row_index": 274,
+      "sequence": 55,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 272,
+      "camera_id": 272,
+      "camera_location_text": "110kV场地西侧-2#球机"
+    },
+    {
+      "row_index": 275,
+      "sequence": 56,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 276,
+      "sequence": 57,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9,
+      "camera_slot_id": 173,
+      "camera_id": 173,
+      "camera_location_text": "110kV场地西南侧-1#球机"
+    },
+    {
+      "row_index": 277,
+      "sequence": 58,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 278,
+      "sequence": 59,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 279,
+      "sequence": 60,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 280,
+      "sequence": 61,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 281,
+      "sequence": 62,
+      "action": "skip",
+      "reason": "missing_station_name"
+    },
+    {
+      "row_index": 282,
+      "sequence": 63,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9,
+      "camera_slot_id": 173,
+      "camera_id": 173,
+      "camera_location_text": "110kV场地西南侧-1#球机"
+    },
+    {
+      "row_index": 283,
+      "sequence": 64,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45
+    },
+    {
+      "row_index": 284,
+      "sequence": 65,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 285,
+      "sequence": 66,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62,
+      "camera_slot_id": 1246,
+      "camera_id": 1246,
+      "camera_location_text": "室外场地西侧-2#球机"
+    },
+    {
+      "row_index": 286,
+      "sequence": 67,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_slot_id": 1410,
+      "camera_id": 1410,
+      "camera_location_text": "室外大门西北侧-11#球机"
+    },
+    {
+      "row_index": 287,
+      "sequence": 68,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1669,
+      "camera_id": 1669,
+      "camera_location_text": "35kV开关室外墙北侧-13#球机"
+    },
+    {
+      "row_index": 288,
+      "sequence": 69,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_slot_id": 1632,
+      "camera_id": 1632,
+      "camera_location_text": "220kV场地西北侧-2#球机"
+    },
+    {
+      "row_index": 289,
+      "sequence": 70,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40,
+      "camera_slot_id": 852,
+      "camera_id": 852,
+      "camera_location_text": "2#主变西南侧-2#球机"
+    },
+    {
+      "row_index": 290,
+      "sequence": 71,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 272,
+      "camera_id": 272,
+      "camera_location_text": "110kV场地西侧-2#球机"
+    },
+    {
+      "row_index": 291,
+      "sequence": 72,
+      "station_token": "温溪变",
+      "action": "insert",
+      "station_id": 48
+    },
+    {
+      "row_index": 292,
+      "sequence": 73,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56
+    },
+    {
+      "row_index": 293,
+      "sequence": 74,
+      "station_token": "芳野变",
+      "action": "insert",
+      "station_id": 56,
+      "camera_slot_id": 1097,
+      "camera_id": 1097,
+      "camera_location_text": "110kV场地南侧-1#球机"
+    },
+    {
+      "row_index": 294,
+      "sequence": 75,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 295,
+      "sequence": 76,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 296,
+      "sequence": 77,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 297,
+      "sequence": 78,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 298,
+      "sequence": 79,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_location_text": "1#主变东侧"
+    },
+    {
+      "row_index": 299,
+      "sequence": 80,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40,
+      "camera_slot_id": 851,
+      "camera_id": 851,
+      "camera_location_text": "1#主变西南侧-1#球机"
+    },
+    {
+      "row_index": 300,
+      "sequence": 81,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20,
+      "camera_location_text": "1#主变南侧"
+    },
+    {
+      "row_index": 301,
+      "sequence": 82,
+      "station_token": "陶庄变",
+      "action": "insert",
+      "station_id": 70
+    },
+    {
+      "row_index": 302,
+      "sequence": 83,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 303,
+      "sequence": 84,
+      "station_token": "峰源变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 303,
+      "sequence": 84,
+      "station_token": "雅溪变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 304,
+      "sequence": 85,
+      "station_token": "龙山变",
+      "action": "insert",
+      "station_id": 8,
+      "camera_slot_id": 157,
+      "camera_id": 157,
+      "camera_location_text": "1#电容器室南-8#球机"
+    },
+    {
+      "row_index": 305,
+      "sequence": 86,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 306,
+      "sequence": 87,
+      "station_token": "濛洲变",
+      "action": "insert",
+      "station_id": 75,
+      "camera_slot_id": 1633,
+      "camera_id": 1633,
+      "camera_location_text": "220kV场地东侧-3#球机"
+    },
+    {
+      "row_index": 307,
+      "sequence": 88,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1664,
+      "camera_id": 1664,
+      "camera_location_text": "110kV场地-8#球机"
+    },
+    {
+      "row_index": 309,
+      "sequence": 90,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 310,
+      "sequence": 91,
+      "station_token": "安仁变",
+      "action": "insert",
+      "station_id": 53,
+      "camera_slot_id": 1042,
+      "camera_id": 1042,
+      "camera_location_text": "110kV场地北侧-2#球机"
+    },
+    {
+      "row_index": 311,
+      "sequence": 92,
+      "station_token": "秋桐变",
+      "action": "insert",
+      "station_id": 51,
+      "camera_slot_id": 1025,
+      "camera_id": 1025,
+      "camera_location_text": "电容器室外墙-24#球机"
+    },
+    {
+      "row_index": 312,
+      "sequence": 93,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40
+    },
+    {
+      "row_index": 313,
+      "sequence": 94,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1664,
+      "camera_id": 1664,
+      "camera_location_text": "110kV场地-8#球机"
+    },
+    {
+      "row_index": 314,
+      "sequence": 95,
+      "station_token": "金溪变",
+      "action": "insert",
+      "station_id": 44
+    },
+    {
+      "row_index": 315,
+      "sequence": 96,
+      "station_token": "屏都变",
+      "action": "insert",
+      "station_id": 5
+    },
+    {
+      "row_index": 316,
+      "sequence": 97,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1
+    },
+    {
+      "row_index": 317,
+      "sequence": 98,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9,
+      "camera_slot_id": 173,
+      "camera_id": 173,
+      "camera_location_text": "110kV场地西南侧-1#球机"
+    },
+    {
+      "row_index": 318,
+      "sequence": 99,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 319,
+      "sequence": 100,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 320,
+      "sequence": 101,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_slot_id": 1403,
+      "camera_id": 1403,
+      "camera_location_text": "电容器场地西北侧-4#球机"
+    },
+    {
+      "row_index": 321,
+      "sequence": 102,
+      "station_token": "高溪变",
+      "action": "insert",
+      "station_id": 37,
+      "camera_location_text": "110kVGIS室西侧"
+    },
+    {
+      "row_index": 322,
+      "sequence": 103,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28
+    },
+    {
+      "row_index": 323,
+      "sequence": 104,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 324,
+      "sequence": 105,
+      "station_token": "温溪变",
+      "action": "insert",
+      "station_id": 48,
+      "camera_slot_id": 968,
+      "camera_id": 968,
+      "camera_location_text": "电容器室-7#球机"
+    },
+    {
+      "row_index": 325,
+      "sequence": 106,
+      "station_token": "椤林变",
+      "action": "insert",
+      "station_id": 3
+    },
+    {
+      "row_index": 326,
+      "sequence": 107,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_slot_id": 1367,
+      "camera_id": 1367,
+      "camera_location_text": "35kV开关室西侧-15#球机"
+    },
+    {
+      "row_index": 327,
+      "sequence": 108,
+      "station_token": "黄龙变",
+      "action": "insert",
+      "station_id": 29,
+      "camera_slot_id": 623,
+      "camera_id": 623,
+      "camera_location_text": "10kV开关室东侧-11#球机"
+    },
+    {
+      "row_index": 328,
+      "sequence": 109,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68,
+      "camera_slot_id": 1433,
+      "camera_id": 1433,
+      "camera_location_text": "220kV场地南侧-2#球机"
+    },
+    {
+      "row_index": 329,
+      "sequence": 110,
+      "station_token": "温溪变",
+      "action": "insert",
+      "station_id": 48
+    },
+    {
+      "row_index": 330,
+      "sequence": 111,
+      "station_token": "石练变",
+      "action": "insert",
+      "station_id": 43
+    },
+    {
+      "row_index": 331,
+      "sequence": 112,
+      "station_token": "焦滩变",
+      "action": "insert",
+      "station_id": 42,
+      "camera_slot_id": 882,
+      "camera_id": 882,
+      "camera_location_text": "大门北侧-2#球机"
+    },
+    {
+      "row_index": 332,
+      "sequence": 113,
+      "station_token": "黄南变",
+      "action": "insert",
+      "station_id": 17
+    },
+    {
+      "row_index": 333,
+      "sequence": 114,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76
+    },
+    {
+      "row_index": 334,
+      "sequence": 115,
+      "station_token": "黄沙腰变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 335,
+      "sequence": 116,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20
+    },
+    {
+      "row_index": 336,
+      "sequence": 117,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68,
+      "camera_slot_id": 1433,
+      "camera_id": 1433,
+      "camera_location_text": "220kV场地南侧-2#球机"
+    },
+    {
+      "row_index": 337,
+      "sequence": 118,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_slot_id": 1355,
+      "camera_id": 1355,
+      "camera_location_text": "110kV场地西侧-3#球机"
+    },
+    {
+      "row_index": 338,
+      "sequence": 119,
+      "station_token": "汤公变",
+      "action": "insert",
+      "station_id": 80
+    },
+    {
+      "row_index": 339,
+      "sequence": 120,
+      "station_token": "王村口变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 340,
+      "sequence": 121,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "电容器场地西北侧"
+    },
+    {
+      "row_index": 341,
+      "sequence": 122,
+      "station_token": "壶镇变",
+      "action": "insert",
+      "station_id": 20
+    },
+    {
+      "row_index": 342,
+      "sequence": 123,
+      "station_token": "海潮变",
+      "action": "insert",
+      "station_id": 32,
+      "camera_location_text": "10kV开关室"
+    },
+    {
+      "row_index": 343,
+      "sequence": 124,
+      "station_token": "玉岩变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 344,
+      "sequence": 125,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23,
+      "camera_location_text": "110kV场地东侧"
+    },
+    {
+      "row_index": 345,
+      "sequence": 126,
+      "station_token": "景宁变",
+      "action": "insert",
+      "station_id": 9
+    },
+    {
+      "row_index": 346,
+      "sequence": 127,
+      "station_token": "东方变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 348,
+      "sequence": 1,
+      "station_token": "东方变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 349,
+      "sequence": 2,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 350,
+      "sequence": 3,
+      "station_token": "黄南变",
+      "action": "insert",
+      "station_id": 17,
+      "camera_slot_id": 360,
+      "camera_id": 360,
+      "camera_location_text": "继保室门外-5#枪机"
+    },
+    {
+      "row_index": 351,
+      "sequence": 4,
+      "station_token": "叶水变",
+      "action": "insert",
+      "station_id": 13
+    },
+    {
+      "row_index": 352,
+      "sequence": 5,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81,
+      "camera_slot_id": 1876,
+      "camera_id": 1876,
+      "camera_location_text": "220kV场地北侧-1#球机"
+    },
+    {
+      "row_index": 353,
+      "sequence": 6,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "1#主变南侧"
+    },
+    {
+      "row_index": 354,
+      "sequence": 7,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_slot_id": 555,
+      "camera_id": 555,
+      "camera_location_text": "电容器室南侧-13#球机"
+    },
+    {
+      "row_index": 355,
+      "sequence": 8,
+      "station_token": "黄龙变",
+      "action": "insert",
+      "station_id": 29,
+      "camera_location_text": "35kV开关室东南侧"
+    },
+    {
+      "row_index": 356,
+      "sequence": 9,
+      "station_token": "好溪变",
+      "action": "insert",
+      "station_id": 61
+    },
+    {
+      "row_index": 357,
+      "sequence": 10,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78
+    },
+    {
+      "row_index": 358,
+      "sequence": 11,
+      "station_token": "秋桐变",
+      "action": "insert",
+      "station_id": 51
+    },
+    {
+      "row_index": 359,
+      "sequence": 12,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 679,
+      "camera_id": 679,
+      "camera_location_text": "10kV开关室西侧-6#球机"
+    },
+    {
+      "row_index": 360,
+      "sequence": 13,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_slot_id": 545,
+      "camera_id": 545,
+      "camera_location_text": "1#主变北侧-1#球机"
+    },
+    {
+      "row_index": 361,
+      "sequence": 14,
+      "station_token": "杨柳变",
+      "action": "insert",
+      "station_id": 2,
+      "camera_slot_id": 20,
+      "camera_id": 20,
+      "camera_location_text": "#2主变东南侧-6#球机"
+    },
+    {
+      "row_index": 362,
+      "sequence": 15,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71
+    },
+    {
+      "row_index": 363,
+      "sequence": 16,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 364,
+      "sequence": 17,
+      "station_token": "四都变",
+      "action": "insert",
+      "station_id": 60
+    },
+    {
+      "row_index": 365,
+      "sequence": 18,
+      "station_token": "牛门变",
+      "action": "insert",
+      "station_id": 55
+    },
+    {
+      "row_index": 366,
+      "sequence": 19,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78
+    },
+    {
+      "row_index": 367,
+      "sequence": 20,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71
+    },
+    {
+      "row_index": 368,
+      "sequence": 21,
+      "station_token": "仙都变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 369,
+      "sequence": 22,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14
+    },
+    {
+      "row_index": 370,
+      "sequence": 23,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 870,
+      "camera_id": 870,
+      "camera_location_text": "1#电容器室南侧-6#球机"
+    },
+    {
+      "row_index": 371,
+      "sequence": 24,
+      "station_token": "官桥变",
+      "action": "insert",
+      "station_id": 54
+    },
+    {
+      "row_index": 372,
+      "sequence": 25,
+      "station_token": "岩泉变",
+      "action": "insert",
+      "station_id": 31,
+      "camera_location_text": "室外大门东侧"
+    },
+    {
+      "row_index": 373,
+      "sequence": 26,
+      "station_token": "缙云变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 374,
+      "sequence": 27,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81,
+      "camera_slot_id": 1878,
+      "camera_id": 1878,
+      "camera_location_text": "电容器场地东南侧-3#球机"
+    },
+    {
+      "row_index": 375,
+      "sequence": 28,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14
+    },
+    {
+      "row_index": 376,
+      "sequence": 29,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78,
+      "camera_slot_id": 1718,
+      "camera_id": 1718,
+      "camera_location_text": "#3主变东侧-7#球机"
+    },
+    {
+      "row_index": 377,
+      "sequence": 30,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 378,
+      "sequence": 31,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 379,
+      "sequence": 32,
+      "station_token": "官桥变",
+      "action": "insert",
+      "station_id": 54
+    },
+    {
+      "row_index": 380,
+      "sequence": 33,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 677,
+      "camera_id": 677,
+      "camera_location_text": "1#-2#电容器室北侧-4#球机"
+    },
+    {
+      "row_index": 381,
+      "sequence": 34,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65,
+      "camera_slot_id": 1367,
+      "camera_id": 1367,
+      "camera_location_text": "35kV开关室西侧-15#球机"
+    },
+    {
+      "row_index": 382,
+      "sequence": 35,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 870,
+      "camera_id": 870,
+      "camera_location_text": "1#电容器室南侧-6#球机"
+    },
+    {
+      "row_index": 383,
+      "sequence": 36,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 384,
+      "sequence": 37,
+      "station_token": "大源变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 385,
+      "sequence": 38,
+      "station_token": "东方变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 386,
+      "sequence": 39,
+      "station_token": "船寮变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 386,
+      "sequence": 39,
+      "station_token": "钼矿变",
+      "action": "skip",
+      "reason": "station_skipped"
+    },
+    {
+      "row_index": 387,
+      "sequence": 40,
+      "station_token": "桃园变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 388,
+      "sequence": 41,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 389,
+      "sequence": 42,
+      "station_token": "石郭变",
+      "action": "insert",
+      "station_id": 50
+    },
+    {
+      "row_index": 390,
+      "sequence": 43,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49
+    },
+    {
+      "row_index": 393,
+      "sequence": 46,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71,
+      "camera_location_text": "35kV电容器室东侧"
+    },
+    {
+      "row_index": 394,
+      "sequence": 47,
+      "station_token": "遂昌变",
+      "action": "insert",
+      "station_id": 81,
+      "camera_slot_id": 1878,
+      "camera_id": 1878,
+      "camera_location_text": "电容器场地东南侧-3#球机"
+    },
+    {
+      "row_index": 395,
+      "sequence": 48,
+      "station_token": "官桥变",
+      "action": "insert",
+      "station_id": 54
+    },
+    {
+      "row_index": 396,
+      "sequence": 49,
+      "station_token": "侨乡变",
+      "action": "insert",
+      "station_id": 46
+    },
+    {
+      "row_index": 397,
+      "sequence": 50,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 398,
+      "sequence": 51,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78,
+      "camera_slot_id": 1721,
+      "camera_id": 1721,
+      "camera_location_text": "#1主变东侧-10#球机"
+    },
+    {
+      "row_index": 399,
+      "sequence": 52,
+      "station_token": "遂昌公司",
+      "action": "skip",
+      "reason": "station_skipped"
+    },
+    {
+      "row_index": 400,
+      "sequence": 53,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 401,
+      "sequence": 54,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71
+    },
+    {
+      "row_index": 402,
+      "sequence": 55,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78
+    },
+    {
+      "row_index": 403,
+      "sequence": 56,
+      "station_token": "龙石变",
+      "action": "insert",
+      "station_id": 72,
+      "camera_slot_id": 1566,
+      "camera_id": 1566,
+      "camera_location_text": "电容器室北侧-11#球机"
+    },
+    {
+      "row_index": 404,
+      "sequence": 57,
+      "station_token": "海口变",
+      "action": "insert",
+      "station_id": 68
+    },
+    {
+      "row_index": 405,
+      "sequence": 58,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1664,
+      "camera_id": 1664,
+      "camera_location_text": "110kV场地-8#球机"
+    },
+    {
+      "row_index": 406,
+      "sequence": 59,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_slot_id": 1,
+      "camera_id": 1,
+      "camera_location_text": "通信机房南侧-1#球机"
+    },
+    {
+      "row_index": 407,
+      "sequence": 60,
+      "station_token": "金溪变",
+      "action": "insert",
+      "station_id": 44,
+      "camera_slot_id": 917,
+      "camera_id": 917,
+      "camera_location_text": "电容器室东侧-11#球机"
+    },
+    {
+      "row_index": 408,
+      "sequence": 61,
+      "station_token": "张村变",
+      "action": "insert",
+      "station_id": 62
+    },
+    {
+      "row_index": 409,
+      "sequence": 62,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 410,
+      "sequence": 63,
+      "station_token": "四都变",
+      "action": "insert",
+      "station_id": 60
+    },
+    {
+      "row_index": 411,
+      "sequence": 64,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67,
+      "camera_slot_id": 1420,
+      "camera_id": 1420,
+      "camera_location_text": "35kV开关室东南侧-21#球机"
+    },
+    {
+      "row_index": 412,
+      "sequence": 65,
+      "station_token": "黄龙变",
+      "action": "insert",
+      "station_id": 29
+    },
+    {
+      "row_index": 413,
+      "sequence": 66,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_slot_id": 1688,
+      "camera_id": 1688,
+      "camera_location_text": "110kV场地西侧-5#球机"
+    },
+    {
+      "row_index": 414,
+      "sequence": 67,
+      "station_token": "象溪变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 414,
+      "sequence": 67,
+      "station_token": "新兴变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 415,
+      "sequence": 68,
+      "station_token": "官桥变",
+      "action": "insert",
+      "station_id": 54
+    },
+    {
+      "row_index": 416,
+      "sequence": 69,
+      "station_token": "金溪变",
+      "action": "insert",
+      "station_id": 44,
+      "camera_slot_id": 917,
+      "camera_id": 917,
+      "camera_location_text": "电容器室东侧-11#球机"
+    },
+    {
+      "row_index": 417,
+      "sequence": 70,
+      "station_token": "庆元变",
+      "action": "insert",
+      "station_id": 6,
+      "camera_location_text": "110kV场地东侧"
+    },
+    {
+      "row_index": 418,
+      "sequence": 71,
+      "station_token": "龙南变",
+      "action": "insert",
+      "station_id": 78
+    },
+    {
+      "row_index": 419,
+      "sequence": 72,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_slot_id": 1711,
+      "camera_id": 1711,
+      "camera_location_text": "35kV开关室北侧-29#球机"
+    },
+    {
+      "row_index": 420,
+      "sequence": 73,
+      "station_token": "新兴变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 421,
+      "sequence": 74,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 870,
+      "camera_id": 870,
+      "camera_location_text": "1#电容器室南侧-6#球机"
+    },
+    {
+      "row_index": 422,
+      "sequence": 75,
+      "station_token": "滨江变",
+      "action": "insert",
+      "station_id": 33,
+      "camera_slot_id": 684,
+      "camera_id": 684,
+      "camera_location_text": "继保室南侧-11#球机"
+    },
+    {
+      "row_index": 423,
+      "sequence": 76,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 424,
+      "sequence": 77,
+      "station_token": "焦滩变",
+      "action": "insert",
+      "station_id": 42
+    },
+    {
+      "row_index": 425,
+      "sequence": 78,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41
+    },
+    {
+      "row_index": 426,
+      "sequence": 79,
+      "station_token": "睦田变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 427,
+      "sequence": 80,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77,
+      "camera_slot_id": 1711,
+      "camera_id": 1711,
+      "camera_location_text": "35kV开关室北侧-29#球机"
+    },
+    {
+      "row_index": 428,
+      "sequence": 81,
+      "station_token": "松阳变",
+      "action": "insert",
+      "station_id": 79
+    },
+    {
+      "row_index": 429,
+      "sequence": 82,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 272,
+      "camera_id": 272,
+      "camera_location_text": "110kV场地西侧-2#球机"
+    },
+    {
+      "row_index": 430,
+      "sequence": 83,
+      "station_token": "焦滩变",
+      "action": "insert",
+      "station_id": 42,
+      "camera_slot_id": 886,
+      "camera_id": 886,
+      "camera_location_text": "10kV开关室北侧-6#球机"
+    },
+    {
+      "row_index": 431,
+      "sequence": 84,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40
+    },
+    {
+      "row_index": 432,
+      "sequence": 85,
+      "station_token": "水阁变",
+      "action": "insert",
+      "station_id": 66,
+      "camera_location_text": "10kV开关室西侧"
+    },
+    {
+      "row_index": 433,
+      "sequence": 86,
+      "station_token": "睦田变",
+      "action": "insert",
+      "station_id": 76,
+      "camera_slot_id": 1660,
+      "camera_id": 1660,
+      "camera_location_text": "#2主变东侧-4#球机"
+    },
+    {
+      "row_index": 434,
+      "sequence": 87,
+      "station_token": "小顺变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 435,
+      "sequence": 88,
+      "station_token": "北界变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 436,
+      "sequence": 89,
+      "station_token": "妙高变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 437,
+      "sequence": 90,
+      "station_token": "仙宫变",
+      "action": "insert",
+      "station_id": 73
+    },
+    {
+      "row_index": 438,
+      "sequence": 91,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 439,
+      "sequence": 92,
+      "station_token": "东山变",
+      "action": "insert",
+      "station_id": 18
+    },
+    {
+      "row_index": 440,
+      "sequence": 93,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25
+    },
+    {
+      "row_index": 441,
+      "sequence": 94,
+      "station_token": "桃园变",
+      "action": "insert",
+      "station_id": 40
+    },
+    {
+      "row_index": 442,
+      "sequence": 95,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 876,
+      "camera_id": 876,
+      "camera_location_text": "大门南侧-12#枪机"
+    },
+    {
+      "row_index": 443,
+      "sequence": 96,
+      "station_token": "仙宫变",
+      "action": "insert",
+      "station_id": 73
+    },
+    {
+      "row_index": 444,
+      "sequence": 97,
+      "station_token": "五丰变",
+      "action": "insert",
+      "station_id": 19
+    },
+    {
+      "row_index": 446,
+      "sequence": 99,
+      "station_token": "宏山变",
+      "action": "insert",
+      "station_id": 74
+    },
+    {
+      "row_index": 447,
+      "sequence": 100,
+      "station_token": "金溪变",
+      "action": "insert",
+      "station_id": 44,
+      "camera_slot_id": 913,
+      "camera_id": 913,
+      "camera_location_text": "主控室东南侧-7#球机"
+    },
+    {
+      "row_index": 448,
+      "sequence": 101,
+      "station_token": "焦滩变",
+      "action": "insert",
+      "station_id": 42,
+      "camera_slot_id": 883,
+      "camera_id": 883,
+      "camera_location_text": "110kV场地北侧-3#球机"
+    },
+    {
+      "row_index": 449,
+      "sequence": 102,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 450,
+      "sequence": 103,
+      "station_token": "黄南变",
+      "action": "insert",
+      "station_id": 17,
+      "camera_slot_id": 358,
+      "camera_id": 358,
+      "camera_location_text": "10kV开关室南侧-7#球机"
+    },
+    {
+      "row_index": 451,
+      "sequence": 104,
+      "station_token": "仙都变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 452,
+      "sequence": 105,
+      "station_token": "靖居变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 454,
+      "sequence": 1,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59,
+      "camera_location_text": "主控楼门厅侧"
+    },
+    {
+      "row_index": 455,
+      "sequence": 2,
+      "station_token": "里隆变",
+      "action": "insert",
+      "station_id": 25,
+      "camera_slot_id": 555,
+      "camera_id": 555,
+      "camera_location_text": "电容器室南侧-13#球机"
+    },
+    {
+      "row_index": 456,
+      "sequence": 3,
+      "station_token": "东源变",
+      "action": "insert",
+      "station_id": 45,
+      "camera_location_text": "110kV场地西侧"
+    },
+    {
+      "row_index": 457,
+      "sequence": 4,
+      "station_token": "寿元变",
+      "action": "insert",
+      "station_id": 30,
+      "camera_slot_id": 643,
+      "camera_id": 643,
+      "camera_location_text": "1#电容器室南侧-16#球机"
+    },
+    {
+      "row_index": 458,
+      "sequence": 5,
+      "station_token": "小顺变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 459,
+      "sequence": 6,
+      "station_token": "紧水滩变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 460,
+      "sequence": 7,
+      "station_token": "黄岗变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 461,
+      "sequence": 8,
+      "station_token": "象溪变",
+      "action": "queue",
+      "reason": "station_not_resolved"
+    },
+    {
+      "row_index": 462,
+      "sequence": 9,
+      "station_token": "金亭变",
+      "action": "insert",
+      "station_id": 69
+    },
+    {
+      "row_index": 463,
+      "sequence": 10,
+      "station_token": "鹤溪变",
+      "action": "insert",
+      "station_id": 77
+    },
+    {
+      "row_index": 464,
+      "sequence": 11,
+      "station_token": "石练变",
+      "action": "insert",
+      "station_id": 43,
+      "camera_slot_id": 896,
+      "camera_id": 896,
+      "camera_location_text": "110kV场地西侧-1#球机"
+    },
+    {
+      "row_index": 465,
+      "sequence": 12,
+      "station_token": "洋浩变",
+      "action": "insert",
+      "station_id": 41,
+      "camera_slot_id": 876,
+      "camera_id": 876,
+      "camera_location_text": "大门南侧-12#枪机"
+    },
+    {
+      "row_index": 466,
+      "sequence": 13,
+      "station_token": "白龙变",
+      "action": "insert",
+      "station_id": 4,
+      "camera_slot_id": 95,
+      "camera_id": 95,
+      "camera_location_text": "110kV场地南侧-1#球机"
+    },
+    {
+      "row_index": 467,
+      "sequence": 14,
+      "station_token": "杨柳变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 468,
+      "sequence": 15,
+      "station_token": "高湖变",
+      "action": "insert",
+      "station_id": 52,
+      "camera_location_text": "2#主变北侧"
+    },
+    {
+      "row_index": 469,
+      "sequence": 16,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 470,
+      "sequence": 17,
+      "station_token": "侨乡变",
+      "action": "insert",
+      "station_id": 46
+    },
+    {
+      "row_index": 471,
+      "sequence": 18,
+      "station_token": "碧湖变",
+      "action": "insert",
+      "station_id": 36
+    },
+    {
+      "row_index": 472,
+      "sequence": 19,
+      "station_token": "河阳变",
+      "action": "insert",
+      "station_id": 67
+    },
+    {
+      "row_index": 473,
+      "sequence": 20,
+      "station_token": "仙都变",
+      "action": "insert",
+      "station_id": 59
+    },
+    {
+      "row_index": 474,
+      "sequence": 21,
+      "station_token": "枫树变",
+      "action": "insert",
+      "station_id": 65
+    },
+    {
+      "row_index": 475,
+      "sequence": 22,
+      "station_token": "缙云变",
+      "action": "insert",
+      "station_id": 23
+    },
+    {
+      "row_index": 476,
+      "sequence": 23,
+      "station_token": "仙宫变",
+      "action": "insert",
+      "station_id": 73,
+      "camera_slot_id": 1582,
+      "camera_id": 1582,
+      "camera_location_text": "1-2#电容器-东侧-32#球机"
+    },
+    {
+      "row_index": 477,
+      "sequence": 24,
+      "station_token": "遂昌变",
+      "action": "duplicate-skip",
+      "reason": "source_record_key_exists"
+    },
+    {
+      "row_index": 478,
+      "sequence": 25,
+      "station_token": "汤公变",
+      "action": "insert",
+      "station_id": 80
+    },
+    {
+      "row_index": 479,
+      "sequence": 26,
+      "station_token": "青田变",
+      "action": "insert",
+      "station_id": 71,
+      "camera_slot_id": 1552,
+      "camera_id": 1552,
+      "camera_location_text": "#2主变西北侧-32#球机（补强)"
+    },
+    {
+      "row_index": 480,
+      "sequence": 27,
+      "station_token": "港头变",
+      "action": "insert",
+      "station_id": 49
+    },
+    {
+      "row_index": 481,
+      "sequence": 28,
+      "station_token": "侨乡变",
+      "action": "insert",
+      "station_id": 46,
+      "camera_slot_id": 935,
+      "camera_id": 935,
+      "camera_location_text": "2#主变南侧-2#球机"
+    },
+    {
+      "row_index": 482,
+      "sequence": 29,
+      "station_token": "黄南变",
+      "action": "insert",
+      "station_id": 17
+    },
+    {
+      "row_index": 483,
+      "sequence": 30,
+      "station_token": "延庆变",
+      "action": "insert",
+      "station_id": 14,
+      "camera_slot_id": 272,
+      "camera_id": 272,
+      "camera_location_text": "110kV场地西侧-2#球机"
+    },
+    {
+      "row_index": 484,
+      "sequence": 31,
+      "station_token": "东山变",
+      "action": "insert",
+      "station_id": 18,
+      "camera_location_text": "110kV场地东南侧"
+    },
+    {
+      "row_index": 485,
+      "sequence": 32,
+      "station_token": "雁门变",
+      "action": "insert",
+      "station_id": 28,
+      "camera_slot_id": 601,
+      "camera_id": 601,
+      "camera_location_text": "电容器场地南侧-4#球机"
+    },
+    {
+      "row_index": 486,
+      "sequence": 33,
+      "station_token": "云和变",
+      "action": "insert",
+      "station_id": 1,
+      "camera_slot_id": 5,
+      "camera_id": 5,
+      "camera_location_text": "大门-5#球机"
+    }
+  ]
+}

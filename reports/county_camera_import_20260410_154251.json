@@ -1,0 +1,45 @@
+{
+  "imported_at": "20260410_154251",
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "backup_path": "E:\\项目\\变电站图像监控运维平台\\station_monitor.county_camera_import_20260410_154251.db",
+  "data_dir": "C:\\Users\\Administrator\\Desktop\\新建文件夹",
+  "project": "unified",
+  "source_files": [
+    "云和县.csv",
+    "庆元县.csv",
+    "景宁县.csv",
+    "松阳县.csv",
+    "缙云县.csv",
+    "莲都区.csv",
+    "遂昌县.csv",
+    "青田县.csv",
+    "龙泉市.csv"
+  ],
+  "source_camera_rows": 1122,
+  "station_groups": 57,
+  "before": {
+    "stations": 133,
+    "camera_slots_unified": 1863,
+    "active_cameras_unified": 1510,
+    "station_external_names": 158
+  },
+  "stations_created": 4,
+  "stations_matched": 53,
+  "cameras_added": 1122,
+  "cameras_updated": 0,
+  "cameras_replaced": 0,
+  "cameras_retired": 771,
+  "new_station_names": [
+    "110kV叶水变",
+    "110kV楼塘变",
+    "110kV西寮变",
+    "110kV东亭变"
+  ],
+  "voltage_guard_new_stations": [],
+  "after": {
+    "stations": 137,
+    "camera_slots_unified": 2985,
+    "active_cameras_unified": 1861,
+    "station_external_names": 161
+  }
+}

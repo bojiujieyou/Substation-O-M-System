@@ -5,6 +5,7 @@ from io import BytesIO
 import pytest
 from openpyxl import Workbook, load_workbook
 
+import app as app_module
 from app import app
 from auth import hash_password
 from init_db import init_db
@@ -893,6 +894,239 @@ def test_fault_status_close_updates_catalog_fault_type(client, seeded_project_sc
     assert row == ("closed", "Blur", "BLUR", "Blur", 10)
 
 
+def test_fault_status_close_accepts_multiple_catalog_fault_types(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    handling = client.put("/api/faults/2/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        "/api/faults/2/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "onsite diagnosis found multiple issues",
+            "fault_type": "待现场确认",
+            "fault_type_code": "BLUR,NO_IMAGE",
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        row = conn.execute(
+            """
+            SELECT status, fault_type, fault_type_code, fault_type_label_snapshot, fault_type_version_id
+            FROM fault_reports
+            WHERE id = 2
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert row == ("closed", "Blur | No Image", "BLUR,NO_IMAGE", "Blur | No Image", 10)
+
+
+def test_fault_status_close_accepts_catalog_labels_in_fault_type_code(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    handling = client.put("/api/faults/2/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        "/api/faults/2/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "frontend submitted labels instead of codes",
+            "fault_type": "待现场确认",
+            "fault_type_code": "Blur,No Image",
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        row = conn.execute(
+            """
+            SELECT status, fault_type, fault_type_code, fault_type_label_snapshot, fault_type_version_id
+            FROM fault_reports
+            WHERE id = 2
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert row == ("closed", "Blur | No Image", "BLUR,NO_IMAGE", "Blur | No Image", 10)
+
+
+def test_fault_status_close_autoresolves_codes_from_catalog_labels(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    handling = client.put("/api/faults/2/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        "/api/faults/2/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "labels should map back to published codes",
+            "fault_type": "Blur | No Image",
+            "fault_type_code": None,
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        row = conn.execute(
+            """
+            SELECT status, fault_type, fault_type_code, fault_type_label_snapshot, fault_type_version_id
+            FROM fault_reports
+            WHERE id = 2
+            """
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert row == ("closed", "Blur | No Image", "BLUR,NO_IMAGE", "Blur | No Image", 10)
+
+
+def test_stats_counts_camera_replacements_from_closed_faults(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, camera_id, fault_type, reporter_name, status, project_id, camera_slot_id,
+                equipment_type, equipment_quantity, created_at, closed_at, updated_at
+            )
+            VALUES
+                (20, 1, 1, 'Blur', 'Bob', 'closed', 2, 1, '摄像机', 2, '2026-04-02 08:00:00', '2026-04-03 09:00:00', '2026-04-03 09:00:00'),
+                (21, 1, 1, 'Blur', 'Bob', 'closed', 2, 1, '球机', 0, '2026-04-06 08:00:00', '2026-04-06 10:00:00', '2026-04-06 10:00:00'),
+                (22, 2, 2, 'No Image', 'Alice', 'closed', 1, 2, '摄像机', 9, '2026-04-04 08:00:00', '2026-04-04 10:00:00', '2026-04-04 10:00:00')
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.get("/api/stats?project=inspection&year=2026")
+    assert response.status_code == 200
+    payload = response.get_json()
+    kpi = payload["kpi"]
+
+    assert kpi["camera_replacement_count"] == 3
+    assert kpi["camera_replacement_record_count"] == 2
+    assert kpi["camera_replacement_inferred_record_count"] == 1
+
+
+def test_stats_payload_includes_distribution_and_coverage_metrics(client, seeded_project_schema, project_test_db):
+    login(client, "operator1", "operatorpass")
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        conn.execute(
+            """
+            INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+            VALUES (3, 'INSPECT_2', 2, 2, 'inspection-slot-b', '', 2)
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO cameras
+                (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+            VALUES
+                (3, 2, '2', '', 'inspection-slot-b', '10.0.0.3', 2, 3, 2, 'active')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, camera_id, fault_type, reporter_name, status, project_id, camera_slot_id,
+                fault_type_label_snapshot, source_type, created_at, handling_started_at, closed_at, updated_at
+            )
+            VALUES
+                (30, 1, 1, 'Blur', 'Bob', 'closed', 2, 1, 'Blur', 'manual', '2026-04-02 08:00:00', '2026-04-02 09:30:00', '2026-04-03 10:00:00', '2026-04-03 10:00:00'),
+                (31, 2, 3, 'No Image', 'Carol', 'handling', 2, 3, 'No Image', 'manual', '2026-04-01 08:00:00', '2026-04-02 10:00:00', NULL, '2026-04-02 10:00:00'),
+                (32, 2, 3, 'Blur', 'Carol', 'closed', 2, 3, 'Blur', 'manual', '2026-04-05 08:00:00', '2026-04-05 09:00:00', '2026-04-10 09:00:00', '2026-04-10 09:00:00')
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO photos
+                (rel_path, abs_path, filename, ext, station_id, match_status, match_method, project_id, project_hint)
+            VALUES
+                ('coverage-station-a.jpg', 'coverage-station-a.jpg', 'coverage-station-a.jpg', '.jpg', 1, 'matched', 'manual', 2, 'inspection')
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.get("/api/stats?project=inspection")
+    assert response.status_code == 200
+    payload = response.get_json()
+    kpi = payload["kpi"]
+
+    assert kpi["overdue_threshold_days"] == 7
+    assert kpi["overdue_unresolved_count"] == 1
+    assert kpi["overdue_unresolved_ratio"] == 50.0
+
+    assert payload["response_buckets"] == [
+        {"label": "2小时内", "count": 2},
+        {"label": "2-8小时", "count": 0},
+        {"label": "8-24小时", "count": 0},
+        {"label": "24小时以上", "count": 1},
+    ]
+    assert payload["close_buckets"] == [
+        {"label": "当天闭环", "count": 0},
+        {"label": "1-3天", "count": 1},
+        {"label": "3-7天", "count": 1},
+        {"label": "7天以上", "count": 0},
+    ]
+
+    assert payload["station_ranking"][0] == {
+        "station_id": 1,
+        "station_name": "Station A",
+        "county": "County A",
+        "fault_count": 2,
+        "unresolved_count": 1,
+    }
+    assert payload["photo_coverage"] == {
+        "fault_station_count": 2,
+        "covered_station_count": 1,
+        "uncovered_station_count": 1,
+        "coverage_ratio": 50.0,
+        "uncovered_stations": [
+            {
+                "station_id": 2,
+                "station_name": "Station B",
+                "county": "County B",
+                "fault_count": 2,
+                "unresolved_count": 1,
+            }
+        ],
+    }
+
+
+def test_expand_fault_type_distribution_splits_multi_fault_type_rows():
+    rows = [
+        {"semantic_group": "BLUR,NO_IMAGE", "fault_label": "Blur | No Image", "count": 2},
+        {"semantic_group": "BLUR", "fault_label": "Blur", "count": 1},
+    ]
+
+    distribution = app_module.expand_fault_type_distribution(rows)
+
+    assert distribution == [
+        {"semantic_group": "BLUR", "fault_label": "Blur", "count": 3},
+        {"semantic_group": "NO_IMAGE", "fault_label": "No Image", "count": 2},
+    ]
+
+
 def test_fault_tag_suggestions_follow_project_scope(client, seeded_project_schema):
     login(client, "operator1", "operatorpass")
 
@@ -1595,6 +1829,26 @@ def test_statistics_export_admin_includes_audit_columns(client, seeded_project_s
     assert "遗留系统类型" in headers
     assert values[header_index["原始时间"]] == "2026-04-02 08:00:00"
     assert values[header_index["原始时区"]] == "Asia/Shanghai"
+
+
+def test_guest_access_is_limited_to_home_and_statistics(client, seeded_project_schema):
+    assert client.get("/").status_code == 200
+    assert client.get("/statistics").status_code == 200
+    assert client.get("/design/style2").status_code == 200
+    assert client.get("/design/style2/statistics").status_code == 200
+
+    assert client.get("/api/stats").status_code == 200
+    assert client.get("/api/projects").status_code == 200
+    assert client.get("/api/statistics/export").status_code == 200
+
+    assert client.get("/faults").status_code == 302
+    assert client.get("/photos").status_code == 302
+    assert client.get("/map").status_code == 302
+    assert client.get("/admin").status_code == 302
+
+    assert client.get("/api/faults").status_code == 401
+    assert client.get("/api/stations").status_code == 401
+    assert client.get("/api/photos").status_code == 401
 
 
 def test_photos_endpoints_respect_project_scope(client, seeded_project_schema, tmp_path, monkeypatch):

@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "sessions": {
+    "8dcc2fbcbf6f4d888a89b19480923e2b": [
+      {
+        "expertId": "WorkflowOptimizationExpert",
+        "name": "流畅畅",
+        "profession": "工作流优化专家",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/08-QualityAssurance/WorkflowOptimizationExpert/WorkflowOptimizationExpert.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/08-QualityAssurance/WorkflowOptimizationExpert/WorkflowOptimizationExpert_zh.md",
+        "usedAt": 1776948645634,
+        "industryId": "08-QualityAssurance"
+      },
+      {
+        "expertId": "UserExperienceResearcher",
+        "name": "Zoe",
+        "profession": "用户体验研究员",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/01-Design/UserExperienceResearcher/UserExperienceResearcher.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/01-Design/UserExperienceResearcher/UserExperienceResearcher_zh.md",
+        "usedAt": 1775780917751,
+        "industryId": "01-Design"
+      }
+    ]
+  },
+  "lastUpdated": 1776992233094
+}

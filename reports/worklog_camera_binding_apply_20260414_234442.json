@@ -1,0 +1,413 @@
+{
+  "source_csv": "reports\\worklog_camera_binding_candidates_review_20260414.csv",
+  "applied_at": "2026-04-14T23:44:42",
+  "matched_rows_in_review": 115,
+  "applied_update_count": 115,
+  "unchanged_count": 0,
+  "missing_count": 0,
+  "remaining_unbound_import_worklog_faults": 192,
+  "updated_rows_sample": [
+    {
+      "fault_id": 27,
+      "station_name": "110kV港头变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "更换大门",
+      "after_camera_id": 976,
+      "after_camera_slot_id": 976,
+      "after_camera_location_text": "室外大门口-3#球机"
+    },
+    {
+      "fault_id": 28,
+      "station_name": "110kV东源变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "1#主变南侧",
+      "after_camera_id": 920,
+      "after_camera_slot_id": 920,
+      "after_camera_location_text": "1#主变南侧-3#球"
+    },
+    {
+      "fault_id": 31,
+      "station_name": "110kV云和变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "更换电容器室南侧",
+      "after_camera_id": 14,
+      "after_camera_slot_id": 14,
+      "after_camera_location_text": "电容器室南侧-14#球机"
+    },
+    {
+      "fault_id": 32,
+      "station_name": "220kV遂昌变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 1891,
+      "after_camera_slot_id": 1891,
+      "after_camera_location_text": "35kV开关室西南侧-16#球机"
+    },
+    {
+      "fault_id": 34,
+      "station_name": "110kV庆元变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 122,
+      "after_camera_slot_id": 122,
+      "after_camera_location_text": "110kV场地南侧-2#球机"
+    },
+    {
+      "fault_id": 37,
+      "station_name": "220kV睦田变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 1669,
+      "after_camera_slot_id": 1669,
+      "after_camera_location_text": "35kV开关室外墙北侧-13#球机"
+    },
+    {
+      "fault_id": 40,
+      "station_name": "220kV枫树变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "就地继保室南侧",
+      "after_camera_id": 1365,
+      "after_camera_slot_id": 1365,
+      "after_camera_location_text": "就地继保室南侧-13#球机"
+    },
+    {
+      "fault_id": 44,
+      "station_name": "220kV河阳变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 1419,
+      "after_camera_slot_id": 1419,
+      "after_camera_location_text": "35kV开关室补偿变西-20#球机"
+    },
+    {
+      "fault_id": 47,
+      "station_name": "220kV宏山变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 1626,
+      "after_camera_slot_id": 1626,
+      "after_camera_location_text": "35kV开关室东北侧-16#球机"
+    },
+    {
+      "fault_id": 48,
+      "station_name": "110kV芳野变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "#2主变东南侧",
+      "after_camera_id": 1102,
+      "after_camera_slot_id": 1102,
+      "after_camera_location_text": "#2主变东南侧-3#球机"
+    },
+    {
+      "fault_id": 54,
+      "station_name": "110kV缙云变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "#1主变北侧",
+      "after_camera_id": 514,
+      "after_camera_slot_id": 514,
+      "after_camera_location_text": "#1主变北侧-8#球机"
+    },
+    {
+      "fault_id": 58,
+      "station_name": "110kV水阁变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kV场地东侧",
+      "after_camera_id": 1389,
+      "after_camera_slot_id": 1389,
+      "after_camera_location_text": "110kV场地东侧-3#球机"
+    },
+    {
+      "fault_id": 61,
+      "station_name": "110kV海潮变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 663,
+      "after_camera_slot_id": 663,
+      "after_camera_location_text": "主控室东北侧-3#球机"
+    },
+    {
+      "fault_id": 67,
+      "station_name": "220kV仙都变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "蓄电池室",
+      "after_camera_id": 1159,
+      "after_camera_slot_id": 1159,
+      "after_camera_location_text": "蓄电池室北侧-17#球机"
+    },
+    {
+      "fault_id": 68,
+      "station_name": "110kV云和变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "蓄电池室东北侧",
+      "after_camera_id": 10,
+      "after_camera_slot_id": 10,
+      "after_camera_location_text": "蓄电池室东北侧-10#球机"
+    },
+    {
+      "fault_id": 70,
+      "station_name": "220kV睦田变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "35kV开关室",
+      "after_camera_id": 1669,
+      "after_camera_slot_id": 1669,
+      "after_camera_location_text": "35kV开关室外墙北侧-13#球机"
+    },
+    {
+      "fault_id": 72,
+      "station_name": "110kV芳野变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "蓄电池室",
+      "after_camera_id": 1109,
+      "after_camera_slot_id": 1109,
+      "after_camera_location_text": "蓄电池室西北侧-13#球机"
+    },
+    {
+      "fault_id": 74,
+      "station_name": "220kV睦田变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "220kV场地西侧",
+      "after_camera_id": 1659,
+      "after_camera_slot_id": 1659,
+      "after_camera_location_text": "220kV场地西侧-3#球机"
+    },
+    {
+      "fault_id": 76,
+      "station_name": "220kV鹤溪变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "#1主变东北侧",
+      "after_camera_id": 1690,
+      "after_camera_slot_id": 1690,
+      "after_camera_location_text": "#1主变东北侧-7#球机"
+    },
+    {
+      "fault_id": 77,
+      "station_name": "220kV濛洲变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "1#主变东侧",
+      "after_camera_id": 1641,
+      "after_camera_slot_id": 1641,
+      "after_camera_location_text": "1#主变东侧-11#球机"
+    },
+    {
+      "fault_id": 78,
+      "station_name": "110kV芳野变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "#2主变东南侧",
+      "after_camera_id": 1102,
+      "after_camera_slot_id": 1102,
+      "after_camera_location_text": "#2主变东南侧-3#球机"
+    },
+    {
+      "fault_id": 79,
+      "station_name": "110kV安仁变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kV场地西侧",
+      "after_camera_id": 1041,
+      "after_camera_slot_id": 1041,
+      "after_camera_location_text": "110kV场地西侧-1#球机"
+    },
+    {
+      "fault_id": 116,
+      "station_name": "220kV鹤溪变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "2#主变西南侧",
+      "after_camera_id": 1693,
+      "after_camera_slot_id": 1693,
+      "after_camera_location_text": "2#主变西南侧-10#球机"
+    },
+    {
+      "fault_id": 120,
+      "station_name": "110kV延庆变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "主控室北侧",
+      "after_camera_id": 280,
+      "after_camera_slot_id": 280,
+      "after_camera_location_text": "主控室北侧-10#球机"
+    },
+    {
+      "fault_id": 122,
+      "station_name": "110kV油竹变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "35kV开关室北侧",
+      "after_camera_id": 963,
+      "after_camera_slot_id": 963,
+      "after_camera_location_text": "35kV开关室北侧-14#球"
+    },
+    {
+      "fault_id": 124,
+      "station_name": "110kV东源变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "主控室南侧",
+      "after_camera_id": 928,
+      "after_camera_slot_id": 928,
+      "after_camera_location_text": "主控室南侧-11#球"
+    },
+    {
+      "fault_id": 125,
+      "station_name": "110kV雁门变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "10kV开关室西南侧",
+      "after_camera_id": 613,
+      "after_camera_slot_id": 613,
+      "after_camera_location_text": "10kV开关室西南侧-16#球机"
+    },
+    {
+      "fault_id": 127,
+      "station_name": "110kV芳野变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "10kV开关室东侧",
+      "after_camera_id": 1104,
+      "after_camera_slot_id": 1104,
+      "after_camera_location_text": "10kV开关室东侧-8#球机"
+    },
+    {
+      "fault_id": 131,
+      "station_name": "110kV滨江变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 689,
+      "after_camera_slot_id": 689,
+      "after_camera_location_text": "场地外围西北侧-16#球机"
+    },
+    {
+      "fault_id": 132,
+      "station_name": "110kV白云变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "10kV开关室东南侧",
+      "after_camera_id": 693,
+      "after_camera_slot_id": 693,
+      "after_camera_location_text": "10kV开关室东南侧-3#球机"
+    },
+    {
+      "fault_id": 133,
+      "station_name": "110kV高溪变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kVGIS室西侧",
+      "after_camera_id": 765,
+      "after_camera_slot_id": 765,
+      "after_camera_location_text": "110kVGIS室西侧-23#球机"
+    },
+    {
+      "fault_id": 134,
+      "station_name": "110kV海潮变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kVGIS室西北侧",
+      "after_camera_id": 672,
+      "after_camera_slot_id": 672,
+      "after_camera_location_text": "110kVGIS室西北侧-12#球机"
+    },
+    {
+      "fault_id": 137,
+      "station_name": "110kV东山变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "10kV开关室北侧",
+      "after_camera_id": 372,
+      "after_camera_slot_id": 372,
+      "after_camera_location_text": "10kV开关室北侧-10#球机"
+    },
+    {
+      "fault_id": 141,
+      "station_name": "110kV杨柳变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kV场地南侧",
+      "after_camera_id": 18,
+      "after_camera_slot_id": 18,
+      "after_camera_location_text": "110kV场地南侧-4#球机"
+    },
+    {
+      "fault_id": 142,
+      "station_name": "110kV延庆变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kV场地西侧",
+      "after_camera_id": 272,
+      "after_camera_slot_id": 272,
+      "after_camera_location_text": "110kV场地西侧-2#球机"
+    },
+    {
+      "fault_id": 143,
+      "station_name": "220kV海口变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "110kV场地西南侧",
+      "after_camera_id": 1440,
+      "after_camera_slot_id": 1440,
+      "after_camera_location_text": "110kV场地西南侧-11#球"
+    },
+    {
+      "fault_id": 145,
+      "station_name": "220kV河阳变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "35kV开关室北侧",
+      "after_camera_id": 1421,
+      "after_camera_slot_id": 1421,
+      "after_camera_location_text": "35kV开关室北侧-22球机"
+    },
+    {
+      "fault_id": 149,
+      "station_name": "110kV滨江变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "",
+      "after_camera_id": 689,
+      "after_camera_slot_id": 689,
+      "after_camera_location_text": "场地外围西北侧-16#球机"
+    },
+    {
+      "fault_id": 150,
+      "station_name": "110kV里隆变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "主控室西南侧",
+      "after_camera_id": 551,
+      "after_camera_slot_id": 551,
+      "after_camera_location_text": "主控室西南侧-9#球机"
+    },
+    {
+      "fault_id": 153,
+      "station_name": "220kV睦田变",
+      "before_camera_id": null,
+      "before_camera_slot_id": null,
+      "before_camera_location_text": "220kV场地东侧",
+      "after_camera_id": 1657,
+      "after_camera_slot_id": 1657,
+      "after_camera_location_text": "220kV场地东侧-1#球机"
+    }
+  ],
+  "unchanged_ids_sample": [],
+  "missing_ids": []
+}

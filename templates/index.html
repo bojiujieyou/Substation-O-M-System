@@ -547,6 +547,7 @@
 {% endblock %}
 
 {% block content %}
+{% if session.get('user_id') %}
 <div class="stats-grid dashboard-kpi-grid">
     <a id="kpi-open-link" href="{{ url_for('design_variant_faults', style='style2') }}" class="stat-card dashboard-kpi-link dashboard-kpi-card">
         <div class="dashboard-kpi-head">
@@ -815,6 +816,100 @@
 </div>
     </div>
 </details>
+{% else %}
+<div class="stats-grid dashboard-kpi-grid">
+    <div class="stat-card dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">变电站总数</span>
+            <span class="dashboard-kpi-indicator">概览</span>
+        </div>
+        <div class="stat-value" id="guest-stat-stations">-</div>
+        <div class="dashboard-kpi-meta">按当前项目范围展示公开概览。</div>
+    </div>
+    <div class="stat-card dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">设备总数</span>
+            <span class="dashboard-kpi-indicator">概览</span>
+        </div>
+        <div class="stat-value" id="guest-stat-cameras">-</div>
+        <div class="dashboard-kpi-meta">用于快速了解当前接入规模。</div>
+    </div>
+    <div class="stat-card dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">故障总数</span>
+            <span class="dashboard-kpi-indicator">概览</span>
+        </div>
+        <div class="stat-value stat-value-danger" id="guest-stat-faults">-</div>
+        <div class="dashboard-kpi-meta">完整分布与趋势请进入统计报表。</div>
+    </div>
+    <div class="stat-card dashboard-kpi-card">
+        <div class="dashboard-kpi-head">
+            <span class="dashboard-kpi-label">故障率</span>
+            <span class="dashboard-kpi-indicator">概览</span>
+        </div>
+        <div class="stat-value" id="guest-stat-fault-rate">-</div>
+        <div class="dashboard-kpi-meta">按当前项目设备规模估算。</div>
+    </div>
+</div>
+
+<div class="dashboard-priority-grid">
+    <section class="card dashboard-todo-card">
+        <div class="card-header">
+            <div>
+                <div class="dashboard-section-kicker">公开访问</div>
+                <h3 class="card-title">当前可查看内容</h3>
+                <p class="card-subtitle">未登录状态下，仅开放首页概览和统计报表。</p>
+            </div>
+            <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="btn btn-secondary btn-sm" data-project-link>进入统计报表</a>
+        </div>
+        <div class="dashboard-todo-list">
+            <div class="dashboard-todo-item dashboard-todo-item-low">
+                <div class="dashboard-todo-main">
+                    <div class="dashboard-todo-title">先看总体规模和趋势</div>
+                    <div class="dashboard-todo-subtitle">统计页会继续展开月度趋势、区县分布、摄像头故障排行和导出结果。</div>
+                </div>
+                <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="dashboard-todo-action" data-project-link>查看统计</a>
+            </div>
+            <div class="dashboard-todo-item">
+                <div class="dashboard-todo-main">
+                    <div class="dashboard-todo-title">更多运维页面需登录后查看</div>
+                    <div class="dashboard-todo-subtitle">站点、故障、照片、地图和后台能力已收口到登录后开放。</div>
+                </div>
+                <a href="{{ url_for('login_page') }}" class="dashboard-todo-action">去登录</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="card dashboard-overview-card">
+        <div class="card-header">
+            <div>
+                <div class="dashboard-section-kicker">公开入口</div>
+                <h3 class="card-title">下一步建议</h3>
+                <p class="card-subtitle">先看报表，再决定是否登录进入运维流程。</p>
+            </div>
+        </div>
+        <div class="dashboard-overview-grid">
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">公开页面</div>
+                <div class="dashboard-overview-value">2</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">推荐入口</div>
+                <div class="dashboard-overview-value">统计</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">项目切换</div>
+                <div class="dashboard-overview-value">可用</div>
+            </div>
+            <div class="dashboard-overview-item">
+                <div class="dashboard-overview-label">登录后开放</div>
+                <div class="dashboard-overview-value">运维页</div>
+            </div>
+        </div>
+        <div class="dashboard-overview-note">公开态保留最小查看范围，避免未登录直接进入故障、站点、照片和后台页面。</div>
+    </section>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -822,6 +917,7 @@
 <script>
 let statusChart = null;
 let countyChart = null;
+const isLoggedIn = {{ (session.get('user_id') is not none) | tojson }};
 
 const OVERDUE_DAYS = 7;
 const OVERDUE_MS = OVERDUE_DAYS * 24 * 60 * 60 * 1000;
@@ -1279,6 +1375,32 @@ function updateHomepageProjectCopy() {
     }
 }
 
+async function loadGuestDashboardData() {
+    try {
+        const projectCode = window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function'
+            ? window.AppProjectState.getProjectCode()
+            : '';
+        const response = await fetch(buildProjectUrl('/api/stats', projectCode ? { project: projectCode } : {}));
+        if (!response.ok) {
+            throw new Error('guest_stats_failed');
+        }
+        const stats = await response.json();
+        updateStat('guest-stat-stations', stats.stations || 0);
+        updateStat('guest-stat-cameras', stats.cameras || 0);
+        updateStat('guest-stat-faults', stats.faults || 0);
+        const faultRate = typeof stats.fault_rate === 'number'
+            ? `${stats.fault_rate.toFixed(2)}%`
+            : '-';
+        setText('guest-stat-fault-rate', faultRate);
+    } catch (error) {
+        console.error('公开首页概览加载失败:', error);
+        setText('guest-stat-stations', '-');
+        setText('guest-stat-cameras', '-');
+        setText('guest-stat-faults', '-');
+        setText('guest-stat-fault-rate', '-');
+    }
+}
+
 async function loadDashboardData() {
     try {
         const projectCode = window.AppProjectState && typeof window.AppProjectState.getProjectCode === 'function'
@@ -1460,6 +1582,10 @@ async function loadDashboardData() {
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
+    }
+    if (!isLoggedIn) {
+        await loadGuestDashboardData();
+        return;
     }
     updateHomepageProjectCopy();
     await loadDashboardData();

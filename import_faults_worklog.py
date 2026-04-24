@@ -195,6 +195,16 @@ def build_description(location, content):
 def normalize_camera_location(value):
     text = str(value or "").strip().lower()
     for token in [
+        "更换",
+        "维修",
+        "检修",
+        "抢修",
+        "调试",
+        "处理",
+        "恢复",
+        "恢复正常",
+        "后正常",
+        "重新",
         "摄像机",
         "摄像头",
         "球机",
@@ -268,7 +278,10 @@ def derive_camera_location_text(location, content):
     if not content_text:
         return ""
 
-    match = re.search(r"([\u4e00-\u9fffA-Za-z0-9#-]+?(?:侧|室|场地|门口|大门|通道))\s*(?:摄像机|摄像头|球机|枪机)", content_text)
+    match = re.search(
+        r"([\u4e00-\u9fffA-Za-z0-9#-]+?(?:侧|室|场地|门口|大门|通道))(?:\s*[-#]?\d+\s*[#号]?)?\s*(?:摄像机|摄像头|球机|枪机)",
+        content_text,
+    )
     if match:
         return match.group(1).strip()
 
@@ -281,8 +294,10 @@ def resolve_camera_binding(conn, *, station_id, project_id, location, content):
     if "camera_slots" not in [row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]:
         return None
 
+    derived_location = derive_camera_location_text(location, content)
     normalized_hints = {
         normalize_camera_location(location),
+        normalize_camera_location(derived_location),
         normalize_camera_location(content),
     }
     normalized_hints.discard("")
@@ -835,7 +850,7 @@ def backfill_worklog_camera_bindings(*, database_path=None, dry_run=False):
     try:
         rows = conn.execute(
             """
-            SELECT id, station_id, project_id, description, camera_id, camera_slot_id, camera_location_text
+            SELECT id, station_id, project_id, description, handler_note, camera_id, camera_slot_id, camera_location_text
             FROM fault_reports
             WHERE source_type = ?
               AND (
@@ -852,6 +867,8 @@ def backfill_worklog_camera_bindings(*, database_path=None, dry_run=False):
         for row in rows:
             stats["scanned"] += 1
             description = str(row["description"] or "")
+            if not description.strip():
+                description = str(row["handler_note"] or "")
             content, _, suffix = description.partition(" | 地点:")
             location = suffix.strip()
             content = content.strip()

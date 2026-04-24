@@ -1,0 +1,56 @@
+{
+  "applied_at": "2026-04-15T00:03:24",
+  "applied_count": 3,
+  "unchanged_count": 0,
+  "applied": [
+    {
+      "fault_id": 118,
+      "station_name": "110kV???",
+      "before": {
+        "camera_id": null,
+        "camera_slot_id": null,
+        "camera_location_text": "",
+        "project_device_code": ""
+      },
+      "after": {
+        "camera_id": 854,
+        "camera_slot_id": 854,
+        "camera_location_text": "???????-4#??",
+        "project_device_code": "4"
+      }
+    },
+    {
+      "fault_id": 248,
+      "station_name": "110kV???",
+      "before": {
+        "camera_id": null,
+        "camera_slot_id": null,
+        "camera_location_text": "",
+        "project_device_code": ""
+      },
+      "after": {
+        "camera_id": 966,
+        "camera_slot_id": 966,
+        "camera_location_text": "10kV?????-5#??",
+        "project_device_code": "5"
+      }
+    },
+    {
+      "fault_id": 374,
+      "station_name": "110kV???",
+      "before": {
+        "camera_id": null,
+        "camera_slot_id": null,
+        "camera_location_text": "",
+        "project_device_code": ""
+      },
+      "after": {
+        "camera_id": 553,
+        "camera_slot_id": 553,
+        "camera_location_text": "10kV?????-11#??",
+        "project_device_code": "10"
+      }
+    }
+  ],
+  "unchanged": []
+}

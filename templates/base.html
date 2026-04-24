@@ -30,6 +30,7 @@
             </div>
 
             <nav class="sidebar-nav">
+                {% if session.get('user_id') %}
                 <div class="nav-section">
                     <a href="{{ url_for('design_variant_index', style='style2') }}" class="nav-item" data-project-link>
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -84,15 +85,36 @@
                         <span>照片</span>
                     </a>
                 </div>
+                {% else %}
+                <div class="nav-section">
+                    <a href="{{ url_for('design_variant_index', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                        </svg>
+                        <span>首页</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">公开内容</div>
+                    <a href="{{ url_for('design_variant_statistics', style='style2') }}" class="nav-item" data-project-link>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M4 13a1 1 0 011-1h2a1 1 0 011 1v3H4v-3zM9 9a1 1 0 011-1h2a1 1 0 011 1v7H9V9zM14 5a1 1 0 011-1h2a1 1 0 011 1v11h-4V5z"/>
+                        </svg>
+                        <span>统计报表</span>
+                    </a>
+                </div>
+                {% endif %}
             </nav>
 
             <div class="sidebar-footer">
+                {% if session.get('user_id') %}
                 <a href="{{ url_for('admin_page') }}" class="nav-item">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
                     </svg>
                     <span>管理后台</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('login_page') }}" class="nav-item" id="sidebar-logout-link" {% if session.get('user_id') %}data-logout-mode="logout" data-logout-url="{{ url_for('auth.logout') }}"{% else %}data-logout-mode="login"{% endif %}>
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
@@ -141,6 +163,7 @@
                     <h2 class="page-title">{% block page_title %}首页{% endblock %}</h2>
                 </div>
                 <div class="top-bar-right">
+                    {% if session.get('user_id') %}
                     <div class="search-box">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
@@ -161,6 +184,7 @@
                             <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-2zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
                         </svg>
                     </button>
+                    {% endif %}
                 </div>
             </header>
 
@@ -196,7 +220,20 @@
         const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
         const logoutLink = document.getElementById('sidebar-logout-link');
         const notificationBtn = document.getElementById('notification-btn');
+        const isLoggedIn = {{ (session.get('user_id') is not none) | tojson }};
         const SIDEBAR_COLLAPSED_KEY = 'style2-sidebar-collapsed';
+
+        if (!isLoggedIn) {
+            [
+                document.querySelector('.search-box'),
+                document.getElementById('top-import-entry'),
+                document.getElementById('notification-btn'),
+            ].forEach((node) => {
+                if (node) {
+                    node.style.display = 'none';
+                }
+            });
+        }
 
         if (notificationBtn) {
             notificationBtn.addEventListener('click', function(event) {

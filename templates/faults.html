@@ -362,6 +362,136 @@
     color: #155724;
 }
 
+label[for="handle-fault-type-select"].form-label::after {
+    content: " *";
+    color: var(--accent-danger);
+    font-weight: 700;
+}
+
+.faulttype-multiselect {
+    position: relative;
+    margin-top: 8px;
+}
+
+.faulttype-multiselect-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.faulttype-multiselect-trigger-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.faulttype-multiselect-arrow {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--text-secondary);
+    border-bottom: 2px solid var(--text-secondary);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    margin-right: 4px;
+}
+
+.faulttype-multiselect.is-open .faulttype-multiselect-arrow {
+    transform: rotate(-135deg);
+    margin-top: 6px;
+}
+
+.faulttype-multiselect-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.faulttype-multiselect-panel[hidden] {
+    display: none;
+}
+
+.faulttype-multiselect-options {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.faulttype-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.16s ease;
+}
+
+.faulttype-option:hover {
+    background: rgba(255, 107, 53, 0.06);
+}
+
+.faulttype-option input[type="checkbox"] {
+    margin-top: 10px;
+    accent-color: var(--accent-primary);
+}
+
+.faulttype-option-content {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 107, 53, 0.1);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.03);
+    transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.faulttype-option input[type="checkbox"]:checked + .faulttype-option-content {
+    border-color: rgba(255, 107, 53, 0.24);
+    background: rgba(255, 107, 53, 0.08);
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.08);
+}
+
+.faulttype-option-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.faulttype-option-code {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.faulttype-multiselect-empty {
+    padding: 14px 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.faulttype-multiselect-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
 .fault-badge-overdue {
     background: rgba(220, 53, 69, 0.12);
     color: #b42318;
@@ -523,6 +653,33 @@
 
 .fault-detail-hero-main {
     min-width: 0;
+}
+
+.fault-detail-hero-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.fault-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.88);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fault-detail-back:hover {
+    border-color: rgba(255, 107, 53, 0.24);
+    color: var(--text-primary);
 }
 
 .fault-detail-hero-title {
@@ -705,6 +862,68 @@
     font-size: 13px;
 }
 
+.slot-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.slot-history-item {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+button.slot-history-item {
+    cursor: pointer;
+}
+
+button.slot-history-item:hover,
+button.slot-history-item:focus-visible {
+    border-color: rgba(255, 107, 53, 0.2);
+    background: rgba(255, 107, 53, 0.04);
+    outline: none;
+}
+
+.slot-history-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.slot-history-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.slot-history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.slot-history-arrow {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
 @media (max-width: 1100px) {
     .fault-filter-main,
     .fault-filter-advanced-grid,
@@ -722,6 +941,10 @@
     }
 
     .fault-detail-hero {
+        flex-direction: column;
+    }
+
+    .slot-history-item {
         flex-direction: column;
     }
 
@@ -898,9 +1121,24 @@
                 <form id="handle-form">
                     <div class="form-group">
                         <label for="handle-fault-type-select" class="form-label">故障类型</label>
-                        <select id="handle-fault-type-select" class="form-select-input">
+                        <select id="handle-fault-type-select" class="form-select-input" multiple size="8" hidden aria-hidden="true">
                             <option value="">待现场确认（可不改）</option>
                         </select>
+                        <div class="faulttype-multiselect" id="handle-fault-type-multiselect">
+                            <button type="button" id="handle-fault-type-trigger" class="form-select-input faulttype-multiselect-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="handle-fault-type-summary" class="faulttype-multiselect-trigger-text">请选择故障类型（可多选）</span>
+                                <span class="faulttype-multiselect-arrow" aria-hidden="true"></span>
+                            </button>
+                            <div id="handle-fault-type-panel" class="faulttype-multiselect-panel" hidden>
+                                <div id="handle-fault-type-options" class="faulttype-multiselect-options">
+                                    <div class="faulttype-multiselect-empty">加载故障类型中...</div>
+                                </div>
+                                <div class="faulttype-multiselect-actions">
+                                    <button type="button" class="btn-secondary" id="handle-fault-type-clear-btn">清空</button>
+                                    <button type="button" class="btn-primary" id="handle-fault-type-confirm-btn">确认</button>
+                                </div>
+                            </div>
+                        </div>
                         <div id="handle-fault-type-help" class="field-note"></div>
                         <input type="text" id="handle-fault-type-custom" class="form-input-modal" style="margin-top: 8px;" placeholder="目录里没有时，可手动填写真实故障类型">
                     </div>
@@ -963,6 +1201,11 @@
                 </div>
                 <form id="edit-fault-form">
                     <div class="form-group">
+                        <label for="edit-closed-at" class="form-label">闭环时间</label>
+                        <input type="datetime-local" id="edit-closed-at" class="form-input-modal">
+                        <div class="field-note">仅已关闭故障建议填写；修改后会覆盖原闭环时间。</div>
+                    </div>
+                    <div class="form-group">
                         <label for="edit-fault-type" class="form-label">故障类型</label>
                         <input type="text" id="edit-fault-type" class="form-input-modal" placeholder="请输入故障类型">
                     </div>
@@ -1021,11 +1264,14 @@ let currentFaultId = null;
 let currentEditFaultId = null;
 let visibleProjects = [];
 let currentDetailFault = null;
+let faultDetailHistoryStack = [];
 let tagSuggestions = [];
 let currentHandleFault = null;
 let currentView = 'all';
 let searchDebounceTimer = null;
 const projectFaultTypeCache = new Map();
+const FAULT_TYPE_MULTI_LABEL_SEPARATOR = ' | ';
+const FAULT_TYPE_MULTI_CODE_SEPARATOR = ',';
 const PENDING_FAULT_TYPE_LABEL = '待现场确认';
 const is_admin = {{ is_admin | tojson }};
 const can_edit_tags = {{ can_edit_tags | tojson }};
@@ -1045,6 +1291,114 @@ const VIEW_DEFINITIONS = {
     all: { label: '全部故障', subtitle: '显示当前筛选条件下全部故障记录，便于综合调度', empty: '当前筛选条件下没有故障记录' },
     deleted: { label: '已删除', subtitle: '回收站视图，便于审查和恢复误删记录', empty: '回收站里暂无故障记录' }
 };
+
+function normalizeFaultTypeValues(rawValue, { isCode = false } = {}) {
+    if (rawValue == null) {
+        return [];
+    }
+    const sourceParts = Array.isArray(rawValue)
+        ? rawValue
+        : String(rawValue).split(isCode ? FAULT_TYPE_MULTI_CODE_SEPARATOR : FAULT_TYPE_MULTI_LABEL_SEPARATOR);
+    const normalized = [];
+    const seen = new Set();
+    sourceParts.forEach((part) => {
+        const value = String(part || '').trim();
+        if (!value || seen.has(value)) {
+            return;
+        }
+        normalized.push(value);
+        seen.add(value);
+    });
+    return normalized;
+}
+
+function syncHandleFaultTypeSummary() {
+    const select = document.getElementById('handle-fault-type-select');
+    const summary = document.getElementById('handle-fault-type-summary');
+    if (!select || !summary) {
+        return;
+    }
+    const selectedOptions = Array.from(select.selectedOptions || []).filter(option => option.value);
+    if (!selectedOptions.length) {
+        summary.textContent = '请选择故障类型（可多选）';
+        return;
+    }
+    if (selectedOptions.length === 1) {
+        summary.textContent = selectedOptions[0].dataset.label || selectedOptions[0].textContent.trim();
+        return;
+    }
+    summary.textContent = `已选择 ${selectedOptions.length} 项故障类型`;
+}
+
+function closeHandleFaultTypeSelect() {
+    const wrapper = document.getElementById('handle-fault-type-multiselect');
+    const panel = document.getElementById('handle-fault-type-panel');
+    const trigger = document.getElementById('handle-fault-type-trigger');
+    if (!wrapper || !panel || !trigger) {
+        return;
+    }
+    wrapper.classList.remove('is-open');
+    panel.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+}
+
+function openHandleFaultTypeSelect() {
+    const wrapper = document.getElementById('handle-fault-type-multiselect');
+    const panel = document.getElementById('handle-fault-type-panel');
+    const trigger = document.getElementById('handle-fault-type-trigger');
+    if (!wrapper || !panel || !trigger) {
+        return;
+    }
+    wrapper.classList.add('is-open');
+    panel.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+}
+
+function toggleHandleFaultTypeSelect() {
+    const panel = document.getElementById('handle-fault-type-panel');
+    if (!panel) {
+        return;
+    }
+    if (panel.hidden) {
+        openHandleFaultTypeSelect();
+    } else {
+        closeHandleFaultTypeSelect();
+    }
+}
+
+function clearHandleFaultTypeSelection() {
+    const select = document.getElementById('handle-fault-type-select');
+    if (!select) {
+        return;
+    }
+    Array.from(select.options).forEach(option => {
+        option.selected = false;
+    });
+    document.querySelectorAll('#handle-fault-type-options input[type="checkbox"]').forEach(input => {
+        input.checked = false;
+    });
+    syncHandleFaultTypeSummary();
+}
+
+function renderHandleFaultTypeOptions(faultTypes) {
+    const select = document.getElementById('handle-fault-type-select');
+    const options = document.getElementById('handle-fault-type-options');
+    if (!select || !options) {
+        return;
+    }
+    const selectedCodes = new Set(Array.from(select.selectedOptions || []).map(option => option.value));
+    options.innerHTML = faultTypes.length
+        ? faultTypes.map(item => `
+            <label class="faulttype-option">
+                <input type="checkbox" value="${escapeHtml(item.type_code)}" ${selectedCodes.has(item.type_code) ? 'checked' : ''}>
+                <span class="faulttype-option-content">
+                    <span class="faulttype-option-name">${escapeHtml(item.type_label)}</span>
+                    <span class="faulttype-option-code">${escapeHtml(item.type_code)}</span>
+                </span>
+            </label>
+        `).join('')
+        : '<div class="faulttype-multiselect-empty">当前项目还没有可选故障类型</div>';
+}
 
 function getFaultUrlParams() {
     return new URLSearchParams(window.location.search);
@@ -1130,7 +1484,28 @@ function parseFaultDate(dateStr) {
     if (!dateStr) {
         return null;
     }
-    const date = new Date(dateStr);
+    if (dateStr instanceof Date) {
+        return Number.isNaN(dateStr.getTime()) ? null : dateStr;
+    }
+    const raw = String(dateStr).trim();
+    if (!raw) {
+        return null;
+    }
+    const normalized = raw.replace(' ', 'T');
+    const localMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (localMatch) {
+        const [, year, month, day, hour = '00', minute = '00', second = '00'] = localMatch;
+        const date = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        );
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+    const date = new Date(raw);
     return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -1271,8 +1646,8 @@ function compactSourceTypeText(sourceType) {
 }
 
 function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
+    const date = parseFaultDate(dateStr);
+    if (!date) return '-';
     return date.toLocaleString('zh-CN', {
         timeZone: 'Asia/Shanghai',
         year: 'numeric',
@@ -1284,19 +1659,24 @@ function formatDate(dateStr) {
 }
 
 function formatCompactDate(dateStr) {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    return date.toLocaleString('zh-CN', {
+    const date = parseFaultDate(dateStr);
+    if (!date) return '-';
+    return date.toLocaleDateString('zh-CN', {
         timeZone: 'Asia/Shanghai',
+        year: 'numeric',
         month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit'
     });
 }
 
 function getFaultLastUpdatedAt(fault) {
-    return fault?.updated_at || fault?.closed_at || fault?.handling_started_at || fault?.created_at || '';
+    if (fault?.closed_at) {
+        return fault.closed_at;
+    }
+    if (fault?.handling_started_at) {
+        return fault.handling_started_at;
+    }
+    return fault?.updated_at || fault?.created_at || '';
 }
 
 function excerptText(value, maxLength = 36) {
@@ -1559,46 +1939,65 @@ async function populateHandleFaultTypeSelector(fault) {
     const select = document.getElementById('handle-fault-type-select');
     const customInput = document.getElementById('handle-fault-type-custom');
     const help = document.getElementById('handle-fault-type-help');
+    const trigger = document.getElementById('handle-fault-type-trigger');
     const currentLabel = fault.fault_type_label_snapshot || fault.fault_type || '';
-    const currentCode = fault.fault_type_code || '';
+    const currentCodes = normalizeFaultTypeValues(fault.fault_type_code, { isCode: true });
     const projectCode = projectCodeById(fault.project_id) || '';
+    const currentLabels = normalizeFaultTypeValues(currentLabel);
 
-    select.innerHTML = '<option value="">待现场确认（可不改）</option>';
-    select.value = '';
+    closeHandleFaultTypeSelect();
+    select.innerHTML = '';
     customInput.value = '';
-    help.textContent = '关闭故障时可在这里补录真实故障类型。';
+    help.textContent = '请选择一个或多个故障类型；目录里没有时，可手动填写真实故障类型。';
     help.style.color = 'var(--text-secondary)';
+    if (trigger) {
+        trigger.disabled = false;
+    }
 
     try {
         const payload = await getProjectFaultTypes(projectCode);
         const faultTypes = payload.faultTypes || [];
         if (faultTypes.length) {
-            select.innerHTML += faultTypes.map((item) => `
+            select.innerHTML = faultTypes.map((item) => `
                 <option value="${escapeHtml(item.type_code)}" data-label="${escapeHtml(item.type_label)}">
                     ${escapeHtml(item.type_label)}
                 </option>
             `).join('');
-            help.textContent = '可直接选择项目目录中的故障类型；目录里没有时可在下方手动填写。';
+            help.textContent = '请先从目录中勾选真实故障类型；如果目录里没有，再手动填写。';
         } else {
-            help.textContent = '当前项目未发布故障类型目录，可在下方手动填写。';
+            help.textContent = '当前项目还没有可选故障类型目录，请直接手动填写真实故障类型。';
         }
 
-        if (currentCode && faultTypes.some((item) => item.type_code === currentCode)) {
-            select.value = currentCode;
+        if (currentCodes.length) {
+            Array.from(select.options).forEach((option) => {
+                if (currentCodes.includes(option.value)) {
+                    option.selected = true;
+                }
+            });
         } else if (currentLabel && currentLabel !== PENDING_FAULT_TYPE_LABEL) {
-            const matched = faultTypes.find((item) => item.type_label === currentLabel);
-            if (matched) {
-                select.value = matched.type_code;
+            const matchedCodes = faultTypes
+                .filter((item) => currentLabels.includes(item.type_label))
+                .map((item) => item.type_code);
+            if (matchedCodes.length === currentLabels.length && matchedCodes.length) {
+                Array.from(select.options).forEach((option) => {
+                    if (matchedCodes.includes(option.value)) {
+                        option.selected = true;
+                    }
+                });
             } else {
                 customInput.value = currentLabel;
             }
         }
+        renderHandleFaultTypeOptions(faultTypes);
+        syncHandleFaultTypeSummary();
     } catch (error) {
-        help.textContent = '故障类型目录加载失败，可在下方手动填写。';
+        help.textContent = '故障类型目录加载失败，可在下方手动填写真实故障类型。';
         help.style.color = 'var(--accent-warning)';
         if (currentLabel && currentLabel !== PENDING_FAULT_TYPE_LABEL) {
             customInput.value = currentLabel;
         }
+        renderHandleFaultTypeOptions([]);
+        syncHandleFaultTypeSummary();
     }
 }
 
@@ -1911,6 +2310,10 @@ function buildFaultSupportPanel(fault, tagEditor) {
 function buildFaultDetailHtml(fault) {
     const tags = getFaultTags(fault);
     const priority = getFaultPriorityMeta(fault);
+    const cameraLabel = fault.camera_location || fault.camera_location_text || fault.camera_area || '摄像机位置待补充';
+    const backButton = faultDetailHistoryStack.length ? `
+        <button type="button" class="fault-detail-back" onclick="goBackFaultDetail()">返回上一条</button>
+    ` : '';
     const tagEditor = (can_edit_tags && !fault.deleted_at) ? `
         <div class="tag-editor">
             <input
@@ -1934,8 +2337,11 @@ function buildFaultDetailHtml(fault) {
             <h6 class="detail-section-title">当前状态与处置</h6>
             <div class="fault-detail-hero">
                 <div class="fault-detail-hero-main">
-                    <div class="fault-detail-hero-title">${escapeHtml(getFaultTypeText(fault))}</div>
-                    <div class="fault-detail-hero-meta">#${escapeHtml(fault.id)} · ${escapeHtml(projectNameById(fault.project_id))} · ${escapeHtml(fault.station_name || '-')}</div>
+                    <div class="fault-detail-hero-head">
+                        ${backButton}
+                        <div class="fault-detail-hero-title">${escapeHtml(getFaultTypeText(fault))}</div>
+                    </div>
+                    <div class="fault-detail-hero-meta">#${escapeHtml(fault.id)} · ${escapeHtml(projectNameById(fault.project_id))} · ${escapeHtml(fault.station_name || '-')} · ${escapeHtml(cameraLabel)}</div>
                     <div class="fault-detail-hero-desc">${escapeHtml(fault.handler_note || fault.description || '当前未填写处理结果')}</div>
                 </div>
                 <div class="fault-detail-hero-badges">
@@ -2208,12 +2614,35 @@ function copyFaultDetailLink(faultId) {
         .catch(() => showToast('复制失败，请手动复制地址栏链接', 'warning'));
 }
 
+function formatDateTimeLocalValue(dateStr) {
+    const date = parseFaultDate(dateStr);
+    if (!date) {
+        return '';
+    }
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).formatToParts(date);
+    const year = parts.find((part) => part.type === 'year')?.value || '';
+    const month = parts.find((part) => part.type === 'month')?.value || '';
+    const day = parts.find((part) => part.type === 'day')?.value || '';
+    const hour = parts.find((part) => part.type === 'hour')?.value || '';
+    const minute = parts.find((part) => part.type === 'minute')?.value || '';
+    return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
 function populateEditForm(fault) {
     currentEditFaultId = fault.id;
     document.getElementById('edit-fault-id').textContent = fault.id;
     document.getElementById('edit-project').textContent = projectNameById(fault.project_id);
     document.getElementById('edit-station').textContent = fault.station_name || '-';
     document.getElementById('edit-status').textContent = statusText(fault.status);
+    document.getElementById('edit-closed-at').value = formatDateTimeLocalValue(fault.closed_at);
     document.getElementById('edit-fault-type').value = fault.fault_type_label_snapshot || fault.fault_type || '';
     document.getElementById('edit-camera-location').value = fault.camera_location || fault.camera_location_text || '';
     document.getElementById('edit-description').value = fault.description || '';
@@ -2253,8 +2682,15 @@ function openEditFromDetail() {
     showEditModal(currentDetailFault.id);
 }
 
-async function showDetailModal(faultId) {
+async function showDetailModal(faultId, options = {}) {
+    const { pushCurrent = false, preserveHistory = false } = options;
     try {
+        const normalizedFaultId = Number(faultId);
+        if (pushCurrent && currentDetailFault && Number(currentDetailFault.id) !== normalizedFaultId) {
+            faultDetailHistoryStack.push(currentDetailFault.id);
+        } else if (!preserveHistory && !pushCurrent) {
+            faultDetailHistoryStack = [];
+        }
         const response = await fetch(withProject(`/api/faults/${faultId}/detail`, currentFaultQueryParams()));
         if (!response.ok) throw new Error('加载失败');
         const data = await response.json();
@@ -2265,10 +2701,27 @@ async function showDetailModal(faultId) {
         injectImportAuditDetailRows(currentDetailFault);
         injectAssignmentDetailRows(currentDetailFault);
         setDetailActionState(currentDetailFault);
-        new bootstrap.Modal(document.getElementById('detail-modal')).show();
+        const detailModalElement = document.getElementById('detail-modal');
+        const detailModal = bootstrap.Modal.getInstance(detailModalElement) || new bootstrap.Modal(detailModalElement);
+        detailModal.show();
     } catch (error) {
         showToast('加载详情失败: ' + error.message, 'error');
     }
+}
+
+function openSlotHistoryFault(faultId) {
+    if (!currentDetailFault || Number(currentDetailFault.id) === Number(faultId)) {
+        return;
+    }
+    showDetailModal(faultId, { pushCurrent: true });
+}
+
+function goBackFaultDetail() {
+    if (!faultDetailHistoryStack.length) {
+        return;
+    }
+    const previousFaultId = faultDetailHistoryStack.pop();
+    showDetailModal(previousFaultId, { preserveHistory: true });
 }
 
 function renderSlotHistory(historyItems) {
@@ -2279,16 +2732,19 @@ function renderSlotHistory(historyItems) {
     return `
         <div class="slot-history-list">
             ${historyItems.map((item) => `
-                <div class="slot-history-item">
-                    <div class="slot-history-main">
-                        <span class="slot-history-title">#${item.id} ${escapeHtml(item.fault_label || '-')}</span>
-                        ${renderFaultBadge(statusText(item.status), item.status || 'open')}
+                <button type="button" class="slot-history-item" onclick="openSlotHistoryFault(${item.id})">
+                    <div>
+                        <div class="slot-history-main">
+                            <span class="slot-history-title">#${item.id} ${escapeHtml(item.fault_label || '-')}</span>
+                            ${renderFaultBadge(statusText(item.status), item.status || 'open')}
+                        </div>
+                        <div class="slot-history-meta">
+                            <span>创建于 ${formatDate(item.created_at)}</span>
+                            <span>${item.closed_at ? `关闭于 ${formatDate(item.closed_at)}` : '尚未关闭'}</span>
+                        </div>
                     </div>
-                    <div class="slot-history-meta">
-                        <span>创建于 ${formatDate(item.created_at)}</span>
-                        <span>${item.closed_at ? `关闭于 ${formatDate(item.closed_at)}` : '尚未关闭'}</span>
-                    </div>
-                </div>
+                    <span class="slot-history-arrow">查看详情</span>
+                </button>
             `).join('')}
         </div>
     `;
@@ -2385,6 +2841,11 @@ function restoreFaultFromDetail() {
     restoreFault(currentDetailFault.id);
 }
 
+document.getElementById('detail-modal').addEventListener('hidden.bs.modal', function() {
+    faultDetailHistoryStack = [];
+    currentDetailFault = null;
+});
+
 document.getElementById('confirm-edit-btn').addEventListener('click', async function() {
     if (!currentEditFaultId) {
         showToast('当前没有可编辑的故障记录', 'warning');
@@ -2393,6 +2854,7 @@ document.getElementById('confirm-edit-btn').addEventListener('click', async func
 
     const payload = {
         fault_type: document.getElementById('edit-fault-type').value.trim(),
+        closed_at: document.getElementById('edit-closed-at').value.trim(),
         camera_location_text: document.getElementById('edit-camera-location').value.trim(),
         description: document.getElementById('edit-description').value.trim(),
         reporter_name: document.getElementById('edit-reporter-name').value.trim(),
@@ -2439,10 +2901,24 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
     const equipmentQuantity = parseInt(document.getElementById('equipment-quantity').value || '0', 10) || 0;
     const faultTypeSelect = document.getElementById('handle-fault-type-select');
     const faultTypeCustom = document.getElementById('handle-fault-type-custom').value.trim();
-    const selectedFaultTypeOption = faultTypeSelect.options[faultTypeSelect.selectedIndex] || null;
+    const selectedFaultTypeOptions = Array.from(faultTypeSelect.selectedOptions || []).filter((option) => option.value);
     const fallbackFaultType = currentHandleFault?.fault_type_label_snapshot || currentHandleFault?.fault_type || PENDING_FAULT_TYPE_LABEL;
-    const resolvedFaultType = faultTypeCustom || selectedFaultTypeOption?.dataset.label || fallbackFaultType;
-    const resolvedFaultTypeCode = faultTypeCustom ? null : (faultTypeSelect.value || null);
+    const resolvedFaultTypeLabels = selectedFaultTypeOptions
+        .map((option) => option.dataset.label || option.textContent.trim())
+        .filter(Boolean);
+    const resolvedFaultType = faultTypeCustom
+        || (resolvedFaultTypeLabels.length ? resolvedFaultTypeLabels.join(FAULT_TYPE_MULTI_LABEL_SEPARATOR) : fallbackFaultType);
+    const resolvedFaultTypeCode = faultTypeCustom
+        ? null
+        : (selectedFaultTypeOptions.length
+            ? selectedFaultTypeOptions.map((option) => option.value).join(FAULT_TYPE_MULTI_CODE_SEPARATOR)
+            : null);
+
+    if (!faultTypeCustom && !selectedFaultTypeOptions.length) {
+        showToast('请至少选择一个故障类型，或手动填写真实故障类型', 'warning');
+        openHandleFaultTypeSelect();
+        return;
+    }
 
     if (!handlerName || !handlerNote) {
         showToast('请填写处理人姓名和处理结果', 'warning');
@@ -2548,6 +3024,45 @@ document.querySelectorAll('.fault-view-tab').forEach((button) => {
     button.addEventListener('click', function() {
         switchFaultView(this.dataset.view || 'all');
     });
+});
+document.getElementById('handle-fault-type-trigger').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleHandleFaultTypeSelect();
+});
+document.getElementById('handle-fault-type-clear-btn').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    clearHandleFaultTypeSelection();
+});
+document.getElementById('handle-fault-type-confirm-btn').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeHandleFaultTypeSelect();
+});
+document.getElementById('handle-fault-type-options').addEventListener('change', function(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') {
+        return;
+    }
+    const select = document.getElementById('handle-fault-type-select');
+    const option = Array.from(select.options).find((item) => item.value === target.value);
+    if (option) {
+        option.selected = target.checked;
+    }
+    syncHandleFaultTypeSummary();
+});
+document.addEventListener('click', function(event) {
+    const wrapper = document.getElementById('handle-fault-type-multiselect');
+    if (!wrapper || wrapper.hidden || wrapper.contains(event.target)) {
+        return;
+    }
+    closeHandleFaultTypeSelect();
+});
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeHandleFaultTypeSelect();
+    }
 });
 
 document.addEventListener('DOMContentLoaded', async function() {

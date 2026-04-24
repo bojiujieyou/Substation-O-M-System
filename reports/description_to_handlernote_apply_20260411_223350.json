@@ -1,0 +1,18 @@
+{
+  "applied_at": "2026-04-11T22:33:50",
+  "database": "E:\\项目\\变电站图像监控运维平台\\station_monitor.db",
+  "backup": "E:\\项目\\变电站图像监控运维平台\\station_monitor.description_to_handlernote_20260411_223350.db",
+  "before": {
+    "description_nonempty": 410,
+    "handler_note_nonempty": 0,
+    "both_nonempty": 0
+  },
+  "after": {
+    "description_nonempty": 0,
+    "handler_note_nonempty": 410
+  },
+  "updated_rows": 410,
+  "copied_into_empty_handler_note": 410,
+  "merged_into_existing_handler_note": 0,
+  "cleared_description_rows": 410
+}
