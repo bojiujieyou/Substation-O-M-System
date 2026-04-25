@@ -29,7 +29,11 @@ function withProject(path, extraParams) {
 }
 
 async function fetchJson(url, options) {
-    const response = await fetch(url, options);
+    const requestOptions = {
+        credentials: 'same-origin',
+        ...(options || {}),
+    };
+    const response = await fetch(url, requestOptions);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
         throw new Error(data.error || '请求失败');
@@ -97,7 +101,7 @@ window.AppProjectState = {
             this._syncProjectLinks();
         } catch (error) {
             console.error('项目状态初始化失败:', error);
-            this._renderGlobalSelect(true);
+            this._renderGlobalSelect(true, error);
         }
         return this;
     },
@@ -158,12 +162,14 @@ window.AppProjectState = {
         window.history.replaceState({}, '', url.toString());
     },
 
-    _renderGlobalSelect(hasError) {
+    _renderGlobalSelect(hasError, error) {
         const select = document.getElementById('global-project-select');
         if (!select) return;
 
         if (hasError) {
-            select.innerHTML = '<option value="">项目加载失败</option>';
+            const rawMessage = String(error && error.message ? error.message : '').trim();
+            const isAuthError = rawMessage.includes('401') || rawMessage.includes('请先登录');
+            select.innerHTML = `<option value="">${isAuthError ? '登录状态失效' : '项目加载失败'}</option>`;
             select.disabled = true;
             return;
         }

@@ -648,6 +648,43 @@ function setProjectHelp(message, isError = false) {
     el.textContent = message || '';
 }
 
+function setProjectSelectState(message, { disabled = true } = {}) {
+    const select = document.getElementById('project-select');
+    select.innerHTML = `<option value="">${escapeHtml(message)}</option>`;
+    select.value = '';
+    select.disabled = disabled;
+}
+
+function handleProjectLoadFailure(error) {
+    const rawMessage = String(error && error.message ? error.message : '').trim();
+    const isAuthError = rawMessage.includes('401') || rawMessage.includes('请先登录');
+    const message = isAuthError ? '请先登录后再加载项目列表。' : (rawMessage || '加载项目失败，请稍后重试。');
+
+    availableProjects = [];
+    stations = [];
+    cameras = [];
+    currentProjectCode = '';
+    multiProjectEnabled = false;
+
+    setProjectSelectState(isAuthError ? '请先登录' : '加载失败');
+    document.getElementById('station-select').innerHTML = '<option value="">请先完成项目加载</option>';
+    document.getElementById('station-select').disabled = true;
+    renderCameraPlaceholder('请先完成项目加载');
+    renderFaultTypes([]);
+    setProjectHelp(message, true);
+    setFaultTypeHelp(isAuthError ? '登录后会自动加载该项目的故障类型。' : '项目未加载成功，暂时无法获取故障类型。', true);
+}
+
+function buildProjectLoadError(response, fallbackMessage = '加载项目失败') {
+    if (!response) {
+        return new Error(fallbackMessage);
+    }
+    if (response.status === 401) {
+        return new Error('请先登录');
+    }
+    return new Error(`${fallbackMessage}（HTTP ${response.status}）`);
+}
+
 function renderFaultTypes(faultTypes) {
     currentFaultTypes = faultTypes || [];
     const select = document.getElementById('fault-type');
@@ -666,9 +703,9 @@ function renderFaultTypes(faultTypes) {
 }
 
 async function loadProjects() {
-    const response = await fetch('/api/projects');
+    const response = await fetch('/api/projects', { credentials: 'same-origin' });
     if (!response.ok) {
-        throw new Error('加载项目失败');
+        throw buildProjectLoadError(response);
     }
     const data = await response.json();
     availableProjects = data.projects || [];
@@ -681,6 +718,7 @@ async function loadProjects() {
     const requestedProject = getUrlProjectCode();
     const defaultProjectCode = requestedProject || data.default_project_code || availableProjects[0].code;
     const select = document.getElementById('project-select');
+    select.disabled = false;
     select.innerHTML = availableProjects.map(project => `
         <option value="${project.code}">${escapeHtml(project.name)}</option>
     `).join('');
@@ -695,7 +733,7 @@ async function loadProjects() {
 
 async function loadFaultTypes(projectCode) {
     try {
-        const response = await fetch(`/api/projects/${encodeURIComponent(projectCode)}/fault-types`);
+        const response = await fetch(`/api/projects/${encodeURIComponent(projectCode)}/fault-types`, { credentials: 'same-origin' });
         if (!response.ok) {
             throw new Error('加载故障类型失败');
         }
@@ -728,7 +766,7 @@ async function loadStations() {
     const stationSelect = document.getElementById('station-select');
     stationSelect.innerHTML = '<option value="">加载中...</option>';
     try {
-        const response = await fetch(`/api/stations?project=${encodeURIComponent(currentProjectCode)}`);
+        const response = await fetch(`/api/stations?project=${encodeURIComponent(currentProjectCode)}`, { credentials: 'same-origin' });
         if (!response.ok) throw new Error('加载变电站失败');
 
         const data = await response.json();
@@ -770,7 +808,7 @@ async function loadCameras(stationId) {
     updateUrlState({ project: currentProjectCode, stationId });
 
     try {
-        const response = await fetch(`/api/stations/${stationId}?project=${encodeURIComponent(currentProjectCode)}`);
+        const response = await fetch(`/api/stations/${stationId}?project=${encodeURIComponent(currentProjectCode)}`, { credentials: 'same-origin' });
         if (!response.ok) throw new Error('加载摄像头失败');
         const data = await response.json();
         cameras = data.cameras || [];
@@ -802,7 +840,7 @@ async function searchByIp() {
 
     resultDiv.innerHTML = '<div class="spinner"></div> 查询中...';
     try {
-        const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}&project=${encodeURIComponent(currentProjectCode)}`);
+        const response = await fetch(`/api/cameras/by-ip?ip=${encodeURIComponent(ip)}&project=${encodeURIComponent(currentProjectCode)}`, { credentials: 'same-origin' });
         const data = await response.json();
         if (response.status === 404) {
             resultDiv.innerHTML = `
@@ -874,7 +912,6 @@ function resetForm() {
     document.getElementById('ip-search-result').innerHTML = '';
     selectedCamera = null;
     cameras = [];
-    document.getElementById('station-select').value = '';
     renderCameraPlaceholder('请先选择变电站');
     updateUrlState({ project: currentProjectCode, stationId: '' });
     renderFaultTypes(currentFaultTypes);
@@ -982,6 +1019,7 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
 
         const response = await fetch('/api/faults', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 station_id: parseInt(stationId, 10),
@@ -1071,8 +1109,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         renderCameraPlaceholder('请先选择变电站');
         await loadStations();
     } catch (error) {
-        setProjectHelp(error.message, true);
-        setFaultTypeHelp('初始化失败', true);
+        console.error('初始化故障报修页失败:', error);
+        handleProjectLoadFailure(error);
     }
 });
 </script>

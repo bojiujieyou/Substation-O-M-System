@@ -7,8 +7,44 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import sqlite3
-from app import app, get_db
+from io import BytesIO
+from openpyxl import load_workbook
+from app import app, get_db, ensure_fault_report_multi_camera_schema
+
 from config import Config
+
+
+
+def _with_csrf(client, kwargs):
+    """自动为状态变更请求注入 CSRF token。"""
+    headers = dict(kwargs.pop("headers", {}) or {})
+    with client.session_transaction() as sess:
+        token = sess.get("csrf_token")
+    if token:
+        headers.setdefault("X-CSRF-Token", token)
+    kwargs["headers"] = headers
+    return kwargs
+
+
+def _patch_client(client):
+    """给 test client 的状态变更方法自动注入 CSRF token。"""
+    _orig_post = client.post
+    _orig_put = client.put
+    _orig_delete = client.delete
+
+    def _post(url, **kwargs):
+        return _orig_post(url, **_with_csrf(client, kwargs))
+
+    def _put(url, **kwargs):
+        return _orig_put(url, **_with_csrf(client, kwargs))
+
+    def _delete(url, **kwargs):
+        return _orig_delete(url, **_with_csrf(client, kwargs))
+
+    client.post = _post
+    client.put = _put
+    client.delete = _delete
+    return client
 
 
 def login_admin_session(client):
@@ -16,6 +52,32 @@ def login_admin_session(client):
         session['user_id'] = 1
         session['username'] = 'admin'
         session['role'] = 'admin'
+        session['csrf_token'] = 'test-csrf-token'
+
+
+def ensure_unified_project(test_db):
+    conn = sqlite3.connect(test_db)
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS projects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                is_active INTEGER NOT NULL DEFAULT 1
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO projects (id, code, name, is_active)
+            VALUES (1, 'unified', '统一项目', 1)
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
 
 
 @pytest.fixture
@@ -27,6 +89,7 @@ def client(test_db):
     app.config['DATABASE_PATH'] = test_db
     app.config['TESTING'] = True
     with app.test_client() as client:
+        _patch_client(client)
         yield client
     app.config['DATABASE_PATH'] = original_db_path
 
@@ -56,14 +119,180 @@ class TestStatsEndpoint:
     """统计端点"""
 
     def test_get_stats_empty(self, client, init_db):
+        login_admin_session(client)
         response = client.get('/api/stats')
         assert response.status_code == 200
         data = response.get_json()
         assert data['stations'] == 0
         assert data['cameras'] == 0
         assert data['faults'] == 0
+        assert data['fault_events'] == 0
+        assert len(data['monthly_trend']) == 12
+        assert all(item['event_count'] == 0 for item in data['monthly_trend'])
+        assert data['county_distribution'] == []
+
+
+    def test_get_stats_batch_impact_deduplicates_fault_group(self, client, init_db, test_db):
+        login_admin_session(client)
+        with app.app_context():
+            ensure_fault_report_multi_camera_schema(get_db())
+
+        conn = sqlite3.connect(test_db)
+        try:
+            conn.execute(
+                """
+                INSERT INTO stations (id, name, voltage_level, county)
+                VALUES (1, '测试变电站', '220kV', '测试县')
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO cameras (id, station_id, camera_index, area, location_desc, ip_address, channel_port, channel_number)
+                VALUES (1, 1, 'CAM-01', '主变区', '主变区1号位', '192.168.1.10', 8000, 1)
+                """
+            )
+
+            conn.executemany(
+                """
+                INSERT INTO fault_reports (
+                    id, station_id, camera_id, fault_type, reporter_name, status,
+                    fault_group_key, fault_owner_type, root_cause_type,
+                    is_batch_impact, impact_camera_count, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+
+                [
+                    (1, 1, 1, '无图像', '张三', 'closed', 'group-a', 'camera', 'camera', 1, 2, '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
+                    (2, 1, 1, '无图像', '张三', 'closed', 'group-a', 'camera', 'camera', 1, 2, '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
+                    (3, 1, 1, '无图像', '李四', 'open', None, 'camera', 'camera', 0, 1, '2026-04-25 11:00:00', '2026-04-25 11:00:00')
+
+
+                ]
+
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        response = client.get('/api/stats?year=2026')
+        assert response.status_code == 200
+        data = response.get_json()
+
+        assert data['faults'] == 3
+        assert data['fault_events'] == 2
+        assert data['batch_impact_event_count'] == 1
+        assert data['batch_impact']['batch_fault_count'] == 1
+        assert data['batch_impact']['avg_impact_cameras'] == 2.0
+        assert data['batch_impact']['total_impact_cameras'] == 2
+        assert data['kpi']['open_count'] == 1
+        assert data['kpi']['closed_count'] == 2
+        assert data['root_cause_distribution'][0]['cause_type'] == 'camera'
+        assert data['root_cause_distribution'][0]['count'] == 2
+        assert data['fault_type_distribution'][0]['fault_label'] == '无图像'
+        assert data['fault_type_distribution'][0]['count'] == 3
+
+
+        monthly_map = {item['month']: item for item in data['monthly_trend']}
+
+        assert monthly_map['2026-04']['count'] == 3
+        assert monthly_map['2026-04']['event_count'] == 2
+
+        assert len(data['county_distribution']) == 1
+        assert data['county_distribution'][0]['county'] == '测试县'
+        assert data['county_distribution'][0]['count'] == 3
+        assert data['county_distribution'][0]['event_count'] == 2
+
+        assert len(data['station_ranking']) == 1
+
+        assert data['station_ranking'][0]['fault_count'] == 3
+        assert data['station_ranking'][0]['fault_event_count'] == 2
+        assert data['station_ranking'][0]['unresolved_count'] == 1
+
+        assert len(data['camera_ranking']) == 1
+        assert data['camera_ranking'][0]['fault_count'] == 3
+        assert data['camera_ranking'][0]['fault_event_count'] == 2
+
+
+
+
+
+
+class TestStatisticsExport:
+    """统计导出"""
+
+    def test_export_statistics_county_sheet_contains_record_and_event_counts(self, client, init_db, test_db):
+        with app.app_context():
+            ensure_fault_report_multi_camera_schema(get_db())
+
+        conn = sqlite3.connect(test_db)
+        try:
+            conn.execute(
+                """
+                INSERT INTO stations (id, name, voltage_level, county)
+                VALUES (1, '测试变电站', '220kV', '测试县')
+                """
+            )
+            conn.executemany(
+                """
+                INSERT INTO fault_reports (
+                    id, station_id, fault_type, reporter_name, status,
+                    fault_group_key, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    (1, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
+                    (2, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:05:00', '2026-04-25 10:35:00'),
+                    (3, 1, '无图像', '李四', 'open', None, '2026-04-25 11:00:00', '2026-04-25 11:00:00'),
+                ]
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        response = client.get('/api/statistics/export?year=2026')
+        assert response.status_code == 200
+
+        workbook = load_workbook(filename=BytesIO(response.data))
+
+        overview_sheet = workbook['概览']
+        assert overview_sheet['A1'].value == '指标'
+        assert overview_sheet['B1'].value == '数值'
+        assert overview_sheet['A4'].value == '故障记录数'
+        assert overview_sheet['B4'].value == 3
+        assert overview_sheet['A5'].value == '独立故障事件数'
+        assert overview_sheet['B5'].value == 2
+
+        monthly_sheet = workbook['月度趋势']
+        assert monthly_sheet['A1'].value == '月份'
+        assert monthly_sheet['B1'].value == '故障记录数'
+        assert monthly_sheet['C1'].value == '独立事件数'
+        assert monthly_sheet['A5'].value == '2026-04'
+        assert monthly_sheet['B5'].value == 3
+        assert monthly_sheet['C5'].value == 2
+
+        county_sheet = workbook['县区统计']
+        assert county_sheet['A1'].value == '县区'
+        assert county_sheet['B1'].value == '故障记录数'
+        assert county_sheet['C1'].value == '独立事件数'
+        assert county_sheet['A2'].value == '测试县'
+        assert county_sheet['B2'].value == 3
+        assert county_sheet['C2'].value == 2
+
+        voltage_sheet = workbook['电压等级统计']
+        assert voltage_sheet['A1'].value == '电压等级'
+        assert voltage_sheet['B1'].value == '故障记录数'
+        assert voltage_sheet['C1'].value == '独立事件数'
+        assert voltage_sheet['A2'].value == '220kV'
+        assert voltage_sheet['B2'].value == 3
+        assert voltage_sheet['C2'].value == 2
+
 
 class TestStationsEndpoint:
+
+
+
     """变电站端点"""
 
     def test_get_stations_empty(self, client, init_db):
@@ -688,33 +917,152 @@ class TestIdempotency:
         # 两次提交应该创建不同的故障记录
         assert fault_id_1 != fault_id_2
 
-    def test_multi_camera_submission_creates_multiple_faults(self, client, init_db, setup_with_camera, test_db):
-        response = client.post('/api/faults', json={
+    def test_create_fault_ignores_owner_fields_during_creation(self, client, init_db, setup_with_camera, test_db):
+        ensure_unified_project(test_db)
+
+        with client.session_transaction() as session:
+            session['user_id'] = 1
+            session['username'] = 'admin'
+            session['role'] = 'admin'
+            session['csrf_token'] = 'test-csrf-token'
+
+
+        payload = {
             'station_id': 1,
+            'project': 'unified',
             'camera_ids': [1, 2],
             'fault_type': '无图像',
-            'reporter_name': '张三'
-        })
+            'reporter_name': '张三',
+            'fault_owner_type': 'switch',
+            'is_batch_impact': 1,
+            'fault_owner_confirmed_by': 99,
+            'fault_owner_confirmed_at': '2026-04-25 12:00:00',
+        }
+
+        response = client.post('/api/faults', json=payload)
 
         assert response.status_code == 201
         payload = response.get_json()
-        assert payload['fault_count'] == 2
-        assert len(payload['fault_ids']) == 2
-        assert payload['fault_group_key']
 
         conn = sqlite3.connect(test_db)
         try:
             rows = conn.execute(
                 """
-                SELECT camera_id, fault_group_key, status
+                SELECT fault_owner_type, is_batch_impact, impact_camera_count
                 FROM fault_reports
+                WHERE id IN (?, ?)
                 ORDER BY id
-                """
+                """,
+                tuple(payload['fault_ids'])
             ).fetchall()
         finally:
             conn.close()
 
         assert rows == [
-            (1, payload['fault_group_key'], 'open'),
-            (2, payload['fault_group_key'], 'open'),
+            (None, None, 2),
+            (None, None, 2),
         ]
+
+    def test_close_multi_camera_fault_requires_owner_type(self, client, init_db, test_db):
+        login_admin_session(client)
+        ensure_unified_project(test_db)
+
+
+        conn = sqlite3.connect(test_db)
+        try:
+            conn.execute(
+                "INSERT INTO stations (id, name, voltage_level, county) VALUES (1, '测试变电站', '220kV', '测试县')"
+            )
+            conn.execute(
+                """
+                INSERT INTO fault_reports (
+                    id, station_id, fault_type, reporter_name, status,
+                    impact_camera_count, created_at, updated_at
+                )
+                VALUES (
+                    1, 1, '无图像', '张三', 'handling',
+                    2, '2026-04-25 10:00:00', '2026-04-25 10:00:00'
+                )
+                """
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        response = client.put('/api/faults/1/status', json={
+            'status': 'closed',
+            'handler_name': '李四',
+            'handler_note': '已恢复',
+            'is_batch_impact': 1,
+        })
+
+        assert response.status_code == 400
+        assert '必须填写故障归属' in response.get_json()['error']
+
+    def test_close_multi_camera_fault_writes_owner_confirmation_metadata(self, client, init_db, test_db):
+        login_admin_session(client)
+        ensure_unified_project(test_db)
+
+
+        conn = sqlite3.connect(test_db)
+        try:
+            conn.execute(
+                "INSERT INTO stations (id, name, voltage_level, county) VALUES (1, '测试变电站', '220kV', '测试县')"
+            )
+            conn.execute(
+                """
+                INSERT INTO fault_reports (
+                    id, station_id, fault_type, reporter_name, status,
+                    impact_camera_count, created_at, updated_at
+                )
+                VALUES (
+                    1, 1, '无图像', '张三', 'handling',
+                    2, '2026-04-25 10:00:00', '2026-04-25 10:00:00'
+                )
+                """
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        response = client.put('/api/faults/1/status', json={
+            'status': 'closed',
+            'handler_name': '李四',
+            'handler_note': '已恢复',
+            'fault_owner_type': 'switch',
+            'root_cause_type': 'switch',
+            'is_batch_impact': 1,
+        })
+
+        assert response.status_code == 200
+
+        conn = sqlite3.connect(test_db)
+        try:
+            row = conn.execute(
+                """
+                SELECT status, fault_owner_type, root_cause_type, is_batch_impact,
+                       fault_owner_confirmed_by, fault_owner_confirmed_at
+                FROM fault_reports
+                WHERE id = 1
+                """
+            ).fetchone()
+        finally:
+            conn.close()
+
+        assert row[0] == 'closed'
+        assert row[1] == 'switch'
+        assert row[2] == 'switch'
+        assert row[3] == 1
+        assert row[4] == 1
+        assert row[5]
+
+
+
+
+
+
+
+
+
+
+

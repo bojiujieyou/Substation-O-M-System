@@ -55,3 +55,8 @@ captures/
 *.jpg
 *.mp4
 !static/images/*.jpg
+
+# WorkBuddy local state
+.workbuddy/
+station_monitor.db.empty_*
+

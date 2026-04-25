@@ -127,9 +127,14 @@ def init_db(force=False):
             deleted_at TIMESTAMP,
             deleted_by INTEGER,
             closed_at TIMESTAMP,
+            planned_handle_time TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             idempotency_key TEXT UNIQUE,
+            fault_owner_type TEXT,
+            is_batch_impact INTEGER,
+            root_cause_type TEXT,
+            impact_camera_count INTEGER,
             FOREIGN KEY (station_id) REFERENCES stations(id),
             FOREIGN KEY (camera_id) REFERENCES cameras(id)
         )
@@ -196,11 +201,24 @@ def init_db(force=False):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_station ON fault_reports(station_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_time ON fault_reports(created_at)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_idempotency ON fault_reports(idempotency_key)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_owner_type ON fault_reports(fault_owner_type)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_root_cause ON fault_reports(root_cause_type)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_station ON cameras(station_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_ip ON cameras(ip_address)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_photo_station_status ON photos(station_id, match_status)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_photo_status_updated ON photos(match_status, updated_at)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_alias_alias ON station_aliases(alias)")
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            ip TEXT NOT NULL,
+            attempt_count INTEGER NOT NULL DEFAULT 0,
+            window_start REAL NOT NULL,
+            PRIMARY KEY (ip)
+        )
+        """
+    )
 
     conn.commit()
     conn.close()

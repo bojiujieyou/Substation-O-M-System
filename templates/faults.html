@@ -1103,6 +1103,35 @@ button.slot-history-item:focus-visible {
     </div>
 </div>
 
+<div class="modal fade" id="handling-confirm-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handling-confirm-modal-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="handling-confirm-modal-title">确认转处理中</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-info mb-3">
+                    <div class="detail-row"><span class="detail-label">故障单号:</span><span class="detail-value" id="handling-confirm-fault-id"></span></div>
+                    <div class="detail-row"><span class="detail-label">项目:</span><span class="detail-value" id="handling-confirm-project"></span></div>
+                    <div class="detail-row"><span class="detail-label">变电站:</span><span class="detail-value" id="handling-confirm-station"></span></div>
+                    <div class="detail-row"><span class="detail-label">故障类型:</span><span class="detail-value" id="handling-confirm-type"></span></div>
+                    <div class="detail-row"><span class="detail-label">报修描述:</span><span class="detail-value" id="handling-confirm-desc"></span></div>
+                </div>
+                <div class="form-group">
+                    <label for="handling-planned-time" class="form-label">计划处理时间</label>
+                    <input type="datetime-local" id="handling-planned-time" class="form-input-modal">
+                    <div class="field-note">选填，预计开始处理的时间。</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn-primary" id="confirm-handling-btn">确认转处理中</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="handle-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="handle-modal-title">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -1141,6 +1170,41 @@ button.slot-history-item:focus-visible {
                         </div>
                         <div id="handle-fault-type-help" class="field-note"></div>
                         <input type="text" id="handle-fault-type-custom" class="form-input-modal" style="margin-top: 8px;" placeholder="目录里没有时，可手动填写真实故障类型">
+                    </div>
+                    <div id="handle-owner-section" class="form-group" style="margin-top: 12px; display: none;">
+                        <label for="handle-fault-owner-type" class="form-label">故障归属 <span id="handle-owner-required-mark" class="required" style="display:none;">*</span></label>
+                        <select id="handle-fault-owner-type" class="form-select-input">
+                            <option value="">请选择</option>
+                            <option value="camera">摄像头本体故障</option>
+                            <option value="switch">交换机故障</option>
+                            <option value="power">集中电源故障</option>
+                            <option value="network">链路/网络故障</option>
+                            <option value="infrastructure_other">其他基础设施故障</option>
+                        </select>
+                        <div id="handle-owner-hint" class="field-note" style="display:none;"></div>
+                    </div>
+                    <div id="handle-owner-toggle" style="display:none; margin-top: 8px; margin-bottom: 4px;">
+                        <a href="javascript:void(0)" id="handle-show-owner-link" style="font-size: 13px; color: var(--accent-primary, #4a90d9); cursor: pointer; text-decoration: none;">+ 填写故障归属（可选）</a>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="handle-root-cause-type" class="form-label">根因确认</label>
+                        <select id="handle-root-cause-type" class="form-select-input">
+                            <option value="">不修改</option>
+                            <option value="camera">摄像头本体故障</option>
+                            <option value="switch">交换机故障</option>
+                            <option value="power">集中电源故障</option>
+                            <option value="network">链路/网络故障</option>
+                            <option value="infrastructure_other">其他基础设施故障</option>
+                        </select>
+                        <div class="field-note">根因确认将影响统计归类，仅在已明确真正故障设备时填写。</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="handle-is-batch-impact" class="form-label">是否确认共因</label>
+                        <select id="handle-is-batch-impact" class="form-select-input">
+                            <option value="">不修改</option>
+                            <option value="0">否</option>
+                            <option value="1">是</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="handler-name" class="form-label">处理人姓名 <span class="required">*</span></label>
@@ -1201,13 +1265,72 @@ button.slot-history-item:focus-visible {
                 </div>
                 <form id="edit-fault-form">
                     <div class="form-group">
+                        <label for="edit-created-at" class="form-label">故障上报时间</label>
+                        <input type="datetime-local" id="edit-created-at" class="form-input-modal">
+                    </div>
+                    <div class="form-group">
                         <label for="edit-closed-at" class="form-label">闭环时间</label>
                         <input type="datetime-local" id="edit-closed-at" class="form-input-modal">
                         <div class="field-note">仅已关闭故障建议填写；修改后会覆盖原闭环时间。</div>
                     </div>
                     <div class="form-group">
-                        <label for="edit-fault-type" class="form-label">故障类型</label>
-                        <input type="text" id="edit-fault-type" class="form-input-modal" placeholder="请输入故障类型">
+                        <label class="form-label">故障类型</label>
+                        <select id="edit-fault-type-select" class="form-select-input" multiple size="8" hidden aria-hidden="true">
+                            <option value="">待现场确认（可不改）</option>
+                        </select>
+                        <div class="faulttype-multiselect" id="edit-fault-type-multiselect">
+                            <button type="button" id="edit-fault-type-trigger" class="form-select-input faulttype-multiselect-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="edit-fault-type-summary" class="faulttype-multiselect-trigger-text">请选择故障类型（可多选）</span>
+                                <span class="faulttype-multiselect-arrow" aria-hidden="true"></span>
+                            </button>
+                            <div id="edit-fault-type-panel" class="faulttype-multiselect-panel" hidden>
+                                <div id="edit-fault-type-options" class="faulttype-multiselect-options">
+                                    <div class="faulttype-multiselect-empty">加载故障类型中...</div>
+                                </div>
+                                <div class="faulttype-multiselect-actions">
+                                    <button type="button" class="btn-secondary" id="edit-fault-type-clear-btn">清空</button>
+                                    <button type="button" class="btn-primary" id="edit-fault-type-confirm-btn">确认</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="edit-fault-type-help" class="field-note"></div>
+                        <input type="text" id="edit-fault-type-custom" class="form-input-modal" style="margin-top: 8px;" placeholder="目录里没有时，可手动填写真实故障类型">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-fault-owner-type" class="form-label">故障归属</label>
+                        <select id="edit-fault-owner-type" class="form-select-input">
+                            <option value="">未选择</option>
+                            <option value="camera">摄像头本体故障</option>
+                            <option value="switch">交换机故障</option>
+                            <option value="power">集中电源故障</option>
+                            <option value="network">链路/网络故障</option>
+                            <option value="infrastructure_other">其他基础设施故障</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-root-cause-type" class="form-label">根因类型</label>
+                        <select id="edit-root-cause-type" class="form-select-input">
+                            <option value="">未确认</option>
+                            <option value="camera">摄像头本体故障</option>
+                            <option value="switch">交换机故障</option>
+                            <option value="power">集中电源故障</option>
+                            <option value="network">链路/网络故障</option>
+                            <option value="infrastructure_other">其他基础设施故障</option>
+                        </select>
+                        <div class="field-note">修改根因类型会影响统计归类，确认修改？</div>
+                    </div>
+                    <div class="form-grid-two">
+                        <div>
+                            <label for="edit-is-batch-impact" class="form-label">是否共因</label>
+                            <select id="edit-is-batch-impact" class="form-select-input">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit-impact-camera-count" class="form-label">影响摄像头数</label>
+                            <input type="number" id="edit-impact-camera-count" class="form-input-modal" min="0" readonly placeholder="自动计算">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit-camera-location" class="form-label">摄像头位置</label>
@@ -1281,6 +1404,14 @@ let currentPage = 1;
 let pageSize = 10;
 const OVERDUE_DAYS = 7;
 const OVERDUE_MS = OVERDUE_DAYS * 24 * 60 * 60 * 1000;
+const ROOT_CAUSE_LABELS = {
+    'camera': '摄像头本体故障',
+    'switch': '交换机故障',
+    'power': '集中电源故障',
+    'network': '链路/网络故障',
+    'infrastructure_other': '其他基础设施故障',
+    'unconfirmed': '未确认根因',
+};
 let faultDetailOpenedFromUrl = false;
 const VIEW_DEFINITIONS = {
     pending: { label: '待处理', subtitle: '优先查看当前尚未接手或未闭环的故障', empty: '当前没有待处理故障' },
@@ -1398,6 +1529,137 @@ function renderHandleFaultTypeOptions(faultTypes) {
             </label>
         `).join('')
         : '<div class="faulttype-multiselect-empty">当前项目还没有可选故障类型</div>';
+}
+
+function syncEditFaultTypeSummary() {
+    const select = document.getElementById('edit-fault-type-select');
+    const summary = document.getElementById('edit-fault-type-summary');
+    if (!select || !summary) return;
+    const selectedOptions = Array.from(select.selectedOptions || []).filter(option => option.value);
+    if (!selectedOptions.length) {
+        summary.textContent = '请选择故障类型（可多选）';
+        return;
+    }
+    if (selectedOptions.length === 1) {
+        summary.textContent = selectedOptions[0].dataset.label || selectedOptions[0].textContent.trim();
+        return;
+    }
+    summary.textContent = `已选择 ${selectedOptions.length} 项故障类型`;
+}
+
+function closeEditFaultTypeSelect() {
+    const wrapper = document.getElementById('edit-fault-type-multiselect');
+    const panel = document.getElementById('edit-fault-type-panel');
+    const trigger = document.getElementById('edit-fault-type-trigger');
+    if (!wrapper || !panel || !trigger) return;
+    wrapper.classList.remove('is-open');
+    panel.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+}
+
+function openEditFaultTypeSelect() {
+    const wrapper = document.getElementById('edit-fault-type-multiselect');
+    const panel = document.getElementById('edit-fault-type-panel');
+    const trigger = document.getElementById('edit-fault-type-trigger');
+    if (!wrapper || !panel || !trigger) return;
+    wrapper.classList.add('is-open');
+    panel.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+}
+
+function toggleEditFaultTypeSelect() {
+    const panel = document.getElementById('edit-fault-type-panel');
+    if (!panel) return;
+    if (panel.hidden) openEditFaultTypeSelect();
+    else closeEditFaultTypeSelect();
+}
+
+function clearEditFaultTypeSelection() {
+    const select = document.getElementById('edit-fault-type-select');
+    if (!select) return;
+    Array.from(select.options).forEach(option => { option.selected = false; });
+    document.querySelectorAll('#edit-fault-type-options input[type="checkbox"]').forEach(input => {
+        input.checked = false;
+    });
+    syncEditFaultTypeSummary();
+}
+
+function renderEditFaultTypeOptions(faultTypes) {
+    const select = document.getElementById('edit-fault-type-select');
+    const options = document.getElementById('edit-fault-type-options');
+    if (!select || !options) return;
+    const selectedCodes = new Set(Array.from(select.selectedOptions || []).map(option => option.value));
+    options.innerHTML = faultTypes.length
+        ? faultTypes.map(item => `
+            <label class="faulttype-option">
+                <input type="checkbox" value="${escapeHtml(item.type_code)}" ${selectedCodes.has(item.type_code) ? 'checked' : ''}>
+                <span class="faulttype-option-content">
+                    <span class="faulttype-option-name">${escapeHtml(item.type_label)}</span>
+                    <span class="faulttype-option-code">${escapeHtml(item.type_code)}</span>
+                </span>
+            </label>
+        `).join('')
+        : '<div class="faulttype-multiselect-empty">当前项目还没有可选故障类型</div>';
+}
+
+async function populateEditFaultTypeSelector(fault) {
+    const select = document.getElementById('edit-fault-type-select');
+    const customInput = document.getElementById('edit-fault-type-custom');
+    const help = document.getElementById('edit-fault-type-help');
+    const trigger = document.getElementById('edit-fault-type-trigger');
+    const currentLabel = fault.fault_type_label_snapshot || fault.fault_type || '';
+    const currentCodes = normalizeFaultTypeValues(fault.fault_type_code, { isCode: true });
+    const pCode = projectCodeById(fault.project_id) || '';
+    const currentLabels = normalizeFaultTypeValues(currentLabel);
+
+    closeEditFaultTypeSelect();
+    select.innerHTML = '';
+    customInput.value = '';
+    help.textContent = '请选择一个或多个故障类型；目录里没有时，可手动填写真实故障类型。';
+    help.style.color = 'var(--text-secondary)';
+    if (trigger) trigger.disabled = false;
+
+    try {
+        const payload = await getProjectFaultTypes(pCode);
+        const faultTypes = payload.faultTypes || [];
+        if (faultTypes.length) {
+            select.innerHTML = faultTypes.map((item) => `
+                <option value="${escapeHtml(item.type_code)}" data-label="${escapeHtml(item.type_label)}">
+                    ${escapeHtml(item.type_label)}
+                </option>
+            `).join('');
+            help.textContent = '请先从目录中勾选真实故障类型；如果目录里没有，再手动填写。';
+        } else {
+            help.textContent = '当前项目还没有可选故障类型目录，请直接手动填写真实故障类型。';
+        }
+
+        if (currentCodes.length) {
+            Array.from(select.options).forEach((option) => {
+                if (currentCodes.includes(option.value)) option.selected = true;
+            });
+        } else if (currentLabel && currentLabel !== PENDING_FAULT_TYPE_LABEL) {
+            const matchedCodes = faultTypes
+                .filter((item) => currentLabels.includes(item.type_label))
+                .map((item) => item.type_code);
+            if (matchedCodes.length === currentLabels.length && matchedCodes.length) {
+                Array.from(select.options).forEach((option) => {
+                    if (matchedCodes.includes(option.value)) option.selected = true;
+                });
+            } else {
+                customInput.value = currentLabel;
+            }
+        }
+        renderEditFaultTypeOptions(faultTypes);
+        syncEditFaultTypeSummary();
+    } catch (error) {
+        help.textContent = '故障类型目录加载失败，可在下方手动填写真实故障类型。';
+        help.style.color = 'var(--accent-warning)';
+        if (currentLabel && currentLabel !== PENDING_FAULT_TYPE_LABEL) {
+            customInput.value = currentLabel;
+        }
+        renderEditFaultTypeOptions([]);
+        syncEditFaultTypeSummary();
+    }
 }
 
 function getFaultUrlParams() {
@@ -2177,6 +2439,14 @@ function buildFaultTimelineHtml(fault) {
         }
     ];
 
+    if (fault.planned_handle_time) {
+        items.push({
+            title: '计划处理',
+            time: formatDate(fault.planned_handle_time),
+            note: '预计处理时间'
+        });
+    }
+
     if (assignedValue || fault.handling_started_at) {
         items.push({
             title: '进入处理',
@@ -2198,6 +2468,15 @@ function buildFaultTimelineHtml(fault) {
             title: '完成闭环',
             time: formatDate(fault.closed_at),
             note: '故障已关闭'
+        });
+    }
+
+    const rootCauseOwner = fault.root_cause_type || fault.fault_owner_type;
+    if (rootCauseOwner && fault.closed_at) {
+        items.push({
+            title: '根因确认',
+            time: formatDate(fault.closed_at),
+            note: `确认根因：${ROOT_CAUSE_LABELS[rootCauseOwner] || rootCauseOwner}`
         });
     }
 
@@ -2379,6 +2658,10 @@ function buildFaultDetailHtml(fault) {
                             <div class="detail-row"><span class="detail-label">当前责任人:</span><span class="detail-value">${escapeHtml(fault.assigned_to_username || (fault.assigned_to != null ? `#${fault.assigned_to}` : '-'))}</span></div>
                             <div class="detail-row"><span class="detail-label">槽位 ID:</span><span class="detail-value">${fault.camera_slot_id != null ? escapeHtml(fault.camera_slot_id) : '-'}</span></div>
                             <div class="detail-row"><span class="detail-label">项目设备编号:</span><span class="detail-value">${escapeHtml(fault.project_device_code || '-')}</span></div>
+                            <div class="detail-row"><span class="detail-label">故障归属:</span><span class="detail-value">${ROOT_CAUSE_LABELS[fault.fault_owner_type] || fault.fault_owner_type || '未确认'}</span></div>
+                            <div class="detail-row"><span class="detail-label">根因确认:</span><span class="detail-value">${ROOT_CAUSE_LABELS[fault.root_cause_type] || fault.root_cause_type || '未确认'}</span></div>
+                            <div class="detail-row"><span class="detail-label">共因标记:</span><span class="detail-value">${fault.is_batch_impact == 1 ? '是（共因故障）' : (fault.is_batch_impact == 0 ? '否（单点故障）' : '未标记')}</span></div>
+                            <div class="detail-row"><span class="detail-label">影响摄像头数:</span><span class="detail-value">${fault.impact_camera_count != null ? fault.impact_camera_count + ' 台' : '-'}</span></div>
                             <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
                         </div>
                     </div>
@@ -2520,7 +2803,7 @@ function renderPagination(totalItems, totalPages) {
     const controls = document.getElementById('pagination-controls');
     if (!infoText || !controls) return;
 
-    infoText.textContent = `共 ${totalItems} 条，第 ${currentPage}/${totalPages} 页`;
+    infoText.textContent = `共 ${totalItems} 条记录，第 ${currentPage}/${totalPages} 页`;
 
     let html = '';
     html += `<button ${currentPage <= 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">上一页</button>`;
@@ -2569,6 +2852,32 @@ async function showHandleModal(faultId) {
     document.getElementById('handler-note').value = '';
     document.getElementById('equipment-type').value = fault.equipment_type || '';
     document.getElementById('equipment-quantity').value = fault.equipment_quantity || 0;
+    document.getElementById('handle-root-cause-type').value = fault.root_cause_type || '';
+    document.getElementById('handle-is-batch-impact').value = fault.is_batch_impact != null ? String(fault.is_batch_impact) : '';
+
+    // 故障归属：条件展示逻辑
+    const ownerSection = document.getElementById('handle-owner-section');
+    const ownerToggle = document.getElementById('handle-owner-toggle');
+    const ownerRequiredMark = document.getElementById('handle-owner-required-mark');
+    const ownerSelect = document.getElementById('handle-fault-owner-type');
+    const ownerHint = document.getElementById('handle-owner-hint');
+    ownerSelect.value = fault.fault_owner_type || '';
+    ownerHint.style.display = 'none';
+    ownerHint.textContent = '';
+
+    const impactCount = fault.impact_camera_count;
+    if (impactCount != null && impactCount > 1) {
+        // 多摄像头：默认展示，必填
+        ownerSection.style.display = '';
+        ownerToggle.style.display = 'none';
+        ownerRequiredMark.style.display = '';
+    } else {
+        // 单摄像头或未知：默认隐藏，提供人工开启入口
+        ownerSection.style.display = 'none';
+        ownerToggle.style.display = '';
+        ownerRequiredMark.style.display = 'none';
+    }
+
     new bootstrap.Modal(document.getElementById('handle-modal')).show();
 }
 
@@ -2584,24 +2893,58 @@ function openHandleFromDetail() {
     showHandleModal(currentDetailFault.id);
 }
 
+let currentHandlingFaultId = null;
+
 async function markFaultHandling(faultId) {
+    const fault = allFaults.find(item => item.id === faultId);
+    if (!fault) {
+        showToast('未找到故障记录', 'warning');
+        return;
+    }
+    currentHandlingFaultId = faultId;
+    document.getElementById('handling-confirm-fault-id').textContent = fault.id;
+    document.getElementById('handling-confirm-project').textContent = projectNameById(fault.project_id);
+    document.getElementById('handling-confirm-station').textContent = fault.station_name || '-';
+    document.getElementById('handling-confirm-type').textContent = fault.fault_type_label_snapshot || fault.fault_type || '-';
+    document.getElementById('handling-confirm-desc').textContent = fault.description || '(无描述)';
+    document.getElementById('handling-planned-time').value = '';
+    new bootstrap.Modal(document.getElementById('handling-confirm-modal')).show();
+}
+
+document.getElementById('confirm-handling-btn').addEventListener('click', async function() {
+    if (!currentHandlingFaultId) {
+        showToast('当前没有可操作的故障记录', 'warning');
+        return;
+    }
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = '处理中...';
     try {
-        const response = await fetch(withProject(`/api/faults/${faultId}/status`), {
+        const payload = { status: 'handling' };
+        const plannedTime = document.getElementById('handling-planned-time').value.trim();
+        if (plannedTime) {
+            payload.planned_handle_time = plannedTime;
+        }
+        const response = await fetch(withProject(`/api/faults/${currentHandlingFaultId}/status`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'handling' })
+            body: JSON.stringify(payload)
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || '更新失败');
+        bootstrap.Modal.getInstance(document.getElementById('handling-confirm-modal')).hide();
         await loadFaults();
-        if (currentDetailFault && currentDetailFault.id === faultId) {
-            await showDetailModal(faultId);
+        if (currentDetailFault && currentDetailFault.id === currentHandlingFaultId) {
+            await showDetailModal(currentHandlingFaultId);
         }
         showToast('故障已转为处理中', 'success');
     } catch (error) {
         showToast('更新状态失败: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '确认转处理中';
     }
-}
+});
 
 function copyFaultDetailLink(faultId) {
     const url = new URL(window.location.href);
@@ -2642,8 +2985,9 @@ function populateEditForm(fault) {
     document.getElementById('edit-project').textContent = projectNameById(fault.project_id);
     document.getElementById('edit-station').textContent = fault.station_name || '-';
     document.getElementById('edit-status').textContent = statusText(fault.status);
+    document.getElementById('edit-created-at').value = formatDateTimeLocalValue(fault.created_at);
     document.getElementById('edit-closed-at').value = formatDateTimeLocalValue(fault.closed_at);
-    document.getElementById('edit-fault-type').value = fault.fault_type_label_snapshot || fault.fault_type || '';
+    populateEditFaultTypeSelector(fault);
     document.getElementById('edit-camera-location').value = fault.camera_location || fault.camera_location_text || '';
     document.getElementById('edit-description').value = fault.description || '';
     document.getElementById('edit-reporter-name').value = fault.reporter_name || '';
@@ -2652,6 +2996,10 @@ function populateEditForm(fault) {
     document.getElementById('edit-handler-note').value = fault.handler_note || '';
     document.getElementById('edit-equipment-type').value = fault.equipment_type || '';
     document.getElementById('edit-equipment-quantity').value = fault.equipment_quantity || 0;
+    document.getElementById('edit-fault-owner-type').value = fault.fault_owner_type || '';
+    document.getElementById('edit-root-cause-type').value = fault.root_cause_type || '';
+    document.getElementById('edit-is-batch-impact').value = fault.is_batch_impact != null ? String(fault.is_batch_impact) : '0';
+    document.getElementById('edit-impact-camera-count').value = fault.impact_camera_count || 0;
 }
 
 async function showEditModal(faultId) {
@@ -2852,10 +3200,25 @@ document.getElementById('confirm-edit-btn').addEventListener('click', async func
         return;
     }
 
+    const editFaultTypeSelect = document.getElementById('edit-fault-type-select');
+    const editFaultTypeCustom = document.getElementById('edit-fault-type-custom').value.trim();
+    const editSelectedOptions = Array.from(editFaultTypeSelect.selectedOptions || []).filter((option) => option.value);
+    const editResolvedLabels = editSelectedOptions.map((option) => option.dataset.label || option.textContent.trim()).filter(Boolean);
+    const editFaultTypeLabel = editFaultTypeCustom
+        || (editResolvedLabels.length ? editResolvedLabels.join(FAULT_TYPE_MULTI_LABEL_SEPARATOR) : '');
+    const editFaultTypeCode = editFaultTypeCustom
+        ? ''
+        : (editSelectedOptions.length ? editSelectedOptions.map((option) => option.value).join(FAULT_TYPE_MULTI_CODE_SEPARATOR) : '');
+
     const payload = {
-        fault_type: document.getElementById('edit-fault-type').value.trim(),
+        created_at: document.getElementById('edit-created-at').value.trim(),
         closed_at: document.getElementById('edit-closed-at').value.trim(),
+        ...(editFaultTypeLabel ? { fault_type: editFaultTypeLabel } : {}),
+        ...(editFaultTypeCode ? { fault_type_code: editFaultTypeCode } : {}),
         camera_location_text: document.getElementById('edit-camera-location').value.trim(),
+        fault_owner_type: document.getElementById('edit-fault-owner-type').value || null,
+        root_cause_type: document.getElementById('edit-root-cause-type').value || null,
+        is_batch_impact: parseInt(document.getElementById('edit-is-batch-impact').value, 10) || 0,
         description: document.getElementById('edit-description').value.trim(),
         reporter_name: document.getElementById('edit-reporter-name').value.trim(),
         reporter_contact: document.getElementById('edit-reporter-contact').value.trim(),
@@ -2925,6 +3288,16 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
         return;
     }
 
+    // 故障归属校验：多摄像头时必填
+    const ownerSection = document.getElementById('handle-owner-section');
+    const ownerSelect = document.getElementById('handle-fault-owner-type');
+    const ownerRequiredMark = document.getElementById('handle-owner-required-mark');
+    if (ownerSection.style.display !== 'none' && ownerRequiredMark && ownerRequiredMark.style.display !== 'none' && !ownerSelect.value) {
+        showToast('多摄像头故障请填写故障归属', 'warning');
+        ownerSelect.focus();
+        return;
+    }
+
     this.disabled = true;
     this.textContent = '提交中...';
     try {
@@ -2947,7 +3320,10 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
                 fault_type: resolvedFaultType,
                 fault_type_code: resolvedFaultTypeCode,
                 equipment_type: equipmentType,
-                equipment_quantity: equipmentQuantity
+                equipment_quantity: equipmentQuantity,
+                fault_owner_type: ownerSelect.value || null,
+                root_cause_type: document.getElementById('handle-root-cause-type').value || null,
+                is_batch_impact: document.getElementById('handle-is-batch-impact').value !== '' ? parseInt(document.getElementById('handle-is-batch-impact').value, 10) : null
             })
         });
         const data = await response.json();
@@ -2959,6 +3335,33 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
     } finally {
         this.disabled = false;
         this.textContent = '确认关闭';
+    }
+});
+
+document.getElementById('handle-show-owner-link')?.addEventListener('click', function() {
+    const ownerSection = document.getElementById('handle-owner-section');
+    const ownerToggle = document.getElementById('handle-owner-toggle');
+    if (!ownerSection || !ownerToggle) return;
+    ownerSection.style.display = '';
+    ownerToggle.style.display = 'none';
+    document.getElementById('handle-fault-owner-type')?.focus();
+});
+
+document.getElementById('handle-fault-owner-type')?.addEventListener('change', function() {
+    const ownerHint = document.getElementById('handle-owner-hint');
+    if (!ownerHint) return;
+    const impactCount = currentHandleFault?.impact_camera_count;
+    ownerHint.style.display = 'none';
+    ownerHint.textContent = '';
+
+    if (impactCount != null && impactCount > 1) {
+        if (this.value === 'camera') {
+            ownerHint.textContent = '当前记录关联多台摄像头；若确认是摄像头本体各自故障，应该拆成多条单摄像头故障，不建议作为共因闭环。';
+            ownerHint.style.display = '';
+        } else if (this.value) {
+            ownerHint.textContent = '当前记录关联多台摄像头；选择非摄像头本体归属时，通常表示一条共因故障影响多路摄像头。';
+            ownerHint.style.display = '';
+        }
     }
 });
 
@@ -3052,16 +3455,47 @@ document.getElementById('handle-fault-type-options').addEventListener('change', 
     }
     syncHandleFaultTypeSummary();
 });
-document.addEventListener('click', function(event) {
-    const wrapper = document.getElementById('handle-fault-type-multiselect');
-    if (!wrapper || wrapper.hidden || wrapper.contains(event.target)) {
+document.getElementById('edit-fault-type-trigger').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleEditFaultTypeSelect();
+});
+document.getElementById('edit-fault-type-clear-btn').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    clearEditFaultTypeSelection();
+});
+document.getElementById('edit-fault-type-confirm-btn').addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeEditFaultTypeSelect();
+});
+document.getElementById('edit-fault-type-options').addEventListener('change', function(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') {
         return;
     }
-    closeHandleFaultTypeSelect();
+    const select = document.getElementById('edit-fault-type-select');
+    const option = Array.from(select.options).find((item) => item.value === target.value);
+    if (option) {
+        option.selected = target.checked;
+    }
+    syncEditFaultTypeSummary();
+});
+document.addEventListener('click', function(event) {
+    const handleWrapper = document.getElementById('handle-fault-type-multiselect');
+    if (handleWrapper && !handleWrapper.contains(event.target)) {
+        closeHandleFaultTypeSelect();
+    }
+    const editWrapper = document.getElementById('edit-fault-type-multiselect');
+    if (editWrapper && !editWrapper.contains(event.target)) {
+        closeEditFaultTypeSelect();
+    }
 });
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeHandleFaultTypeSelect();
+        closeEditFaultTypeSelect();
     }
 });
 

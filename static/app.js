@@ -3,23 +3,49 @@
 // 状态显示管理
 const StateManager = {
     showLoading: (element) => {
-        element.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>加载中...</span></div>';
+        element.textContent = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'loading-state';
+        var spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        var label = document.createElement('span');
+        label.textContent = '加载中...';
+        wrap.appendChild(spinner);
+        wrap.appendChild(label);
+        element.appendChild(wrap);
         element.style.display = 'block';
     },
 
     showError: (element, message, onRetry) => {
-        element.innerHTML = `
-            <div class="error-state">
-                <span class="error-icon">!</span>
-                <span>${message}</span>
-                ${onRetry ? '<button class="btn btn-sm btn-secondary" onclick="' + onRetry + '()">重试</button>' : ''}
-            </div>
-        `;
+        element.textContent = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'error-state';
+        var icon = document.createElement('span');
+        icon.className = 'error-icon';
+        icon.textContent = '!';
+        var msgSpan = document.createElement('span');
+        msgSpan.textContent = message;
+        wrap.appendChild(icon);
+        wrap.appendChild(msgSpan);
+        if (onRetry) {
+            var btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-secondary';
+            btn.textContent = '重试';
+            btn.addEventListener('click', function() { onRetry(); });
+            wrap.appendChild(btn);
+        }
+        element.appendChild(wrap);
         element.style.display = 'block';
     },
 
     showEmpty: (element, message) => {
-        element.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+        element.textContent = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'empty-state';
+        var p = document.createElement('p');
+        p.textContent = message;
+        wrap.appendChild(p);
+        element.appendChild(wrap);
         element.style.display = 'block';
     },
 

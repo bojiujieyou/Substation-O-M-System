@@ -1,0 +1,48 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+venv
+.venv
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+
+# Environment & secrets
+.env
+.env.*
+
+# Data directories
+data/
+captures/
+photos/
+
+# Test & CI
+tests/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.log
+*.tmp
+.omc/
+.claude/

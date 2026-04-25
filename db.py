@@ -18,6 +18,43 @@ except ImportError:  # pragma: no cover - optional dependency until postgres is 
     PostgresIntegrityError = RuntimeError
     PostgresOperationalError = RuntimeError
 
+try:
+    from psycopg_pool import ConnectionPool
+except ImportError:  # pragma: no cover
+    ConnectionPool = None
+
+_connection_pool: ConnectionPool | None = None
+
+
+def _get_or_create_pool(database_url: str) -> ConnectionPool:
+    """获取或创建 PostgreSQL 连接池（进程级单例）"""
+    global _connection_pool
+    if _connection_pool is not None and not _connection_pool.closed:
+        return _connection_pool
+    if ConnectionPool is None:
+        raise RuntimeError("psycopg-pool is required for PostgreSQL connection pooling")
+    min_size = int(os.environ.get("PG_POOL_MIN", "2"))
+    max_size = int(os.environ.get("PG_POOL_MAX", "10"))
+    _connection_pool = ConnectionPool(
+        database_url,
+        min_size=min_size,
+        max_size=max_size,
+        open=False,
+        kwargs={
+            "row_factory": dict_row,
+        },
+    )
+    _connection_pool.open()
+    return _connection_pool
+
+
+def close_pool():
+    """关闭连接池（应用退出时调用）"""
+    global _connection_pool
+    if _connection_pool is not None:
+        _connection_pool.close()
+        _connection_pool = None
+
 
 SQLITE_BACKEND = "sqlite"
 POSTGRES_BACKEND = "postgresql"
@@ -301,7 +338,18 @@ class PostgresCompatConnection:
         self._raw.rollback()
 
     def close(self):
-        self._raw.close()
+        pool = getattr(self, '_pool', None)
+        raw = self._raw
+        if pool is not None and raw is not None:
+            try:
+                pool.putconn(raw)
+            except Exception:
+                pass
+        elif raw is not None:
+            try:
+                raw.close()
+            except Exception:
+                pass
 
     def _maybe_emulate(self, sql: str, params=None):
         pragma_match = _PRAGMA_TABLE_INFO_RE.match(sql)
@@ -428,9 +476,11 @@ def create_connection(
     if backend == POSTGRES_BACKEND:
         if psycopg is None:
             raise RuntimeError("psycopg is required when DATABASE_URL points to PostgreSQL")
-        connection = psycopg.connect(database_url)
+        pool = _get_or_create_pool(database_url)
+        connection = pool.getconn()
         wrapped = PostgresCompatConnection(connection)
         wrapped.row_factory = row_factory
+        wrapped._pool = pool
         return wrapped
 
     connection = sqlite3.connect(str(Path(database_path)), uri=uri)

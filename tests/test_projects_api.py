@@ -28,6 +28,7 @@ def client(project_test_db):
 
     init_db(force=True)
     with app.test_client() as c:
+        _patch_client(c)
         yield c
 
     config_module.Config.DATABASE_PATH = original_path
@@ -46,6 +47,7 @@ def legacy_upload_client(project_test_db):
 
     init_db(force=True)
     with app.test_client() as c:
+        _patch_client(c)
         yield c
 
     config_module.Config.DATABASE_PATH = original_path
@@ -318,18 +320,53 @@ def login(client, username, password):
     return response.get_json()
 
 
-def test_api_projects_anonymous_returns_active_projects(client, seeded_project_schema):
-    response = client.get("/api/projects")
-    assert response.status_code == 200
-    data = response.get_json()
+def _with_csrf(client, kwargs):
+    """自动为状态变更请求注入 CSRF token。"""
+    headers = dict(kwargs.pop("headers", {}) or {})
+    with client.session_transaction() as sess:
+        token = sess.get("csrf_token")
+    if token:
+        headers.setdefault("X-CSRF-Token", token)
+    kwargs["headers"] = headers
+    return kwargs
 
-    assert data["multi_project_enabled"] is True
-    assert [p["code"] for p in data["projects"]] == ["unified", "inspection"]
-    assert all(project["can_write"] is False for project in data["projects"])
-    assert data["default_project_code"] == "unified"
+
+def _patch_client(client):
+    """给 test client 的状态变更方法自动注入 CSRF token。"""
+    _orig_post = client.post
+    _orig_put = client.put
+    _orig_delete = client.delete
+
+    def _post(url, **kwargs):
+        return _orig_post(url, **_with_csrf(client, kwargs))
+
+    def _put(url, **kwargs):
+        return _orig_put(url, **_with_csrf(client, kwargs))
+
+    def _delete(url, **kwargs):
+        return _orig_delete(url, **_with_csrf(client, kwargs))
+
+    client.post = _post
+    client.put = _put
+    client.delete = _delete
+    return client
+
+
+def test_api_projects_anonymous_returns_active_projects(client, seeded_project_schema):
+    """匿名用户访问 /api/projects 现在需要登录（安全收口后不再公开）。"""
+    response = client.get("/api/projects")
+    assert response.status_code in (401, 302)
+
+
+def test_api_projects_anonymous_returns_401_json(client, seeded_project_schema):
+    response = client.get("/api/projects")
+    assert response.status_code == 401
+    data = response.get_json()
+    assert data["error"] == "请先登录"
 
 
 def test_login_response_contains_visible_projects(client, seeded_project_schema):
+
     data = login(client, "operator1", "operatorpass")
     assert data["user"]["default_project_code"] == "inspection"
     assert [p["code"] for p in data["user"]["projects"]] == ["inspection"]
@@ -1834,12 +1871,13 @@ def test_statistics_export_admin_includes_audit_columns(client, seeded_project_s
 def test_guest_access_is_limited_to_home_and_statistics(client, seeded_project_schema):
     assert client.get("/").status_code == 200
     assert client.get("/statistics").status_code == 200
-    assert client.get("/design/style2").status_code == 200
-    assert client.get("/design/style2/statistics").status_code == 200
 
-    assert client.get("/api/stats").status_code == 200
-    assert client.get("/api/projects").status_code == 200
-    assert client.get("/api/statistics/export").status_code == 200
+    assert client.get("/design/style2").status_code == 302
+    assert client.get("/design/style2/statistics").status_code == 302
+
+    assert client.get("/api/stats").status_code == 401
+    assert client.get("/api/projects").status_code == 401
+    assert client.get("/api/statistics/export").status_code == 401
 
     assert client.get("/faults").status_code == 302
     assert client.get("/photos").status_code == 302

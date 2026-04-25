@@ -3,10 +3,12 @@
 用户登录认证系统
 """
 import hashlib
+import hmac
 import secrets
 import time
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
+from werkzeug.security import check_password_hash, generate_password_hash
 from project_access import (
     get_default_project_code,
     get_projects,
@@ -19,48 +21,180 @@ from utils import get_db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-# 简单的内存限流（生产环境建议用Redis）
-_login_attempts = {}  # {ip: (count, reset_time)}
+PASSWORD_HASH_METHOD = "scrypt"
 
-def rate_limit_check(ip, max_attempts=5, window_seconds=300):
-    """检查是否超过登录尝试次数限制"""
-    now = time.time()
-    if ip in _login_attempts:
-        count, reset_time = _login_attempts[ip]
-        if now > reset_time:
-            _login_attempts[ip] = (0, now + window_seconds)
-        elif count >= max_attempts:
+RATE_LIMIT_MAX_ATTEMPTS = 5
+RATE_LIMIT_WINDOW_SECONDS = 300
+
+
+def ensure_login_attempts_table(db) -> None:
+    """确保 login_attempts 表存在（自修复模式，兼容老数据库）"""
+    try:
+        db.execute("SELECT 1 FROM login_attempts LIMIT 1")
+        return
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            ip TEXT NOT NULL,
+            attempt_count INTEGER NOT NULL DEFAULT 0,
+            window_start REAL NOT NULL,
+            PRIMARY KEY (ip)
+        )
+    """)
+    db.commit()
+
+
+def rate_limit_check(ip: str, max_attempts: int = RATE_LIMIT_MAX_ATTEMPTS, window_seconds: int = RATE_LIMIT_WINDOW_SECONDS) -> bool:
+    """检查是否超过登录尝试次数限制（数据库持久化，失败时放行）"""
+    try:
+        db = get_db()
+        ensure_login_attempts_table(db)
+        now = time.time()
+        row = db.execute(
+            "SELECT attempt_count, window_start FROM login_attempts WHERE ip = ?",
+            (ip,),
+        ).fetchone()
+
+        if row is None:
+            db.execute(
+                "INSERT INTO login_attempts (ip, attempt_count, window_start) VALUES (?, 0, ?)",
+                (ip, now),
+            )
+            db.commit()
+            return True
+
+        count = row["attempt_count"]
+        window_start = row["window_start"]
+
+        if now - window_start > window_seconds:
+            db.execute(
+                "UPDATE login_attempts SET attempt_count = 0, window_start = ? WHERE ip = ?",
+                (now, ip),
+            )
+            db.commit()
+            return True
+
+        if count >= max_attempts:
             return False
-    else:
-        _login_attempts[ip] = (0, now + window_seconds)
-    return True
 
-def rate_limit_record(ip):
-    """记录一次失败的登录尝试"""
-    now = time.time()
-    if ip in _login_attempts:
-        count, reset_time = _login_attempts[ip]
-        if now > reset_time:
-            count = 0
-            reset_time = now + 300
-        _login_attempts[ip] = (count + 1, reset_time)
-    else:
-        _login_attempts[ip] = (1, now + 300)
+        return True
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return True
 
-def hash_password(password, salt=None):
-    """密码哈希（使用SHA256+盐）"""
+
+def rate_limit_record(ip: str) -> None:
+    """记录一次失败的登录尝试（数据库持久化，失败时静默）"""
+    try:
+        db = get_db()
+        ensure_login_attempts_table(db)
+        now = time.time()
+
+        row = db.execute(
+            "SELECT attempt_count, window_start FROM login_attempts WHERE ip = ?",
+            (ip,),
+        ).fetchone()
+
+        if row is not None and now - row["window_start"] <= RATE_LIMIT_WINDOW_SECONDS:
+            db.execute(
+                "UPDATE login_attempts SET attempt_count = attempt_count + 1 WHERE ip = ?",
+                (ip,),
+            )
+        elif row is not None:
+            db.execute(
+                "UPDATE login_attempts SET attempt_count = 1, window_start = ? WHERE ip = ?",
+                (now, ip),
+            )
+        else:
+            db.execute(
+                "INSERT INTO login_attempts (ip, attempt_count, window_start) VALUES (?, 1, ?)",
+                (ip, now),
+            )
+        db.commit()
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+
+
+def _hash_legacy_password(password, salt=None):
+    """旧版 salt$sha256 哈希，仅用于兼容校验和惰性迁移。"""
     if salt is None:
         salt = secrets.token_hex(16)
-    h = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"{salt}${h}"
+    digest = hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
+    return f"{salt}${digest}"
+
+
+def is_legacy_password_hash(stored):
+    """识别历史 salt$sha256 格式。"""
+    if not isinstance(stored, str):
+        return False
+
+    parts = stored.split("$")
+    if len(parts) != 2:
+        return False
+
+    salt, digest = parts
+    return (
+        len(salt) == 32
+        and len(digest) == 64
+        and all(ch in "0123456789abcdef" for ch in salt.lower())
+        and all(ch in "0123456789abcdef" for ch in digest.lower())
+    )
+
+
+def password_needs_rehash(stored):
+    return is_legacy_password_hash(stored)
+
+
+def hash_password(password, salt=None):
+    """默认生成强哈希；保留 salt 参数以兼容旧格式测试/校验。"""
+    if salt is not None:
+        return _hash_legacy_password(password, salt)
+    return generate_password_hash(password, method=PASSWORD_HASH_METHOD)
 
 def verify_password(password, stored):
     """验证密码"""
-    try:
-        salt, _ = stored.split('$')
-        return hash_password(password, salt) == stored
-    except:
+    if not isinstance(stored, str) or not stored:
         return False
+
+    if is_legacy_password_hash(stored):
+        salt, _ = stored.split("$", 1)
+        return hmac.compare_digest(_hash_legacy_password(password, salt), stored)
+
+    try:
+        return check_password_hash(stored, password)
+    except (TypeError, ValueError):
+        return False
+
+
+def upgrade_password_hash(db, user_id, password):
+    """重写为当前强哈希方案。"""
+    db.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (hash_password(password), user_id),
+    )
+    db.commit()
+
+
+def verify_and_upgrade_password(db, user, password):
+    """兼容旧哈希验证，并在成功登录后完成惰性迁移。"""
+    if not verify_password(password, user["password_hash"]):
+        return False
+
+    if password_needs_rehash(user["password_hash"]):
+        upgrade_password_hash(db, user["id"], password)
+
+    return True
 
 
 def _admin_required():
@@ -110,7 +244,7 @@ def login():
     cursor.execute("SELECT id, username, password_hash, role FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
 
-    if not user or not verify_password(password, user['password_hash']):
+    if not user or not verify_and_upgrade_password(db, user, password):
         rate_limit_record(client_ip)
         return jsonify({'error': '用户名或密码错误'}), 401
 
@@ -118,6 +252,8 @@ def login():
     session['user_id'] = user['id']
     session['username'] = user['username']
     session['role'] = user['role']
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
 
     return jsonify({
         'message': '登录成功',
@@ -246,11 +382,7 @@ def reset_user_password(user_id):
     if not user:
         return jsonify({'error': '用户不存在'}), 404
 
-    db.execute(
-        "UPDATE users SET password_hash = ? WHERE id = ?",
-        (hash_password(password), user_id),
-    )
-    db.commit()
+    upgrade_password_hash(db, user_id, password)
 
     return jsonify({
         'message': f'已更新用户 {user["username"]} 的密码',

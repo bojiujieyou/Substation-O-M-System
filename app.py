@@ -4,13 +4,15 @@ import math
 import logging
 import json
 import re
+import secrets
+import hmac
 from io import BytesIO
 from datetime import datetime
 from pathlib import Path
 from functools import wraps
 from flask import Flask, request, jsonify, g, current_app, session, redirect, render_template, send_file
 from ai_fault_analysis import ensure_ai_runtime_schema, normalize_camera_hint
-from config import Config
+from config import Config, validate_runtime_config
 from admin import (
     admin_bp,
     require_admin,
@@ -42,22 +44,33 @@ from utils import get_db, close_db, init_app
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
+validate_runtime_config()
+app.config['SECRET_KEY'] = Config.SECRET_KEY
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-# 本地HTTP调试默认关闭Secure；生产HTTPS可通过环境变量 SESSION_COOKIE_SECURE=true 开启
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-# CSRF保护说明：
-# 此内部工具使用 SameSite=Lax session cookies + admin角色检查作为主要防护。
-# API端点使用JSON（非表单提交），不受CSRF影响。
-# 如需开启CSRF保护，设置为True并为HTML表单添加csrf_token()。
+# CSRF 保护：双重提交 Cookie 模式
+# session 中存储 csrf_token，前端 fetch 从 cookie 读入 X-CSRF-Token header
+# 所有 POST/PUT/DELETE/PATCH 请求（除登录和静态资源外）均校验
 app.config['WTF_CSRF_ENABLED'] = False
 
 # 注册蓝图
 DEFAULT_PENDING_FAULT_TYPE = '待现场确认'
 FAULT_TYPE_MULTI_LABEL_SEPARATOR = ' | '
 FAULT_TYPE_MULTI_CODE_SEPARATOR = ','
+ROOT_CAUSE_LABELS = {
+    'camera': '摄像头本体故障',
+    'switch': '交换机故障',
+    'power': '集中电源故障',
+    'network': '链路/网络故障',
+    'infrastructure_other': '其他基础设施故障',
+    'unconfirmed': '未确认根因',
+}
+VALID_OWNER_TYPES = tuple(k for k in ROOT_CAUSE_LABELS.keys() if k != 'unconfirmed')
+BASIC_SECURITY_HEADERS = {
+    'X-Frame-Options': 'DENY',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), geolocation=(), microphone=()',
+}
 
 
 def normalize_fault_type_values(raw_value, *, is_code=False):
@@ -149,6 +162,29 @@ app.view_functions['admin.add_camera'] = require_admin(add_camera_scoped)
 
 # 注册utils的teardown
 init_app(app)
+
+# 全局错误处理
+@app.errorhandler(404)
+def not_found(e):
+    if request.path.startswith("/api/"):
+        return api_error("资源不存在", 404)
+    return render_template("404.html") if False else ("页面不存在", 404)
+
+
+@app.errorhandler(500)
+def internal_error(e):
+    logger.exception("未处理的异常: %s", e)
+    if request.path.startswith("/api/"):
+        return api_error("服务器内部错误", 500)
+    return ("服务器内部错误", 500)
+
+
+@app.errorhandler(Exception)
+def handle_unhandled(e):
+    logger.exception("未捕获的异常: %s", e)
+    if request.path.startswith("/api/"):
+        return api_error("服务器内部错误", 500)
+    return ("服务器内部错误", 500)
 
 # 配置日志
 logging.basicConfig(
@@ -246,13 +282,14 @@ def api_success(data, status_code=200):
 PUBLIC_GUEST_ENDPOINTS = {
     'index',
     'statistics',
-    'design_variant_index',
-    'design_variant_statistics',
     'login_page',
-    'get_projects_api',
-    'get_stats',
-    'export_statistics',
 }
+
+
+@app.before_request
+def ensure_authenticated_session_is_permanent():
+    if session.get('user_id') and not session.permanent:
+        session.permanent = True
 
 
 @app.before_request
@@ -272,6 +309,48 @@ def restrict_guest_access():
         return api_error('请先登录', 401)
 
     return redirect('/login')
+
+
+@app.before_request
+def ensure_csrf_token():
+    """确保已登录用户的 session 中存在 CSRF token"""
+    if session.get('user_id') and 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
+
+
+# CSRF 双重提交 Cookie 保护
+CSRF_SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
+
+
+@app.before_request
+def enforce_csrf():
+    """对状态变更请求校验 CSRF token（双重提交 Cookie 模式）"""
+    if request.method in CSRF_SAFE_METHODS:
+        return None
+    # 静态资源和认证登录页豁免
+    if request.endpoint in ('static', 'auth.login'):
+        return None
+    # 健康检查豁免
+    if request.endpoint == 'health':
+        return None
+
+    session_token = session.get('csrf_token')
+    header_token = request.headers.get('X-CSRF-Token')
+
+    if not session_token or not header_token:
+        return api_error('缺少 CSRF token', 403)
+
+    if not hmac.compare_digest(session_token, header_token):
+        return api_error('CSRF token 不匹配', 403)
+
+    return None
+
+
+@app.after_request
+def apply_basic_security_headers(response):
+    for header_name, header_value in BASIC_SECURITY_HEADERS.items():
+        response.headers.setdefault(header_name, header_value)
+    return response
 
 
 def normalize_photo_row(row):
@@ -395,12 +474,28 @@ def ensure_fault_report_multi_camera_schema(db):
     if not table_exists(db, "fault_reports"):
         return set()
     columns = get_table_columns(db, "fault_reports")
+    missing = False
     if "fault_group_key" not in columns:
         db.execute("ALTER TABLE fault_reports ADD COLUMN fault_group_key TEXT")
         db.execute("CREATE INDEX IF NOT EXISTS idx_fault_group_key ON fault_reports(fault_group_key)")
+        missing = True
+    root_cause_columns = {
+        "fault_owner_type": "TEXT",
+        "is_batch_impact": "INTEGER",
+        "root_cause_type": "TEXT",
+        "impact_camera_count": "INTEGER",
+        "fault_owner_confirmed_by": "INTEGER",
+        "fault_owner_confirmed_at": "TEXT",
+    }
+    for col_name, col_sql in root_cause_columns.items():
+        if col_name not in columns:
+            db.execute(f"ALTER TABLE fault_reports ADD COLUMN {col_name} {col_sql}")
+            missing = True
+    if missing:
         db.commit()
         columns = get_table_columns(db, "fault_reports")
     return columns
+
 
 
 def normalize_camera_ids(value):
@@ -523,6 +618,7 @@ def ensure_fault_report_soft_delete_schema(db):
     required_columns = {
         "deleted_at": "TIMESTAMP",
         "deleted_by": "INTEGER",
+        "planned_handle_time": "TIMESTAMP",
     }
     missing = False
     for column_name, column_sql in required_columns.items():
@@ -864,6 +960,12 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         selected_fault_params,
     ).fetchone()['count']
 
+    fault_group_key_expr = "CAST(f.id AS TEXT)"
+    if 'fault_group_key' in fault_report_columns:
+        fault_group_expr = _column_expr(fault_report_columns, "f", "fault_group_key")
+        fault_group_key_expr = f"COALESCE(NULLIF(TRIM({fault_group_expr}), ''), CAST(f.id AS TEXT))"
+
+
     fault_this_month = db.execute(
         f"""
         SELECT COUNT(*) as count
@@ -885,18 +987,45 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
 
     target_year = year or datetime.now().year
     monthly_data = {f"{target_year}-{month:02d}": 0 for month in range(1, 13)}
+    monthly_event_data = {f"{target_year}-{month:02d}": 0 for month in range(1, 13)}
+    month_expr = "strftime('%Y-%m', f.created_at)"
+    county_expr = "COALESCE(NULLIF(TRIM(s.county), ''), '未知')"
+    voltage_level_expr = "COALESCE(NULLIF(TRIM(s.voltage_level), ''), '其他')"
     monthly_rows = db.execute(
         f"""
-        SELECT strftime('%Y-%m', f.created_at) as month, COUNT(*) as cnt
+        SELECT {month_expr} as month, COUNT(*) as cnt
         FROM fault_reports f
         WHERE 1=1{fault_scope_sql}
           AND strftime('%Y', f.created_at) = ?
-        GROUP BY month
+        GROUP BY {month_expr}
         """,
         fault_scope_params + [str(target_year)],
     ).fetchall()
+
     for row in monthly_rows:
         monthly_data[row['month']] = row['cnt']
+
+    monthly_event_rows = db.execute(
+        f"""
+        SELECT event_month AS month, COUNT(*) AS cnt
+        FROM (
+            SELECT
+                {month_expr} AS event_month,
+                {fault_group_key_expr} AS fault_event_key
+            FROM fault_reports f
+            WHERE 1=1{fault_scope_sql}
+              AND strftime('%Y', f.created_at) = ?
+            GROUP BY {month_expr}, {fault_group_key_expr}
+        ) deduped
+        GROUP BY event_month
+        """,
+        fault_scope_params + [str(target_year)],
+    ).fetchall()
+
+    for row in monthly_event_rows:
+        monthly_event_data[row['month']] = row['cnt']
+
+
 
     available_year_rows = db.execute(
         f"""
@@ -904,10 +1033,11 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         FROM fault_reports f
         WHERE 1=1{fault_scope_sql}
           AND f.created_at IS NOT NULL
-        ORDER BY year DESC
+        ORDER BY strftime('%Y', f.created_at) DESC
         """,
         fault_scope_params,
     ).fetchall()
+
     available_years = [row['year'] for row in available_year_rows if row['year']]
 
     semantic_group_expr = "NULL"
@@ -957,65 +1087,272 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
 
     county_rows = db.execute(
         f"""
-        SELECT COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county, COUNT(*) AS count
-        FROM fault_reports f
-        JOIN stations s ON f.station_id = s.id
-        WHERE {selected_fault_where_sql}
-        GROUP BY county
-        ORDER BY count DESC, county ASC
+        SELECT
+            records.county,
+            records.count,
+            events.event_count
+        FROM (
+            SELECT
+                {county_expr} AS county,
+                COUNT(*) AS count
+            FROM fault_reports f
+            JOIN stations s ON f.station_id = s.id
+            WHERE {selected_fault_where_sql}
+            GROUP BY {county_expr}
+        ) records
+        JOIN (
+            SELECT
+                deduped.county,
+                COUNT(*) AS event_count
+            FROM (
+                SELECT
+                    {county_expr} AS county,
+                    {fault_group_key_expr} AS fault_event_key
+                FROM fault_reports f
+                JOIN stations s ON f.station_id = s.id
+                WHERE {selected_fault_where_sql}
+                GROUP BY {county_expr}, {fault_group_key_expr}
+            ) deduped
+            GROUP BY deduped.county
+        ) events ON events.county = records.county
+        ORDER BY records.count DESC, events.event_count DESC, records.county ASC
         """,
-        selected_fault_params,
+        [*selected_fault_params, *selected_fault_params],
     ).fetchall()
+
 
     voltage_rows = db.execute(
         f"""
-        SELECT COALESCE(NULLIF(TRIM(s.voltage_level), ''), '其他') AS voltage_level, COUNT(*) AS count
+        SELECT {voltage_level_expr} AS voltage_level, COUNT(*) AS count
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         WHERE {selected_fault_where_sql}
-        GROUP BY voltage_level
+        GROUP BY {voltage_level_expr}
         ORDER BY count DESC, voltage_level ASC
         """,
         selected_fault_params,
     ).fetchall()
 
+
     camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(c.area), ''), '未命名设备')"
+    camera_owner_filter = ""
+    if 'fault_owner_type' in fault_report_columns and 'root_cause_type' in fault_report_columns:
+        root_cause_expr_cam = _column_expr(fault_report_columns, "f", "root_cause_type")
+        fault_owner_expr_cam = _column_expr(fault_report_columns, "f", "fault_owner_type")
+        camera_owner_filter = (
+            f" AND (COALESCE(NULLIF(TRIM({root_cause_expr_cam}), ''), "
+            f"NULLIF(TRIM({fault_owner_expr_cam}), ''), 'camera') = 'camera')"
+        )
     camera_ranking_rows = db.execute(
         f"""
         SELECT
-            f.camera_id,
-            {camera_location_expr} AS camera_location,
-            s.name AS station_name,
-            COUNT(*) AS fault_count
-        FROM fault_reports f
-        JOIN stations s ON f.station_id = s.id
-        LEFT JOIN cameras c ON f.camera_id = c.id
-        WHERE {selected_fault_where_sql}
-          AND f.camera_id IS NOT NULL
-        GROUP BY f.camera_id, camera_location, s.name
-        ORDER BY fault_count DESC, f.camera_id ASC
+            records.camera_id,
+            records.camera_location,
+            records.station_name,
+            records.fault_count,
+            events.fault_event_count
+        FROM (
+            SELECT
+                f.camera_id,
+                {camera_location_expr} AS camera_location,
+                s.name AS station_name,
+                COUNT(*) AS fault_count
+            FROM fault_reports f
+            JOIN stations s ON f.station_id = s.id
+            LEFT JOIN cameras c ON f.camera_id = c.id
+            WHERE {selected_fault_where_sql}
+              AND f.camera_id IS NOT NULL
+              {camera_owner_filter}
+            GROUP BY f.camera_id, {camera_location_expr}, s.name
+        ) records
+
+        JOIN (
+            SELECT
+                f.camera_id,
+                COUNT(DISTINCT {fault_group_key_expr}) AS fault_event_count
+            FROM fault_reports f
+            WHERE {selected_fault_where_sql}
+              AND f.camera_id IS NOT NULL
+              {camera_owner_filter}
+            GROUP BY f.camera_id
+        ) events ON events.camera_id = records.camera_id
+        ORDER BY records.fault_count DESC, events.fault_event_count DESC, records.camera_id ASC
         LIMIT 5
         """,
-        selected_fault_params,
+        [*selected_fault_params, *selected_fault_params],
     ).fetchall()
+
 
     station_ranking_rows = db.execute(
         f"""
         SELECT
-            f.station_id,
-            s.name AS station_name,
-            COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
-            COUNT(*) AS fault_count,
-            SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
-        FROM fault_reports f
-        JOIN stations s ON f.station_id = s.id
-        WHERE {selected_fault_where_sql}
-        GROUP BY f.station_id, s.name, county
-        ORDER BY fault_count DESC, unresolved_count DESC, s.name ASC
+            records.station_id,
+            records.station_name,
+            records.county,
+            records.fault_count,
+            records.unresolved_count,
+            events.fault_event_count
+        FROM (
+            SELECT
+                f.station_id,
+                s.name AS station_name,
+                {county_expr} AS county,
+                COUNT(*) AS fault_count,
+                SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
+            FROM fault_reports f
+            JOIN stations s ON f.station_id = s.id
+            WHERE {selected_fault_where_sql}
+            GROUP BY f.station_id, s.name, {county_expr}
+        ) records
+
+        JOIN (
+            SELECT
+                f.station_id,
+                COUNT(DISTINCT {fault_group_key_expr}) AS fault_event_count
+            FROM fault_reports f
+            WHERE {selected_fault_where_sql}
+            GROUP BY f.station_id
+        ) events ON events.station_id = records.station_id
+        ORDER BY records.fault_count DESC, events.fault_event_count DESC, records.unresolved_count DESC, records.station_name ASC
         LIMIT 5
         """,
-        selected_fault_params,
+        [*selected_fault_params, *selected_fault_params],
     ).fetchall()
+
+
+
+    # Deduplicated fault event count（按 fault_group_key 收敛为独立事件；无分组键时回退到记录本身）
+    fault_event_count = fault_count
+    if 'fault_group_key' in fault_report_columns:
+        fault_group_expr = _column_expr(fault_report_columns, "f", "fault_group_key")
+        if Config.DATABASE_BACKEND == "postgresql":
+            fault_event_count_row = db.execute(
+                f"""
+                SELECT COUNT(*) AS event_count
+                FROM (
+                    SELECT DISTINCT ON (COALESCE(NULLIF(TRIM({fault_group_expr}), ''), CAST(f.id AS TEXT)))
+                        1 AS event_marker
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                ) deduped
+                """,
+                selected_fault_params,
+            ).fetchone()
+        else:
+            fault_event_count_row = db.execute(
+                f"""
+                SELECT COUNT(*) AS event_count
+                FROM (
+                    SELECT MIN(f.id) AS _rep_id
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                    GROUP BY COALESCE(NULLIF(TRIM({fault_group_expr}), ''), f.id)
+                ) deduped
+                """,
+                selected_fault_params,
+            ).fetchone()
+        fault_event_count = fault_event_count_row['event_count'] or 0
+
+    # Root cause statistics (deduplicated by fault_group_key)
+
+    root_cause_distribution = []
+    batch_impact_stats = {'batch_fault_count': 0, 'avg_impact_cameras': None, 'total_impact_cameras': 0}
+    if 'fault_owner_type' in fault_report_columns:
+        root_cause_expr = _column_expr(fault_report_columns, "f", "root_cause_type")
+        fault_owner_expr = _column_expr(fault_report_columns, "f", "fault_owner_type")
+        fault_group_expr = _column_expr(fault_report_columns, "f", "fault_group_key")
+        is_batch_expr = _column_expr(fault_report_columns, "f", "is_batch_impact", "0")
+        impact_count_expr = _column_expr(fault_report_columns, "f", "impact_camera_count", "0")
+
+        cause_select = f"COALESCE(NULLIF(TRIM({root_cause_expr}), ''), NULLIF(TRIM({fault_owner_expr}), ''), 'unconfirmed')"
+
+        if Config.DATABASE_BACKEND == "postgresql":
+            root_cause_rows = db.execute(
+                f"""
+                SELECT deduped.cause_type, COUNT(*) AS count
+                FROM (
+                    SELECT DISTINCT ON (COALESCE(NULLIF(TRIM({fault_group_expr}), ''), CAST(f.id AS TEXT)))
+                        {cause_select} AS cause_type
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                ) deduped
+                GROUP BY deduped.cause_type
+                ORDER BY count DESC
+                """,
+                selected_fault_params,
+            ).fetchall()
+
+
+        else:
+            root_cause_rows = db.execute(
+                f"""
+                SELECT cause_type, COUNT(*) AS count
+                FROM (
+                    SELECT MIN(f.id) as _rep_id,
+                           {cause_select} AS cause_type
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                    GROUP BY COALESCE(NULLIF(TRIM({fault_group_expr}), ''), f.id)
+                ) deduped
+                GROUP BY cause_type
+                ORDER BY count DESC
+                """,
+                selected_fault_params,
+            ).fetchall()
+
+        root_cause_distribution = [
+            {
+                'cause_type': row['cause_type'],
+                'cause_label': ROOT_CAUSE_LABELS.get(row['cause_type'], row['cause_type']),
+                'count': row['count'],
+            }
+            for row in root_cause_rows
+        ]
+
+        # Batch impact metrics（按 fault_group_key 去重，避免一组多条记录重复累加 impact_camera_count）
+        if Config.DATABASE_BACKEND == "postgresql":
+            batch_impact_row = db.execute(
+                f"""
+                SELECT
+                    COUNT(*) AS batch_fault_count,
+                    AVG(impact_camera_count_value) AS avg_impact_cameras,
+                    SUM(impact_camera_count_value) AS total_impact_cameras
+                FROM (
+                    SELECT DISTINCT ON (COALESCE(NULLIF(TRIM({fault_group_expr}), ''), CAST(f.id AS TEXT)))
+                        CAST(COALESCE({impact_count_expr}, 0) AS REAL) AS impact_camera_count_value
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                      AND COALESCE({is_batch_expr}, 0) = 1
+                ) deduped
+                """,
+                selected_fault_params,
+            ).fetchone()
+        else:
+            batch_impact_row = db.execute(
+                f"""
+                SELECT
+                    COUNT(*) AS batch_fault_count,
+                    AVG(impact_camera_count_value) AS avg_impact_cameras,
+                    SUM(impact_camera_count_value) AS total_impact_cameras
+                FROM (
+                    SELECT
+                        MIN(f.id) AS _rep_id,
+                        CAST(COALESCE({impact_count_expr}, 0) AS REAL) AS impact_camera_count_value
+                    FROM fault_reports f
+                    WHERE {selected_fault_where_sql}
+                      AND COALESCE({is_batch_expr}, 0) = 1
+                    GROUP BY COALESCE(NULLIF(TRIM({fault_group_expr}), ''), f.id)
+                ) deduped
+                """,
+                selected_fault_params,
+            ).fetchone()
+
+        if batch_impact_row:
+            batch_impact_stats = {
+                'batch_fault_count': batch_impact_row['batch_fault_count'] or 0,
+                'avg_impact_cameras': round(batch_impact_row['avg_impact_cameras'], 1) if batch_impact_row['avg_impact_cameras'] is not None else None,
+                'total_impact_cameras': batch_impact_row['total_impact_cameras'] or 0,
+            }
 
     status_expr = _column_expr(fault_report_columns, "f", "status", "'open'")
     handling_started_expr = _column_expr(fault_report_columns, "f", "handling_started_at")
@@ -1154,7 +1491,7 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
             SELECT
                 f.station_id,
                 s.name AS station_name,
-                COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
+                {county_expr} AS county,
                 COUNT(*) AS fault_count,
                 SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
             FROM fault_reports f
@@ -1167,7 +1504,7 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
                     AND p.station_id = f.station_id
                     {photo_scope_sql}
               )
-            GROUP BY f.station_id, s.name, county
+            GROUP BY f.station_id, s.name, {county_expr}
             ORDER BY unresolved_count DESC, fault_count DESC, s.name ASC
             LIMIT 6
             """,
@@ -1179,18 +1516,19 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
             SELECT
                 f.station_id,
                 s.name AS station_name,
-                COALESCE(NULLIF(TRIM(s.county), ''), '未知') AS county,
+                {county_expr} AS county,
                 COUNT(*) AS fault_count,
                 SUM(CASE WHEN COALESCE(f.status, 'open') != 'closed' THEN 1 ELSE 0 END) AS unresolved_count
             FROM fault_reports f
             JOIN stations s ON f.station_id = s.id
             WHERE {selected_fault_where_sql}
-            GROUP BY f.station_id, s.name, county
+            GROUP BY f.station_id, s.name, {county_expr}
             ORDER BY unresolved_count DESC, fault_count DESC, s.name ASC
             LIMIT 6
             """,
             selected_fault_params,
         ).fetchall()
+
 
     fault_station_count = fault_station_count_row['fault_station_count'] or 0
     uncovered_station_count = max(fault_station_count - covered_fault_station_count, 0)
@@ -1203,8 +1541,10 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         'stations': station_count,
         'cameras': camera_count,
         'faults': fault_count,
+        'fault_events': fault_event_count,
         'faults_this_month': fault_this_month,
         'faults_this_year': fault_this_year,
+
         'fault_rate': round((fault_count / camera_count) * 100, 2) if camera_count else 0,
         'target_year': target_year,
         'selected_year': year,
@@ -1214,15 +1554,24 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
             'visible_projects': [project['code'] for project in project_scope['projects']],
         },
         'monthly_trend': [
-            {'month': month, 'count': count}
+            {
+                'month': month,
+                'count': count,
+                'event_count': monthly_event_data.get(month, count),
+            }
             for month, count in sorted(monthly_data.items())
         ],
+
         'fault_type_distribution': expand_fault_type_distribution(fault_type_rows),
         'county_distribution': [dict(row) for row in county_rows],
         'voltage_distribution': [dict(row) for row in voltage_rows],
         'camera_ranking': [dict(row) for row in camera_ranking_rows],
         'station_ranking': [dict(row) for row in station_ranking_rows],
+        'root_cause_distribution': root_cause_distribution,
+        'batch_impact': batch_impact_stats,
+        'batch_impact_event_count': batch_impact_stats['batch_fault_count'],
         'response_buckets': response_buckets,
+
         'close_buckets': close_buckets,
         'photo_coverage': {
             'fault_station_count': fault_station_count,
@@ -1313,6 +1662,7 @@ def _build_statistics_detail_rows(db, project_scope: dict, year: int | None):
         _column_expr(fault_report_columns, "f", "created_at") + " AS created_at",
         _column_expr(fault_report_columns, "f", "handling_started_at") + " AS handling_started_at",
         _column_expr(fault_report_columns, "f", "closed_at") + " AS closed_at",
+        _column_expr(fault_report_columns, "f", "planned_handle_time") + " AS planned_handle_time",
         _column_expr(fault_report_columns, "f", "source_type", "''") + " AS source_type",
         _column_expr(fault_report_columns, "f", "source_batch_id") + " AS source_batch_id",
         _column_expr(fault_report_columns, "f", "source_record_key") + " AS source_record_key",
@@ -1324,6 +1674,10 @@ def _build_statistics_detail_rows(db, project_scope: dict, year: int | None):
         _column_expr(fault_report_columns, "f", "assigned_to") + " AS assigned_to",
         "COALESCE(u.username, '') AS assigned_to_username" if assigned_user_join else "'' AS assigned_to_username",
         _column_expr(fault_report_columns, "f", "tags_json") + " AS tags_json",
+        _column_expr(fault_report_columns, "f", "fault_owner_type") + " AS fault_owner_type",
+        _column_expr(fault_report_columns, "f", "root_cause_type") + " AS root_cause_type",
+        _column_expr(fault_report_columns, "f", "is_batch_impact", "0") + " AS is_batch_impact",
+        _column_expr(fault_report_columns, "f", "impact_camera_count") + " AS impact_camera_count",
     ]
 
     rows = db.execute(
@@ -2046,39 +2400,9 @@ def export_statistics():
     station_count = db.execute("SELECT COUNT(*) as count FROM stations").fetchone()['count']
     camera_count = db.execute("SELECT COUNT(*) as count FROM cameras").fetchone()['count']
 
-    if year:
-        fault_count = db.execute(
-            "SELECT COUNT(*) as count FROM fault_reports WHERE strftime('%Y', created_at) = ?",
-            (str(year),)
-        ).fetchone()['count']
-    else:
-        fault_count = db.execute("SELECT COUNT(*) as count FROM fault_reports").fetchone()['count']
-
-    # 月度故障趋势
-    monthly_data = {}
-    if year:
-        for m in range(1, 13):
-            key = f"{year}-{m:02d}"
-            monthly_data[key] = 0
-        rows = db.execute("""
-            SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as cnt
-            FROM fault_reports WHERE strftime('%Y', created_at) = ?
-            GROUP BY month
-        """, (str(year),)).fetchall()
-        for row in rows:
-            monthly_data[row['month']] = row['cnt']
-    else:
-        now_year = datetime.now().year
-        for m in range(1, 13):
-            key = f"{now_year}-{m:02d}"
-            monthly_data[key] = 0
-        rows = db.execute("""
-            SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as cnt
-            FROM fault_reports WHERE strftime('%Y', created_at) = ?
-            GROUP BY month
-        """, (str(now_year),)).fetchall()
-        for row in rows:
-            monthly_data[row['month']] = row['cnt']
+    target_year = year or datetime.now().year
+    monthly_data = {f"{target_year}-{m:02d}": 0 for m in range(1, 13)}
+    monthly_event_data = {f"{target_year}-{m:02d}": 0 for m in range(1, 13)}
 
     # 故障记录明细
     query = """
@@ -2086,7 +2410,9 @@ def export_statistics():
                c.area as camera_area, c.location_desc as camera_location,
                f.fault_type, f.description, f.status,
                f.reporter_name, f.reporter_contact,
-               f.created_at, f.closed_at, f.handler_name, f.handler_note
+               f.created_at, f.closed_at, f.handler_name, f.handler_note,
+               f.fault_group_key, f.fault_owner_type, f.root_cause_type,
+               f.is_batch_impact, f.impact_camera_count
         FROM fault_reports f
         JOIN stations s ON f.station_id = s.id
         LEFT JOIN cameras c ON f.camera_id = c.id
@@ -2095,20 +2421,71 @@ def export_statistics():
     if year:
         query += " WHERE strftime('%Y', f.created_at) = ?"
         params.append(str(year))
+    else:
+        query += " WHERE strftime('%Y', f.created_at) = ?"
+        params.append(str(target_year))
     query += " ORDER BY f.created_at DESC"
     faults = db.execute(query, params).fetchall()
 
-    # 县区统计
-    county_data = {}
-    for f in faults:
-        county = f['county'] or '未知'
-        county_data[county] = county_data.get(county, 0) + 1
+    fault_count = len(faults)
 
-    # 电压等级统计
-    voltage_data = {}
+    # 记录口径 / 事件口径汇总
+    fault_event_keys = set()
+    county_record_data = {}
+    county_event_data = {}
+    voltage_record_data = {}
+    voltage_event_data = {}
+    monthly_event_seen = set()
+
+
     for f in faults:
-        vl = f['voltage_level'] or '其他'
-        voltage_data[vl] = voltage_data.get(vl, 0) + 1
+        created_at = (f['created_at'] or '').strip()
+        month_key = created_at[:7] if len(created_at) >= 7 else ''
+        fault_event_key = (f['fault_group_key'] or '').strip() or str(f['id'])
+        county = (f['county'] or '').strip() or '未知'
+        voltage_level = (f['voltage_level'] or '').strip() or '其他'
+
+        if month_key in monthly_data:
+            monthly_data[month_key] += 1
+        voltage_record_data[voltage_level] = voltage_record_data.get(voltage_level, 0) + 1
+        county_record_data[county] = county_record_data.get(county, 0) + 1
+
+        if fault_event_key not in fault_event_keys:
+            fault_event_keys.add(fault_event_key)
+            county_event_data[county] = county_event_data.get(county, 0) + 1
+            voltage_event_data[voltage_level] = voltage_event_data.get(voltage_level, 0) + 1
+
+
+        if month_key and (month_key, fault_event_key) not in monthly_event_seen:
+            monthly_event_seen.add((month_key, fault_event_key))
+            if month_key in monthly_event_data:
+                monthly_event_data[month_key] += 1
+
+    fault_event_count = len(fault_event_keys)
+    county_rows = [
+        {
+            'county': county,
+            'count': count,
+            'event_count': county_event_data.get(county, 0),
+        }
+        for county, count in sorted(
+            county_record_data.items(),
+            key=lambda item: (-item[1], -county_event_data.get(item[0], 0), item[0])
+        )
+    ]
+    voltage_rows = [
+        {
+            'voltage_level': voltage_level,
+            'count': count,
+            'event_count': voltage_event_data.get(voltage_level, 0),
+        }
+        for voltage_level, count in sorted(
+            voltage_record_data.items(),
+            key=lambda item: (-item[1], -voltage_event_data.get(item[0], 0), item[0])
+        )
+    ]
+
+
 
     # 生成Excel
     try:
@@ -2134,10 +2511,12 @@ def export_statistics():
         overview = [
             ('变电站总数', station_count),
             ('摄像头总数', camera_count),
-            ('故障报修总数', fault_count),
+            ('故障记录数', fault_count),
+            ('独立故障事件数', fault_event_count),
             ('故障率', f"{(fault_count/camera_count*100):.2f}%" if camera_count > 0 else '0%'),
         ]
         ws1.append(['指标', '数值'])
+
         for k, v in overview:
             ws1.append([k, v])
         ws1.column_dimensions['A'].width = 20
@@ -2145,43 +2524,55 @@ def export_statistics():
 
         # Sheet 2: 月度趋势
         ws2 = wb.create_sheet('月度趋势')
-        ws2.append(['月份', '故障数量'])
+        ws2.append(['月份', '故障记录数', '独立事件数'])
         for month, cnt in sorted(monthly_data.items()):
-            ws2.append([month, cnt])
+            ws2.append([month, cnt, monthly_event_data.get(month, 0)])
         ws2.column_dimensions['A'].width = 15
         ws2.column_dimensions['B'].width = 15
+        ws2.column_dimensions['C'].width = 15
+
 
         # Sheet 3: 故障明细
         ws3 = wb.create_sheet('故障明细')
         headers = ['ID', '变电站', '电压等级', '县区', '摄像头位置', '故障类型',
-                   '描述', '状态', '报修人', '联系方式', '报修时间', '关闭时间', '处理人', '处理备注']
+                   '描述', '状态', '报修人', '联系方式', '报修时间', '关闭时间', '处理人', '处理备注',
+                   '故障归属', '根因确认', '共因标记', '影响摄像头数']
         ws3.append(headers)
         for f in faults:
+            fault_owner_label = ROOT_CAUSE_LABELS.get(f.get('fault_owner_type') or '', f.get('fault_owner_type') or '')
+            root_cause_label = ROOT_CAUSE_LABELS.get(f.get('root_cause_type') or '', f.get('root_cause_type') or '')
             ws3.append([
                 f['id'], f['station_name'] or '', f['voltage_level'] or '', f['county'] or '',
                 f['camera_location'] or f['camera_area'] or '', f['fault_type'] or '',
                 f['description'] or '', f['status'] or '', f['reporter_name'] or '',
                 f['reporter_contact'] or '', f['created_at'] or '', f['closed_at'] or '',
-                f['handler_name'] or '', f['handler_note'] or ''
+                f['handler_name'] or '', f['handler_note'] or '',
+                fault_owner_label, root_cause_label,
+                f.get('is_batch_impact', ''),
+                f.get('impact_camera_count', ''),
             ])
         for col in ws3.columns:
             ws3.column_dimensions[col[0].column_letter].width = 15
 
         # Sheet 4: 县区统计
         ws4 = wb.create_sheet('县区统计')
-        ws4.append(['县区', '故障数量'])
-        for county, cnt in sorted(county_data.items(), key=lambda x: -x[1]):
-            ws4.append([county, cnt])
+        ws4.append(['县区', '故障记录数', '独立事件数'])
+        for row in county_rows:
+            ws4.append([row['county'], row['count'], row['event_count']])
         ws4.column_dimensions['A'].width = 15
         ws4.column_dimensions['B'].width = 15
+        ws4.column_dimensions['C'].width = 15
+
 
         # Sheet 5: 电压等级统计
         ws5 = wb.create_sheet('电压等级统计')
-        ws5.append(['电压等级', '故障数量'])
-        for vl, cnt in sorted(voltage_data.items(), key=lambda x: -x[1]):
-            ws5.append([vl, cnt])
+        ws5.append(['电压等级', '故障记录数', '独立事件数'])
+        for row in voltage_rows:
+            ws5.append([row['voltage_level'], row['count'], row['event_count']])
         ws5.column_dimensions['A'].width = 15
         ws5.column_dimensions['B'].width = 15
+        ws5.column_dimensions['C'].width = 15
+
 
         # 输出
         output = BytesIO()
@@ -2549,6 +2940,10 @@ def create_fault():
             seed = f"{data['station_id']}|{project_id or ''}|{','.join(str(item) for item in selected_camera_ids)}|{current_time}"
             fault_group_key = hashlib.md5(seed.encode('utf-8')).hexdigest()[:16]
 
+        # 创建阶段忽略归因相关输入；归因只允许在闭环阶段确认。
+        impact_camera_count = len(selected_camera_ids) if selected_camera_ids else None
+
+
         created_fault_ids = []
         db.execute("BEGIN")
 
@@ -2600,6 +2995,13 @@ def create_fault():
             if 'fault_group_key' in fault_report_columns:
                 insert_columns.append('fault_group_key')
                 insert_values.append(fault_group_key)
+            if 'root_cause_type' in fault_report_columns:
+                insert_columns.append('root_cause_type')
+                insert_values.append(None)
+            if 'impact_camera_count' in fault_report_columns and impact_camera_count is not None:
+                insert_columns.append('impact_camera_count')
+                insert_values.append(impact_camera_count)
+
 
             placeholders = ', '.join(['?'] * len(insert_columns))
             cursor = db.execute(
@@ -2750,12 +3152,20 @@ def update_fault_status(fault_id):
 
     # 状态转换验证（决策#7）
     db = get_db()
+    fault_report_columns = ensure_fault_report_multi_camera_schema(db)
     fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
+
 
     select_fields = ["id", "status"]
     if 'project_id' in fault_report_columns:
         select_fields.append("project_id")
+    if 'impact_camera_count' in fault_report_columns:
+        select_fields.append("impact_camera_count")
+    if 'fault_owner_type' in fault_report_columns:
+        select_fields.append("fault_owner_type")
+    if 'is_batch_impact' in fault_report_columns:
+        select_fields.append("is_batch_impact")
     fault = db.execute(
         f"SELECT {', '.join(select_fields)} FROM fault_reports WHERE id = ?{deleted_clause}",
         (fault_id,),
@@ -2776,15 +3186,46 @@ def update_fault_status(fault_id):
     if new_status not in valid_transitions.get(current_status, []):
         return api_error(f'不能从 {current_status} 转换为 {new_status}')
 
-    # handling→closed需要处理人和备注、设备信息
-    if new_status == 'closed' and current_status == 'handling':
-        handler_name = data.get('handler_name')
-        handler_note = data.get('handler_note')
-        equipment_type = data.get('equipment_type', '')
+    # 任意状态进入 closed 都走同一套闭环校验，避免 open->closed 成为旁路。
+    if new_status == 'closed':
+        handler_name = str(data.get('handler_name') or '').strip()
+        handler_note = str(data.get('handler_note') or '').strip()
+        equipment_type = str(data.get('equipment_type') or '').strip()
         equipment_quantity = data.get('equipment_quantity', 0)
 
         if not handler_name or not handler_note:
             return api_error('关闭故障需要提供处理人姓名和处理备注')
+
+        try:
+            equipment_quantity = int(equipment_quantity or 0)
+        except (TypeError, ValueError):
+            return api_error('更换设备数量无效', 400)
+
+        fault_owner_type = str(data.get('fault_owner_type') or '').strip()
+        if fault_owner_type and fault_owner_type not in VALID_OWNER_TYPES:
+            return api_error('故障归属类型无效', 400)
+
+        root_cause_type = str(data.get('root_cause_type') or '').strip()
+        if root_cause_type and root_cause_type not in VALID_OWNER_TYPES:
+            return api_error('根因类型无效', 400)
+
+        batch_impact_value = None
+        if 'is_batch_impact' in data:
+            batch_val = data.get('is_batch_impact')
+            if batch_val is not None and str(batch_val).strip() != '':
+                try:
+                    batch_impact_value = int(batch_val)
+                except (TypeError, ValueError):
+                    return api_error('是否共因取值无效', 400)
+                if batch_impact_value not in (0, 1):
+                    return api_error('是否共因只能为 0 或 1', 400)
+
+        impact_camera_count = fault['impact_camera_count'] if 'impact_camera_count' in fault.keys() else None
+        if impact_camera_count is not None and int(impact_camera_count) > 1 and not fault_owner_type:
+            return api_error('多摄像头故障闭环时必须填写故障归属', 400)
+
+        if fault_owner_type == 'camera' and batch_impact_value == 1:
+            return api_error('摄像头本体故障不能标记为共因故障，请拆分为多条单摄像头故障', 400)
 
         update_fields = [
             "status = 'closed'",
@@ -2799,6 +3240,24 @@ def update_fault_status(fault_id):
             update_fields.append("equipment_type = ?")
             update_fields.append("equipment_quantity = ?")
             update_params.extend([equipment_type, equipment_quantity])
+
+        if 'fault_owner_type' in fault_report_columns:
+            update_fields.append("fault_owner_type = ?")
+            update_params.append(fault_owner_type or None)
+            if fault_owner_type:
+                if 'fault_owner_confirmed_by' in fault_report_columns:
+                    update_fields.append("fault_owner_confirmed_by = ?")
+                    update_params.append(session.get('user_id'))
+                if 'fault_owner_confirmed_at' in fault_report_columns:
+                    update_fields.append("fault_owner_confirmed_at = CURRENT_TIMESTAMP")
+
+        if 'root_cause_type' in fault_report_columns:
+            update_fields.append("root_cause_type = ?")
+            update_params.append(root_cause_type or None)
+
+        if 'is_batch_impact' in fault_report_columns and 'is_batch_impact' in data:
+            update_fields.append("is_batch_impact = ?")
+            update_params.append(batch_impact_value)
 
         if 'fault_type' in data or 'fault_type_code' in data:
             try:
@@ -2835,11 +3294,30 @@ def update_fault_status(fault_id):
             update_params,
         )
     else:
-        db.execute("""
-            UPDATE fault_reports
-            SET status = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        """, (new_status, fault_id))
+        if new_status == 'handling' and 'planned_handle_time' in data and 'planned_handle_time' in fault_report_columns:
+            planned = data.get('planned_handle_time')
+            planned_value = None
+            if planned not in (None, ''):
+                planned_text = str(planned).strip()
+                parsed = None
+                for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S'):
+                    try:
+                        parsed = datetime.strptime(planned_text, fmt)
+                        break
+                    except ValueError:
+                        continue
+                if parsed:
+                    planned_value = parsed.strftime('%Y-%m-%d %H:%M:%S')
+            db.execute(
+                "UPDATE fault_reports SET status = ?, planned_handle_time = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (new_status, planned_value, fault_id),
+            )
+        else:
+            db.execute("""
+                UPDATE fault_reports
+                SET status = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (new_status, fault_id))
 
     db.commit()
     logger.info(f"Fault status updated: id={fault_id}, {current_status} -> {new_status}")
@@ -2950,6 +3428,9 @@ def update_fault(fault_id):
         ('handler_note', 'handler_note'),
         ('equipment_type', 'equipment_type'),
         ('equipment_quantity', 'equipment_quantity'),
+        ('fault_owner_type', 'fault_owner_type'),
+        ('root_cause_type', 'root_cause_type'),
+        ('is_batch_impact', 'is_batch_impact'),
     ]
 
     update_fields = []
@@ -2958,17 +3439,41 @@ def update_fault(fault_id):
         if request_key not in payload or column_name not in fault_report_columns:
             continue
         value = payload.get(request_key)
-        if column_name == 'equipment_quantity':
+        if column_name in ('equipment_quantity', 'is_batch_impact'):
             try:
                 value = int(value or 0)
             except (TypeError, ValueError):
-                return api_error('equipment_quantity must be an integer')
+                return api_error(f'{column_name} must be an integer')
         elif value is None:
             value = ''
         elif isinstance(value, str):
             value = value.strip()
+        if column_name in ('fault_owner_type', 'root_cause_type') and value:
+            if value not in VALID_OWNER_TYPES:
+                return api_error(f'{column_name} 值无效')
         update_fields.append(f"{column_name} = ?")
         update_params.append(value)
+
+    if 'created_at' in payload and 'created_at' in fault_report_columns:
+        raw_created_at = payload.get('created_at')
+        created_at_value = None
+        if raw_created_at not in (None, ''):
+            raw_created_at_text = str(raw_created_at).strip()
+            parsed_created_at = None
+            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S'):
+                try:
+                    parsed_created_at = datetime.strptime(raw_created_at_text, fmt)
+                    break
+                except ValueError:
+                    continue
+            if parsed_created_at is None:
+                return api_error('created_at 格式不正确，请使用正确的日期时间')
+            created_at_value = parsed_created_at.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            return api_error('故障上报时间不能为空')
+
+        update_fields.append("created_at = ?")
+        update_params.append(created_at_value)
 
     if 'closed_at' in payload and 'closed_at' in fault_report_columns:
         raw_closed_at = payload.get('closed_at')
@@ -2998,6 +3503,10 @@ def update_fault(fault_id):
     if 'fault_type' in payload and 'fault_type_label_snapshot' in fault_report_columns:
         update_fields.append("fault_type_label_snapshot = ?")
         update_params.append(str(payload.get('fault_type') or '').strip())
+
+    if 'fault_type_code' in payload and 'fault_type_code' in fault_report_columns:
+        update_fields.append("fault_type_code = ?")
+        update_params.append(str(payload.get('fault_type_code') or '').strip())
 
     if not update_fields:
         return api_error('没有可更新字段')
@@ -3671,6 +4180,19 @@ def update_fault_status_scoped(fault_id):
         if 'assigned_to' in fault_report_columns and session.get('user_id'):
             update_fields.append("assigned_to = ?")
             update_params.append(session.get('user_id'))
+        if 'planned_handle_time' in fault_report_columns and data.get('planned_handle_time'):
+            planned = data.get('planned_handle_time')
+            planned_text = str(planned).strip()
+            parsed = None
+            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S'):
+                try:
+                    parsed = datetime.strptime(planned_text, fmt)
+                    break
+                except ValueError:
+                    continue
+            if parsed:
+                update_fields.append("planned_handle_time = ?")
+                update_params.append(parsed.strftime('%Y-%m-%d %H:%M:%S'))
     if new_status == 'closed':
         update_fields.append("closed_at = CURRENT_TIMESTAMP")
         if 'handler_name' in fault_report_columns and data.get('handler_name'):
@@ -3685,6 +4207,26 @@ def update_fault_status_scoped(fault_id):
         if 'equipment_quantity' in fault_report_columns:
             update_fields.append("equipment_quantity = ?")
             update_params.append(data.get('equipment_quantity', 0))
+
+        # Root cause confirmation during closure
+        root_cause_type = str(data.get('root_cause_type') or '').strip()
+        if root_cause_type:
+            if root_cause_type not in VALID_OWNER_TYPES:
+                return api_error('根因类型无效', 400)
+            if 'root_cause_type' in fault_report_columns:
+                update_fields.append("root_cause_type = ?")
+                update_params.append(root_cause_type)
+                # Do NOT overwrite fault_owner_type — preserve original assessment
+
+        if 'is_batch_impact' in data and 'is_batch_impact' in fault_report_columns:
+            batch_val = data.get('is_batch_impact')
+            if batch_val is not None and str(batch_val).strip():
+                try:
+                    update_fields.append("is_batch_impact = ?")
+                    update_params.append(int(batch_val))
+                except (TypeError, ValueError):
+                    pass
+
         if 'fault_type' in data or 'fault_type_code' in data:
             try:
                 resolved_fault_type = resolve_fault_type_update_payload(
@@ -3983,10 +4525,11 @@ def export_statistics_scoped():
         SELECT strftime('%Y-%m', f.created_at) as month, COUNT(*) as cnt
         FROM fault_reports f
         WHERE 1=1{fault_base_sql} AND strftime('%Y', f.created_at) = ?
-        GROUP BY month
+        GROUP BY strftime('%Y-%m', f.created_at)
         """,
         fault_base_params + [str(target_year)],
     ).fetchall()
+
     for row in monthly_rows:
         monthly_data[row['month']] = row['cnt']
 
@@ -4396,6 +4939,10 @@ def export_statistics_scoped():
             ('创建时间', 'created_at'),
             ('开始处理时间', 'handling_started_at'),
             ('关闭时间', 'closed_at'),
+            ('故障归属', 'fault_owner_type'),
+            ('根因确认', 'root_cause_type'),
+            ('共因标记', 'is_batch_impact'),
+            ('影响摄像头数', 'impact_camera_count'),
         ]
         admin_columns = [
             ('槽位ID', 'camera_slot_id'),
@@ -4414,7 +4961,13 @@ def export_statistics_scoped():
         export_columns = common_columns + (admin_columns if session.get('role') == 'admin' else [])
         ws7.append([header for header, _ in export_columns])
         for row in detail_rows:
-            ws7.append([row.get(key, '') for _, key in export_columns])
+            export_row = []
+            for header, key in export_columns:
+                value = row.get(key, '')
+                if key in ('fault_owner_type', 'root_cause_type') and value:
+                    value = ROOT_CAUSE_LABELS.get(value, value)
+                export_row.append(value)
+            ws7.append(export_row)
 
         for sheet in [ws1, ws2, ws3, ws4, ws5, ws6, ws7]:
             for cell in sheet[1]:

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<script src="{{ url_for('static', filename='chart-4.4.1.min.js') }}"></script>
+{% endblock %}
+
 {% block title %}统计报表 - 变电站图像监控运维平台{% endblock %}
 
 {% block page_title %}统计报表{% endblock %}
@@ -15,7 +19,7 @@
                 查看本期摘要
             </button>
         </div>
-        <div id="stats-scope-note" class="stats-toolbar-note">当前页的 KPI、图表和 Top 排行都按当前筛选范围统计。</div>
+        <div id="stats-scope-note" class="stats-toolbar-note">当前页默认以故障记录口径展示；故障语义分布同样按故障记录统计，根因统计与共因影响范围按 fault_group_key 去重后的事件口径展示。</div>
     </div>
     <div class="stats-toolbar-export">
         <button id="export-btn" class="btn-secondary" type="button" onclick="exportStats()">
@@ -40,7 +44,8 @@
     </div>
     <div class="stat-card">
         <div class="stat-value" id="total-faults">-</div>
-        <div class="stat-label">故障总数</div>
+        <div class="stat-label">故障记录数</div>
+        <div class="chart-subtitle" id="total-faults-note">按 fault_reports 记录统计</div>
     </div>
     <div class="stat-card">
         <div class="stat-value" id="fault-rate">-</div>
@@ -51,30 +56,38 @@
 <div class="stats-grid kpi-grid">
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="open-count">-</div>
-        <div class="stat-label">打开中</div>
+        <div class="stat-label">打开中记录</div>
+        <div class="chart-subtitle">按故障记录统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="handling-count">-</div>
-        <div class="stat-label">处理中</div>
+        <div class="stat-label">处理中记录</div>
+        <div class="chart-subtitle">按故障记录统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="closed-count">-</div>
-        <div class="stat-label">已关闭</div>
+        <div class="stat-label">已关闭记录</div>
+        <div class="chart-subtitle">按故障记录统计</div>
+    </div>
+    <div class="stat-card stat-card-soft">
+        <div class="stat-value stat-small" id="fault-event-count">-</div>
+        <div class="stat-label">独立故障事件数</div>
+        <div class="chart-subtitle" id="fault-event-count-note">按 fault_group_key 去重统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="avg-response">-</div>
         <div class="stat-label">平均响应时长</div>
-        <div class="chart-subtitle" id="avg-response-note">按已开始处理故障统计</div>
+        <div class="chart-subtitle" id="avg-response-note">按已开始处理记录统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="avg-close">-</div>
         <div class="stat-label">平均闭环时长</div>
-        <div class="chart-subtitle" id="avg-close-note">按已关闭故障统计</div>
+        <div class="chart-subtitle" id="avg-close-note">按已关闭记录统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="overdue-unresolved-count">-</div>
-        <div class="stat-label">超期未闭环</div>
-        <div class="chart-subtitle" id="overdue-unresolved-note">按未关闭故障统计</div>
+        <div class="stat-label">超期未闭环记录</div>
+        <div class="chart-subtitle" id="overdue-unresolved-note">按未关闭记录统计</div>
     </div>
     <div class="stat-card stat-card-soft">
         <div class="stat-value stat-small" id="fault-photo-coverage-rate">-</div>
@@ -129,7 +142,10 @@
 <div class="row">
     <div class="col-md-6">
         <div class="chart-section">
-            <h3>月度故障趋势</h3>
+            <div class="chart-header">
+                <h3>月度故障趋势</h3>
+                <div class="chart-subtitle">蓝柱=故障记录数，绿线=独立事件数</div>
+            </div>
             <div class="chart-container">
                 <canvas id="monthlyChart"></canvas>
             </div>
@@ -139,7 +155,7 @@
         <div class="chart-section">
             <div class="chart-header">
                 <h3>摄像头故障排行 Top 5</h3>
-                <div class="chart-subtitle">按当前筛选范围统计</div>
+                <div class="chart-subtitle">同时展示记录口径和去重后的事件口径</div>
             </div>
             <div class="chart-container chart-container-table">
                 <div class="table-card">
@@ -149,11 +165,12 @@
                                 <th>排名</th>
                                 <th>摄像头位置</th>
                                 <th>变电站</th>
-                                <th>故障次数</th>
+                                <th>故障记录数</th>
+                                <th>独立事件数</th>
                             </tr>
                         </thead>
                         <tbody id="camera-ranking-body">
-                            <tr><td colspan="4" class="text-muted">加载中...</td></tr>
+                            <tr><td colspan="5" class="text-muted">加载中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -165,7 +182,10 @@
 <div class="row">
     <div class="col-md-6">
         <div class="chart-section">
-            <h3>各县区故障统计</h3>
+            <div class="chart-header">
+                <h3>各县区故障统计</h3>
+                <div class="chart-subtitle">绿条=故障记录数，蓝线=独立事件数</div>
+            </div>
             <div class="chart-container">
                 <canvas id="countyChart"></canvas>
             </div>
@@ -173,7 +193,10 @@
     </div>
     <div class="col-md-6">
         <div class="chart-section">
-            <h3>各电压等级故障数量</h3>
+            <div class="chart-header">
+                <h3>各电压等级故障数量</h3>
+                <div class="chart-subtitle">按故障记录统计</div>
+            </div>
             <div class="chart-container">
                 <canvas id="voltageChart"></canvas>
             </div>
@@ -184,7 +207,10 @@
 <div class="row">
     <div class="col-md-6">
         <div class="chart-section">
-            <h3>故障语义分布</h3>
+            <div class="chart-header">
+                <h3>故障语义分布</h3>
+                <div class="chart-subtitle">按故障记录统计，同一共因事件拆成多条记录时会分别计入</div>
+            </div>
             <div class="chart-container">
                 <canvas id="faultTypeChart"></canvas>
             </div>
@@ -194,7 +220,7 @@
         <div class="chart-section">
             <div class="chart-header">
                 <h3>故障站点排行 Top 5</h3>
-                <div class="chart-subtitle">看哪些站点需要优先盯防</div>
+                <div class="chart-subtitle">同时展示记录口径和去重后的事件口径</div>
             </div>
             <div class="chart-container chart-container-table">
                 <div class="table-card">
@@ -204,15 +230,41 @@
                                 <th>排名</th>
                                 <th>变电站</th>
                                 <th>县区</th>
-                                <th>故障次数</th>
-                                <th>未闭环</th>
+                                <th>故障记录数</th>
+                                <th>独立事件数</th>
+                                <th>未闭环记录</th>
                             </tr>
                         </thead>
                         <tbody id="station-ranking-body">
-                            <tr><td colspan="5" class="text-muted">加载中...</td></tr>
+                            <tr><td colspan="6" class="text-muted">加载中...</td></tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="root-cause-section" style="display: none;">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>根因故障统计</h3>
+                <div class="chart-subtitle">每个共因故障组仅计 1 次事件</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="rootCauseChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>影响范围统计</h3>
+                <div class="chart-subtitle">共因故障影响范围概览</div>
+            </div>
+            <div class="chart-container">
+                <div id="batch-impact-stats" style="padding: 16px;"></div>
             </div>
         </div>
     </div>
@@ -427,6 +479,7 @@ let countyChart;
 let voltageChart;
 let responseBucketChart;
 let closeBucketChart;
+let rootCauseChart = null;
 let currentYear = '';
 let currentBriefingText = '';
 let uncoveredStationsExpanded = false;
@@ -493,30 +546,37 @@ function buildCompactStatsBriefing(payload) {
     const topMonth = pickTopItem(payload.monthly_trend, 'count');
     const topCounty = pickTopItem(payload.county_distribution, 'count');
     const topStation = (payload.station_ranking || [])[0] || null;
+    const recordCount = Number(payload.faults || 0);
+    const eventCount = Number(payload.fault_events || 0);
+    const batchEventCount = Number(payload.batch_impact_event_count || 0);
     const parts = [
-        `${scopeLabel}共统计 ${payload.faults || 0} 起故障，KPI、图表和 Top 排行都按当前口径同步更新。`
+        `${scopeLabel}当前共有 ${recordCount} 条故障记录，对应 ${eventCount} 起独立故障事件；KPI、图表和 Top 排行默认按记录口径展示。`
     ];
 
     if (topMonth) {
-        parts.push(`故障集中在 ${topMonth.month}，当月共 ${topMonth.count || 0} 起。`);
+        parts.push(`记录最集中在 ${topMonth.month}，当月共 ${topMonth.count || 0} 条。`);
     }
 
     if (topCounty) {
-        parts.push(`${topCounty.county || '未知县区'} 当前故障最多，共 ${topCounty.count || 0} 起。`);
+        parts.push(`${topCounty.county || '未知县区'} 当前记录最多，共 ${topCounty.count || 0} 条。`);
     }
 
     if (topStation) {
-        parts.push(`${topStation.station_name || '-'} 需要优先盯防，累计 ${topStation.fault_count || 0} 起，其中未闭环 ${topStation.unresolved_count || 0} 起。`);
+        parts.push(`${topStation.station_name || '-'} 需要优先盯防，累计 ${topStation.fault_count || 0} 条记录，其中未闭环 ${topStation.unresolved_count || 0} 条。`);
+    }
+
+    if (batchEventCount > 0) {
+        parts.push(`其中识别出 ${batchEventCount} 起共因事件，影响范围统计已按事件去重。`);
     }
 
     if (unresolved > 0) {
-        parts.push(`当前未闭环 ${unresolved} 起，打开中 ${kpi.open_count || 0} 起、处理中 ${kpi.handling_count || 0} 起。`);
+        parts.push(`当前未闭环记录 ${unresolved} 条，打开中 ${kpi.open_count || 0} 条、处理中 ${kpi.handling_count || 0} 条。`);
     } else {
-        parts.push('当前没有未闭环故障。');
+        parts.push('当前没有未闭环记录。');
     }
 
     if (overdueCount > 0) {
-        parts.push(`其中 ${overdueCount} 起已超过 ${kpi.overdue_threshold_days || 7} 天，需优先核查。`);
+        parts.push(`其中 ${overdueCount} 条已超过 ${kpi.overdue_threshold_days || 7} 天，需优先核查。`);
     }
 
     if (Number(photoCoverage.fault_station_count || 0) > 0) {
@@ -538,7 +598,7 @@ function renderStatsBriefing(payload) {
     const briefingToggle = document.getElementById('stats-brief-toggle');
 
     if (scopeNote) {
-        scopeNote.textContent = `当前展示口径：${scopeLabel}。KPI、图表和 Top 排行都按这一范围统计。`;
+        scopeNote.textContent = `当前展示范围：${scopeLabel}。KPI、趋势图和 Top 排行默认按故障记录统计；独立故障事件数、根因统计和共因影响范围按 fault_group_key 去重统计。`;
     }
 
     if (exportNote) {
@@ -592,7 +652,7 @@ function renderCameraRanking(rows) {
         return;
     }
     if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted">暂无数据</td></tr>';
         return;
     }
 
@@ -602,7 +662,8 @@ function renderCameraRanking(rows) {
             <td data-label="排名"><span class="rank-badge" style="background:${rankColors[index] || '#5f6368'}">${index + 1}</span></td>
             <td data-label="摄像头位置">${escapeCell(row.camera_location || '-')}</td>
             <td data-label="变电站">${escapeCell(row.station_name || '-')}</td>
-            <td data-label="故障次数"><span class="fault-count">${row.fault_count || 0}</span></td>
+            <td data-label="故障记录数"><span class="fault-count">${row.fault_count || 0}</span></td>
+            <td data-label="独立事件数"><span class="subtle-count">${row.fault_event_count || 0}</span></td>
         </tr>
     `).join('');
 }
@@ -613,7 +674,7 @@ function renderStationRanking(rows) {
         return;
     }
     if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-muted">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted">暂无数据</td></tr>';
         return;
     }
 
@@ -623,8 +684,9 @@ function renderStationRanking(rows) {
             <td data-label="排名"><span class="rank-badge" style="background:${rankColors[index] || '#5f6368'}">${index + 1}</span></td>
             <td data-label="变电站">${escapeCell(row.station_name || '-')}</td>
             <td data-label="县区">${escapeCell(row.county || '-')}</td>
-            <td data-label="故障次数"><span class="fault-count">${row.fault_count || 0}</span></td>
-            <td data-label="未闭环"><span class="subtle-count">${row.unresolved_count || 0}</span></td>
+            <td data-label="故障记录数"><span class="fault-count">${row.fault_count || 0}</span></td>
+            <td data-label="独立事件数"><span class="subtle-count">${row.fault_event_count || 0}</span></td>
+            <td data-label="未闭环记录"><span class="subtle-count">${row.unresolved_count || 0}</span></td>
         </tr>
     `).join('');
 }
@@ -726,24 +788,48 @@ function renderCharts(payload) {
     destroyChart(voltageChart);
     destroyChart(responseBucketChart);
     destroyChart(closeBucketChart);
+    destroyChart(rootCauseChart);
 
-    responseBucketChart = renderBucketChart('responseBucketChart', payload.response_buckets || [], '故障数量', '#1a73e8');
-    closeBucketChart = renderBucketChart('closeBucketChart', payload.close_buckets || [], '故障数量', '#34a853');
+    responseBucketChart = renderBucketChart('responseBucketChart', payload.response_buckets || [], '记录数', '#1a73e8');
+    closeBucketChart = renderBucketChart('closeBucketChart', payload.close_buckets || [], '记录数', '#34a853');
 
     monthlyChart = new Chart(document.getElementById('monthlyChart'), {
         type: 'bar',
         data: {
             labels: (payload.monthly_trend || []).map((item) => item.month),
-            datasets: [{
-                label: '故障数量',
-                data: (payload.monthly_trend || []).map((item) => item.count),
-                backgroundColor: '#1a73e8'
-            }]
+            datasets: [
+                {
+                    label: '故障记录数',
+                    data: (payload.monthly_trend || []).map((item) => item.count),
+                    backgroundColor: '#1a73e8',
+                    order: 2
+                },
+                {
+                    type: 'line',
+                    label: '独立事件数',
+                    data: (payload.monthly_trend || []).map((item) => item.event_count || 0),
+                    borderColor: '#34a853',
+                    backgroundColor: '#34a853',
+                    borderWidth: 2,
+                    tension: 0.25,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 4,
+                    yAxisID: 'y',
+                    order: 1
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
+            plugins: { legend: { display: true, position: 'bottom' } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
         }
     });
 
@@ -767,17 +853,42 @@ function renderCharts(payload) {
         type: 'bar',
         data: {
             labels: (payload.county_distribution || []).map((item) => item.county),
-            datasets: [{
-                label: '故障数量',
-                data: (payload.county_distribution || []).map((item) => item.count),
-                backgroundColor: '#1e8e3e'
-            }]
+            datasets: [
+                {
+                    label: '故障记录数',
+                    data: (payload.county_distribution || []).map((item) => item.count),
+                    backgroundColor: '#1e8e3e',
+                    borderRadius: 6,
+                    maxBarThickness: 28,
+                    order: 2
+                },
+                {
+                    type: 'line',
+                    label: '独立事件数',
+                    data: (payload.county_distribution || []).map((item) => item.event_count || 0),
+                    borderColor: '#1a73e8',
+                    backgroundColor: '#1a73e8',
+                    borderWidth: 2,
+                    tension: 0.25,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 4,
+                    yAxisID: 'x',
+                    order: 1
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            indexAxis: 'y'
+            plugins: { legend: { display: true, position: 'bottom' } },
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
         }
     });
 
@@ -796,12 +907,131 @@ function renderCharts(payload) {
             plugins: { legend: { position: 'right' } }
         }
     });
+
+    // Root cause distribution chart
+    const rootCauseSection = document.getElementById('root-cause-section');
+    const rootCauseData = payload.root_cause_distribution || [];
+    if (rootCauseData.length > 0 && rootCauseSection) {
+        rootCauseSection.style.display = '';
+        if (rootCauseChart) rootCauseChart.destroy();
+        rootCauseChart = new Chart(document.getElementById('rootCauseChart'), {
+            type: 'doughnut',
+            data: {
+                labels: rootCauseData.map(item => item.cause_label),
+                datasets: [{
+                    data: rootCauseData.map(item => item.count),
+                    backgroundColor: ['#1a73e8', '#34a853', '#f9ab00', '#d93025', '#5f6368', '#9e9e9e']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    } else if (rootCauseSection) {
+        rootCauseSection.style.display = 'none';
+    }
+
+    // Batch impact stats
+    const batchImpact = payload.batch_impact || {};
+    const batchStatsEl = document.getElementById('batch-impact-stats');
+    if (batchStatsEl && batchImpact.batch_fault_count > 0) {
+        batchStatsEl.innerHTML = `
+            <div style="display: flex; justify-content: space-around; text-align: center; padding: 24px 0;">
+                <div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--text-primary, #1a1a1a);">${batchImpact.batch_fault_count}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary, #888); margin-top: 4px;">共因事件数</div>
+                </div>
+                <div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--text-primary, #1a1a1a);">${batchImpact.avg_impact_cameras || '-'}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary, #888); margin-top: 4px;">单起平均影响摄像头</div>
+                </div>
+                <div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--text-primary, #1a1a1a);">${batchImpact.total_impact_cameras}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary, #888); margin-top: 4px;">去重后累计影响摄像头</div>
+                </div>
+            </div>
+        `;
+    } else if (batchStatsEl) {
+        batchStatsEl.innerHTML = '<div style="text-align: center; color: var(--text-secondary, #888); padding: 32px;">暂无共因故障数据</div>';
+    }
+}
+
+function renderStatsLoadError(message) {
+    const text = message || '加载统计数据失败';
+    [
+        'total-stations',
+        'total-cameras',
+        'total-faults',
+        'open-count',
+        'handling-count',
+        'closed-count',
+        'fault-event-count',
+        'camera-replacement-count',
+        'overdue-unresolved-count'
+    ].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '-';
+    });
+
+    ['fault-rate', 'fault-photo-coverage-rate', 'avg-response', 'avg-close'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '-';
+    });
+
+    const noteTargets = [
+        'stats-scope-note',
+        'stats-export-note',
+        'total-faults-note',
+        'fault-event-count-note',
+        'avg-response-note',
+        'avg-close-note',
+        'overdue-unresolved-note',
+        'fault-photo-coverage-note',
+        'camera-replacement-note',
+        'uncovered-stations-summary'
+    ];
+    noteTargets.forEach((id) => setInlineMessage(id, text, true, 'chart-subtitle'));
+
+    renderTableMessage('camera-ranking-body', 5, text, true);
+    renderTableMessage('station-ranking-body', 6, text, true);
+    renderBlockMessage('batch-impact-stats', text, true);
+
+    const briefingText = document.getElementById('stats-briefing-text');
+    if (briefingText) {
+        briefingText.textContent = text;
+    }
+
+    const rootCauseSection = document.getElementById('root-cause-section');
+    if (rootCauseSection) {
+        rootCauseSection.style.display = 'none';
+    }
+
+    const uncoveredPanel = document.getElementById('uncovered-stations-panel');
+    if (uncoveredPanel) {
+        uncoveredPanel.hidden = true;
+    }
+
+    const uncoveredButton = document.getElementById('photo-coverage-toggle');
+    if (uncoveredButton) {
+        uncoveredButton.hidden = true;
+        uncoveredButton.setAttribute('aria-expanded', 'false');
+    }
+
+    [monthlyChart, faultTypeChart, countyChart, voltageChart, responseBucketChart, closeBucketChart, rootCauseChart].forEach(destroyChart);
+    monthlyChart = null;
+    faultTypeChart = null;
+    countyChart = null;
+    voltageChart = null;
+    responseBucketChart = null;
+    closeBucketChart = null;
+    rootCauseChart = null;
 }
 
 async function loadStats() {
     try {
-        const response = await fetch(withProject('/api/stats', getYearFilter()));
-        const payload = await response.json();
+        const payload = await fetchJson(withProject('/api/stats', getYearFilter()));
 
         document.getElementById('total-stations').textContent = payload.stations || 0;
         document.getElementById('total-cameras').textContent = payload.cameras || 0;
@@ -814,25 +1044,39 @@ async function loadStats() {
         document.getElementById('open-count').textContent = kpi.open_count || 0;
         document.getElementById('handling-count').textContent = kpi.handling_count || 0;
         document.getElementById('closed-count').textContent = kpi.closed_count || 0;
+        document.getElementById('fault-event-count').textContent = payload.fault_events || 0;
         document.getElementById('avg-response').textContent = formatDuration(kpi.avg_response_seconds);
         document.getElementById('avg-close').textContent = formatDuration(kpi.avg_close_seconds);
         document.getElementById('overdue-unresolved-count').textContent = kpi.overdue_unresolved_count || 0;
         document.getElementById('fault-photo-coverage-rate').textContent = formatPercent(photoCoverage.coverage_ratio || 0);
         document.getElementById('camera-replacement-count').textContent = kpi.camera_replacement_count || 0;
 
+        const totalFaultsNote = document.getElementById('total-faults-note');
+        if (totalFaultsNote) {
+            totalFaultsNote.textContent = `按 fault_reports 记录统计，共因去重后对应 ${payload.fault_events || 0} 起事件`;
+        }
+
+        const faultEventCountNote = document.getElementById('fault-event-count-note');
+        if (faultEventCountNote) {
+            const batchEventCount = Number(payload.batch_impact_event_count || 0);
+            faultEventCountNote.textContent = batchEventCount > 0
+                ? `按 fault_group_key 去重统计，其中共因事件 ${batchEventCount} 起`
+                : '按 fault_group_key 去重统计';
+        }
+
         const avgResponseNote = document.getElementById('avg-response-note');
         if (avgResponseNote) {
-            avgResponseNote.textContent = `样本 ${kpi.response_sample_count || 0} 起`;
+            avgResponseNote.textContent = `样本 ${kpi.response_sample_count || 0} 条记录`;
         }
 
         const avgCloseNote = document.getElementById('avg-close-note');
         if (avgCloseNote) {
-            avgCloseNote.textContent = `样本 ${kpi.close_sample_count || 0} 起`;
+            avgCloseNote.textContent = `样本 ${kpi.close_sample_count || 0} 条记录`;
         }
 
         const overdueNote = document.getElementById('overdue-unresolved-note');
         if (overdueNote) {
-            overdueNote.textContent = `未闭环中 ${formatPercent(kpi.overdue_unresolved_ratio || 0)} 已超过 ${kpi.overdue_threshold_days || 7} 天`;
+            overdueNote.textContent = `未闭环记录中 ${formatPercent(kpi.overdue_unresolved_ratio || 0)} 已超过 ${kpi.overdue_threshold_days || 7} 天`;
         }
 
         const coverageNote = document.getElementById('fault-photo-coverage-note');
@@ -859,13 +1103,19 @@ async function loadStats() {
         renderUncoveredStations(photoCoverage);
     } catch (error) {
         console.error('加载统计失败:', error);
-        showToast('加载统计数据失败，请刷新重试', 'error');
+        const message = error && error.message ? error.message : '加载统计数据失败，请刷新重试';
+        renderStatsLoadError(message);
+        showToast(message, 'error');
     }
 }
 
 async function initPage() {
     if (window.AppProjectState && typeof window.AppProjectState.ready === 'function') {
         await window.AppProjectState.ready();
+        if (Array.isArray(window.AppProjectState.projects) && window.AppProjectState.projects.length === 0) {
+            renderStatsLoadError('当前账号没有可访问项目，请联系管理员分配项目权限。');
+            return;
+        }
     }
     await loadStats();
 }

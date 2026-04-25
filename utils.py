@@ -139,3 +139,6 @@ def is_postgres_app():
 
 def init_app(app):
     app.teardown_appcontext(close_db)
+    import atexit
+    from db import close_pool
+    atexit.register(close_pool)

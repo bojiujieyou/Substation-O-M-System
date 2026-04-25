@@ -26,6 +26,13 @@ def table_exists(db, table_name: str) -> bool:
     return row is not None
 
 
+def get_table_columns(db, table_name: str) -> set[str]:
+    if not table_exists(db, table_name):
+        return set()
+    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {row["name"] for row in rows}
+
+
 def projects_enabled(db) -> bool:
     return table_exists(db, "projects")
 
@@ -36,6 +43,30 @@ def project_scopes_enabled(db) -> bool:
 
 def fault_type_versions_enabled(db) -> bool:
     return table_exists(db, "project_fault_type_versions")
+
+
+def _has_project_core_columns(db) -> bool:
+    columns = get_table_columns(db, "projects")
+    required = {"id", "code", "name"}
+    return required.issubset(columns)
+
+
+def _project_supports_active_flag(db) -> bool:
+    return "is_active" in get_table_columns(db, "projects")
+
+
+def _project_supports_sort_order(db) -> bool:
+    return "sort_order" in get_table_columns(db, "projects")
+
+
+def _project_supports_fault_type_version(db) -> bool:
+    return "fault_type_version_id" in get_table_columns(db, "projects")
+
+
+def _project_scope_supports_join(db) -> bool:
+    columns = get_table_columns(db, "user_project_scopes")
+    required = {"user_id", "project_id", "can_write"}
+    return required.issubset(columns)
 
 
 def _serialize_project_row(row) -> dict[str, Any]:
@@ -59,6 +90,8 @@ def _serialize_project_row(row) -> dict[str, Any]:
         "current_fault_type_published_at",
     ):
         project.pop(key, None)
+    project.setdefault("sort_order", 0)
+    project.setdefault("is_active", True)
     return project
 
 
@@ -69,10 +102,17 @@ def _legacy_project(can_write: bool = False) -> dict[str, Any]:
 
 
 def get_projects(db, *, include_inactive: bool = False) -> list[dict[str, Any]]:
-    if not projects_enabled(db):
+    if not projects_enabled(db) or not _has_project_core_columns(db):
         return [_legacy_project()]
 
-    if fault_type_versions_enabled(db):
+    project_columns = get_table_columns(db, "projects")
+    supports_fault_type_version = (
+        "fault_type_version_id" in project_columns and fault_type_versions_enabled(db)
+    )
+    supports_active_flag = "is_active" in project_columns
+    supports_sort_order = "sort_order" in project_columns
+
+    if supports_fault_type_version:
         query = """
             SELECT
                 p.*,
@@ -88,9 +128,12 @@ def get_projects(db, *, include_inactive: bool = False) -> list[dict[str, Any]]:
         query = "SELECT p.* FROM projects p"
 
     params = []
-    if not include_inactive:
+    if not include_inactive and supports_active_flag:
         query += " WHERE p.is_active = 1"
-    query += " ORDER BY p.sort_order, p.id"
+    if supports_sort_order:
+        query += " ORDER BY p.sort_order, p.id"
+    else:
+        query += " ORDER BY p.id"
 
     return [_serialize_project_row(row) for row in db.execute(query, params).fetchall()]
 
@@ -102,7 +145,7 @@ def get_visible_projects(
     role: str | None,
     include_inactive: bool = False,
 ) -> list[dict[str, Any]]:
-    if not projects_enabled(db):
+    if not projects_enabled(db) or not _has_project_core_columns(db):
         return [_legacy_project(can_write=role in ("admin", "operator"))]
 
     if role == "admin":
@@ -111,10 +154,17 @@ def get_visible_projects(
             project["can_write"] = True
         return projects
 
-    if not user_id or not project_scopes_enabled(db):
+    if not user_id or not project_scopes_enabled(db) or not _project_scope_supports_join(db):
         return []
 
-    if fault_type_versions_enabled(db):
+    project_columns = get_table_columns(db, "projects")
+    supports_fault_type_version = (
+        "fault_type_version_id" in project_columns and fault_type_versions_enabled(db)
+    )
+    supports_active_flag = "is_active" in project_columns
+    supports_sort_order = "sort_order" in project_columns
+
+    if supports_fault_type_version:
         query = """
             SELECT
                 p.*,
@@ -140,9 +190,12 @@ def get_visible_projects(
         """
 
     params = [user_id]
-    if not include_inactive:
+    if not include_inactive and supports_active_flag:
         query += " AND p.is_active = 1"
-    query += " ORDER BY p.sort_order, p.id"
+    if supports_sort_order:
+        query += " ORDER BY p.sort_order, p.id"
+    else:
+        query += " ORDER BY p.id"
 
     projects = [_serialize_project_row(row) for row in db.execute(query, params).fetchall()]
     for project in projects:
@@ -169,7 +222,7 @@ def get_project_by_code(db, code: str, *, include_inactive: bool = False) -> dic
 
 
 def can_user_access_project(db, *, user_id: int | None, role: str | None, project_code: str) -> bool:
-    if not projects_enabled(db):
+    if not projects_enabled(db) or not _has_project_core_columns(db):
         return project_code == "unified"
     if role == "admin":
         return get_project_by_code(db, project_code, include_inactive=True) is not None
@@ -183,7 +236,7 @@ def can_user_access_project(db, *, user_id: int | None, role: str | None, projec
 
 
 def can_user_write_project(db, *, user_id: int | None, role: str | None, project_code: str) -> bool:
-    if not projects_enabled(db):
+    if not projects_enabled(db) or not _has_project_core_columns(db):
         return role in ("admin", "operator") and project_code == "unified"
     if role == "admin":
         return get_project_by_code(db, project_code, include_inactive=True) is not None
@@ -197,7 +250,7 @@ def can_user_write_project(db, *, user_id: int | None, role: str | None, project
 
 
 def get_user_project_scope_rows(db, user_id: int) -> list[dict[str, Any]]:
-    if not project_scopes_enabled(db):
+    if not project_scopes_enabled(db) or not _project_scope_supports_join(db):
         return []
     rows = db.execute(
         """

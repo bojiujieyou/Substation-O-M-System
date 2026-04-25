@@ -9,6 +9,38 @@ from maintain_notifications import run_maintenance
 from notification_runtime import dispatch_notification_event
 
 
+def _with_csrf(client, kwargs):
+    """自动为状态变更请求注入 CSRF token。"""
+    headers = dict(kwargs.pop("headers", {}) or {})
+    with client.session_transaction() as sess:
+        token = sess.get("csrf_token")
+    if token:
+        headers.setdefault("X-CSRF-Token", token)
+    kwargs["headers"] = headers
+    return kwargs
+
+
+def _patch_client(client):
+    """给 test client 的状态变更方法自动注入 CSRF token。"""
+    _orig_post = client.post
+    _orig_put = client.put
+    _orig_delete = client.delete
+
+    def _post(url, **kwargs):
+        return _orig_post(url, **_with_csrf(client, kwargs))
+
+    def _put(url, **kwargs):
+        return _orig_put(url, **_with_csrf(client, kwargs))
+
+    def _delete(url, **kwargs):
+        return _orig_delete(url, **_with_csrf(client, kwargs))
+
+    client.post = _post
+    client.put = _put
+    client.delete = _delete
+    return client
+
+
 @pytest.fixture
 def notification_runtime_db(tmp_path):
     return str(tmp_path / "test_notification_runtime.db")
@@ -26,6 +58,7 @@ def client(notification_runtime_db):
 
     init_db(force=True)
     with app.test_client() as c:
+        _patch_client(c)
         yield c
 
     config_module.Config.DATABASE_PATH = original_path
