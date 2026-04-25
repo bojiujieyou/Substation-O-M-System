@@ -2901,6 +2901,10 @@ async function markFaultHandling(faultId) {
         showToast('未找到故障记录', 'warning');
         return;
     }
+    const detailModal = bootstrap.Modal.getInstance(document.getElementById('detail-modal'));
+    if (detailModal) {
+        detailModal.hide();
+    }
     currentHandlingFaultId = faultId;
     document.getElementById('handling-confirm-fault-id').textContent = fault.id;
     document.getElementById('handling-confirm-project').textContent = projectNameById(fault.project_id);
