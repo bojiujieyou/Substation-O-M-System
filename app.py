@@ -497,6 +497,208 @@ def ensure_fault_report_multi_camera_schema(db):
     return columns
 
 
+def ensure_fault_report_camera_detail_schema(db):
+    if table_exists(db, "fault_report_cameras"):
+        columns = get_table_columns(db, "fault_report_cameras")
+        missing = False
+        required_columns = {
+            "camera_slot_id": "INTEGER",
+            "project_id": "INTEGER",
+            "project_device_code": "TEXT",
+            "camera_label": "TEXT",
+            "recovery_state": "TEXT DEFAULT 'pending'",
+            "detail_fault_reason": "TEXT",
+            "detail_resolution": "TEXT",
+            "detail_note": "TEXT",
+            "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+            "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        }
+        for col_name, col_sql in required_columns.items():
+            if col_name not in columns:
+                db.execute(f"ALTER TABLE fault_report_cameras ADD COLUMN {col_name} {col_sql}")
+                missing = True
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
+        if missing:
+            db.commit()
+            columns = get_table_columns(db, "fault_report_cameras")
+        return columns
+
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS fault_report_cameras (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fault_report_id INTEGER NOT NULL,
+            camera_id INTEGER NOT NULL,
+            camera_slot_id INTEGER,
+            project_id INTEGER,
+            project_device_code TEXT,
+            camera_label TEXT,
+            recovery_state TEXT DEFAULT 'pending',
+            detail_fault_reason TEXT,
+            detail_resolution TEXT,
+            detail_note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(fault_report_id, camera_id),
+            FOREIGN KEY (fault_report_id) REFERENCES fault_reports(id) ON DELETE CASCADE,
+            FOREIGN KEY (camera_id) REFERENCES cameras(id)
+        )
+        """
+    )
+    db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
+    db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
+    db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
+    db.commit()
+    return get_table_columns(db, "fault_report_cameras")
+
+
+def build_fault_camera_label(camera_row):
+    if not camera_row:
+        return ""
+    for field_name in ("location_desc", "area", "camera_index", "project_camera_code"):
+        if field_name in camera_row.keys():
+            value = str(camera_row[field_name] or "").strip()
+            if value:
+                return value
+    return str(camera_row["id"])
+
+
+def fetch_fault_camera_details(db, fault_report_id):
+    if not table_exists(db, "fault_report_cameras"):
+        return []
+    detail_columns = get_table_columns(db, "fault_report_cameras")
+    select_fields = [
+        "d.id",
+        "d.fault_report_id",
+        "d.camera_id",
+        "d.recovery_state",
+    ]
+    optional_fields = [
+        "camera_slot_id",
+        "project_id",
+        "project_device_code",
+        "camera_label",
+        "detail_fault_reason",
+        "detail_resolution",
+        "detail_note",
+    ]
+    for field_name in optional_fields:
+        if field_name in detail_columns:
+            select_fields.append(f"d.{field_name}")
+    select_fields.extend([
+        "c.camera_index AS camera_index",
+        "c.location_desc AS camera_location_desc",
+        "c.area AS camera_area",
+    ])
+    rows = db.execute(
+        f"""
+        SELECT {', '.join(select_fields)}
+        FROM fault_report_cameras d
+        LEFT JOIN cameras c ON d.camera_id = c.id
+        WHERE d.fault_report_id = ?
+        ORDER BY d.id ASC
+        """,
+        (fault_report_id,),
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+VALID_CAMERA_RECOVERY_STATES = ('pending', 'resolved', 'self_recovered')
+
+
+def normalize_fault_camera_detail_updates(raw_items):
+    if raw_items in (None, ""):
+        return []
+    if not isinstance(raw_items, list):
+        raise ValueError('camera_details_invalid')
+
+    normalized = []
+    seen_camera_ids = set()
+    for raw_item in raw_items:
+        if not isinstance(raw_item, dict):
+            raise ValueError('camera_details_invalid')
+        try:
+            camera_id = int(raw_item.get('camera_id'))
+        except (TypeError, ValueError):
+            raise ValueError('camera_detail_camera_id_invalid')
+        if camera_id in seen_camera_ids:
+            raise ValueError('camera_detail_camera_id_duplicated')
+        seen_camera_ids.add(camera_id)
+
+        recovery_state = str(raw_item.get('recovery_state') or '').strip() or 'resolved'
+        if recovery_state not in VALID_CAMERA_RECOVERY_STATES:
+            raise ValueError('camera_detail_recovery_state_invalid')
+
+        normalized.append({
+            'camera_id': camera_id,
+            'recovery_state': recovery_state,
+            'detail_fault_reason': str(raw_item.get('detail_fault_reason') or '').strip() or None,
+            'detail_resolution': str(raw_item.get('detail_resolution') or '').strip() or None,
+            'detail_note': str(raw_item.get('detail_note') or '').strip() or None,
+        })
+    return normalized
+
+
+def apply_fault_camera_detail_closure(db, fault_id, *, fault_owner_type=None, batch_impact_value=None, handler_note=None, camera_detail_updates=None):
+    if not table_exists(db, "fault_report_cameras"):
+        return
+
+    detail_columns = ensure_fault_report_camera_detail_schema(db)
+    existing_rows = db.execute(
+        "SELECT id, camera_id FROM fault_report_cameras WHERE fault_report_id = ? ORDER BY id ASC",
+        (fault_id,),
+    ).fetchall()
+    if not existing_rows:
+        return
+
+    existing_camera_ids = [int(row['camera_id']) for row in existing_rows]
+    detail_map = {int(row['camera_id']): int(row['id']) for row in existing_rows}
+    normalized_updates = normalize_fault_camera_detail_updates(camera_detail_updates)
+
+    if normalized_updates:
+        provided_camera_ids = [item['camera_id'] for item in normalized_updates]
+        if sorted(provided_camera_ids) != sorted(existing_camera_ids):
+            raise ValueError('camera_detail_camera_scope_mismatch')
+    elif fault_owner_type == 'camera':
+        raise ValueError('camera_details_required_for_camera_owner')
+    else:
+        fallback_state = 'resolved'
+        if batch_impact_value == 0 and len(existing_camera_ids) == 1:
+            fallback_state = 'resolved'
+        normalized_updates = [
+            {
+                'camera_id': camera_id,
+                'recovery_state': fallback_state,
+                'detail_fault_reason': None,
+                'detail_resolution': handler_note or None,
+                'detail_note': None,
+            }
+            for camera_id in existing_camera_ids
+        ]
+
+    updatable_optional_fields = [
+        field_name for field_name in ('detail_fault_reason', 'detail_resolution', 'detail_note')
+        if field_name in detail_columns
+    ]
+    update_fields = ["recovery_state = ?", "updated_at = CURRENT_TIMESTAMP"]
+    update_fields.extend(f"{field_name} = ?" for field_name in updatable_optional_fields)
+    update_sql = f"UPDATE fault_report_cameras SET {', '.join(update_fields)} WHERE id = ?"
+
+    for item in normalized_updates:
+        row_id = detail_map.get(item['camera_id'])
+        if row_id is None:
+            raise ValueError('camera_detail_camera_scope_mismatch')
+        update_params = [item['recovery_state']]
+        for field_name in updatable_optional_fields:
+            update_params.append(item.get(field_name))
+        update_params.append(row_id)
+        db.execute(update_sql, update_params)
+
+
+
+
 
 def normalize_camera_ids(value):
     if value in (None, ""):
@@ -2942,7 +3144,9 @@ def create_fault():
 
         # 创建阶段忽略归因相关输入；归因只允许在闭环阶段确认。
         impact_camera_count = len(selected_camera_ids) if selected_camera_ids else None
-
+        detail_table_enabled = len(selected_camera_ids) > 1
+        if detail_table_enabled:
+            ensure_fault_report_camera_detail_schema(db)
 
         created_fault_ids = []
         db.execute("BEGIN")
@@ -2950,14 +3154,15 @@ def create_fault():
         if not camera_rows:
             camera_rows = [None]
 
-        for index, camera_row in enumerate(camera_rows):
-            current_camera_id = camera_row['id'] if camera_row else None
-            current_camera_slot_id = camera_row['slot_id'] if camera_row and 'slot_id' in camera_columns else None
-            current_project_device_code = None
-            if camera_row and 'project_camera_code' in camera_columns and camera_row['project_camera_code']:
-                current_project_device_code = camera_row['project_camera_code']
-            elif camera_row and 'camera_index' in camera_columns:
-                current_project_device_code = camera_row['camera_index']
+        if detail_table_enabled:
+            primary_camera_row = camera_rows[0]
+            primary_camera_id = primary_camera_row['id'] if primary_camera_row else None
+            primary_camera_slot_id = primary_camera_row['slot_id'] if primary_camera_row and 'slot_id' in camera_columns else None
+            primary_project_device_code = None
+            if primary_camera_row and 'project_camera_code' in camera_columns and primary_camera_row['project_camera_code']:
+                primary_project_device_code = primary_camera_row['project_camera_code']
+            elif primary_camera_row and 'camera_index' in camera_columns:
+                primary_project_device_code = primary_camera_row['camera_index']
 
             insert_columns = [
                 'station_id', 'camera_id', 'fault_type', 'description',
@@ -2965,13 +3170,13 @@ def create_fault():
             ]
             insert_values = [
                 data['station_id'],
-                current_camera_id,
+                primary_camera_id,
                 fault_type_value,
                 data.get('description', ''),
                 data['reporter_name'],
                 data.get('reporter_contact', ''),
                 'open',
-                idempotency_keys[index] if index < len(idempotency_keys) else None,
+                fault_group_key or idempotency_keys[0],
             ]
 
             if 'project_id' in fault_report_columns:
@@ -2979,7 +3184,7 @@ def create_fault():
                 insert_values.append(project_id)
             if 'camera_slot_id' in fault_report_columns:
                 insert_columns.append('camera_slot_id')
-                insert_values.append(current_camera_slot_id)
+                insert_values.append(primary_camera_slot_id)
             if 'fault_type_label_snapshot' in fault_report_columns:
                 insert_columns.append('fault_type_label_snapshot')
                 insert_values.append(fault_type_label_snapshot)
@@ -2991,7 +3196,7 @@ def create_fault():
                 insert_values.append(fault_type_version_id)
             if 'project_device_code' in fault_report_columns:
                 insert_columns.append('project_device_code')
-                insert_values.append(current_project_device_code)
+                insert_values.append(primary_project_device_code)
             if 'fault_group_key' in fault_report_columns:
                 insert_columns.append('fault_group_key')
                 insert_values.append(fault_group_key)
@@ -3001,7 +3206,9 @@ def create_fault():
             if 'impact_camera_count' in fault_report_columns and impact_camera_count is not None:
                 insert_columns.append('impact_camera_count')
                 insert_values.append(impact_camera_count)
-
+            if 'is_batch_impact' in fault_report_columns:
+                insert_columns.append('is_batch_impact')
+                insert_values.append(1)
 
             placeholders = ', '.join(['?'] * len(insert_columns))
             cursor = db.execute(
@@ -3011,7 +3218,109 @@ def create_fault():
                 """,
                 insert_values,
             )
-            created_fault_ids.append(cursor.lastrowid)
+            primary_fault_id = cursor.lastrowid
+            created_fault_ids.append(primary_fault_id)
+
+            detail_columns = [
+                'fault_report_id', 'camera_id', 'camera_slot_id', 'recovery_state',
+                'camera_label', 'detail_fault_reason', 'detail_resolution', 'detail_note'
+            ]
+            detail_placeholders = ', '.join(['?'] * len(detail_columns))
+            detail_optional_columns = ensure_fault_report_camera_detail_schema(db)
+            for camera_row in camera_rows:
+                current_camera_slot_id = camera_row['slot_id'] if 'slot_id' in camera_columns else None
+                current_project_device_code = None
+                if 'project_camera_code' in camera_columns and camera_row['project_camera_code']:
+                    current_project_device_code = camera_row['project_camera_code']
+                elif 'camera_index' in camera_columns:
+                    current_project_device_code = camera_row['camera_index']
+                detail_insert_columns = list(detail_columns)
+                detail_insert_values = [
+                    primary_fault_id,
+                    camera_row['id'],
+                    current_camera_slot_id,
+                    'pending',
+                    build_fault_camera_label(camera_row),
+                    None,
+                    None,
+                    None,
+                ]
+                if 'project_id' in detail_optional_columns:
+                    detail_insert_columns.append('project_id')
+                    detail_insert_values.append(project_id)
+                if 'project_device_code' in detail_optional_columns:
+                    detail_insert_columns.append('project_device_code')
+                    detail_insert_values.append(current_project_device_code)
+                detail_placeholders = ', '.join(['?'] * len(detail_insert_columns))
+                db.execute(
+                    f"""
+                    INSERT INTO fault_report_cameras ({', '.join(detail_insert_columns)})
+                    VALUES ({detail_placeholders})
+                    """,
+                    detail_insert_values,
+                )
+        else:
+            for index, camera_row in enumerate(camera_rows):
+                current_camera_id = camera_row['id'] if camera_row else None
+                current_camera_slot_id = camera_row['slot_id'] if camera_row and 'slot_id' in camera_columns else None
+                current_project_device_code = None
+                if camera_row and 'project_camera_code' in camera_columns and camera_row['project_camera_code']:
+                    current_project_device_code = camera_row['project_camera_code']
+                elif camera_row and 'camera_index' in camera_columns:
+                    current_project_device_code = camera_row['camera_index']
+
+                insert_columns = [
+                    'station_id', 'camera_id', 'fault_type', 'description',
+                    'reporter_name', 'reporter_contact', 'status', 'idempotency_key'
+                ]
+                insert_values = [
+                    data['station_id'],
+                    current_camera_id,
+                    fault_type_value,
+                    data.get('description', ''),
+                    data['reporter_name'],
+                    data.get('reporter_contact', ''),
+                    'open',
+                    idempotency_keys[index] if index < len(idempotency_keys) else None,
+                ]
+
+                if 'project_id' in fault_report_columns:
+                    insert_columns.append('project_id')
+                    insert_values.append(project_id)
+                if 'camera_slot_id' in fault_report_columns:
+                    insert_columns.append('camera_slot_id')
+                    insert_values.append(current_camera_slot_id)
+                if 'fault_type_label_snapshot' in fault_report_columns:
+                    insert_columns.append('fault_type_label_snapshot')
+                    insert_values.append(fault_type_label_snapshot)
+                if 'fault_type_code' in fault_report_columns and data.get('fault_type_code'):
+                    insert_columns.append('fault_type_code')
+                    insert_values.append(data.get('fault_type_code'))
+                if 'fault_type_version_id' in fault_report_columns:
+                    insert_columns.append('fault_type_version_id')
+                    insert_values.append(fault_type_version_id)
+                if 'project_device_code' in fault_report_columns:
+                    insert_columns.append('project_device_code')
+                    insert_values.append(current_project_device_code)
+                if 'fault_group_key' in fault_report_columns:
+                    insert_columns.append('fault_group_key')
+                    insert_values.append(fault_group_key)
+                if 'root_cause_type' in fault_report_columns:
+                    insert_columns.append('root_cause_type')
+                    insert_values.append(None)
+                if 'impact_camera_count' in fault_report_columns and impact_camera_count is not None:
+                    insert_columns.append('impact_camera_count')
+                    insert_values.append(impact_camera_count)
+
+                placeholders = ', '.join(['?'] * len(insert_columns))
+                cursor = db.execute(
+                    f"""
+                    INSERT INTO fault_reports ({', '.join(insert_columns)})
+                    VALUES ({placeholders})
+                    """,
+                    insert_values,
+                )
+                created_fault_ids.append(cursor.lastrowid)
 
         db.commit()
 
@@ -3023,12 +3332,14 @@ def create_fault():
             'fault_ids': created_fault_ids,
             'fault_count': len(created_fault_ids),
             'fault_group_key': fault_group_key,
+            'is_aggregated': bool(detail_table_enabled),
             'message': '故障报修提交成功'
         }, 201)
 
     except Exception as e:
         db.rollback()
         return api_error(f'提交失败: {e}', 500)
+
 
 # ============================================================
 # API: 故障列表
@@ -3124,14 +3435,27 @@ def get_faults():
     params.extend([page_size, offset])
 
     rows = db.execute(query, params).fetchall()
+    fault_items = []
+    detail_table_exists = table_exists(db, "fault_report_cameras")
+    if detail_table_exists:
+        ensure_fault_report_camera_detail_schema(db)
+    for row in rows:
+
+        fault_item = enrich_fault_camera_location(dict(row))
+        if detail_table_exists:
+            fault_item['camera_details'] = fetch_fault_camera_details(db, fault_item['id'])
+        else:
+            fault_item['camera_details'] = []
+        fault_items.append(fault_item)
 
     return api_success({
-        'faults': [enrich_fault_camera_location(dict(row)) for row in rows],
+        'faults': fault_items,
         'total': total,
         'page': page,
         'page_size': page_size,
         'deleted_mode': deleted_mode,
     })
+
 
 # ============================================================
 # API: 故障状态更新（决策#7：三状态机）
@@ -3227,6 +3551,21 @@ def update_fault_status(fault_id):
         if fault_owner_type == 'camera' and batch_impact_value == 1:
             return api_error('摄像头本体故障不能标记为共因故障，请拆分为多条单摄像头故障', 400)
 
+        raw_camera_detail_updates = data.get('camera_details')
+        try:
+            normalized_camera_detail_updates = normalize_fault_camera_detail_updates(raw_camera_detail_updates)
+        except ValueError as error:
+            error_code = str(error)
+            if error_code == 'camera_details_invalid':
+                return api_error('camera_details 必须是数组', 400)
+            if error_code == 'camera_detail_camera_id_invalid':
+                return api_error('camera_details.camera_id 无效', 400)
+            if error_code == 'camera_detail_camera_id_duplicated':
+                return api_error('camera_details.camera_id 不能重复', 400)
+            if error_code == 'camera_detail_recovery_state_invalid':
+                return api_error('camera_details.recovery_state 无效', 400)
+            return api_error('camera_details 参数无效', 400)
+
         update_fields = [
             "status = 'closed'",
             "handler_name = ?",
@@ -3285,14 +3624,33 @@ def update_fault_status(fault_id):
                 update_params.append(resolved_fault_type['fault_type_version_id'])
 
         update_params.append(fault_id)
-        db.execute(
-            f"""
-            UPDATE fault_reports
-            SET {', '.join(update_fields)}
-            WHERE id = ?
-            """,
-            update_params,
-        )
+        try:
+            db.execute(
+                f"""
+                UPDATE fault_reports
+                SET {', '.join(update_fields)}
+                WHERE id = ?
+                """,
+                update_params,
+            )
+            apply_fault_camera_detail_closure(
+                db,
+                fault_id,
+                fault_owner_type=fault_owner_type or None,
+                batch_impact_value=batch_impact_value,
+                handler_note=handler_note,
+                camera_detail_updates=normalized_camera_detail_updates,
+            )
+        except ValueError as error:
+            error_code = str(error)
+            if error_code == 'camera_details_required_for_camera_owner':
+                db.rollback()
+                return api_error('摄像头本体故障闭环时必须逐个填写 camera_details', 400)
+            if error_code == 'camera_detail_camera_scope_mismatch':
+                db.rollback()
+                return api_error('camera_details 必须完整覆盖当前聚合工单的全部摄像头', 400)
+            raise
+
     else:
         if new_status == 'handling' and 'planned_handle_time' in data and 'planned_handle_time' in fault_report_columns:
             planned = data.get('planned_handle_time')
@@ -4122,8 +4480,19 @@ def get_faults_scoped():
         LIMIT ? OFFSET ?
     """
     rows = db.execute(query, params + [page_size, offset]).fetchall()
+    fault_items = []
+    detail_table_exists = table_exists(db, "fault_report_cameras")
+    if detail_table_exists:
+        ensure_fault_report_camera_detail_schema(db)
+    for row in rows:
+        fault_item = enrich_fault_camera_location(dict(row))
+        if detail_table_exists:
+            fault_item['camera_details'] = fetch_fault_camera_details(db, fault_item['id'])
+        else:
+            fault_item['camera_details'] = []
+        fault_items.append(fault_item)
     return api_success({
-        'faults': [enrich_fault_camera_location(dict(row)) for row in rows],
+        'faults': fault_items,
         'total': total,
         'page': page,
         'page_size': page_size,
@@ -4131,20 +4500,23 @@ def get_faults_scoped():
     })
 
 
+
 def update_fault_status_scoped(fault_id):
     data = request.get_json()
     if not data or 'status' not in data:
-        return api_error('鏈彁渚涚姸鎬�')
+        return api_error('未提供状态')
 
     new_status = data['status']
     valid_statuses = ['open', 'handling', 'closed']
     if new_status not in valid_statuses:
-        return api_error(f'鏃犳晥鐘舵€侊紝鍙€夊€� {valid_statuses}')
+        return api_error(f'无效状态，可选值: {valid_statuses}')
 
     db = get_db()
-    fault_report_columns = get_table_columns(db, "fault_reports")
+    fault_report_columns = ensure_fault_report_multi_camera_schema(db)
+    fault_report_columns = ensure_fault_report_soft_delete_schema(db)
     if not (projects_enabled(db) and 'project_id' in fault_report_columns):
         return update_fault_status(fault_id)
+
     select_fields = ["id", "status"]
     if 'project_id' in fault_report_columns:
         select_fields.append("project_id")
@@ -4153,7 +4525,7 @@ def update_fault_status_scoped(fault_id):
         (fault_id,),
     ).fetchone()
     if not fault:
-        return api_error('鏁呴殰璁板綍涓嶅瓨鍦�', 404)
+        return api_error('故障记录不存在', 404)
 
     if 'project_id' in fault_report_columns and fault['project_id']:
         project_row = db.execute(
@@ -4163,105 +4535,8 @@ def update_fault_status_scoped(fault_id):
         if project_row and not ensure_project_write_access(db, project_row['code']):
             return project_access_denied()
 
-    valid_transitions = {
-        'open': ['handling', 'closed'],
-        'handling': ['closed'],
-        'closed': [],
-    }
-    current_status = fault['status']
-    if new_status not in valid_transitions.get(current_status, []):
-        return api_error(f'涓嶈兘浠�{current_status} 杞崲涓�{new_status}')
+    return update_fault_status(fault_id)
 
-    update_fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
-    update_params = [new_status]
-    if new_status == 'handling':
-        if 'handling_started_at' in fault_report_columns:
-            update_fields.append("handling_started_at = COALESCE(handling_started_at, CURRENT_TIMESTAMP)")
-        if 'assigned_to' in fault_report_columns and session.get('user_id'):
-            update_fields.append("assigned_to = ?")
-            update_params.append(session.get('user_id'))
-        if 'planned_handle_time' in fault_report_columns and data.get('planned_handle_time'):
-            planned = data.get('planned_handle_time')
-            planned_text = str(planned).strip()
-            parsed = None
-            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S'):
-                try:
-                    parsed = datetime.strptime(planned_text, fmt)
-                    break
-                except ValueError:
-                    continue
-            if parsed:
-                update_fields.append("planned_handle_time = ?")
-                update_params.append(parsed.strftime('%Y-%m-%d %H:%M:%S'))
-    if new_status == 'closed':
-        update_fields.append("closed_at = CURRENT_TIMESTAMP")
-        if 'handler_name' in fault_report_columns and data.get('handler_name'):
-            update_fields.append("handler_name = ?")
-            update_params.append(data.get('handler_name'))
-        if 'handler_note' in fault_report_columns and data.get('handler_note'):
-            update_fields.append("handler_note = ?")
-            update_params.append(data.get('handler_note'))
-        if 'equipment_type' in fault_report_columns:
-            update_fields.append("equipment_type = ?")
-            update_params.append(data.get('equipment_type', ''))
-        if 'equipment_quantity' in fault_report_columns:
-            update_fields.append("equipment_quantity = ?")
-            update_params.append(data.get('equipment_quantity', 0))
-
-        # Root cause confirmation during closure
-        root_cause_type = str(data.get('root_cause_type') or '').strip()
-        if root_cause_type:
-            if root_cause_type not in VALID_OWNER_TYPES:
-                return api_error('根因类型无效', 400)
-            if 'root_cause_type' in fault_report_columns:
-                update_fields.append("root_cause_type = ?")
-                update_params.append(root_cause_type)
-                # Do NOT overwrite fault_owner_type — preserve original assessment
-
-        if 'is_batch_impact' in data and 'is_batch_impact' in fault_report_columns:
-            batch_val = data.get('is_batch_impact')
-            if batch_val is not None and str(batch_val).strip():
-                try:
-                    update_fields.append("is_batch_impact = ?")
-                    update_params.append(int(batch_val))
-                except (TypeError, ValueError):
-                    pass
-
-        if 'fault_type' in data or 'fault_type_code' in data:
-            try:
-                resolved_fault_type = resolve_fault_type_update_payload(
-                    db,
-                    fault,
-                    fault_report_columns,
-                    data.get('fault_type'),
-                    data.get('fault_type_code'),
-                )
-            except ValueError as error:
-                return api_error(str(error), 400)
-
-            if 'fault_type' in fault_report_columns and resolved_fault_type['fault_type']:
-                update_fields.append("fault_type = ?")
-                update_params.append(resolved_fault_type['fault_type'])
-            if 'fault_type_label_snapshot' in fault_report_columns and resolved_fault_type['fault_type']:
-                update_fields.append("fault_type_label_snapshot = ?")
-                update_params.append(resolved_fault_type['fault_type'])
-            if 'fault_type_code' in fault_report_columns:
-                update_fields.append("fault_type_code = ?")
-                update_params.append(resolved_fault_type['fault_type_code'])
-            if 'fault_type_version_id' in fault_report_columns:
-                update_fields.append("fault_type_version_id = ?")
-                update_params.append(resolved_fault_type['fault_type_version_id'])
-
-    update_params.append(fault_id)
-    db.execute(
-        f"UPDATE fault_reports SET {', '.join(update_fields)} WHERE id = ?",
-        update_params,
-    )
-    db.commit()
-    logger.info(f"Fault status updated: id={fault_id}, {current_status} -> {new_status}")
-    if new_status == 'closed':
-        _safe_dispatch_fault_notification(db, fault_id, 'fault_closed')
-    return api_success({'message': f'鐘舵€佸凡鏇存柊涓�{new_status}'})
 
 
 def get_fault_detail_scoped(fault_id):

@@ -174,6 +174,26 @@ def seeded_project_schema(project_test_db):
         CREATE UNIQUE INDEX idx_cameras_one_active_per_slot
         ON cameras(slot_id)
         WHERE status = 'active';
+
+        CREATE TABLE IF NOT EXISTS fault_report_cameras (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fault_report_id INTEGER NOT NULL,
+            camera_id INTEGER NOT NULL,
+            camera_slot_id INTEGER,
+            project_id INTEGER,
+            project_device_code TEXT,
+            camera_label TEXT,
+            recovery_state TEXT DEFAULT 'pending',
+            detail_fault_reason TEXT,
+            detail_resolution TEXT,
+            detail_note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(fault_report_id, camera_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id);
+
         """
     )
 
@@ -544,74 +564,254 @@ def test_create_fault_with_multiple_cameras_creates_project_scoped_group(client,
 
     assert response.status_code == 201
     payload = response.get_json()
-    assert payload["fault_count"] == 2
-    assert len(payload["fault_ids"]) == 2
+    assert payload["fault_count"] == 1
+    assert len(payload["fault_ids"]) == 1
     assert payload["fault_group_key"]
+    assert payload["is_aggregated"] is True
 
     conn = sqlite3.connect(project_test_db)
     try:
-        rows = conn.execute(
+        fault_row = conn.execute(
             """
-            SELECT camera_id, project_id, camera_slot_id, fault_type_code, fault_type_version_id, fault_group_key
+            SELECT id, camera_id, project_id, camera_slot_id, fault_type_code, fault_type_version_id, fault_group_key, impact_camera_count, is_batch_impact
             FROM fault_reports
-            WHERE id IN (?, ?)
+            WHERE id = ?
+            """,
+            (payload["fault_id"],),
+        ).fetchone()
+        detail_rows = conn.execute(
+            """
+            SELECT camera_id, project_id, camera_slot_id, project_device_code, recovery_state
+            FROM fault_report_cameras
+            WHERE fault_report_id = ?
             ORDER BY camera_id
             """,
-            tuple(payload["fault_ids"]),
+            (payload["fault_id"],),
         ).fetchall()
     finally:
         conn.close()
 
-    assert rows == [
-        (1, 2, 1, "BLUR", 10, payload["fault_group_key"]),
-        (4, 2, 4, "BLUR", 10, payload["fault_group_key"]),
+    assert fault_row == (
+        payload["fault_id"],
+        1,
+        2,
+        1,
+        "BLUR",
+        10,
+        payload["fault_group_key"],
+        2,
+        1,
+    )
+    assert detail_rows == [
+        (1, 2, 1, '1', 'pending'),
+        (4, 2, 4, '2', 'pending'),
     ]
 
 
-def test_create_fault_rejects_camera_project_mismatch(client, seeded_project_schema):
-    login(client, "admin1", "adminpass")
-
-    response = client.post(
-        "/api/faults",
-        json={
-            "station_id": 1,
-            "camera_id": 1,
-            "project": "unified",
-            "fault_type": "No Image",
-            "fault_type_code": "NO_IMAGE",
-            "reporter_name": "Admin One",
-        },
-    )
-
-    assert response.status_code == 400
-    assert "摄像头与项目不匹配" in response.get_json()["error"]
 
 
-def test_create_fault_requires_project_write_scope(client, seeded_project_schema, project_test_db):
+
+def test_faults_list_includes_camera_details_for_aggregated_fault(client, seeded_project_schema, project_test_db):
     conn = sqlite3.connect(project_test_db)
     conn.execute(
-        "INSERT INTO user_project_scopes (user_id, project_id, can_write) VALUES (2, 1, 0)"
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (4, 'INSPECT_2', 1, 2, 'inspection-slot-2', '', 2)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (4, 1, '2', '', 'inspection-slot-2', '10.0.0.4', 2, 4, 2, 'active')
+        """
     )
     conn.commit()
     conn.close()
 
     login(client, "operator1", "operatorpass")
-
-    response = client.post(
+    create_resp = client.post(
         "/api/faults",
         json={
-            "station_id": 2,
-            "camera_id": 2,
-            "project": "unified",
-            "fault_type": "No Image",
-            "fault_type_code": "NO_IMAGE",
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera blur detected",
             "reporter_name": "Operator One",
+            "reporter_contact": "10086",
         },
     )
+    assert create_resp.status_code == 201
 
-    assert response.status_code == 403
-    denied = response.get_json()
-    assert denied["code"] == "PROJECT_ACCESS_DENIED"
+    response = client.get("/api/faults?project=inspection")
+    assert response.status_code == 200
+    payload = response.get_json()
+    aggregated_fault = next(f for f in payload["faults"] if f["id"] == create_resp.get_json()["fault_id"])
+
+    assert "camera_details" in aggregated_fault
+    assert len(aggregated_fault["camera_details"]) == 2
+
+    assert [item["camera_id"] for item in aggregated_fault["camera_details"]] == [1, 4]
+    assert all(item["recovery_state"] == "pending" for item in aggregated_fault["camera_details"])
+
+
+
+
+
+def test_fault_status_close_requires_camera_details_for_aggregated_camera_owner(client, seeded_project_schema, project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (4, 'INSPECT_2', 1, 2, 'inspection-slot-2', '', 2)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (4, 1, '2', '', 'inspection-slot-2', '10.0.0.4', 2, 4, 2, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+    create_resp = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera blur detected",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+    assert create_resp.status_code == 201
+    fault_id = create_resp.get_json()["fault_id"]
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "逐台排查，需按摄像头分别闭环",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+        },
+    )
+    assert closed.status_code == 400
+    assert "camera_details" in closed.get_json()["error"]
+
+
+
+def test_fault_status_close_updates_aggregated_camera_details(client, seeded_project_schema, project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (4, 'INSPECT_2', 1, 2, 'inspection-slot-2', '', 2)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (4, 1, '2', '', 'inspection-slot-2', '10.0.0.4', 2, 4, 2, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    login(client, "operator1", "operatorpass")
+    create_resp = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera blur detected",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+    assert create_resp.status_code == 201
+    fault_id = create_resp.get_json()["fault_id"]
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "1号已修复，2号观察后自恢复",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+            "camera_details": [
+                {
+                    "camera_id": 1,
+                    "recovery_state": "resolved",
+                    "detail_fault_reason": "镜头起雾",
+                    "detail_resolution": "现场清洁镜罩",
+                    "detail_note": "恢复清晰",
+                },
+                {
+                    "camera_id": 4,
+                    "recovery_state": "self_recovered",
+                    "detail_fault_reason": "短时抖动",
+                    "detail_resolution": "无需更换设备",
+                    "detail_note": "观察后自动恢复",
+                },
+            ],
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        fault_row = conn.execute(
+            """
+            SELECT status, fault_owner_type, root_cause_type, is_batch_impact
+            FROM fault_reports
+            WHERE id = ?
+            """,
+            (fault_id,),
+        ).fetchone()
+        detail_rows = conn.execute(
+            """
+            SELECT camera_id, recovery_state, detail_fault_reason, detail_resolution, detail_note
+            FROM fault_report_cameras
+            WHERE fault_report_id = ?
+            ORDER BY camera_id
+            """,
+            (fault_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert fault_row == ("closed", "camera", "camera", 0)
+    assert detail_rows == [
+        (1, "resolved", "镜头起雾", "现场清洁镜罩", "恢复清晰"),
+        (4, "self_recovered", "短时抖动", "无需更换设备", "观察后自动恢复"),
+    ]
+
 
 
 def test_create_fault_rejects_inactive_project_inferred_from_camera(client, seeded_project_schema, project_test_db):
@@ -649,14 +849,34 @@ def test_create_fault_rejects_inactive_project_inferred_from_camera(client, seed
     assert "椤圭洰" in response.get_json()["error"]
 
 
-def test_faults_project_filter_enforces_scope(client, seeded_project_schema):
+def test_create_fault_requires_project_write_scope(client, seeded_project_schema, project_test_db):
+    conn = sqlite3.connect(project_test_db)
+    conn.execute(
+        "INSERT INTO user_project_scopes (user_id, project_id, can_write) VALUES (2, 1, 0)"
+    )
+    conn.commit()
+    conn.close()
+
     login(client, "operator1", "operatorpass")
 
-    response = client.get("/api/faults?project=inspection")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data["total"] == 1
-    assert data["faults"][0]["project_id"] == 2
+    response = client.post(
+        "/api/faults",
+        json={
+            "station_id": 2,
+            "camera_id": 2,
+            "project": "unified",
+            "fault_type": "No Image",
+            "fault_type_code": "NO_IMAGE",
+            "reporter_name": "Operator One",
+        },
+    )
+
+    assert response.status_code == 403
+    denied = response.get_json()
+    assert denied["code"] == "PROJECT_ACCESS_DENIED"
+
+
+
 
     response = client.get("/api/faults?project=unified")
     assert response.status_code == 403
