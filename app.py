@@ -57,11 +57,12 @@ DEFAULT_PENDING_FAULT_TYPE = '待现场确认'
 FAULT_TYPE_MULTI_LABEL_SEPARATOR = ' | '
 FAULT_TYPE_MULTI_CODE_SEPARATOR = ','
 ROOT_CAUSE_LABELS = {
-    'camera': '摄像头本体故障',
-    'switch': '交换机故障',
-    'power': '集中电源故障',
-    'network': '链路/网络故障',
-    'infrastructure_other': '其他基础设施故障',
+    'camera': '摄像头本体',
+    'switch': '交换机及端口',
+    'power': '供电（含交换机电源/集中电源/POE）',
+    'network': '链路/网络',
+    'platform': '平台/配置',
+    'infrastructure_other': '其他基础设施',
     'unconfirmed': '未确认根因',
 }
 VALID_OWNER_TYPES = tuple(k for k in ROOT_CAUSE_LABELS.keys() if k != 'unconfirmed')
@@ -494,6 +495,17 @@ def ensure_fault_report_multi_camera_schema(db):
     if missing:
         db.commit()
         columns = get_table_columns(db, "fault_reports")
+
+    if 'camera_slot_id' in columns and 'impact_camera_count' in columns:
+        needs_fix = db.execute(
+            "SELECT COUNT(*) FROM fault_reports WHERE impact_camera_count > 1 AND camera_slot_id IS NOT NULL"
+        ).fetchone()[0]
+        if needs_fix > 0:
+            db.execute(
+                "UPDATE fault_reports SET camera_slot_id = NULL WHERE impact_camera_count > 1 AND camera_slot_id IS NOT NULL"
+            )
+            db.commit()
+
     return columns
 
 
@@ -507,6 +519,7 @@ def ensure_fault_report_camera_detail_schema(db):
             "project_device_code": "TEXT",
             "camera_label": "TEXT",
             "recovery_state": "TEXT DEFAULT 'pending'",
+            "affects_statistics": "INTEGER DEFAULT 1",
             "detail_fault_reason": "TEXT",
             "detail_resolution": "TEXT",
             "detail_note": "TEXT",
@@ -520,6 +533,7 @@ def ensure_fault_report_camera_detail_schema(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
         db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
         db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_affects_stats ON fault_report_cameras(affects_statistics)")
         if missing:
             db.commit()
             columns = get_table_columns(db, "fault_report_cameras")
@@ -536,6 +550,7 @@ def ensure_fault_report_camera_detail_schema(db):
             project_device_code TEXT,
             camera_label TEXT,
             recovery_state TEXT DEFAULT 'pending',
+            affects_statistics INTEGER DEFAULT 1,
             detail_fault_reason TEXT,
             detail_resolution TEXT,
             detail_note TEXT,
@@ -550,6 +565,7 @@ def ensure_fault_report_camera_detail_schema(db):
     db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
     db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
     db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
+    db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_affects_stats ON fault_report_cameras(affects_statistics)")
     db.commit()
     return get_table_columns(db, "fault_report_cameras")
 
@@ -580,6 +596,7 @@ def fetch_fault_camera_details(db, fault_report_id):
         "project_id",
         "project_device_code",
         "camera_label",
+        "affects_statistics",
         "detail_fault_reason",
         "detail_resolution",
         "detail_note",
@@ -620,6 +637,7 @@ def fetch_fault_camera_details_map(db, fault_report_ids):
         "project_id",
         "project_device_code",
         "camera_label",
+        "affects_statistics",
         "detail_fault_reason",
         "detail_resolution",
         "detail_note",
@@ -781,6 +799,11 @@ def apply_fault_camera_detail_closure(db, fault_id, *, fault_owner_type=None, ba
     normalized_updates = normalize_fault_camera_detail_updates(camera_detail_updates)
 
     if normalized_updates:
+        for item in normalized_updates:
+            if item['recovery_state'] == 'self_recovered' and not item.get('detail_fault_reason'):
+                raise ValueError('self_recovered_requires_reason')
+
+    if normalized_updates:
         provided_camera_ids = [item['camera_id'] for item in normalized_updates]
         if sorted(provided_camera_ids) != sorted(existing_camera_ids):
             raise ValueError('camera_detail_camera_scope_mismatch')
@@ -790,12 +813,15 @@ def apply_fault_camera_detail_closure(db, fault_id, *, fault_owner_type=None, ba
         fallback_state = 'resolved'
         if batch_impact_value == 0 and len(existing_camera_ids) == 1:
             fallback_state = 'resolved'
+        owner_label = fault_owner_type if fault_owner_type else '未分类'
+        batch_label = '共因' if batch_impact_value == 1 else '单因'
+        detail_resolution = handler_note or f'{batch_label}故障，归属: {owner_label}'
         normalized_updates = [
             {
                 'camera_id': camera_id,
                 'recovery_state': fallback_state,
                 'detail_fault_reason': None,
-                'detail_resolution': handler_note or None,
+                'detail_resolution': detail_resolution,
                 'detail_note': None,
             }
             for camera_id in existing_camera_ids
@@ -805,7 +831,10 @@ def apply_fault_camera_detail_closure(db, fault_id, *, fault_owner_type=None, ba
         field_name for field_name in ('detail_fault_reason', 'detail_resolution', 'detail_note')
         if field_name in detail_columns
     ]
+    has_affects_stats = 'affects_statistics' in detail_columns
     update_fields = ["recovery_state = ?", "updated_at = CURRENT_TIMESTAMP"]
+    if has_affects_stats:
+        update_fields.append("affects_statistics = ?")
     update_fields.extend(f"{field_name} = ?" for field_name in updatable_optional_fields)
     update_sql = f"UPDATE fault_report_cameras SET {', '.join(update_fields)} WHERE id = ?"
 
@@ -814,10 +843,19 @@ def apply_fault_camera_detail_closure(db, fault_id, *, fault_owner_type=None, ba
         if row_id is None:
             raise ValueError('camera_detail_camera_scope_mismatch')
         update_params = [item['recovery_state']]
+        if has_affects_stats:
+            update_params.append(0 if item['recovery_state'] == 'self_recovered' else 1)
         for field_name in updatable_optional_fields:
             update_params.append(item.get(field_name))
         update_params.append(row_id)
         db.execute(update_sql, update_params)
+
+    pending_check = db.execute(
+        "SELECT COUNT(*) FROM fault_report_cameras WHERE fault_report_id = ? AND recovery_state = 'pending'",
+        (fault_id,),
+    ).fetchone()[0]
+    if pending_check > 0:
+        raise ValueError('camera_detail_incomplete_closure')
 
 
 
@@ -1275,6 +1313,8 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
 
     selected_fault_where = [f"1=1{fault_scope_sql}"]
     selected_fault_params = list(fault_scope_params)
+    if 'deleted_at' in fault_report_columns:
+        selected_fault_where.append("f.deleted_at IS NULL")
     if year:
         selected_fault_where.append("strftime('%Y', f.created_at) = ?")
         selected_fault_params.append(str(year))
@@ -1473,6 +1513,8 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
         if year:
             detail_where.append("strftime('%Y', f.created_at) = ?")
             detail_params.append(str(year))
+        if 'affects_statistics' in detail_columns:
+            detail_where.append("COALESCE(d.affects_statistics, 1) = 1")
         detail_where_sql = " AND ".join(detail_where)
         camera_ranking_rows = db.execute(
             f"""
@@ -2077,8 +2119,11 @@ def _build_statistics_detail_rows(db, project_scope: dict, year: int | None):
 
     detail_map = fetch_fault_camera_details_map(db, [int(row['id']) for row in result])
     for row in result:
-        row['camera_details'] = detail_map.get(int(row['id']), [])
+        details = detail_map.get(int(row['id']), [])
+        row['camera_details'] = details
         attach_fault_camera_detail_summary(row)
+        row['is_aggregated'] = '是' if len(details) > 1 else '否'
+        row['statistics_camera_count'] = sum(1 for d in details if d.get('affects_statistics', 1) != 0)
     return result
 
 
@@ -2574,6 +2619,7 @@ def build_station_slots_payload(db, station_id, project_scope):
             FROM fault_reports f
             WHERE f.station_id = ?
               AND f.camera_slot_id IN ({placeholders})
+              AND f.deleted_at IS NULL
         """
         fault_params = [station_id, *slot_ids]
         if project_scope['enabled'] and 'project_id' in fault_report_columns:
@@ -2597,6 +2643,7 @@ def build_station_slots_payload(db, station_id, project_scope):
             FROM fault_reports f
             WHERE f.station_id = ?
               AND f.camera_slot_id IN ({placeholders})
+              AND f.deleted_at IS NULL
         """
         recent_fault_params = [station_id, *slot_ids]
         if project_scope['enabled'] and 'project_id' in fault_report_columns:
@@ -2928,11 +2975,14 @@ def export_statistics():
         ws3 = wb.create_sheet('故障明细')
         headers = ['ID', '变电站', '电压等级', '县区', '摄像头位置', '摄像头明细', '逐路恢复摘要', '自恢复路数', '故障类型',
                    '描述', '状态', '报修人', '联系方式', '报修时间', '关闭时间', '处理人', '处理备注',
-                   '故障归属', '根因确认', '共因标记', '影响摄像头数']
+                   '故障归属', '根因确认', '共因标记', '影响摄像头数', '是否聚合单', '计入统计摄像头数']
         ws3.append(headers)
         for f in fault_rows:
             fault_owner_label = ROOT_CAUSE_LABELS.get((f.get('fault_owner_type') or ''), f.get('fault_owner_type') or '')
             root_cause_label = ROOT_CAUSE_LABELS.get((f.get('root_cause_type') or ''), f.get('root_cause_type') or '')
+            camera_details = f.get('camera_details') or []
+            stats_camera_count = sum(1 for d in camera_details if d.get('affects_statistics', 1) != 0)
+            is_aggregated = '是' if len(camera_details) > 1 else '否'
             ws3.append([
                 f['id'], f['station_name'] or '', f['voltage_level'] or '', f['county'] or '',
                 f.get('camera_display_text') or f.get('camera_location') or f.get('camera_area') or '',
@@ -2946,6 +2996,8 @@ def export_statistics():
                 fault_owner_label, root_cause_label,
                 f.get('is_batch_impact', ''),
                 f.get('impact_camera_count', ''),
+                is_aggregated,
+                stats_camera_count,
             ])
 
         for col in ws3.columns:
@@ -3351,8 +3403,8 @@ def create_fault():
 
         if detail_table_enabled:
             primary_camera_row = camera_rows[0]
-            primary_camera_id = primary_camera_row['id'] if primary_camera_row else None
-            primary_camera_slot_id = primary_camera_row['slot_id'] if primary_camera_row and 'slot_id' in camera_columns else None
+            primary_camera_id = None  # 聚合工单不挂单一摄像头
+            primary_camera_slot_id = None  # 聚合工单不挂单一slot，明细表是唯一摄像头来源
             primary_project_device_code = None
             if primary_camera_row and 'project_camera_code' in camera_columns and primary_camera_row['project_camera_code']:
                 primary_project_device_code = primary_camera_row['project_camera_code']
@@ -3762,6 +3814,14 @@ def update_fault_status(fault_id):
                 return api_error('camera_details.recovery_state 无效', 400)
             return api_error('camera_details 参数无效', 400)
 
+        all_self_recovered = (
+            normalized_camera_detail_updates
+            and all(item['recovery_state'] == 'self_recovered' for item in normalized_camera_detail_updates)
+        )
+        if all_self_recovered:
+            equipment_type = ''
+            equipment_quantity = 0
+
         update_fields = [
             "status = 'closed'",
             "handler_name = ?",
@@ -3845,6 +3905,12 @@ def update_fault_status(fault_id):
             if error_code == 'camera_detail_camera_scope_mismatch':
                 db.rollback()
                 return api_error('camera_details 必须完整覆盖当前聚合工单的全部摄像头', 400)
+            if error_code == 'self_recovered_requires_reason':
+                db.rollback()
+                return api_error('自恢复的摄像头必须填写故障原因（detail_fault_reason）', 400)
+            if error_code == 'camera_detail_incomplete_closure':
+                db.rollback()
+                return api_error('闭环后仍有摄像头明细处于待处理状态，请检查 camera_details 是否完整', 400)
             raise
 
     else:
@@ -4945,176 +5011,6 @@ def _apply_photo_project_filter(db, base_where, params, requested_project_code):
     return where, scoped_params, project_scope, None
 
 
-def export_statistics_scoped():
-    db = get_db()
-    fault_report_columns = get_table_columns(db, "fault_reports")
-    camera_columns = get_table_columns(db, "cameras")
-    if not (
-        projects_enabled(db)
-        and 'project_id' in fault_report_columns
-        and 'project_id' in camera_columns
-    ):
-        return export_statistics()
-
-    year = request.args.get('year', type=int)
-    project_scope, error = build_project_scope(db, request.args.get('project'))
-    if error:
-        return error
-
-    station_sources = []
-    station_params = []
-    project_sql, project_params = build_project_in_clause("c", project_scope['project_ids'])
-    station_sources.append(
-        f"SELECT c.station_id FROM cameras c WHERE 1=1{project_sql} AND c.status = 'active'"
-    )
-    station_params.extend(project_params)
-    project_sql, project_params = build_project_in_clause("f", project_scope['project_ids'])
-    station_sources.append(
-        f"SELECT f.station_id FROM fault_reports f WHERE 1=1{project_sql}"
-    )
-    station_params.extend(project_params)
-    station_count = db.execute(
-        "SELECT COUNT(DISTINCT station_id) as count FROM ("
-        + " UNION ALL ".join(station_sources)
-        + ") scoped_stations",
-        station_params,
-    ).fetchone()['count']
-
-    camera_sql, camera_params = build_project_in_clause("c", project_scope['project_ids'])
-    camera_count = db.execute(
-        f"SELECT COUNT(*) as count FROM cameras c WHERE 1=1{camera_sql} AND c.status = 'active'",
-        camera_params,
-    ).fetchone()['count']
-
-    fault_base_sql, fault_base_params = build_project_in_clause("f", project_scope['project_ids'])
-    fault_count_query = f"SELECT COUNT(*) as count FROM fault_reports f WHERE 1=1{fault_base_sql}"
-    if year:
-        fault_count = db.execute(
-            fault_count_query + " AND strftime('%Y', f.created_at) = ?",
-            fault_base_params + [str(year)],
-        ).fetchone()['count']
-    else:
-        fault_count = db.execute(fault_count_query, fault_base_params).fetchone()['count']
-
-    monthly_data = {}
-    target_year = year or datetime.now().year
-    for month in range(1, 13):
-        monthly_data[f"{target_year}-{month:02d}"] = 0
-    monthly_rows = db.execute(
-        f"""
-        SELECT strftime('%Y-%m', f.created_at) as month, COUNT(*) as cnt
-        FROM fault_reports f
-        WHERE 1=1{fault_base_sql} AND strftime('%Y', f.created_at) = ?
-        GROUP BY strftime('%Y-%m', f.created_at)
-        """,
-        fault_base_params + [str(target_year)],
-    ).fetchall()
-
-    for row in monthly_rows:
-        monthly_data[row['month']] = row['cnt']
-
-    year_filter_sql = " AND strftime('%Y', f.created_at) = ?" if year else ""
-    faults = db.execute(
-        f"""
-        SELECT f.id, s.name as station_name, s.voltage_level, s.county,
-               c.area as camera_area, c.location_desc as camera_location,
-               f.fault_type, f.description, f.status,
-               f.reporter_name, f.reporter_contact,
-               f.created_at, f.closed_at, f.handler_name, f.handler_note
-        FROM fault_reports f
-        JOIN stations s ON f.station_id = s.id
-        LEFT JOIN cameras c ON f.camera_id = c.id
-        WHERE 1=1{fault_base_sql}{year_filter_sql}
-        ORDER BY f.created_at DESC
-        """,
-        fault_base_params + ([str(year)] if year else []),
-    ).fetchall()
-
-
-    county_data = {}
-    voltage_data = {}
-    for fault in faults:
-        county = fault['county'] or '未知'
-        county_data[county] = county_data.get(county, 0) + 1
-        voltage = fault['voltage_level'] or '其他'
-        voltage_data[voltage] = voltage_data.get(voltage, 0) + 1
-
-    try:
-        from io import BytesIO
-        from openpyxl import Workbook
-        from openpyxl.styles import Border, Font, PatternFill, Side
-
-        wb = Workbook()
-        header_font = Font(bold=True, color='FFFFFF')
-        header_fill = PatternFill(start_color='2f67f6', end_color='2f67f6', fill_type='solid')
-        thin_border = Border(
-            left=Side(style='thin'),
-            right=Side(style='thin'),
-            top=Side(style='thin'),
-            bottom=Side(style='thin')
-        )
-
-        ws1 = wb.active
-        ws1.title = '概览'
-        overview = [
-            ('变电站总数', station_count),
-            ('摄像头总数', camera_count),
-            ('故障报修总数', fault_count),
-            ('故障率', f"{(fault_count / camera_count * 100):.2f}%" if camera_count > 0 else '0%'),
-        ]
-        ws1.append(['指标', '数值'])
-        for key, value in overview:
-            ws1.append([key, value])
-        for cell in ws1[1]:
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.border = thin_border
-        ws1.column_dimensions['A'].width = 20
-        ws1.column_dimensions['B'].width = 15
-
-        ws2 = wb.create_sheet('月度趋势')
-        ws2.append(['月份', '故障数量'])
-        for month, count in sorted(monthly_data.items()):
-            ws2.append([month, count])
-
-        ws3 = wb.create_sheet('故障明细')
-        headers = ['ID', '变电站', '电压等级', '县区', '摄像头位置', '故障类型',
-                   '描述', '状态', '报修人', '联系方式', '报修时间', '关闭时间', '处理人', '处理备注']
-        ws3.append(headers)
-        for fault in faults:
-            ws3.append([
-                fault['id'], fault['station_name'] or '', fault['voltage_level'] or '', fault['county'] or '',
-                fault['camera_location'] or fault['camera_area'] or '', fault['fault_type'] or '',
-                fault['description'] or '', fault['status'] or '', fault['reporter_name'] or '',
-                fault['reporter_contact'] or '', fault['created_at'] or '', fault['closed_at'] or '',
-                fault['handler_name'] or '', fault['handler_note'] or ''
-            ])
-
-        ws4 = wb.create_sheet('县区统计')
-        ws4.append(['县区', '故障数量'])
-        for county, count in sorted(county_data.items(), key=lambda item: -item[1]):
-            ws4.append([county, count])
-
-        ws5 = wb.create_sheet('电压等级统计')
-        ws5.append(['电压等级', '故障数量'])
-        for voltage, count in sorted(voltage_data.items(), key=lambda item: -item[1]):
-            ws5.append([voltage, count])
-
-        output = BytesIO()
-        wb.save(output)
-        output.seek(0)
-        filename = f"统计报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        return send_file(
-            output,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            as_attachment=True,
-            download_name=filename
-        )
-    except Exception as e:
-        logger.exception('export_statistics_scoped failed')
-        return api_error(f'导出失败: {e}', 500)
-
-
 def get_photos_scoped():
     db = get_db()
     enabled, _ = _photos_project_scope_enabled(db)
@@ -5426,6 +5322,8 @@ def export_statistics_scoped():
             ('根因确认', 'root_cause_type'),
             ('共因标记', 'is_batch_impact'),
             ('影响摄像头数', 'impact_camera_count'),
+            ('是否聚合单', 'is_aggregated'),
+            ('计入统计摄像头数', 'statistics_camera_count'),
         ]
         admin_columns = [
             ('槽位ID', 'camera_slot_id'),

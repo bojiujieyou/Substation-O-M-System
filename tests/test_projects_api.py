@@ -593,9 +593,9 @@ def test_create_fault_with_multiple_cameras_creates_project_scoped_group(client,
 
     assert fault_row == (
         payload["fault_id"],
-        1,
+        None,
         2,
-        1,
+        None,
         "BLUR",
         10,
         payload["fault_group_key"],
@@ -2294,3 +2294,356 @@ def test_fault_list_and_detail_fall_back_to_camera_location_text(client, seeded_
     assert detail_response.status_code == 200
     detail_payload = detail_response.get_json()
     assert detail_payload["fault"]["camera_location"] == "2号主变西北侧球机"
+
+
+# ============================================================
+# 闭环分流逻辑测试
+# ============================================================
+
+
+def _seed_extra_camera_for_multi(db_path):
+    """插入第二个摄像头用于多摄像头聚合测试。"""
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        """
+        INSERT INTO camera_slots (id, slot_code, station_id, project_id, location_desc, area, channel_number)
+        VALUES (4, 'INSPECT_2', 1, 2, 'inspection-slot-2', '', 2)
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO cameras
+            (id, station_id, camera_index, area, location_desc, ip_address, channel_number, slot_id, project_id, status)
+        VALUES
+            (4, 1, '2', '', 'inspection-slot-2', '10.0.0.4', 2, 4, 2, 'active')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+def _create_multi_camera_fault(client):
+    """创建一个双摄像头聚合工单，返回 fault_id。"""
+    resp = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera blur detected",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+    assert resp.status_code == 201
+    return resp.get_json()["fault_id"]
+
+
+def test_close_public_root_cause_updates_all_details_uniformly(client, seeded_project_schema, project_test_db):
+    """公共根因闭环：所有明细统一设为 resolved，detail_resolution 自动填写。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "交换机端口故障已修复",
+            "fault_owner_type": "switch",
+            "root_cause_type": "switch",
+            "is_batch_impact": 1,
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        fault_row = conn.execute(
+            "SELECT status, fault_owner_type, is_batch_impact FROM fault_reports WHERE id = ?",
+            (fault_id,),
+        ).fetchone()
+        detail_rows = conn.execute(
+            "SELECT camera_id, recovery_state, detail_resolution FROM fault_report_cameras WHERE fault_report_id = ? ORDER BY camera_id",
+            (fault_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert fault_row == ("closed", "switch", 1)
+    assert len(detail_rows) == 2
+    for row in detail_rows:
+        assert row[1] == "resolved"
+        assert row[2] == "交换机端口故障已修复"
+
+
+def test_close_camera_owner_rejects_without_camera_details(client, seeded_project_schema, project_test_db):
+    """摄像头本体故障闭环：不提供 camera_details 应被拒绝。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "逐台排查",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+        },
+    )
+    assert closed.status_code == 400
+    assert "camera_details" in closed.get_json()["error"]
+
+
+def test_close_camera_owner_with_per_camera_details(client, seeded_project_schema, project_test_db):
+    """摄像头本体故障闭环：逐摄像头填写明细后成功闭环。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "逐台排查完毕",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+            "camera_details": [
+                {
+                    "camera_id": 1,
+                    "recovery_state": "resolved",
+                    "detail_fault_reason": "镜头起雾",
+                    "detail_resolution": "清洁镜罩",
+                    "detail_note": "恢复清晰",
+                },
+                {
+                    "camera_id": 4,
+                    "recovery_state": "resolved",
+                    "detail_fault_reason": "传感器老化",
+                    "detail_resolution": "更换摄像头",
+                    "detail_note": "新设备已上线",
+                },
+            ],
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        detail_rows = conn.execute(
+            "SELECT camera_id, recovery_state, detail_fault_reason, detail_resolution, detail_note FROM fault_report_cameras WHERE fault_report_id = ? ORDER BY camera_id",
+            (fault_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert len(detail_rows) == 2
+    assert detail_rows[0] == (1, "resolved", "镜头起雾", "清洁镜罩", "恢复清晰")
+    assert detail_rows[1] == (4, "resolved", "传感器老化", "更换摄像头", "新设备已上线")
+
+
+def test_close_self_recovered_requires_fault_reason(client, seeded_project_schema, project_test_db):
+    """自恢复闭环：缺少 detail_fault_reason 应被拒绝。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "部分自恢复",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+            "camera_details": [
+                {
+                    "camera_id": 1,
+                    "recovery_state": "resolved",
+                    "detail_fault_reason": "镜头起雾",
+                    "detail_resolution": "清洁镜罩",
+                },
+                {
+                    "camera_id": 4,
+                    "recovery_state": "self_recovered",
+                },
+            ],
+        },
+    )
+    assert closed.status_code == 400
+    assert "fault_reason" in closed.get_json()["error"]
+
+
+def test_close_all_self_recovered_waives_equipment(client, seeded_project_schema, project_test_db):
+    """全部自恢复闭环：equipment_type/quantity 应被自动清零。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "全部自恢复，无需更换设备",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+            "equipment_type": "摄像头",
+            "equipment_quantity": 5,
+            "camera_details": [
+                {
+                    "camera_id": 1,
+                    "recovery_state": "self_recovered",
+                    "detail_fault_reason": "短时网络抖动",
+                    "detail_resolution": "无需更换设备",
+                },
+                {
+                    "camera_id": 4,
+                    "recovery_state": "self_recovered",
+                    "detail_fault_reason": "短时网络抖动",
+                    "detail_resolution": "无需更换设备",
+                },
+            ],
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        fault_row = conn.execute(
+            "SELECT equipment_type, equipment_quantity FROM fault_reports WHERE id = ?",
+            (fault_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert fault_row[0] == ""
+    assert fault_row[1] == 0
+
+
+def test_close_rejects_camera_owner_with_batch_impact(client, seeded_project_schema, project_test_db):
+    """摄像头本体故障不能标记为共因故障。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "尝试标记为共因",
+            "fault_owner_type": "camera",
+            "is_batch_impact": 1,
+        },
+    )
+    assert closed.status_code == 400
+    assert "共因" in closed.get_json()["error"]
+
+
+def test_close_sets_affects_statistics_per_recovery_state(client, seeded_project_schema, project_test_db):
+    """闭环时 affects_statistics 应根据 recovery_state 自动设置。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    fault_id = _create_multi_camera_fault(client)
+
+    handling = client.put(f"/api/faults/{fault_id}/status", json={"status": "handling"})
+    assert handling.status_code == 200
+
+    closed = client.put(
+        f"/api/faults/{fault_id}/status",
+        json={
+            "status": "closed",
+            "handler_name": "Operator One",
+            "handler_note": "1号修复，2号自恢复",
+            "fault_owner_type": "camera",
+            "root_cause_type": "camera",
+            "is_batch_impact": 0,
+            "camera_details": [
+                {
+                    "camera_id": 1,
+                    "recovery_state": "resolved",
+                    "detail_fault_reason": "镜头起雾",
+                    "detail_resolution": "清洁镜罩",
+                },
+                {
+                    "camera_id": 4,
+                    "recovery_state": "self_recovered",
+                    "detail_fault_reason": "短时抖动",
+                    "detail_resolution": "无需更换设备",
+                },
+            ],
+        },
+    )
+    assert closed.status_code == 200
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        detail_rows = conn.execute(
+            "SELECT camera_id, recovery_state, affects_statistics FROM fault_report_cameras WHERE fault_report_id = ? ORDER BY camera_id",
+            (fault_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert detail_rows == [
+        (1, "resolved", 1),
+        (4, "self_recovered", 0),
+    ]
+
+
+def test_create_aggregated_fault_sets_camera_id_null(client, seeded_project_schema, project_test_db):
+    """聚合工单主单的 camera_id 应为 NULL。"""
+    _seed_extra_camera_for_multi(project_test_db)
+    login(client, "operator1", "operatorpass")
+    resp = client.post(
+        "/api/faults",
+        json={
+            "station_id": 1,
+            "camera_ids": [1, 4],
+            "project": "inspection",
+            "fault_type": "Blur",
+            "fault_type_code": "BLUR",
+            "description": "multi camera test",
+            "reporter_name": "Operator One",
+            "reporter_contact": "10086",
+        },
+    )
+    assert resp.status_code == 201
+    fault_id = resp.get_json()["fault_id"]
+
+    conn = sqlite3.connect(project_test_db)
+    try:
+        row = conn.execute("SELECT camera_id FROM fault_reports WHERE id = ?", (fault_id,)).fetchone()
+    finally:
+        conn.close()
+
+    assert row[0] is None

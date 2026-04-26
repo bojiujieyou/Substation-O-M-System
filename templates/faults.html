@@ -1237,31 +1237,20 @@ button.slot-history-item:focus-visible {
                         <input type="text" id="handle-fault-type-custom" class="form-input-modal" style="margin-top: 8px;" placeholder="目录里没有时，可手动填写真实故障类型">
                     </div>
                     <div id="handle-owner-section" class="form-group" style="margin-top: 12px; display: none;">
-                        <label for="handle-fault-owner-type" class="form-label">故障归属 <span id="handle-owner-required-mark" class="required" style="display:none;">*</span></label>
+                        <label for="handle-fault-owner-type" class="form-label">故障归属 / 根因确认 <span id="handle-owner-required-mark" class="required" style="display:none;">*</span></label>
                         <select id="handle-fault-owner-type" class="form-select-input">
                             <option value="">请选择</option>
-                            <option value="camera">摄像头本体故障</option>
-                            <option value="switch">交换机故障</option>
-                            <option value="power">集中电源故障</option>
-                            <option value="network">链路/网络故障</option>
-                            <option value="infrastructure_other">其他基础设施故障</option>
+                            <option value="camera">摄像头本体</option>
+                            <option value="switch">交换机及端口</option>
+                            <option value="power">供电（含交换机电源/集中电源/POE）</option>
+                            <option value="network">链路/网络</option>
+                            <option value="platform">平台/配置</option>
+                            <option value="infrastructure_other">其他基础设施</option>
                         </select>
                         <div id="handle-owner-hint" class="field-note" style="display:none;"></div>
                     </div>
                     <div id="handle-owner-toggle" style="display:none; margin-top: 8px; margin-bottom: 4px;">
                         <a href="javascript:void(0)" id="handle-show-owner-link" style="font-size: 13px; color: var(--accent-primary, #4a90d9); cursor: pointer; text-decoration: none;">+ 填写故障归属（可选）</a>
-                    </div>
-                    <div class="form-group" style="margin-top: 12px;">
-                        <label for="handle-root-cause-type" class="form-label">根因确认</label>
-                        <select id="handle-root-cause-type" class="form-select-input">
-                            <option value="">不修改</option>
-                            <option value="camera">摄像头本体故障</option>
-                            <option value="switch">交换机故障</option>
-                            <option value="power">集中电源故障</option>
-                            <option value="network">链路/网络故障</option>
-                            <option value="infrastructure_other">其他基础设施故障</option>
-                        </select>
-                        <div class="field-note">根因确认将影响统计归类，仅在已明确真正故障设备时填写。</div>
                     </div>
                     <div class="form-group">
                         <label for="handle-is-batch-impact" class="form-label">是否确认共因</label>
@@ -1270,6 +1259,10 @@ button.slot-history-item:focus-visible {
                             <option value="0">否</option>
                             <option value="1">是</option>
                         </select>
+                    </div>
+                    <div id="handle-camera-details-section" style="display:none;">
+                        <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border-light, #e0e0e0);">逐摄像头闭环明细</div>
+                        <div id="handle-camera-details-list"></div>
                     </div>
                     <div class="form-group">
                         <label for="handler-name" class="form-label">处理人姓名 <span class="required">*</span></label>
@@ -1365,22 +1358,24 @@ button.slot-history-item:focus-visible {
                         <label for="edit-fault-owner-type" class="form-label">故障归属</label>
                         <select id="edit-fault-owner-type" class="form-select-input">
                             <option value="">未选择</option>
-                            <option value="camera">摄像头本体故障</option>
-                            <option value="switch">交换机故障</option>
-                            <option value="power">集中电源故障</option>
-                            <option value="network">链路/网络故障</option>
-                            <option value="infrastructure_other">其他基础设施故障</option>
+                            <option value="camera">摄像头本体</option>
+                            <option value="switch">交换机及端口</option>
+                            <option value="power">供电（含交换机电源/集中电源/POE）</option>
+                            <option value="network">链路/网络</option>
+                            <option value="platform">平台/配置</option>
+                            <option value="infrastructure_other">其他基础设施</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="edit-root-cause-type" class="form-label">根因类型</label>
                         <select id="edit-root-cause-type" class="form-select-input">
                             <option value="">未确认</option>
-                            <option value="camera">摄像头本体故障</option>
-                            <option value="switch">交换机故障</option>
-                            <option value="power">集中电源故障</option>
-                            <option value="network">链路/网络故障</option>
-                            <option value="infrastructure_other">其他基础设施故障</option>
+                            <option value="camera">摄像头本体</option>
+                            <option value="switch">交换机及端口</option>
+                            <option value="power">供电（含交换机电源/集中电源/POE）</option>
+                            <option value="network">链路/网络</option>
+                            <option value="platform">平台/配置</option>
+                            <option value="infrastructure_other">其他基础设施</option>
                         </select>
                         <div class="field-note">修改根因类型会影响统计归类，确认修改？</div>
                     </div>
@@ -1470,11 +1465,12 @@ let pageSize = 10;
 const OVERDUE_DAYS = 7;
 const OVERDUE_MS = OVERDUE_DAYS * 24 * 60 * 60 * 1000;
 const ROOT_CAUSE_LABELS = {
-    'camera': '摄像头本体故障',
-    'switch': '交换机故障',
-    'power': '集中电源故障',
-    'network': '链路/网络故障',
-    'infrastructure_other': '其他基础设施故障',
+    'camera': '摄像头本体',
+    'switch': '交换机及端口',
+    'power': '供电（含交换机电源/集中电源/POE）',
+    'network': '链路/网络',
+    'platform': '平台/配置',
+    'infrastructure_other': '其他基础设施',
     'unconfirmed': '未确认根因',
 };
 const CAMERA_RECOVERY_STATE_LABELS = {
@@ -1483,6 +1479,8 @@ const CAMERA_RECOVERY_STATE_LABELS = {
     self_recovered: '自恢复'
 };
 let faultDetailOpenedFromUrl = false;
+
+function getCameraDetailLabel(detail) {
     if (!detail || typeof detail !== 'object') {
         return '未命名摄像头';
     }
@@ -2997,7 +2995,6 @@ async function showHandleModal(faultId) {
     document.getElementById('handler-note').value = '';
     document.getElementById('equipment-type').value = fault.equipment_type || '';
     document.getElementById('equipment-quantity').value = fault.equipment_quantity || 0;
-    document.getElementById('handle-root-cause-type').value = fault.root_cause_type || '';
     document.getElementById('handle-is-batch-impact').value = fault.is_batch_impact != null ? String(fault.is_batch_impact) : '';
 
     // 故障归属：条件展示逻辑
@@ -3022,6 +3019,9 @@ async function showHandleModal(faultId) {
         ownerToggle.style.display = '';
         ownerRequiredMark.style.display = 'none';
     }
+
+    // 逐摄像头闭环明细
+    renderHandleCameraDetails(fault);
 
     new bootstrap.Modal(document.getElementById('handle-modal')).show();
 }
@@ -3419,9 +3419,70 @@ function buildCameraDetailPayload(detail) {
     };
 }
 
+function renderHandleCameraDetails(fault) {
+    const section = document.getElementById('handle-camera-details-section');
+    const list = document.getElementById('handle-camera-details-list');
+    if (!section || !list) return;
+
+    const details = fault.camera_details;
+    if (!Array.isArray(details) || details.length === 0) {
+        section.style.display = 'none';
+        list.innerHTML = '';
+        return;
+    }
+
+    section.style.display = '';
+    list.innerHTML = details.map((detail, index) => {
+        const label = getCameraDetailLabel(detail);
+        const currentRecovery = detail.recovery_state || 'pending';
+        return `
+            <div class="handle-camera-detail-card" data-camera-index="${index}" data-camera-id="${detail.camera_id}" style="background: var(--surface-alt, #f5f6f8); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; border: 1px solid var(--border-light, #e0e0e0);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="font-weight: 600; font-size: 13px;">${escapeHtml(label)}</span>
+                    <select class="form-select-input handle-camera-recovery" data-camera-id="${detail.camera_id}" style="width: auto; min-width: 100px; font-size: 12px; padding: 2px 8px;">
+                        <option value="resolved" ${currentRecovery !== 'self_recovered' ? 'selected' : ''}>已修复</option>
+                        <option value="self_recovered" ${currentRecovery === 'self_recovered' ? 'selected' : ''}>已自恢复</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <input type="text" class="form-input-modal handle-camera-reason" data-camera-id="${detail.camera_id}" placeholder="故障原因（可选）" value="${escapeHtml(detail.detail_fault_reason || '')}" style="font-size: 12px; padding: 4px 8px;">
+                    <input type="text" class="form-input-modal handle-camera-resolution" data-camera-id="${detail.camera_id}" placeholder="处理方式（可选）" value="${escapeHtml(detail.detail_resolution || '')}" style="font-size: 12px; padding: 4px 8px;">
+                </div>
+                <input type="text" class="form-input-modal handle-camera-note" data-camera-id="${detail.camera_id}" placeholder="备注（可选）" value="${escapeHtml(detail.detail_note || '')}" style="font-size: 12px; padding: 4px 8px; margin-top: 6px; width: 100%;">
+            </div>
+        `;
+    }).join('');
+
+    // 自恢复时自动填处理方式
+    list.querySelectorAll('.handle-camera-recovery').forEach(select => {
+        select.addEventListener('change', function() {
+            const card = this.closest('.handle-camera-detail-card');
+            const resolutionInput = card.querySelector('.handle-camera-resolution');
+            if (this.value === 'self_recovered' && !resolutionInput.value.trim()) {
+                resolutionInput.value = '无需更换设备';
+            }
+        });
+    });
+}
+
 function buildHandleCameraDetailsPayload(fault, handlerNote) {
     if (!fault || !Array.isArray(fault.camera_details) || !fault.camera_details.length) {
         return [];
+    }
+    const list = document.getElementById('handle-camera-details-list');
+    const hasFormFields = list && list.querySelector('.handle-camera-recovery');
+    if (hasFormFields) {
+        const cards = list.querySelectorAll('.handle-camera-detail-card');
+        return Array.from(cards).map((card) => {
+            const cameraId = parseInt(card.dataset.cameraId, 10);
+            return {
+                camera_id: cameraId,
+                recovery_state: card.querySelector('.handle-camera-recovery').value || 'resolved',
+                detail_fault_reason: card.querySelector('.handle-camera-reason').value.trim() || null,
+                detail_resolution: card.querySelector('.handle-camera-resolution').value.trim() || handlerNote || null,
+                detail_note: card.querySelector('.handle-camera-note').value.trim() || null,
+            };
+        }).filter((item) => item.camera_id != null && !isNaN(item.camera_id));
     }
     return fault.camera_details.map((detail) => ({
         camera_id: detail.camera_id,
@@ -3474,6 +3535,27 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
         return;
     }
 
+    // 摄像头明细校验
+    const cameraDetailsList = document.getElementById('handle-camera-details-list');
+    if (cameraDetailsList && cameraDetailsList.querySelector('.handle-camera-recovery')) {
+        const cards = cameraDetailsList.querySelectorAll('.handle-camera-detail-card');
+        let missingReason = false;
+        cards.forEach(card => {
+            const recovery = card.querySelector('.handle-camera-recovery').value;
+            const reason = card.querySelector('.handle-camera-reason').value.trim();
+            if (recovery === 'self_recovered' && !reason) {
+                missingReason = true;
+                card.querySelector('.handle-camera-reason').style.borderColor = '#e74c3c';
+            } else {
+                card.querySelector('.handle-camera-reason').style.borderColor = '';
+            }
+        });
+        if (missingReason) {
+            showToast('标记为"已自恢复"的摄像头必须填写故障原因', 'warning');
+            return;
+        }
+    }
+
     this.disabled = true;
     this.textContent = '提交中...';
     try {
@@ -3498,7 +3580,7 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
                 equipment_type: equipmentType,
                 equipment_quantity: equipmentQuantity,
                 fault_owner_type: ownerSelect.value || null,
-                root_cause_type: document.getElementById('handle-root-cause-type').value || null,
+                root_cause_type: ownerSelect.value || null,
                 is_batch_impact: document.getElementById('handle-is-batch-impact').value !== '' ? parseInt(document.getElementById('handle-is-batch-impact').value, 10) : null,
                 camera_details: buildHandleCameraDetailsPayload(currentHandleFault, handlerNote)
             })

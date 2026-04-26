@@ -29,7 +29,7 @@ BASE_FAULT_TYPES = [
     },
     {
         "type_code": "FIBER_TXRX_FAULT",
-        "type_label": "光纤收发器异常",
+        "type_label": "光纤收发器/供电异常",
         "semantic_group": "FIBER_TXRX_FAULT",
         "sort_order": 40,
         "is_active": 1,
@@ -43,7 +43,7 @@ BASE_FAULT_TYPES = [
     },
     {
         "type_code": "SWITCH_FAULT",
-        "type_label": "交换机异常",
+        "type_label": "交换机/供电异常",
         "semantic_group": "SWITCH_FAULT",
         "sort_order": 60,
         "is_active": 1,

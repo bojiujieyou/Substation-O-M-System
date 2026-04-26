@@ -152,6 +152,7 @@ def init_db(force=False):
             project_device_code TEXT,
             camera_label TEXT,
             recovery_state TEXT DEFAULT 'pending' CHECK(recovery_state IN ('pending', 'resolved', 'self_recovered')),
+            affects_statistics INTEGER DEFAULT 1,
             detail_fault_reason TEXT,
             detail_resolution TEXT,
             detail_note TEXT,
@@ -230,6 +231,7 @@ def init_db(force=False):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_affects_stats ON fault_report_cameras(affects_statistics)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_station ON cameras(station_id)")
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_ip ON cameras(ip_address)")
