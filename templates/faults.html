@@ -304,23 +304,88 @@
     color: #1d4ed8;
 }
 
-.fault-summary-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
+.fault-summary-camera-list,
+.fault-detail-camera-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-.fault-mini-tag {
-    display: inline-flex;
+.fault-summary-camera-item,
+.fault-detail-camera-item {
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(248, 250, 252, 0.92);
+}
+
+.fault-summary-camera-head,
+.fault-detail-camera-head {
+    display: flex;
     align-items: center;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    font-size: 11px;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fault-summary-camera-label,
+.fault-detail-camera-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fault-summary-camera-meta,
+.fault-detail-camera-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
     color: var(--text-secondary);
 }
+
+.fault-summary-camera-empty,
+.fault-detail-camera-empty {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.fault-detail-camera-section {
+    margin-top: 12px;
+}
+
+.fault-detail-camera-section-title {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fault-mini-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.fault-mini-badge-resolved {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.fault-mini-badge-self_recovered {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+
+.fault-mini-badge-pending {
+    background: rgba(148, 163, 184, 0.14);
+    color: #475569;
+}
+
 
 .fault-station-name {
     font-size: 14px;
@@ -1412,7 +1477,74 @@ const ROOT_CAUSE_LABELS = {
     'infrastructure_other': '其他基础设施故障',
     'unconfirmed': '未确认根因',
 };
+const CAMERA_RECOVERY_STATE_LABELS = {
+    pending: '待确认',
+    resolved: '已修复',
+    self_recovered: '自恢复'
+};
 let faultDetailOpenedFromUrl = false;
+    if (!detail || typeof detail !== 'object') {
+        return '未命名摄像头';
+    }
+    return detail.camera_location_desc || detail.camera_label || detail.project_device_code || detail.camera_index || detail.camera_area || `摄像头#${detail.camera_id || '-'}`;
+}
+
+function getCameraDetailMeta(detail) {
+    if (!detail || typeof detail !== 'object') {
+        return '';
+    }
+    const parts = [];
+    if (detail.project_device_code) parts.push(`设备编号 ${detail.project_device_code}`);
+    if (detail.detail_fault_reason) parts.push(`原因：${detail.detail_fault_reason}`);
+    if (detail.detail_resolution) parts.push(`处理：${detail.detail_resolution}`);
+    if (detail.detail_note) parts.push(`备注：${detail.detail_note}`);
+    return parts.join('；');
+}
+
+function renderCameraRecoveryBadge(recoveryState) {
+    const tone = recoveryState || 'pending';
+    return `<span class="fault-mini-badge fault-mini-badge-${escapeHtml(tone)}">${escapeHtml(CAMERA_RECOVERY_STATE_LABELS[tone] || tone)}</span>`;
+}
+
+function renderCameraDetailsPreview(cameraDetails) {
+    if (!Array.isArray(cameraDetails) || !cameraDetails.length) {
+        return '';
+    }
+    return `
+        <div class="fault-summary-camera-list">
+            ${cameraDetails.slice(0, 3).map((detail) => `
+                <div class="fault-summary-camera-item">
+                    <div class="fault-summary-camera-head">
+                        <span class="fault-summary-camera-label">${escapeHtml(getCameraDetailLabel(detail))}</span>
+                        ${renderCameraRecoveryBadge(detail.recovery_state)}
+                    </div>
+                    ${getCameraDetailMeta(detail) ? `<div class="fault-summary-camera-meta">${escapeHtml(getCameraDetailMeta(detail))}</div>` : ''}
+                </div>
+            `).join('')}
+            ${cameraDetails.length > 3 ? `<div class="fault-summary-camera-empty">另有 ${cameraDetails.length - 3} 路摄像头明细，请进详情查看。</div>` : ''}
+        </div>
+    `;
+}
+
+function renderCameraDetailsSection(cameraDetails) {
+    if (!Array.isArray(cameraDetails) || !cameraDetails.length) {
+        return '<div class="fault-detail-camera-empty">当前没有逐摄像头明细。</div>';
+    }
+    return `
+        <div class="fault-detail-camera-list">
+            ${cameraDetails.map((detail) => `
+                <div class="fault-detail-camera-item">
+                    <div class="fault-detail-camera-head">
+                        <span class="fault-detail-camera-label">${escapeHtml(getCameraDetailLabel(detail))}</span>
+                        ${renderCameraRecoveryBadge(detail.recovery_state)}
+                    </div>
+                    ${getCameraDetailMeta(detail) ? `<div class="fault-detail-camera-meta">${escapeHtml(getCameraDetailMeta(detail))}</div>` : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
 const VIEW_DEFINITIONS = {
     pending: { label: '待处理', subtitle: '优先查看当前尚未接手或未闭环的故障', empty: '当前没有待处理故障' },
     handling: { label: '处理中', subtitle: '聚焦已经进入处理阶段、需要继续跟进闭环的故障', empty: '当前没有处理中故障' },
@@ -2589,7 +2721,7 @@ function buildFaultSupportPanel(fault, tagEditor) {
 function buildFaultDetailHtml(fault) {
     const tags = getFaultTags(fault);
     const priority = getFaultPriorityMeta(fault);
-    const cameraLabel = fault.camera_location || fault.camera_location_text || fault.camera_area || '摄像机位置待补充';
+    const cameraLabel = fault.camera_display_text || fault.camera_location || fault.camera_location_text || fault.camera_area || '摄像机位置待补充';
     const backButton = faultDetailHistoryStack.length ? `
         <button type="button" class="fault-detail-back" onclick="goBackFaultDetail()">返回上一条</button>
     ` : '';
@@ -2639,6 +2771,10 @@ function buildFaultDetailHtml(fault) {
                 <div class="detail-row"><span class="detail-label">处理结果:</span><span class="detail-value">${escapeHtml(fault.handler_note || '-')}</span></div>
                 <div class="detail-row"><span class="detail-label">原始时间 / 时区:</span><span class="detail-value">${escapeHtml(fault.source_time_raw || '-')} / ${escapeHtml(fault.source_timezone || '-')}</span></div>
             </div>
+            <div class="fault-detail-camera-section">
+                <div class="fault-detail-camera-section-title">逐摄像头恢复明细</div>
+                ${renderCameraDetailsSection(fault.camera_details)}
+            </div>
         </div>
         <div class="detail-section">
             <details class="fault-detail-fold">
@@ -2647,7 +2783,9 @@ function buildFaultDetailHtml(fault) {
                     <div class="fault-detail-grid">
                         <div>
                             <div class="detail-row"><span class="detail-label">所属站点:</span><span class="detail-value">${escapeHtml(fault.station_name || '-')}</span></div>
-                            <div class="detail-row"><span class="detail-label">摄像头位置:</span><span class="detail-value">${escapeHtml(fault.camera_location || fault.camera_location_text || fault.camera_area || '-')}</span></div>
+                            <div class="detail-row"><span class="detail-label">摄像头位置:</span><span class="detail-value">${escapeHtml(fault.camera_display_text || fault.camera_location || fault.camera_location_text || fault.camera_area || '-')}</span></div>
+                            <div class="detail-row"><span class="detail-label">摄像头明细:</span><span class="detail-value">${escapeHtml(fault.camera_locations_text || '-')}</span></div>
+                            <div class="detail-row"><span class="detail-label">逐路恢复摘要:</span><span class="detail-value">${escapeHtml(fault.camera_recovery_text || '-')}</span></div>
                             <div class="detail-row"><span class="detail-label">来源:</span><span class="detail-value">${escapeHtml(sourceTypeText(fault.source_type))}</span></div>
                             <div class="detail-row"><span class="detail-label">报修时间:</span><span class="detail-value">${formatDate(fault.created_at)}</span></div>
                             <div class="detail-row"><span class="detail-label">最后更新时间:</span><span class="detail-value">${formatDate(getFaultLastUpdatedAt(fault))}</span></div>
@@ -2662,6 +2800,7 @@ function buildFaultDetailHtml(fault) {
                             <div class="detail-row"><span class="detail-label">根因确认:</span><span class="detail-value">${ROOT_CAUSE_LABELS[fault.root_cause_type] || fault.root_cause_type || '未确认'}</span></div>
                             <div class="detail-row"><span class="detail-label">共因标记:</span><span class="detail-value">${fault.is_batch_impact == 1 ? '是（共因故障）' : (fault.is_batch_impact == 0 ? '否（单点故障）' : '未标记')}</span></div>
                             <div class="detail-row"><span class="detail-label">影响摄像头数:</span><span class="detail-value">${fault.impact_camera_count != null ? fault.impact_camera_count + ' 台' : '-'}</span></div>
+                            <div class="detail-row"><span class="detail-label">自恢复路数:</span><span class="detail-value">${fault.self_recovered_camera_count != null ? fault.self_recovered_camera_count + ' 路' : '-'}</span></div>
                             <div class="detail-row"><span class="detail-label">类型版本:</span><span class="detail-value">${escapeHtml(fault.fault_type_version_id || '-')}</span></div>
                         </div>
                     </div>
@@ -2748,6 +2887,8 @@ function renderFaults(faults) {
     const tbody = document.getElementById('fault-tbody');
     tbody.innerHTML = pageFaults.map((fault) => {
         const priorityMeta = getFaultPriorityMeta(fault);
+        const cameraSummaryText = fault.camera_display_text || fault.camera_location || fault.camera_area || '位置待补充';
+        const isAggregatedFault = Number(fault.impact_camera_count || 0) > 1 || (Array.isArray(fault.camera_details) && fault.camera_details.length > 1);
         return `
         <tr class="${isOverdueFault(fault) ? 'fault-row-risk-high' : ''} ${fault.deleted_at ? 'fault-row-deleted' : ''}">
             <td data-label="故障摘要" class="fault-summary-cell">
@@ -2758,14 +2899,18 @@ function renderFaults(faults) {
                 <div class="fault-summary-context">
                     <span class="fault-summary-chip">${escapeHtml(projectNameById(fault.project_id))}</span>
                     <span class="fault-summary-chip">${escapeHtml(compactSourceTypeText(fault.source_type))}</span>
+                    ${isAggregatedFault ? `<span class="fault-summary-chip">影响 ${escapeHtml(fault.impact_camera_count || fault.camera_details.length)} 路</span>` : ''}
+                    ${Number(fault.self_recovered_camera_count || 0) > 0 ? `<span class="fault-summary-chip">自恢复 ${escapeHtml(fault.self_recovered_camera_count)} 路</span>` : ''}
                 </div>
                 <div class="fault-summary-desc">${escapeHtml(excerptText(fault.handler_note || fault.description || '暂无处理结果', 42))}</div>
                 ${renderFaultPriorityHints(fault)}
+                ${renderCameraDetailsPreview(fault.camera_details)}
                 ${getFaultTags(fault).length ? `<div class="fault-summary-tags">${getFaultTags(fault).slice(0, 3).map((tag) => `<span class="fault-mini-tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
             </td>
             <td data-label="所属站点">
                 <div class="fault-station-name">${escapeHtml(fault.station_name || '-')}</div>
-                <div class="fault-station-meta">${escapeHtml(fault.camera_location || fault.camera_area || '位置待补充')}</div>
+                <div class="fault-station-meta">${escapeHtml(cameraSummaryText)}</div>
+                ${isAggregatedFault && fault.camera_locations_text ? `<div class="fault-station-meta">${escapeHtml(fault.camera_locations_text)}</div>` : ''}
             </td>
             <td data-label="状态">
                 <div class="fault-state-stack">${renderFaultStateBadges(fault)}</div>
@@ -3261,6 +3406,33 @@ document.getElementById('confirm-edit-btn').addEventListener('click', async func
     }
 });
 
+function buildCameraDetailPayload(detail) {
+    if (!detail || typeof detail !== 'object') {
+        return null;
+    }
+    return {
+        camera_id: detail.camera_id,
+        recovery_state: detail.recovery_state || 'resolved',
+        detail_fault_reason: detail.detail_fault_reason || '',
+        detail_resolution: detail.detail_resolution || '',
+        detail_note: detail.detail_note || ''
+    };
+}
+
+function buildHandleCameraDetailsPayload(fault, handlerNote) {
+    if (!fault || !Array.isArray(fault.camera_details) || !fault.camera_details.length) {
+        return [];
+    }
+    return fault.camera_details.map((detail) => ({
+        camera_id: detail.camera_id,
+        recovery_state: detail.recovery_state || 'resolved',
+        detail_fault_reason: detail.detail_fault_reason || '',
+        detail_resolution: detail.detail_resolution || handlerNote || '',
+        detail_note: detail.detail_note || ''
+    })).filter((item) => item.camera_id != null);
+}
+
+
 document.getElementById('confirm-handle-btn').addEventListener('click', async function() {
     const handlerName = document.getElementById('handler-name').value.trim();
     const handlerNote = document.getElementById('handler-note').value.trim();
@@ -3327,7 +3499,8 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
                 equipment_quantity: equipmentQuantity,
                 fault_owner_type: ownerSelect.value || null,
                 root_cause_type: document.getElementById('handle-root-cause-type').value || null,
-                is_batch_impact: document.getElementById('handle-is-batch-impact').value !== '' ? parseInt(document.getElementById('handle-is-batch-impact').value, 10) : null
+                is_batch_impact: document.getElementById('handle-is-batch-impact').value !== '' ? parseInt(document.getElementById('handle-is-batch-impact').value, 10) : null,
+                camera_details: buildHandleCameraDetailsPayload(currentHandleFault, handlerNote)
             })
         });
         const data = await response.json();
@@ -3341,6 +3514,7 @@ document.getElementById('confirm-handle-btn').addEventListener('click', async fu
         this.textContent = '确认关闭';
     }
 });
+
 
 document.getElementById('handle-show-owner-link')?.addEventListener('click', function() {
     const ownerSection = document.getElementById('handle-owner-section');

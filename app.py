@@ -605,6 +605,129 @@ def fetch_fault_camera_details(db, fault_report_id):
     return [dict(row) for row in rows]
 
 
+def fetch_fault_camera_details_map(db, fault_report_ids):
+    if not fault_report_ids or not table_exists(db, "fault_report_cameras"):
+        return {}
+    detail_columns = get_table_columns(db, "fault_report_cameras")
+    select_fields = [
+        "d.id",
+        "d.fault_report_id",
+        "d.camera_id",
+        "d.recovery_state",
+    ]
+    optional_fields = [
+        "camera_slot_id",
+        "project_id",
+        "project_device_code",
+        "camera_label",
+        "detail_fault_reason",
+        "detail_resolution",
+        "detail_note",
+    ]
+    for field_name in optional_fields:
+        if field_name in detail_columns:
+            select_fields.append(f"d.{field_name}")
+    select_fields.extend([
+        "c.camera_index AS camera_index",
+        "c.location_desc AS camera_location_desc",
+        "c.area AS camera_area",
+    ])
+    placeholders = ", ".join(["?"] * len(fault_report_ids))
+    rows = db.execute(
+        f"""
+        SELECT {', '.join(select_fields)}
+        FROM fault_report_cameras d
+        LEFT JOIN cameras c ON d.camera_id = c.id
+        WHERE d.fault_report_id IN ({placeholders})
+        ORDER BY d.fault_report_id ASC, d.id ASC
+        """,
+        list(fault_report_ids),
+    ).fetchall()
+    detail_map = {int(fault_id): [] for fault_id in fault_report_ids}
+    for row in rows:
+        item = dict(row)
+        detail_map.setdefault(int(item['fault_report_id']), []).append(item)
+    return detail_map
+
+
+CAMERA_RECOVERY_STATE_LABELS = {
+    'pending': '待确认',
+    'resolved': '已修复',
+    'self_recovered': '自恢复',
+}
+
+
+def _fault_camera_detail_label(detail):
+    for key in ('camera_location_desc', 'camera_label', 'project_device_code', 'camera_index', 'camera_area'):
+        value = str(detail.get(key) or '').strip()
+        if value:
+            return value
+    camera_id = detail.get('camera_id')
+    return f"摄像头#{camera_id}" if camera_id not in (None, '') else '未命名摄像头'
+
+
+
+def summarize_fault_camera_details(camera_details):
+    normalized_details = [item for item in (camera_details or []) if isinstance(item, dict)]
+    if not normalized_details:
+        return {
+            'camera_labels': [],
+            'camera_locations_text': '',
+            'camera_recovery_text': '',
+            'resolved_count': 0,
+            'self_recovered_count': 0,
+        }
+
+    labels = []
+    seen_labels = set()
+    recovery_segments = []
+    resolved_count = 0
+    self_recovered_count = 0
+    for detail in normalized_details:
+        label = _fault_camera_detail_label(detail)
+        if label not in seen_labels:
+            labels.append(label)
+            seen_labels.add(label)
+        recovery_state = str(detail.get('recovery_state') or '').strip() or 'pending'
+        if recovery_state == 'resolved':
+            resolved_count += 1
+        elif recovery_state == 'self_recovered':
+            self_recovered_count += 1
+        recovery_segments.append(f"{label}（{CAMERA_RECOVERY_STATE_LABELS.get(recovery_state, recovery_state)}）")
+
+    return {
+        'camera_labels': labels,
+        'camera_locations_text': '、'.join(labels),
+        'camera_recovery_text': '；'.join(recovery_segments),
+        'resolved_count': resolved_count,
+        'self_recovered_count': self_recovered_count,
+    }
+
+
+
+def attach_fault_camera_detail_summary(payload):
+    if not isinstance(payload, dict):
+        return payload
+    summary = summarize_fault_camera_details(payload.get('camera_details') or [])
+    payload['camera_locations_text'] = summary['camera_locations_text']
+    payload['camera_recovery_text'] = summary['camera_recovery_text']
+    payload['resolved_camera_count'] = summary['resolved_count']
+    payload['self_recovered_camera_count'] = summary['self_recovered_count']
+    impact_camera_count = payload.get('impact_camera_count')
+    if summary['camera_locations_text'] and impact_camera_count not in (None, '', 0, 1, '0', '1'):
+        payload['camera_display_text'] = summary['camera_locations_text']
+    else:
+        payload['camera_display_text'] = str(
+            payload.get('camera_location')
+            or payload.get('camera_location_text')
+            or payload.get('camera_area')
+            or summary['camera_locations_text']
+            or ''
+        ).strip()
+    return payload
+
+
+
 VALID_CAMERA_RECOVERY_STATES = ('pending', 'resolved', 'self_recovered')
 
 
@@ -1336,53 +1459,105 @@ def _build_statistics_payload(db, year: int | None, requested_project_code: str 
     ).fetchall()
 
 
-    camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(c.area), ''), '未命名设备')"
-    camera_owner_filter = ""
-    if 'fault_owner_type' in fault_report_columns and 'root_cause_type' in fault_report_columns:
-        root_cause_expr_cam = _column_expr(fault_report_columns, "f", "root_cause_type")
-        fault_owner_expr_cam = _column_expr(fault_report_columns, "f", "fault_owner_type")
-        camera_owner_filter = (
-            f" AND (COALESCE(NULLIF(TRIM({root_cause_expr_cam}), ''), "
-            f"NULLIF(TRIM({fault_owner_expr_cam}), ''), 'camera') = 'camera')"
-        )
-    camera_ranking_rows = db.execute(
-        f"""
-        SELECT
-            records.camera_id,
-            records.camera_location,
-            records.station_name,
-            records.fault_count,
-            events.fault_event_count
-        FROM (
-            SELECT
-                f.camera_id,
-                {camera_location_expr} AS camera_location,
-                s.name AS station_name,
-                COUNT(*) AS fault_count
-            FROM fault_reports f
-            JOIN stations s ON f.station_id = s.id
-            LEFT JOIN cameras c ON f.camera_id = c.id
-            WHERE {selected_fault_where_sql}
-              AND f.camera_id IS NOT NULL
-              {camera_owner_filter}
-            GROUP BY f.camera_id, {camera_location_expr}, s.name
-        ) records
 
-        JOIN (
+    detail_table_exists = table_exists(db, "fault_report_cameras")
+    camera_ranking_rows = []
+    if detail_table_exists:
+        detail_columns = get_table_columns(db, "fault_report_cameras")
+        detail_project_scope_sql = ""
+        detail_project_scope_params = []
+        if project_scope['enabled'] and 'project_id' in detail_columns:
+            detail_project_scope_sql, detail_project_scope_params = build_project_in_clause("d", project_scope['project_ids'])
+        detail_where = [f"1=1{detail_project_scope_sql}"]
+        detail_params = list(detail_project_scope_params)
+        if year:
+            detail_where.append("strftime('%Y', f.created_at) = ?")
+            detail_params.append(str(year))
+        detail_where_sql = " AND ".join(detail_where)
+        camera_ranking_rows = db.execute(
+            f"""
             SELECT
-                f.camera_id,
-                COUNT(DISTINCT {fault_group_key_expr}) AS fault_event_count
-            FROM fault_reports f
-            WHERE {selected_fault_where_sql}
-              AND f.camera_id IS NOT NULL
-              {camera_owner_filter}
-            GROUP BY f.camera_id
-        ) events ON events.camera_id = records.camera_id
-        ORDER BY records.fault_count DESC, events.fault_event_count DESC, records.camera_id ASC
-        LIMIT 5
-        """,
-        [*selected_fault_params, *selected_fault_params],
-    ).fetchall()
+                records.camera_id,
+                records.camera_location,
+                records.station_name,
+                records.fault_count,
+                events.fault_event_count
+            FROM (
+                SELECT
+                    d.camera_id,
+                    COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(c.area), ''), NULLIF(TRIM(d.camera_label), ''), NULLIF(TRIM(d.project_device_code), ''), '未命名设备') AS camera_location,
+                    s.name AS station_name,
+                    COUNT(*) AS fault_count
+                FROM fault_report_cameras d
+                JOIN fault_reports f ON f.id = d.fault_report_id
+                JOIN stations s ON f.station_id = s.id
+                LEFT JOIN cameras c ON c.id = d.camera_id
+                WHERE {detail_where_sql}
+                GROUP BY d.camera_id, COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(c.area), ''), NULLIF(TRIM(d.camera_label), ''), NULLIF(TRIM(d.project_device_code), ''), '未命名设备'), s.name
+            ) records
+            JOIN (
+                SELECT
+                    d.camera_id,
+                    COUNT(DISTINCT {fault_group_key_expr}) AS fault_event_count
+                FROM fault_report_cameras d
+                JOIN fault_reports f ON f.id = d.fault_report_id
+                WHERE {detail_where_sql}
+                GROUP BY d.camera_id
+            ) events ON events.camera_id = records.camera_id
+            ORDER BY records.fault_count DESC, events.fault_event_count DESC, records.camera_id ASC
+            LIMIT 5
+            """,
+            [*detail_params, *detail_params],
+        ).fetchall()
+    if not camera_ranking_rows:
+        camera_location_expr = "COALESCE(NULLIF(TRIM(c.location_desc), ''), NULLIF(TRIM(c.area), ''), '未命名设备')"
+        camera_owner_filter = ""
+        if 'fault_owner_type' in fault_report_columns and 'root_cause_type' in fault_report_columns:
+            root_cause_expr_cam = _column_expr(fault_report_columns, "f", "root_cause_type")
+            fault_owner_expr_cam = _column_expr(fault_report_columns, "f", "fault_owner_type")
+            camera_owner_filter = (
+                f" AND (COALESCE(NULLIF(TRIM({root_cause_expr_cam}), ''), "
+                f"NULLIF(TRIM({fault_owner_expr_cam}), ''), 'camera') = 'camera')"
+            )
+        camera_ranking_rows = db.execute(
+            f"""
+            SELECT
+                records.camera_id,
+                records.camera_location,
+                records.station_name,
+                records.fault_count,
+                events.fault_event_count
+            FROM (
+                SELECT
+                    f.camera_id,
+                    {camera_location_expr} AS camera_location,
+                    s.name AS station_name,
+                    COUNT(*) AS fault_count
+                FROM fault_reports f
+                JOIN stations s ON f.station_id = s.id
+                LEFT JOIN cameras c ON f.camera_id = c.id
+                WHERE {selected_fault_where_sql}
+                  AND f.camera_id IS NOT NULL
+                  {camera_owner_filter}
+                GROUP BY f.camera_id, {camera_location_expr}, s.name
+            ) records
+
+            JOIN (
+                SELECT
+                    f.camera_id,
+                    COUNT(DISTINCT {fault_group_key_expr}) AS fault_event_count
+                FROM fault_reports f
+                WHERE {selected_fault_where_sql}
+                  AND f.camera_id IS NOT NULL
+                  {camera_owner_filter}
+                GROUP BY f.camera_id
+            ) events ON events.camera_id = records.camera_id
+            ORDER BY records.fault_count DESC, events.fault_event_count DESC, records.camera_id ASC
+            LIMIT 5
+            """,
+            [*selected_fault_params, *selected_fault_params],
+        ).fetchall()
+
 
 
     station_ranking_rows = db.execute(
@@ -1896,7 +2071,16 @@ def _build_statistics_detail_rows(db, project_scope: dict, year: int | None):
         """,
         detail_params,
     ).fetchall()
-    return [dict(row) for row in rows]
+    result = [dict(row) for row in rows]
+    if not result:
+        return result
+
+    detail_map = fetch_fault_camera_details_map(db, [int(row['id']) for row in result])
+    for row in result:
+        row['camera_details'] = detail_map.get(int(row['id']), [])
+        attach_fault_camera_detail_summary(row)
+    return result
+
 
 
 def parse_tags_json(raw_value):
@@ -2628,8 +2812,13 @@ def export_statistics():
         params.append(str(target_year))
     query += " ORDER BY f.created_at DESC"
     faults = db.execute(query, params).fetchall()
+    fault_rows = [dict(row) for row in faults]
+    detail_map = fetch_fault_camera_details_map(db, [int(row['id']) for row in fault_rows]) if fault_rows else []
+    for fault_row in fault_rows:
+        fault_row['camera_details'] = detail_map.get(int(fault_row['id']), []) if detail_map else []
+        attach_fault_camera_detail_summary(fault_row)
 
-    fault_count = len(faults)
+    fault_count = len(fault_rows)
 
     # 记录口径 / 事件口径汇总
     fault_event_keys = set()
@@ -2640,7 +2829,8 @@ def export_statistics():
     monthly_event_seen = set()
 
 
-    for f in faults:
+    for f in fault_rows:
+
         created_at = (f['created_at'] or '').strip()
         month_key = created_at[:7] if len(created_at) >= 7 else ''
         fault_event_key = (f['fault_group_key'] or '').strip() or str(f['id'])
@@ -2736,16 +2926,20 @@ def export_statistics():
 
         # Sheet 3: 故障明细
         ws3 = wb.create_sheet('故障明细')
-        headers = ['ID', '变电站', '电压等级', '县区', '摄像头位置', '故障类型',
+        headers = ['ID', '变电站', '电压等级', '县区', '摄像头位置', '摄像头明细', '逐路恢复摘要', '自恢复路数', '故障类型',
                    '描述', '状态', '报修人', '联系方式', '报修时间', '关闭时间', '处理人', '处理备注',
                    '故障归属', '根因确认', '共因标记', '影响摄像头数']
         ws3.append(headers)
-        for f in faults:
-            fault_owner_label = ROOT_CAUSE_LABELS.get(f.get('fault_owner_type') or '', f.get('fault_owner_type') or '')
-            root_cause_label = ROOT_CAUSE_LABELS.get(f.get('root_cause_type') or '', f.get('root_cause_type') or '')
+        for f in fault_rows:
+            fault_owner_label = ROOT_CAUSE_LABELS.get((f.get('fault_owner_type') or ''), f.get('fault_owner_type') or '')
+            root_cause_label = ROOT_CAUSE_LABELS.get((f.get('root_cause_type') or ''), f.get('root_cause_type') or '')
             ws3.append([
                 f['id'], f['station_name'] or '', f['voltage_level'] or '', f['county'] or '',
-                f['camera_location'] or f['camera_area'] or '', f['fault_type'] or '',
+                f.get('camera_display_text') or f.get('camera_location') or f.get('camera_area') or '',
+                f.get('camera_locations_text') or '',
+                f.get('camera_recovery_text') or '',
+                f.get('self_recovered_camera_count', ''),
+                f['fault_type'] or '',
                 f['description'] or '', f['status'] or '', f['reporter_name'] or '',
                 f['reporter_contact'] or '', f['created_at'] or '', f['closed_at'] or '',
                 f['handler_name'] or '', f['handler_note'] or '',
@@ -2753,6 +2947,7 @@ def export_statistics():
                 f.get('is_batch_impact', ''),
                 f.get('impact_camera_count', ''),
             ])
+
         for col in ws3.columns:
             ws3.column_dimensions[col[0].column_letter].width = 15
 
@@ -3437,16 +3632,17 @@ def get_faults():
     rows = db.execute(query, params).fetchall()
     fault_items = []
     detail_table_exists = table_exists(db, "fault_report_cameras")
+    detail_map = {}
     if detail_table_exists:
         ensure_fault_report_camera_detail_schema(db)
+        detail_map = fetch_fault_camera_details_map(db, [int(row['id']) for row in rows])
     for row in rows:
 
         fault_item = enrich_fault_camera_location(dict(row))
-        if detail_table_exists:
-            fault_item['camera_details'] = fetch_fault_camera_details(db, fault_item['id'])
-        else:
-            fault_item['camera_details'] = []
+        fault_item['camera_details'] = detail_map.get(int(fault_item['id']), []) if detail_table_exists else []
+        attach_fault_camera_detail_summary(fault_item)
         fault_items.append(fault_item)
+
 
     return api_success({
         'faults': fault_items,
@@ -4482,14 +4678,14 @@ def get_faults_scoped():
     rows = db.execute(query, params + [page_size, offset]).fetchall()
     fault_items = []
     detail_table_exists = table_exists(db, "fault_report_cameras")
+    detail_map = {}
     if detail_table_exists:
         ensure_fault_report_camera_detail_schema(db)
+        detail_map = fetch_fault_camera_details_map(db, [int(row['id']) for row in rows])
     for row in rows:
         fault_item = enrich_fault_camera_location(dict(row))
-        if detail_table_exists:
-            fault_item['camera_details'] = fetch_fault_camera_details(db, fault_item['id'])
-        else:
-            fault_item['camera_details'] = []
+        fault_item['camera_details'] = detail_map.get(int(fault_item['id']), []) if detail_table_exists else []
+        attach_fault_camera_detail_summary(fault_item)
         fault_items.append(fault_item)
     return api_success({
         'faults': fault_items,
@@ -4498,6 +4694,7 @@ def get_faults_scoped():
         'page_size': page_size,
         'deleted_mode': deleted_mode,
     })
+
 
 
 
@@ -4587,8 +4784,16 @@ def get_fault_detail_scoped(fault_id):
 
     payload = dict(fault)
     enrich_fault_camera_location(payload)
+    detail_table_exists = table_exists(db, "fault_report_cameras")
+    if detail_table_exists:
+        ensure_fault_report_camera_detail_schema(db)
+        payload['camera_details'] = fetch_fault_camera_details(db, fault_id)
+    else:
+        payload['camera_details'] = []
+    attach_fault_camera_detail_summary(payload)
     if 'tags_json' in fault_report_columns:
         payload['tags'] = parse_tags_json(payload.get('tags_json'))
+
     payload['slot_history'] = []
     payload['slot_history_count'] = 0
     if 'camera_slot_id' in fault_report_columns and payload.get('camera_slot_id'):
@@ -5202,7 +5407,10 @@ def export_statistics_scoped():
             ('变电站', 'station_name'),
             ('电压等级', 'voltage_level'),
             ('县区', 'county'),
-            ('摄像头位置', 'camera_location'),
+            ('摄像头位置', 'camera_display_text'),
+            ('摄像头明细', 'camera_locations_text'),
+            ('逐路恢复摘要', 'camera_recovery_text'),
+            ('自恢复路数', 'self_recovered_camera_count'),
             ('项目设备编号', 'project_device_code'),
             ('semantic_group', 'semantic_group'),
             ('故障类型编码', 'fault_type_code'),

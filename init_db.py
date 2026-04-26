@@ -143,6 +143,30 @@ def init_db(force=False):
 
     cursor.execute(
         """
+        CREATE TABLE IF NOT EXISTS fault_report_cameras (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fault_report_id INTEGER NOT NULL,
+            camera_id INTEGER NOT NULL,
+            camera_slot_id INTEGER,
+            project_id INTEGER,
+            project_device_code TEXT,
+            camera_label TEXT,
+            recovery_state TEXT DEFAULT 'pending' CHECK(recovery_state IN ('pending', 'resolved', 'self_recovered')),
+            detail_fault_reason TEXT,
+            detail_resolution TEXT,
+            detail_note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(fault_report_id, camera_id),
+            FOREIGN KEY (fault_report_id) REFERENCES fault_reports(id) ON DELETE CASCADE,
+            FOREIGN KEY (camera_id) REFERENCES cameras(id)
+        )
+        """
+    )
+
+
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
@@ -203,7 +227,11 @@ def init_db(force=False):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_idempotency ON fault_reports(idempotency_key)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_owner_type ON fault_reports(fault_owner_type)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_root_cause ON fault_reports(root_cause_type)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_camera ON fault_report_cameras(camera_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_recovery ON fault_report_cameras(recovery_state)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_station ON cameras(station_id)")
+
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_ip ON cameras(ip_address)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_photo_station_status ON photos(station_id, match_status)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_photo_status_updated ON photos(match_status, updated_at)")

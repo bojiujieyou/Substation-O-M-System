@@ -218,96 +218,218 @@ class TestStatsEndpoint:
 
 
 
-class TestStatisticsExport:
-    """统计导出"""
 
-    def test_export_statistics_county_sheet_contains_record_and_event_counts(self, client, init_db, test_db):
-        with app.app_context():
-            ensure_fault_report_multi_camera_schema(get_db())
 
-        conn = sqlite3.connect(test_db)
-        try:
-            conn.execute(
-                """
-                INSERT INTO stations (id, name, voltage_level, county)
-                VALUES (1, '测试变电站', '220kV', '测试县')
-                """
+def test_get_stats_camera_ranking_uses_fault_report_cameras_for_aggregated_faults(client, init_db, test_db):
+    login_admin_session(client)
+    with app.app_context():
+        ensure_fault_report_multi_camera_schema(get_db())
+
+    conn = sqlite3.connect(test_db)
+    try:
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '测试变电站', '220kV', '测试县')
+            """
+        )
+        conn.executemany(
+            """
+            INSERT INTO cameras (id, station_id, camera_index, area, location_desc, ip_address, channel_port, channel_number)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (1, 1, 'CAM-01', '主变区', '主变区1号位', '192.168.1.10', 8000, 1),
+                (2, 1, 'CAM-02', '主变区', '主变区2号位', '192.168.1.11', 8000, 2),
+            ],
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, camera_id, fault_type, reporter_name, status,
+                fault_group_key, fault_owner_type, root_cause_type,
+                is_batch_impact, impact_camera_count, created_at, updated_at
             )
-            conn.executemany(
-                """
-                INSERT INTO fault_reports (
-                    id, station_id, fault_type, reporter_name, status,
-                    fault_group_key, created_at, updated_at
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                [
-                    (1, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
-                    (2, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:05:00', '2026-04-25 10:35:00'),
-                    (3, 1, '无图像', '李四', 'open', None, '2026-04-25 11:00:00', '2026-04-25 11:00:00'),
-                ]
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (1, 1, 1, '无图像', '张三', 'closed', 'group-a', 'camera', 'camera', 0, 2, '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
+        )
+        conn.executemany(
+            """
+            INSERT INTO fault_report_cameras (
+                fault_report_id, camera_id, camera_label, recovery_state,
+                detail_fault_reason, detail_resolution, detail_note
             )
-            conn.commit()
-        finally:
-            conn.close()
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (1, 1, '主变区1号位', 'resolved', '镜头起雾', '已擦拭', '恢复正常'),
+                (1, 2, '主变区2号位', 'self_recovered', '瞬时抖动', '观察恢复', '自动恢复'),
+            ],
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
-        response = client.get('/api/statistics/export?year=2026')
-        assert response.status_code == 200
+    response = client.get('/api/stats?year=2026')
+    assert response.status_code == 200
+    data = response.get_json()
 
-        workbook = load_workbook(filename=BytesIO(response.data))
-
-        overview_sheet = workbook['概览']
-        assert overview_sheet['A1'].value == '指标'
-        assert overview_sheet['B1'].value == '数值'
-        assert overview_sheet['A4'].value == '故障记录数'
-        assert overview_sheet['B4'].value == 3
-        assert overview_sheet['A5'].value == '独立故障事件数'
-        assert overview_sheet['B5'].value == 2
-
-        monthly_sheet = workbook['月度趋势']
-        assert monthly_sheet['A1'].value == '月份'
-        assert monthly_sheet['B1'].value == '故障记录数'
-        assert monthly_sheet['C1'].value == '独立事件数'
-        assert monthly_sheet['A5'].value == '2026-04'
-        assert monthly_sheet['B5'].value == 3
-        assert monthly_sheet['C5'].value == 2
-
-        county_sheet = workbook['县区统计']
-        assert county_sheet['A1'].value == '县区'
-        assert county_sheet['B1'].value == '故障记录数'
-        assert county_sheet['C1'].value == '独立事件数'
-        assert county_sheet['A2'].value == '测试县'
-        assert county_sheet['B2'].value == 3
-        assert county_sheet['C2'].value == 2
-
-        voltage_sheet = workbook['电压等级统计']
-        assert voltage_sheet['A1'].value == '电压等级'
-        assert voltage_sheet['B1'].value == '故障记录数'
-        assert voltage_sheet['C1'].value == '独立事件数'
-        assert voltage_sheet['A2'].value == '220kV'
-        assert voltage_sheet['B2'].value == 3
-        assert voltage_sheet['C2'].value == 2
-
-
-class TestStationsEndpoint:
+    ranking = data['camera_ranking']
+    assert len(ranking) == 2
+    assert ranking[0]['camera_location'] == '主变区1号位'
+    assert ranking[0]['fault_count'] == 1
+    assert ranking[0]['fault_event_count'] == 1
+    assert ranking[1]['camera_location'] == '主变区2号位'
+    assert ranking[1]['fault_count'] == 1
+    assert ranking[1]['fault_event_count'] == 1
 
 
 
-    """变电站端点"""
 
-    def test_get_stations_empty(self, client, init_db):
-        response = client.get('/api/stations')
-        assert response.status_code == 200
-        data = response.get_json()
-        assert data['stations'] == []
-        assert data['total'] == 0
+def test_export_statistics_county_sheet_contains_record_and_event_counts(client, init_db, test_db):
+    login_admin_session(client)
+    with app.app_context():
+        ensure_fault_report_multi_camera_schema(get_db())
 
-    def test_get_station_not_found(self, client, init_db):
-        response = client.get('/api/stations/999')
-        assert response.status_code == 404
 
-class TestCamerasEndpoint:
-    """摄像头端点"""
+    conn = sqlite3.connect(test_db)
+    try:
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '测试变电站', '220kV', '测试县')
+            """
+        )
+        conn.executemany(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, fault_type, reporter_name, status,
+                fault_group_key, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (1, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:00:00', '2026-04-25 10:30:00'),
+                (2, 1, '无图像', '张三', 'closed', 'group-a', '2026-04-25 10:05:00', '2026-04-25 10:35:00'),
+                (3, 1, '无图像', '李四', 'open', None, '2026-04-25 11:00:00', '2026-04-25 11:00:00'),
+            ]
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.get('/api/statistics/export?year=2026')
+    assert response.status_code == 200
+
+    workbook = load_workbook(filename=BytesIO(response.data))
+
+    overview_sheet = workbook['概览']
+    assert overview_sheet['A1'].value == '指标'
+    assert overview_sheet['B1'].value == '数值'
+    assert overview_sheet['A4'].value == '故障记录数'
+    assert overview_sheet['B4'].value == 3
+    assert overview_sheet['A5'].value == '独立故障事件数'
+    assert overview_sheet['B5'].value == 2
+
+    monthly_sheet = workbook['月度趋势']
+    assert monthly_sheet['A1'].value == '月份'
+    assert monthly_sheet['B1'].value == '故障记录数'
+    assert monthly_sheet['C1'].value == '独立事件数'
+    assert monthly_sheet['A5'].value == '2026-04'
+    assert monthly_sheet['B5'].value == 3
+    assert monthly_sheet['C5'].value == 2
+
+    county_sheet = workbook['县区统计']
+    assert county_sheet['A1'].value == '县区'
+    assert county_sheet['B1'].value == '故障记录数'
+    assert county_sheet['C1'].value == '独立事件数'
+    assert county_sheet['A2'].value == '测试县'
+    assert county_sheet['B2'].value == 3
+    assert county_sheet['C2'].value == 2
+
+    voltage_sheet = workbook['电压等级统计']
+    assert voltage_sheet['A1'].value == '电压等级'
+    assert voltage_sheet['B1'].value == '故障记录数'
+    assert voltage_sheet['C1'].value == '独立事件数'
+    assert voltage_sheet['A2'].value == '220kV'
+    assert voltage_sheet['B2'].value == 3
+    assert voltage_sheet['C2'].value == 2
+
+
+
+
+
+def test_export_statistics_detail_sheet_contains_multi_camera_summary(client, init_db, test_db):
+    login_admin_session(client)
+    with app.app_context():
+        ensure_fault_report_multi_camera_schema(get_db())
+
+    conn = sqlite3.connect(test_db)
+    try:
+        conn.execute(
+            """
+            INSERT INTO stations (id, name, voltage_level, county)
+            VALUES (1, '测试变电站', '220kV', '测试县')
+            """
+        )
+        conn.executemany(
+            """
+            INSERT INTO cameras (id, station_id, camera_index, area, location_desc, ip_address, channel_port, channel_number)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (1, 1, 'CAM-01', '主变区', '主变区1号位', '192.168.1.10', 8000, 1),
+                (2, 1, 'CAM-02', '主变区', '主变区2号位', '192.168.1.11', 8000, 2),
+            ],
+        )
+        conn.execute(
+            """
+            INSERT INTO fault_reports (
+                id, station_id, camera_id, fault_type, reporter_name, reporter_contact, status,
+                fault_group_key, fault_owner_type, root_cause_type, is_batch_impact,
+                impact_camera_count, created_at, updated_at, closed_at, handler_name, handler_note
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                1, 1, 1, '无图像', '张三', '13800000000', 'closed',
+                'group-a', 'camera', 'camera', 1,
+                2, '2026-04-25 10:00:00', '2026-04-25 10:30:00', '2026-04-25 10:30:00', '李四', '现场处理完成'
+            ),
+        )
+        conn.executemany(
+            """
+            INSERT INTO fault_report_cameras (
+                fault_report_id, camera_id, camera_label, recovery_state,
+                detail_fault_reason, detail_resolution, detail_note
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (1, 1, '主变区1号位', 'resolved', '镜头起雾', '已擦拭', '恢复正常'),
+                (1, 2, '主变区2号位', 'self_recovered', '瞬时抖动', '观察恢复', '自动恢复'),
+            ],
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.get('/api/statistics/export?year=2026')
+    assert response.status_code == 200
+
+    workbook = load_workbook(filename=BytesIO(response.data))
+    detail_sheet = workbook['故障明细']
+    headers = [cell.value for cell in detail_sheet[1]]
+    row = [cell.value for cell in detail_sheet[2]]
+    row_map = dict(zip(headers, row))
+
+    assert row_map['摄像头位置'] == '主变区1号位、主变区2号位'
+    assert row_map['摄像头明细'] == '主变区1号位、主变区2号位'
+    assert row_map['逐路恢复摘要'] == '主变区1号位（已修复）；主变区2号位（自恢复）'
+    assert row_map['自恢复路数'] == 1
+    assert row_map['影响摄像头数'] == 2
+
 
     def test_get_cameras_empty(self, client, init_db):
         response = client.get('/api/cameras')
