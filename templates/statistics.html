@@ -143,11 +143,27 @@
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
-                <h3>月度故障趋势</h3>
-                <div class="chart-subtitle">蓝柱=故障记录数，绿线=独立事件数</div>
+                <h3>故障站点排行 Top 5</h3>
+                <div class="chart-subtitle">同时展示记录口径和去重后的事件口径</div>
             </div>
-            <div class="chart-container">
-                <canvas id="monthlyChart"></canvas>
+            <div class="chart-container chart-container-table">
+                <div class="table-card">
+                    <table class="data-table" id="station-ranking-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>变电站</th>
+                                <th>县区</th>
+                                <th>故障记录数</th>
+                                <th>独立事件数</th>
+                                <th>未闭环记录</th>
+                            </tr>
+                        </thead>
+                        <tbody id="station-ranking-body">
+                            <tr><td colspan="6" class="text-muted">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -208,38 +224,22 @@
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
-                <h3>故障语义分布</h3>
-                <div class="chart-subtitle">按故障记录统计，同一共因事件拆成多条记录时会分别计入</div>
+                <h3>月度故障趋势</h3>
+                <div class="chart-subtitle">蓝柱=故障记录数，绿线=独立事件数</div>
             </div>
             <div class="chart-container">
-                <canvas id="faultTypeChart"></canvas>
+                <canvas id="monthlyChart"></canvas>
             </div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
-                <h3>故障站点排行 Top 5</h3>
-                <div class="chart-subtitle">同时展示记录口径和去重后的事件口径</div>
+                <h3>故障语义分布</h3>
+                <div class="chart-subtitle">按故障记录统计，同一共因事件拆成多条记录时会分别计入</div>
             </div>
-            <div class="chart-container chart-container-table">
-                <div class="table-card">
-                    <table class="data-table" id="station-ranking-table">
-                        <thead>
-                            <tr>
-                                <th>排名</th>
-                                <th>变电站</th>
-                                <th>县区</th>
-                                <th>故障记录数</th>
-                                <th>独立事件数</th>
-                                <th>未闭环记录</th>
-                            </tr>
-                        </thead>
-                        <tbody id="station-ranking-body">
-                            <tr><td colspan="6" class="text-muted">加载中...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="chart-container">
+                <canvas id="faultTypeChart"></canvas>
             </div>
         </div>
     </div>
