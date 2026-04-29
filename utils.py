@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +16,58 @@ from db import (
 
 
 DEFAULT_BUSY_TIMEOUT_MS = 30000
+
+# ============================================================
+# SQL 标识符安全校验
+# ============================================================
+
+_SQL_IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def validate_sql_identifier(name: str, *, kind: str = "identifier") -> str:
+    """校验 SQL 标识符（表名、列名）是否只含安全字符。
+
+    防止通过 f-string 拼接时注入恶意 SQL。
+    仅允许 [A-Za-z_][A-Za-z0-9_]* 格式。
+
+    Args:
+        name: 待校验的标识符字符串。
+        kind: 标识符类型描述（用于错误信息），如 'table' 或 'column'。
+
+    Returns:
+        校验通过的标识符（原值）。
+
+    Raises:
+        ValueError: 标识符不合法时。
+    """
+    if not isinstance(name, str) or not name:
+        raise ValueError(f"SQL {kind} name must be a non-empty string, got: {name!r}")
+    if not _SQL_IDENTIFIER_RE.match(name):
+        raise ValueError(
+            f"Invalid SQL {kind} name: {name!r} "
+            f"(must match [A-Za-z_][A-Za-z0-9_]*)"
+        )
+    return name
+
+
+def validate_sql_type(type_str: str) -> str:
+    """校验 SQL 列类型字符串是否安全（仅允许常用 SQL 类型关键字和符号）。
+
+    Args:
+        type_str: SQL 列类型定义，如 'TEXT', 'INTEGER DEFAULT 0'。
+
+    Returns:
+        校验通过的字符串（原值）。
+
+    Raises:
+        ValueError: 类型字符串不合法时。
+    """
+    if not isinstance(type_str, str) or not type_str.strip():
+        raise ValueError(f"SQL type must be a non-empty string, got: {type_str!r}")
+    # 允许：字母、数字、空格、括号、逗号、等号、单引号（用于 DEFAULT 'xxx'）、下划线
+    if not re.match(r"^[A-Za-z0-9\s()'_,=]+$", type_str.strip()):
+        raise ValueError(f"Invalid SQL type definition: {type_str!r}")
+    return type_str
 
 
 def configure_sqlite_connection(
@@ -142,3 +195,35 @@ def init_app(app):
     import atexit
     from db import close_pool
     atexit.register(close_pool)
+
+
+def get_table_columns(db, table_name: str) -> set[str]:
+    """返回表的字段名集合（统一版本，带安全校验）。
+
+    自动适配 SQLite（PRAGMA table_info）和 PostgreSQL（information_schema）。
+
+    Args:
+        db: 数据库连接。
+        table_name: 表名（仅允许 [A-Za-z_][A-Za-z0-9_]* 格式）。
+
+    Returns:
+        字段名集合。
+    """
+    validate_sql_identifier(table_name, kind="table")
+    from project_access import table_exists
+    if not table_exists(db, table_name):
+        return set()
+    backend = get_db_backend_from_app() if current_app else "sqlite"
+    if backend == POSTGRES_BACKEND:
+        rows = db.execute(
+            """
+            SELECT column_name AS name
+            FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name = %s
+            ORDER BY ordinal_position
+            """,
+            (table_name,),
+        ).fetchall()
+    else:
+        rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {row["name"] for row in rows}

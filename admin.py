@@ -16,7 +16,7 @@ from werkzeug.utils import secure_filename
 from ai_fault_analysis import get_ai_runtime_status, probe_nvidia_health
 from photo_indexer import run_full_index, run_incremental_index, get_photo_stats, list_unmatched, manual_match_photo
 from project_access import get_project_by_code, projects_enabled, table_exists
-from utils import get_data_dir, get_db, get_db_integrity_error, get_db_operational_error, is_postgres_app
+from utils import get_data_dir, get_db, get_db_integrity_error, get_db_operational_error, is_postgres_app, validate_sql_identifier, validate_sql_type
 from import_batch_summary import build_import_batch_summary
 
 logger = logging.getLogger('station_monitor')
@@ -572,8 +572,8 @@ def add_camera():
 # ============================================================
 
 def _get_table_columns(db, table_name):
-    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
-    return {row["name"] for row in rows}
+    from utils import get_table_columns as _safe_get_table_columns
+    return _safe_get_table_columns(db, table_name)
 
 
 def ensure_camera_recorder_metadata_columns(db):
@@ -589,6 +589,8 @@ def ensure_camera_recorder_metadata_columns(db):
     for column_name, column_type in required_columns.items():
         if column_name in columns:
             continue
+        validate_sql_identifier(column_name, kind="column")
+        validate_sql_type(column_type)
         db.execute(f"ALTER TABLE cameras ADD COLUMN {column_name} {column_type}")
         columns.add(column_name)
 

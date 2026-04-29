@@ -239,6 +239,11 @@ def init_db(force=False):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_photo_status_updated ON photos(match_status, updated_at)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_alias_alias ON station_aliases(alias)")
 
+    # 复合索引：优化高频查询
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_status_time ON fault_reports(status, created_at)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_fault_station_status ON fault_reports(station_id, status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_camera_station_ip ON cameras(station_id, ip_address)")
+
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS login_attempts (

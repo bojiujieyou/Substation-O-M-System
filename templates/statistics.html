@@ -118,31 +118,6 @@
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
-                <h3>响应时长分布</h3>
-                <div class="chart-subtitle">帮助判断首响是否变慢</div>
-            </div>
-            <div class="chart-container">
-                <canvas id="responseBucketChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="chart-section">
-            <div class="chart-header">
-                <h3>闭环时长分布</h3>
-                <div class="chart-subtitle">帮助判断积压是否偏多</div>
-            </div>
-            <div class="chart-container">
-                <canvas id="closeBucketChart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="chart-section">
-            <div class="chart-header">
                 <h3>故障站点排行 Top 5</h3>
                 <div class="chart-subtitle">同时展示记录口径和去重后的事件口径</div>
             </div>
@@ -199,31 +174,6 @@
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
-                <h3>各县区故障统计</h3>
-                <div class="chart-subtitle">绿条=故障记录数，蓝线=独立事件数</div>
-            </div>
-            <div class="chart-container">
-                <canvas id="countyChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="chart-section">
-            <div class="chart-header">
-                <h3>各电压等级故障数量</h3>
-                <div class="chart-subtitle">按故障记录统计</div>
-            </div>
-            <div class="chart-container">
-                <canvas id="voltageChart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="chart-section">
-            <div class="chart-header">
                 <h3>月度故障趋势</h3>
                 <div class="chart-subtitle">蓝柱=故障记录数，绿线=独立事件数</div>
             </div>
@@ -235,11 +185,61 @@
     <div class="col-md-6">
         <div class="chart-section">
             <div class="chart-header">
+                <h3>各县区故障统计</h3>
+                <div class="chart-subtitle">绿条=故障记录数，蓝线=独立事件数</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="countyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>响应时长分布</h3>
+                <div class="chart-subtitle">帮助判断首响是否变慢</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="responseBucketChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>闭环时长分布</h3>
+                <div class="chart-subtitle">帮助判断积压是否偏多</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="closeBucketChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
                 <h3>故障语义分布</h3>
                 <div class="chart-subtitle">按故障记录统计，同一共因事件拆成多条记录时会分别计入</div>
             </div>
             <div class="chart-container">
                 <canvas id="faultTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>各电压等级故障数量</h3>
+                <div class="chart-subtitle">按故障记录统计</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="voltageChart"></canvas>
             </div>
         </div>
     </div>

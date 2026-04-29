@@ -342,43 +342,14 @@
 
         async function performSearch(query) {
             try {
-                const [stationsRes, faultsRes] = await Promise.allSettled([
-                    fetch(withProject('/api/stations')),
-                    fetch(withProject('/api/faults'))
-                ]);
-                const results = [];
-                if (stationsRes.status === 'fulfilled' && stationsRes.value.ok) {
-                    const data = await stationsRes.value.json();
-                    (data.stations || []).forEach(s => {
-                        const text = (s.name + ' ' + (s.county || '') + ' ' + (s.location || '')).toLowerCase();
-                        if (text.includes(query.toLowerCase())) {
-                            results.push({
-                                type: 'station',
-                                title: s.name,
-                                subtitle: (s.county || '') + ' · ' + (s.voltage_level || ''),
-                                url: withProject('/design/style2/stations')
-                            });
-                        }
-                    });
-                }
-                if (faultsRes.status === 'fulfilled' && faultsRes.value.ok) {
-                    const data = await faultsRes.value.json();
-                    (data.faults || []).forEach(f => {
-                        const text = (f.station_name + ' ' + (f.fault_type || '') + ' ' + (f.description || '') + ' #' + f.id).toLowerCase();
-                        if (text.includes(query.toLowerCase())) {
-                            results.push({
-                                type: 'fault',
-                                title: '#' + f.id + ' ' + (f.station_name || '-'),
-                                subtitle: (f.fault_type || '-') + ' · ' + ({open:'待处理',handling:'处理中',closed:'已关闭'}[f.status] || f.status),
-                                url: withProject('/design/style2/faults')
-                            });
-                        }
-                    });
-                }
+                const searchUrl = withProject('/api/search', { q: query });
+                const response = await fetch(searchUrl, { credentials: 'same-origin' });
+                const data = await response.json().catch(() => ({}));
+                const results = data.results || [];
                 if (!results.length) {
                     searchResults.innerHTML = '<div class="search-empty">未找到匹配结果</div>';
                 } else {
-                    searchResults.innerHTML = results.slice(0, 10).map(r => `
+                    searchResults.innerHTML = results.map(r => `
                         <a href="${r.url}" class="search-result-item">
                             <span class="search-result-type ${r.type}">${r.type === 'station' ? '站' : '障'}</span>
                             <div class="search-result-info">

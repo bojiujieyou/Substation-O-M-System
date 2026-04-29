@@ -29,8 +29,14 @@ def table_exists(db, table_name: str) -> bool:
 def get_table_columns(db, table_name: str) -> set[str]:
     if not table_exists(db, table_name):
         return set()
-    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
-    return {row["name"] for row in rows}
+    # 委托给 utils.py 的统一实现（带安全校验）
+    try:
+        from utils import get_table_columns as _get_table_columns
+        return _get_table_columns(db, table_name)
+    except Exception:
+        # fallback: 非请求上下文（如迁移脚本）中直接查询
+        rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+        return {row["name"] for row in rows}
 
 
 def projects_enabled(db) -> bool:

@@ -1,4 +1,4 @@
-﻿# app.py — Flask应用入口
+# app.py — Flask应用入口
 import os
 import math
 import logging
@@ -40,7 +40,7 @@ from project_access import (
     projects_enabled,
     table_exists,
 )
-from utils import get_db, close_db, init_app
+from utils import get_db, close_db, init_app, validate_sql_identifier, validate_sql_type
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -71,6 +71,17 @@ BASIC_SECURITY_HEADERS = {
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), geolocation=(), microphone=()',
+    'Content-Security-Policy': (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https://*.is.autonavi.com https://*.tile.openstreetmap.org https://unpkg.com; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    ),
 }
 
 
@@ -261,7 +272,8 @@ def require_token(f):
         if not token:
             return jsonify({'error': '令牌无效'}), 401
 
-        if token != Config.API_TOKEN:
+        # 使用常量时间比较防止时序攻击
+        if not Config.API_TOKEN or not hmac.compare_digest(token, Config.API_TOKEN):
             return jsonify({'error': '令牌无效或已过期'}), 403
 
         return f(*args, **kwargs)
@@ -466,9 +478,9 @@ def is_path_under_root(file_path, root_path):
 
 
 def get_table_columns(db, table_name):
-    """返回表字段集合，用于兼容旧 schema。"""
-    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
-    return {row["name"] for row in rows}
+    """返回表字段集合（委托给 utils.py 统一实现，带安全校验）。"""
+    from utils import get_table_columns as _get_table_columns
+    return _get_table_columns(db, table_name)
 
 
 def ensure_fault_report_multi_camera_schema(db):
@@ -490,11 +502,17 @@ def ensure_fault_report_multi_camera_schema(db):
     }
     for col_name, col_sql in root_cause_columns.items():
         if col_name not in columns:
+            validate_sql_identifier(col_name, kind="column")
+            validate_sql_type(col_sql)
             db.execute(f"ALTER TABLE fault_reports ADD COLUMN {col_name} {col_sql}")
             missing = True
     if missing:
         db.commit()
         columns = get_table_columns(db, "fault_reports")
+
+    # 复合索引：project_id + created_at（仅当列存在时创建）
+    if 'project_id' in columns:
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_project_time ON fault_reports(project_id, created_at)")
 
     if 'camera_slot_id' in columns and 'impact_camera_count' in columns:
         needs_fix = db.execute(
@@ -528,6 +546,8 @@ def ensure_fault_report_camera_detail_schema(db):
         }
         for col_name, col_sql in required_columns.items():
             if col_name not in columns:
+                validate_sql_identifier(col_name, kind="column")
+                validate_sql_type(col_sql)
                 db.execute(f"ALTER TABLE fault_report_cameras ADD COLUMN {col_name} {col_sql}")
                 missing = True
         db.execute("CREATE INDEX IF NOT EXISTS idx_fault_report_cameras_fault ON fault_report_cameras(fault_report_id)")
@@ -987,11 +1007,16 @@ def ensure_fault_report_soft_delete_schema(db):
     for column_name, column_sql in required_columns.items():
         if column_name in columns:
             continue
+        validate_sql_identifier(column_name, kind="column")
+        validate_sql_type(column_sql)
         db.execute(f"ALTER TABLE fault_reports ADD COLUMN {column_name} {column_sql}")
         missing = True
     if missing:
         db.commit()
         columns = get_table_columns(db, "fault_reports")
+    # 复合索引：deleted_at（用于软删除筛选）
+    if 'deleted_at' in columns:
+        db.execute("CREATE INDEX IF NOT EXISTS idx_fault_deleted_at ON fault_reports(deleted_at)")
     return columns
 
 
@@ -5378,6 +5403,108 @@ app.view_functions['get_photos'] = get_photos_scoped
 app.view_functions['get_photo_groups'] = get_photo_groups_scoped
 app.view_functions['get_photo_file'] = get_photo_file_scoped
 app.view_functions['get_photo_thumbnail'] = get_photo_thumbnail_scoped
+
+
+# ============================================================
+# 服务端搜索 API（替代前端全量加载搜索）
+# ============================================================
+
+@app.route('/api/search', methods=['GET'])
+def search():
+    """服务端搜索：按关键词匹配站点和故障，返回前 10 条结果。"""
+    q = (request.args.get('q') or '').strip()
+    if not q or len(q) < 1:
+        return api_success({'results': [], 'total': 0})
+
+    if 'user_id' not in session:
+        return api_error('请先登录', 401)
+
+    db = get_db()
+    project_scope, error = build_project_scope(db, request.args.get('project'))
+    if error:
+        return error
+
+    like_pattern = f'%{q}%'
+    results = []
+    limit = 10
+
+    # 搜索站点
+    station_params = [like_pattern, like_pattern, like_pattern]
+    station_project_clause = ''
+    if project_scope['enabled']:
+        camera_columns = get_table_columns(db, "cameras")
+        if 'project_id' in camera_columns:
+            station_project_clause = (
+                " AND EXISTS (SELECT 1 FROM cameras c WHERE c.station_id = s.id"
+                " AND c.project_id IN ({}) )".format(
+                    ','.join(['?'] * len(project_scope['project_ids']))
+                )
+            )
+            station_params.extend(project_scope['project_ids'])
+
+    stations = db.execute(
+        f"""
+        SELECT DISTINCT s.id, s.name, s.voltage_level, s.county
+        FROM stations s
+        WHERE (s.name LIKE ? OR s.county LIKE ? OR s.location LIKE ?)
+        {station_project_clause}
+        ORDER BY s.county, s.name
+        LIMIT ?
+        """,
+        station_params + [limit],
+    ).fetchall()
+
+    for s in stations:
+        results.append({
+            'type': 'station',
+            'title': s['name'],
+            'subtitle': f"{s['county'] or ''} · {s['voltage_level'] or ''}",
+            'url': f"/design/style2/stations?project={project_scope.get('project_code', '')}",
+        })
+
+    # 搜索故障
+    fault_report_columns = get_table_columns(db, "fault_reports")
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="f")
+    fault_project_clause = ''
+    fault_params = [like_pattern, like_pattern, like_pattern]
+    if project_scope['enabled'] and 'project_id' in fault_report_columns:
+        fault_project_clause = (
+            " AND f.project_id IN ({})".format(
+                ','.join(['?'] * len(project_scope['project_ids']))
+            )
+        )
+        fault_params.extend(project_scope['project_ids'])
+
+    faults = db.execute(
+        f"""
+        SELECT f.id, f.fault_type, f.status, f.station_id,
+               s.name AS station_name
+        FROM fault_reports f
+        LEFT JOIN stations s ON f.station_id = s.id
+        WHERE (f.description LIKE ? OR f.fault_type LIKE ? OR s.name LIKE ?)
+        {deleted_clause}
+        {fault_project_clause}
+        ORDER BY f.created_at DESC
+        LIMIT ?
+        """,
+        fault_params + [limit],
+    ).fetchall()
+
+    status_labels = {'open': '待处理', 'handling': '处理中', 'closed': '已关闭'}
+    for f in faults:
+        results.append({
+            'type': 'fault',
+            'title': f"#{f['id']} {f['station_name'] or '-'}",
+            'subtitle': f"{f['fault_type'] or '-'} · {status_labels.get(f['status'], f['status'])}",
+            'url': f"/design/style2/faults?project={project_scope.get('project_code', '')}",
+        })
+
+    results.sort(key=lambda r: r.get('title', ''))
+    return api_success({
+        'results': results[:limit],
+        'total': len(results),
+        'query': q,
+    })
 
 
 # ============================================================

@@ -40,9 +40,11 @@ logs/
 # Data (runtime)
 data/
 import_reports/
+backups/
 .context/
 .impeccable.md
 *.db.backup_*
+station_monitor.db.empty_*
 
 # Test/temp workdirs
 .pytest_tmp/
@@ -58,5 +60,4 @@ captures/
 
 # WorkBuddy local state
 .workbuddy/
-station_monitor.db.empty_*
 
