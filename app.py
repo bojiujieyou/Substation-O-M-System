@@ -253,6 +253,24 @@ def _safe_dispatch_fault_notification(db, fault_id: int, event_type: str):
         )
         return None
 
+
+def _sync_closed_fault_to_worklog(fault_id: int):
+    """闭环后自动写入工作记录.xlsx，失败不影响闭环本身。"""
+    try:
+        from worklog_sync import sync_fault_to_worklog
+        from utils import create_db_connection
+        db = create_db_connection(
+            Config.DATABASE_PATH,
+            database_url=Config.DATABASE_URL,
+            row_factory=True,
+            enable_wal=True,
+        )
+        sync_fault_to_worklog(db, fault_id)
+        db.close()
+    except Exception:
+        logger.exception("worklog_sync: failed for fault=%s", fault_id)
+
+
 # ============================================================
 # Token认证中间件（决策#1, #2）
 # ============================================================
@@ -3968,6 +3986,7 @@ def update_fault_status(fault_id):
     logger.info(f"Fault status updated: id={fault_id}, {current_status} -> {new_status}")
     if new_status == 'closed':
         _safe_dispatch_fault_notification(db, fault_id, 'fault_closed')
+        _sync_closed_fault_to_worklog(fault_id)
 
     return api_success({'message': f'状态已更新为 {new_status}'})
 
