@@ -3269,6 +3269,7 @@ def check_duplicate_faults():
     """检测同一站点+摄像机近期是否有未闭环故障。GET接口避免CSRF问题。"""
     station_id = request.args.get('station_id', type=int)
     camera_ids_str = request.args.get('camera_ids', '')
+    fault_type = request.args.get('fault_type', '').strip()
     camera_ids = []
     if camera_ids_str:
         try:
@@ -3291,7 +3292,12 @@ def check_duplicate_faults():
     seen_ids = set()
 
     if not camera_ids:
-        # 站点级检测
+        # 站点级检测：同站点 + 同类型
+        type_clause = ''
+        type_params = ()
+        if fault_type:
+            type_clause = ' AND fr.fault_type = ?'
+            type_params = (fault_type,)
         rows = db.execute(
             f"""
             SELECT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
@@ -3300,10 +3306,10 @@ def check_duplicate_faults():
             JOIN stations s ON fr.station_id = s.id
             WHERE fr.station_id = ?
               AND fr.status IN ('open', 'handling')
-              AND fr.created_at >= ?{deleted_clause}
+              AND fr.created_at >= ?{deleted_clause}{type_clause}
             ORDER BY fr.created_at DESC LIMIT 10
             """,
-            (station_id, cutoff),
+            (station_id, cutoff) + type_params,
         ).fetchall()
         for r in rows:
             duplicates.append({

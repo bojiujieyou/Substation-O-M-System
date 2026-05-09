@@ -1031,7 +1031,8 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
         // 先做重复检测
         const stationId = document.getElementById('station-select').value;
         const cameraIds = selectedCameraIds();
-        const params = new URLSearchParams({station_id: stationId});
+        const faultTypeVal = document.getElementById('fault-type').value || '';
+        const params = new URLSearchParams({station_id: stationId, fault_type: faultTypeVal});
         if (cameraIds.length) params.set('camera_ids', cameraIds.join(','));
 
         const dupResp = await fetch('/api/faults/duplicate-check?' + params.toString(), {credentials: 'same-origin'});
