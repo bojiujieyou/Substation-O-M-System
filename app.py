@@ -3265,7 +3265,6 @@ def get_camera_by_ip():
 # ============================================================
 
 @app.route('/api/faults/duplicate-check', methods=['POST'])
-@require_session_auth
 def check_duplicate_faults():
     """检测同一站点+摄像机近期是否有未闭环故障。"""
     data = request.get_json()
