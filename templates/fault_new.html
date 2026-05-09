@@ -937,7 +937,7 @@ function selectedFaultTypeOption() {
     return select.options[select.selectedIndex] || null;
 }
 
-document.getElementById('fault-form').addEventListener('submit', function(event) {
+document.getElementById('fault-form').addEventListener('submit', async function(event) {
     event.preventDefault();
     clearFieldErrors();
 
