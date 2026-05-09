@@ -3516,7 +3516,7 @@ def create_fault():
         suffix = f"：{'、'.join(labels)}" if labels else ''
         return api_error(f'以下摄像头5分钟内已有报修记录，请勿重复提交{suffix}', 409)
 
-    # 7天内重复故障检测
+    # 7天内重复故障检测：同站点 + 同故障类型 + 未闭环
     from datetime import datetime as _dt, timedelta as _td
     _cutoff_7d = (_dt.now() - _td(days=7)).strftime('%Y-%m-%d %H:%M:%S')
     _dup_existing = db.execute(
@@ -3533,9 +3533,11 @@ def create_fault():
         """,
         (data['station_id'], _cutoff_7d),
     ).fetchall()
-    if _dup_existing:
-        _dup_list = ', '.join('#' + str(r['id']) for r in _dup_existing)
-        return api_error(f'该站点近7天已有未闭环工单（{_dup_list}），请先处理后再报修', 409)
+    _new_fault_type = str(data.get('fault_type') or '').strip()
+    _dup_same_type = [r for r in _dup_existing if (r['fault_type'] or '') == _new_fault_type]
+    if _dup_same_type:
+        _dup_list = ', '.join('#' + str(r['id']) for r in _dup_same_type)
+        return api_error(f'该站点近7天已有同类型未闭环工单（{_dup_list}），请先处理后再报修', 409)
 
     # 插入故障记录
     try:
