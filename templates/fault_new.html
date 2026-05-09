@@ -971,30 +971,54 @@ document.getElementById('fault-form').addEventListener('submit', function(event)
     const projectName = document.querySelector(`#project-select option[value="${projectCode}"]`)?.textContent || projectCode;
     const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue || '待现场确认';
 
+    // 重复故障检测（在弹窗前异步检查）
+    const cameraIds = selectedCameraIds();
+    let duplicateWarningHtml = '';
+    try {
+        const dupResp = await fetch('/api/faults/duplicate-check', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ station_id: parseInt(stationId, 10), camera_ids: cameraIds })
+        });
+        if (dupResp.ok) {
+            const dupData = await dupResp.json();
+            if (dupData.duplicates && dupData.duplicates.length > 0) {
+                const items = dupData.duplicates.map(d => {
+                    const camInfo = d.camera_name ? ` · ${escapeHtml(d.camera_name)}` : '';
+                    const handler = d.handler_name ? ` · ${escapeHtml(d.handler_name)}` : '';
+                    return `<div style="padding:4px 0;font-size:13px;color:var(--text-primary);line-height:1.5;">\n                        #${d.fault_id}${camInfo} \u300c${escapeHtml(d.fault_type)}\u300d\u2014\u2014 ${d.status_label}${handler}\n                    </div>`;
+                }).join('');
+                duplicateWarningHtml = `<div style="margin:0 -20px;padding:12px 20px;background:rgba(255,159,10,0.08);border-top:1px solid rgba(255,159,10,0.2);border-bottom:1px solid rgba(255,159,10,0.2);">\n                    <div style="font-size:13px;font-weight:600;color:#c47a00;margin-bottom:6px;">\u26a0\ufe0f \u8fd17\u5929\u5df2\u6709 ${dupData.count} \u6761\u672a\u95ed\u73af\u6545\u969c\uff1a</div>\n                    ${items}\n                    <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">\u4ecd\u8981\u7ee7\u7eed\u63d0\u4ea4\uff1f</div>\n                </div>`;
+            }
+        }
+    } catch(e) { /* 检测失败不影响提交 */ }
+
     document.getElementById('confirm-body').innerHTML = `
         <div>
+            ${duplicateWarningHtml}
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">项目</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u9879\u76ee</span>
                 <span style="font-weight: 600;">${escapeHtml(projectName)}</span>
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">变电站</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u53d8\u7535\u7ad9</span>
                 <span style="font-weight: 600;">${escapeHtml(stationName)}</span>
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">摄像头</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u6444\u50cf\u5934</span>
                 <span style="font-weight: 600;">${escapeHtml(cameraCountLabel)}</span>
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">明细</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u660e\u7ec6</span>
                 <span style="font-weight: 600; line-height: 1.7;">${escapeHtml(cameraSummary)}</span>
             </div>
             <div style="display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">故障类型</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u6545\u969c\u7c7b\u578b</span>
                 <span style="font-weight: 600;">${escapeHtml(faultTypeLabel)}</span>
             </div>
             <div style="display: flex; padding: 12px 0;">
-                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">报修人</span>
+                <span style="width: 80px; color: var(--text-secondary); font-size: 13px;">\u62a5\u4fee\u4eba</span>
                 <span style="font-weight: 600;">${escapeHtml(reporterName)}</span>
             </div>
         </div>

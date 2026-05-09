@@ -3261,6 +3261,93 @@ def get_camera_by_ip():
     return api_success({'camera': dict(camera)})
 
 # ============================================================
+# API: 重复故障检测
+# ============================================================
+
+@app.route('/api/faults/duplicate-check', methods=['POST'])
+@require_session_auth
+def check_duplicate_faults():
+    """检测同一站点+摄像机近期是否有未闭环故障。"""
+    data = request.get_json()
+    station_id = data.get('station_id')
+    camera_ids = data.get('camera_ids') or []
+
+    if not station_id:
+        return jsonify({'duplicates': []})
+
+    db = get_db()
+    fault_report_columns = ensure_fault_report_multi_camera_schema(db)
+    deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
+
+    days_window = int(data.get('days', 7))
+    days_param = f'-{days_window} days'
+
+    duplicates = []
+    seen_ids = set()
+
+    if not camera_ids:
+        # 站点级检测
+        rows = db.execute(
+            f"""
+            SELECT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
+                   s.name AS station_name
+            FROM fault_reports fr
+            JOIN stations s ON fr.station_id = s.id
+            WHERE fr.station_id = ?
+              AND fr.status IN ('open', 'handling')
+              AND fr.created_at >= datetime('now', ?){deleted_clause}
+            ORDER BY fr.created_at DESC LIMIT 10
+            """,
+            (station_id, days_param),
+        ).fetchall()
+        for r in rows:
+            duplicates.append({
+                'fault_id': r['id'],
+                'fault_type': r['fault_type'] or '',
+                'status': r['status'],
+                'handler_name': r['handler_name'] or '',
+                'created_at': r['created_at'],
+                'camera_name': None,
+            })
+            seen_ids.add(r['id'])
+    else:
+        # 按摄像机关联检测
+        for cid in camera_ids:
+            rows = db.execute(
+                f"""
+                SELECT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
+                       c.location_desc AS camera_name
+                FROM fault_reports fr
+                JOIN fault_report_cameras frc ON frc.fault_report_id = fr.id
+                JOIN cameras c ON frc.camera_id = c.id
+                WHERE fr.station_id = ?
+                  AND frc.camera_id = ?
+                  AND fr.status IN ('open', 'handling')
+                  AND fr.created_at >= datetime('now', ?){deleted_clause}
+                ORDER BY fr.created_at DESC LIMIT 5
+                """,
+                (station_id, cid, days_param),
+            ).fetchall()
+            for r in rows:
+                if r['id'] not in seen_ids:
+                    duplicates.append({
+                        'fault_id': r['id'],
+                        'fault_type': r['fault_type'] or '',
+                        'status': r['status'],
+                        'handler_name': r['handler_name'] or '',
+                        'created_at': r['created_at'],
+                        'camera_name': r['camera_name'],
+                    })
+                    seen_ids.add(r['id'])
+
+    status_label = {'open': '待处理', 'handling': '处理中'}
+    for d in duplicates:
+        d['status_label'] = status_label.get(d['status'], d['status'])
+
+    return jsonify({'duplicates': duplicates, 'count': len(duplicates)})
+
+
+# ============================================================
 # API: 故障提交（决策#7：幂等键）
 # ============================================================
 
