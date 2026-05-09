@@ -972,14 +972,13 @@ document.getElementById('fault-form').addEventListener('submit', async function(
     const faultTypeLabel = faultTypeOption?.dataset.label || faultTypeValue || '待现场确认';
 
     // 重复故障检测（在弹窗前异步检查）
-    const cameraIds = selectedCameraIds();
     let duplicateWarningHtml = '';
     try {
-        const dupResp = await fetch('/api/faults/duplicate-check', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ station_id: parseInt(stationId, 10), camera_ids: cameraIds })
+        const camIds = selectedCameraIds();
+        const params = new URLSearchParams({station_id: stationId});
+        if (camIds.length) params.set('camera_ids', camIds.join(','));
+        const dupResp = await fetch('/api/faults/duplicate-check?' + params.toString(), {
+            credentials: 'same-origin'
         });
         if (dupResp.ok) {
             const dupData = await dupResp.json();

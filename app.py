@@ -3264,12 +3264,17 @@ def get_camera_by_ip():
 # API: 重复故障检测
 # ============================================================
 
-@app.route('/api/faults/duplicate-check', methods=['POST'])
+@app.route('/api/faults/duplicate-check', methods=['GET'])
 def check_duplicate_faults():
-    """检测同一站点+摄像机近期是否有未闭环故障。"""
-    data = request.get_json()
-    station_id = data.get('station_id')
-    camera_ids = data.get('camera_ids') or []
+    """检测同一站点+摄像机近期是否有未闭环故障。GET接口避免CSRF问题。"""
+    station_id = request.args.get('station_id', type=int)
+    camera_ids_str = request.args.get('camera_ids', '')
+    camera_ids = []
+    if camera_ids_str:
+        try:
+            camera_ids = [int(x) for x in camera_ids_str.split(',') if x.strip()]
+        except (ValueError, TypeError):
+            pass
 
     if not station_id:
         return jsonify({'duplicates': []})
@@ -3278,7 +3283,7 @@ def check_duplicate_faults():
     fault_report_columns = ensure_fault_report_multi_camera_schema(db)
     deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
 
-    days_window = int(data.get('days', 7))
+    days_window = int(request.args.get('days', 7))
     from datetime import datetime as _dt, timedelta as _td
     cutoff = (_dt.now() - _td(days=days_window)).strftime('%Y-%m-%d %H:%M:%S')
 
