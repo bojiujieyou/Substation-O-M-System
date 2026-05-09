@@ -1056,7 +1056,7 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
                 document.getElementById('duplicate-confirm').onclick = function() {
                     bootstrap.Modal.getInstance(document.getElementById('duplicate-modal')).hide();
                     // 继续执行真正的提交
-                    doSubmitFault();
+                    void doSubmitFault();
                 };
 
                 // 隐藏确认弹窗，显示重复提示弹窗
@@ -1067,11 +1067,11 @@ document.getElementById('confirm-submit').addEventListener('click', async functi
         }
 
         // 无重复，直接提交
-        doSubmitFault();
+        void doSubmitFault();
 
     } catch (error) {
         // 检测失败时也允许直接提交
-        doSubmitFault();
+        void doSubmitFault();
     }
 });
 
@@ -1130,7 +1130,7 @@ async function doSubmitFault() {
         submitBtn.disabled = false;
         btn.textContent = '确认提交';
     }
-});
+}
 
 document.getElementById('project-select').addEventListener('change', async function() {
     currentProjectCode = this.value;
