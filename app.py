@@ -3279,7 +3279,8 @@ def check_duplicate_faults():
     deleted_clause = build_fault_deleted_clause(fault_report_columns, alias="", mode="active")
 
     days_window = int(data.get('days', 7))
-    days_param = f'-{days_window} days'
+    from datetime import datetime as _dt, timedelta as _td
+    cutoff = (_dt.now() - _td(days=days_window)).strftime('%Y-%m-%d %H:%M:%S')
 
     duplicates = []
     seen_ids = set()
@@ -3294,10 +3295,10 @@ def check_duplicate_faults():
             JOIN stations s ON fr.station_id = s.id
             WHERE fr.station_id = ?
               AND fr.status IN ('open', 'handling')
-              AND fr.created_at >= datetime('now', ?){deleted_clause}
+              AND fr.created_at >= ?{deleted_clause}
             ORDER BY fr.created_at DESC LIMIT 10
             """,
-            (station_id, days_param),
+            (station_id, cutoff),
         ).fetchall()
         for r in rows:
             duplicates.append({
@@ -3322,10 +3323,10 @@ def check_duplicate_faults():
                 WHERE fr.station_id = ?
                   AND frc.camera_id = ?
                   AND fr.status IN ('open', 'handling')
-                  AND fr.created_at >= datetime('now', ?){deleted_clause}
+                  AND fr.created_at >= ?{deleted_clause}
                 ORDER BY fr.created_at DESC LIMIT 5
                 """,
-                (station_id, cid, days_param),
+                (station_id, cid, cutoff),
             ).fetchall()
             for r in rows:
                 if r['id'] not in seen_ids:
