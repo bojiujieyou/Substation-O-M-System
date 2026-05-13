@@ -43,6 +43,25 @@ from project_access import (
 from utils import get_db, close_db, init_app, validate_sql_identifier, validate_sql_type
 
 app = Flask(__name__)
+
+# 让 Flask jsonify 把 datetime 序列化为 ISO 格式而非 RFC GMT 格式
+# 避免 PostgreSQL timestamp 无时区信息被前端误认为 UTC 导致显示偏移8小时
+from flask.json.provider import DefaultJSONProvider
+
+
+class _ISOJSONProvider(DefaultJSONProvider):
+    def default(self, o):
+        import datetime as _dt
+        if isinstance(o, _dt.datetime):
+            return o.replace(microsecond=0).isoformat(' ')
+        if isinstance(o, _dt.date):
+            return o.isoformat()
+        return super().default(o)
+
+
+app.json_provider_class = _ISOJSONProvider
+app.json = _ISOJSONProvider(app)
+
 app.config.from_object(Config)
 validate_runtime_config()
 app.config['SECRET_KEY'] = Config.SECRET_KEY
@@ -751,9 +770,16 @@ def summarize_fault_camera_details(camera_details):
             self_recovered_count += 1
         recovery_segments.append(f"{label}（{CAMERA_RECOVERY_STATE_LABELS.get(recovery_state, recovery_state)}）")
 
+    # 列表页摄像机名称截断：最多显示前3个，超过加"等N台"
+    max_display = 3
+    if len(labels) <= max_display:
+        locations_text = '、'.join(labels)
+    else:
+        locations_text = '、'.join(labels[:max_display]) + f'等{len(labels)}台'
+
     return {
         'camera_labels': labels,
-        'camera_locations_text': '、'.join(labels),
+        'camera_locations_text': locations_text,
         'camera_recovery_text': '；'.join(recovery_segments),
         'resolved_count': resolved_count,
         'self_recovered_count': self_recovered_count,

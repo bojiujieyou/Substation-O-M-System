@@ -245,9 +245,15 @@
 }
 
 .fault-summary-meta,
-.fault-station-meta,
 .fault-timeline-note,
 .fault-time-note {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.fault-station-meta {
     margin-top: 4px;
     font-size: 12px;
     line-height: 1.6;
@@ -2908,7 +2914,7 @@ function renderFaults(faults) {
             <td data-label="所属站点">
                 <div class="fault-station-name">${escapeHtml(fault.station_name || '-')}</div>
                 <div class="fault-station-meta">${escapeHtml(cameraSummaryText)}</div>
-                ${isAggregatedFault && fault.camera_locations_text ? `<div class="fault-station-meta">${escapeHtml(fault.camera_locations_text)}</div>` : ''}
+                ${isAggregatedFault && fault.camera_locations_text && fault.camera_locations_text !== cameraSummaryText ? `<div class="fault-station-meta">${escapeHtml(fault.camera_locations_text)}</div>` : ''}
             </td>
             <td data-label="状态">
                 <div class="fault-state-stack">${renderFaultStateBadges(fault)}</div>
