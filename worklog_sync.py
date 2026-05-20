@@ -143,28 +143,65 @@ def _format_equipment(equipment_type, equipment_quantity) -> str:
     return f"{qty}{etype}"
 
 
+def _looks_generic_note(handler_note: str) -> bool:
+    """判断处理备注是否过于笼统，需要自动补充点位信息。"""
+    note = str(handler_note or "").strip()
+    if not note:
+        return True
+    generic_notes = {
+        "摄像机故障更换",
+        "故障更换",
+        "故障处理",
+        "摄像机故障处理",
+        "更换故障摄像机",
+        "摄像机故障",
+        "更换",
+        "维修",
+        "恢复",
+        "处理",
+    }
+    if note in generic_notes:
+        return True
+    # 这些词一旦出现，通常已经属于较具体的现场描述
+    if any(word in note for word in (
+        "排查", "后恢复", "恢复正常", "水晶头", "光纤", "收发器", "接口", "网线",
+        "集中电源", "空开", "制作", "敷设", "拆除", "松动", "异常", "断电", "未恢复"
+    )):
+        return False
+    if len(note) <= 8:
+        return True
+    return False
+
+
+def _build_default_tail(fault_type: str, action: str) -> str:
+    """构建兜底尾部文案。"""
+    if fault_type == "摄像机故障" and action == "更换":
+        return "摄像机故障更换"
+    if fault_type:
+        return f"{fault_type}{action}" if action and action not in fault_type else fault_type
+    return action or "故障处理"
+
+
+def _labels_preview(labels: list[str], max_count: int = 3) -> str:
+    if len(labels) <= max_count:
+        return "、".join(labels)
+    return f"{'、'.join(labels[:max_count])}等{len(labels)}处"
+
+
 def _build_description(camera_labels: list, fault_type: str, handler_note: str) -> str:
     """
     自动拼接故障描述。
 
-    目标：尽量明确写出“摄像机编号/位置 + 故障原因/处理动作”。
-    例如：
-      - "蓄电池室2-16#球机更换故障摄像机"
-      - "室外大门口-1#球机、室外场地东北侧-2#球机等6处摄像机故障处理"
-      - "未识别具体摄像机，摄像机故障更换"
+    规则尽量贴近历史工作记录写法：
+    1. 备注已经很具体时，优先保留原备注
+    2. 备注过于笼统时，自动补齐摄像机点位
+    3. 多摄像机时保留前3个点位，避免描述过长
     """
     fault_type = _normalize_fault_type(fault_type)
-    handler_note = str(handler_note or "").strip()
+    handler_note = str(handler_note or "").strip().strip('；;，,。')
     action = _infer_action(handler_note)
-
-    # 优先使用处理备注；如果备注过短或过泛，再退回“故障类型 + 动作”
-    tail = handler_note
-    if not tail:
-        tail = f"{fault_type}{action}" if fault_type else action
-    elif fault_type and fault_type not in tail and action not in tail:
-        tail = f"{fault_type}{action}"
-    elif fault_type and fault_type not in tail and any(word in tail for word in ("更换", "维修", "修复", "恢复", "调试", "消缺", "处理")):
-        tail = f"{fault_type}{tail}"
+    default_tail = _build_default_tail(fault_type, action)
+    generic_tail = handler_note or default_tail
 
     normalized_labels = []
     seen = set()
@@ -176,16 +213,26 @@ def _build_description(camera_labels: list, fault_type: str, handler_note: str) 
         normalized_labels.append(label)
 
     if not normalized_labels:
-        return f"未识别具体摄像机，{tail}" if tail else "未识别具体摄像机故障处理"
+        if handler_note:
+            return f"未识别具体摄像机，{handler_note}"
+        return f"未识别具体摄像机，{default_tail}"
 
+    # 备注已包含任一点位，直接保留原始丰富写法
+    if handler_note and any(label in handler_note for label in normalized_labels):
+        return handler_note
+
+    # 单摄像机：优先写成“点位 + 具体备注”
     if len(normalized_labels) == 1:
-        return f"{normalized_labels[0]}{tail}"
+        label = normalized_labels[0]
+        if handler_note and not _looks_generic_note(handler_note):
+            return f"{label}{handler_note}"
+        return f"{label}{generic_tail}"
 
-    # 多摄像机：保留前3个具体点位，兼顾可读性和明确性
-    preview = "、".join(normalized_labels[:3])
-    if len(normalized_labels) > 3:
-        return f"{preview}等{len(normalized_labels)}处{tail}"
-    return f"{preview}{tail}"
+    # 多摄像机：优先保留点位预览，再接丰富备注；过于笼统时走兜底写法
+    preview = _labels_preview(normalized_labels)
+    if handler_note and not _looks_generic_note(handler_note):
+        return f"{preview}{handler_note}"
+    return f"{preview}{generic_tail}"
 
 
 def _find_or_create_year_section(ws, year: int) -> tuple:
