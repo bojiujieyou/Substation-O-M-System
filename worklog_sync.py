@@ -97,6 +97,20 @@ def _infer_action(handler_note: str) -> str:
     return "处理"
 
 
+def _normalize_fault_type(fault_type: str) -> str:
+    """将平台故障类型归一为更适合写入工作记录的短语。"""
+    text = str(fault_type or "").strip()
+    if not text:
+        return ""
+    if text == "摄像机/球机/枪机故障":
+        return "摄像机故障"
+    if text == "网络掉线/通信异常":
+        return "通信异常"
+    if text == "集中电源/供电异常":
+        return "供电异常"
+    return text
+
+
 def _map_system_type(system_type) -> str:
     """将 system_type 映射为工作记录的类型列。"""
     if not system_type:
@@ -132,30 +146,46 @@ def _format_equipment(equipment_type, equipment_quantity) -> str:
 def _build_description(camera_labels: list, fault_type: str, handler_note: str) -> str:
     """
     自动拼接故障描述。
-    格式：摄像机位置 + 故障类型 + 处理方式
-    例如："110kV场地西侧摄像机故障更换"
+
+    目标：尽量明确写出“摄像机编号/位置 + 故障原因/处理动作”。
+    例如：
+      - "蓄电池室2-16#球机更换故障摄像机"
+      - "室外大门口-1#球机、室外场地东北侧-2#球机等6处摄像机故障处理"
+      - "未识别具体摄像机，摄像机故障更换"
     """
+    fault_type = _normalize_fault_type(fault_type)
+    handler_note = str(handler_note or "").strip()
     action = _infer_action(handler_note)
 
-    if not camera_labels:
-        # 无摄像机关联，直接用 handler_note
-        return handler_note if handler_note else fault_type
+    # 优先使用处理备注；如果备注过短或过泛，再退回“故障类型 + 动作”
+    tail = handler_note
+    if not tail:
+        tail = f"{fault_type}{action}" if fault_type else action
+    elif fault_type and fault_type not in tail and action not in tail:
+        tail = f"{fault_type}{action}"
+    elif fault_type and fault_type not in tail and any(word in tail for word in ("更换", "维修", "修复", "恢复", "调试", "消缺", "处理")):
+        tail = f"{fault_type}{tail}"
 
-    if len(camera_labels) == 1:
-        label = camera_labels[0]
-        # 判断 label 是否已经包含"摄像机"等关键词
-        if "摄像机" in label or "球机" in label or "枪机" in label or "云台" in label:
-            return f"{label}{fault_type}{action}"
-        else:
-            return f"{label}{fault_type}{action}"
+    normalized_labels = []
+    seen = set()
+    for raw_label in camera_labels or []:
+        label = str(raw_label or "").strip()
+        if not label or label in seen:
+            continue
+        seen.add(label)
+        normalized_labels.append(label)
 
-    # 多摄像机：列出位置 + 处理方式
-    # 简化处理，把多个位置用"、"连接
-    joined = "、".join(camera_labels)
-    if len(joined) > 60:
-        # 太长就只写数量
-        return f"共{len(camera_labels)}处{fault_type}{action}"
-    return f"{joined}{fault_type}{action}"
+    if not normalized_labels:
+        return f"未识别具体摄像机，{tail}" if tail else "未识别具体摄像机故障处理"
+
+    if len(normalized_labels) == 1:
+        return f"{normalized_labels[0]}{tail}"
+
+    # 多摄像机：保留前3个具体点位，兼顾可读性和明确性
+    preview = "、".join(normalized_labels[:3])
+    if len(normalized_labels) > 3:
+        return f"{preview}等{len(normalized_labels)}处{tail}"
+    return f"{preview}{tail}"
 
 
 def _find_or_create_year_section(ws, year: int) -> tuple:
@@ -273,7 +303,7 @@ def sync_fault_to_worklog(
     fault = db.execute(
         """
         SELECT
-            fr.id, fr.station_id, fr.fault_type, fr.handler_name,
+            fr.id, fr.station_id, fr.camera_id, fr.fault_type, fr.handler_name,
             fr.handler_note, fr.equipment_type, fr.equipment_quantity,
             fr.closed_at, fr.system_type, fr.status,
             s.name AS station_name, s.county AS station_county
@@ -322,6 +352,33 @@ def sync_fault_to_worklog(
     except Exception:
         # fault_report_cameras 表可能不存在（老数据）
         pass
+
+    # 兼容老数据：如果明细表没取到，再尝试主摄像机
+    if not camera_labels and fault.get("camera_id"):
+        try:
+            cam = db.execute(
+                """
+                SELECT location_desc, area, camera_index
+                FROM cameras
+                WHERE id = ?
+                """,
+                (fault["camera_id"],),
+            ).fetchone()
+            if cam:
+                label = str(cam["location_desc"] or "").strip()
+                if not label:
+                    area = str(cam["area"] or "").strip()
+                    idx = str(cam["camera_index"] or "").strip()
+                    if area and idx:
+                        label = f"{area}{idx}"
+                    elif area:
+                        label = area
+                    elif idx:
+                        label = f"#{idx}"
+                if label:
+                    camera_labels.append(label)
+        except Exception:
+            pass
 
     # 3. 构建各字段
     closed_dt = _parse_closed_at(fault["closed_at"])
