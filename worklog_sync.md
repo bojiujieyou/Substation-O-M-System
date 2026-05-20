@@ -17,17 +17,19 @@ _sync_closed_fault_to_worklog(fault_id)
 ```
 故障闭环 (app.py)
   │
-  ├─ fault_reports: fault_type, handler_name, handler_note, closed_at,
-  │                 equipment_type, equipment_quantity, system_type
+  ├─ fault_reports: camera_id, fault_type, handler_name, handler_note,
+  │                 closed_at, equipment_type, equipment_quantity, system_type
   ├─ stations: name (→ 去掉 110kV/220kV 前缀), county
-  ├─ fault_report_cameras → cameras: location_desc, area, camera_index
+  ├─ 优先查 fault_report_cameras → cameras: location_desc, area, camera_index
+  ├─ 若明细缺失，回退 fault_reports.camera_id → cameras
   │
   ▼
 worklog_sync.sync_fault_to_worklog(db, fault_id)
   │
-  ├─ 拼接故障描述：摄像机位置 + 故障类型 + 处理方式
+  ├─ 归一化故障类型（如“摄像机/球机/枪机故障”→“摄像机故障”）
+  ├─ 参考历史工作记录风格生成故障描述
   ├─ 定位工作记录.xlsx 中当前年份区域
-  ├─ 追加一行
+  ├─ 追加一行并复制上一行样式
   │
   ▼
 工作记录.xlsx（8列）
@@ -47,17 +49,60 @@ worklog_sync.sync_fault_to_worklog(db, fault_id)
 | 甲供 | `equipment_type` + `equipment_quantity` | `摄像机` × 1 → `1台摄像机`，无量词自动补"台"，0或空则留空 |
 | 工作负责人 | `handler_name` | 如 `殷彬` |
 
-## 描述拼接规则
+## 描述生成规则
 
-从 `handler_note` 中提取处理方式关键词（更换/维修/恢复/消缺/制作/拆除/敷设/调试等），拼接格式：
+当前逻辑不再采用“机械拼接固定模板”，而是**尽量贴近既有工作记录.xlsx 的人工写法**。
 
-| 场景 | 输出 |
+### 核心原则
+
+1. **优先保留具体处理备注**
+   - 如 `水晶头松动，重新制作`
+   - 如 `排查维修后恢复`
+   - 如 `集中电源接口故障，更换后恢复`
+
+2. **备注过于笼统时自动补摄像机点位**
+   - `摄像机故障更换` → `主控室北侧-8#球机摄像机故障更换`
+   - `更换故障摄像机` → `蓄电池室2-16#球机更换故障摄像机`
+
+3. **多摄像机时保留前几个点位，避免描述失控变长**
+   - `主控楼楼顶南侧6#摄像机、主控楼楼顶东南侧7#摄像机更换`
+   - `室外大门口-3#摄像机、110kV场地西南侧-4#球机、110kV场地东北侧-6#球机线路重新敷设，更换故障摄像机`
+
+4. **明细表缺失时回退主摄像机**
+   - 优先 `fault_report_cameras`
+   - 取不到时回退 `fault_reports.camera_id`
+
+5. **仍然无法识别摄像机时明确标注，而不是默默写笼统描述**
+   - `未识别具体摄像机，摄像机故障更换`
+
+### 典型输出样式
+
+| 场景 | 输出示例 |
 |---|---|
-| 单摄像机，位置含"摄像机" | `主控楼门厅侧摄像机故障更换` |
-| 单摄像机，位置不含 | `110kV场地西侧摄像机故障更换` |
-| 多摄像机，总长度 ≤ 60字 | `大门北侧-1#、大门东侧-5#摄像机故障更换` |
-| 多摄像机，总长度 > 60字 | `共6处交换机/供电异常更换` |
-| 无摄像机关联 | 直接用 `handler_note` 原文 |
+| 单摄像机 + 泛备注 | `主控室北侧-8#球机摄像机故障更换` |
+| 单摄像机 + 具体备注 | `继保室-11#摄像机排查维修后恢复` |
+| 单摄像机 + 具体原因 | `#2主变西北侧32#球机（补强）水晶头松动，重新制作` |
+| 多摄像机 + 泛备注 | `主控楼楼顶南侧6#摄像机、主控楼楼顶东南侧7#摄像机更换` |
+| 多摄像机 + 具体备注 | `室外大门口-3#摄像机、110kV场地西南侧-4#球机、110kV场地东北侧-6#球机线路重新敷设，更换故障摄像机` |
+| 无摄像机关联 | `未识别具体摄像机，摄像机故障更换` |
+
+### 泛备注识别
+
+以下备注会被视为过于笼统，系统会自动补点位：
+
+- `摄像机故障更换`
+- `故障更换`
+- `故障处理`
+- `摄像机故障处理`
+- `更换故障摄像机`
+- `更换 / 维修 / 恢复 / 处理`
+
+而出现以下信息时，通常会保留原备注：
+
+- `排查 / 恢复正常 / 未恢复`
+- `水晶头 / 光纤 / 收发器 / 接口 / 网线`
+- `集中电源 / 空开 / 重新制作 / 重新敷设 / 拆除`
+- `松动 / 异常 / 断电`
 
 ## 年份区域定位
 
@@ -97,10 +142,14 @@ worklog_sync.sync_fault_to_worklog(db, fault_id)
 SELECT fr.*, s.name AS station_name, s.county AS station_county
 FROM fault_reports fr JOIN stations s ON fr.station_id = s.id WHERE fr.id = ?
 
--- 查关联摄像机
+-- 优先查关联摄像机明细
 SELECT c.location_desc, c.area, c.camera_index
 FROM fault_report_cameras frc JOIN cameras c ON frc.camera_id = c.id
 WHERE frc.fault_report_id = ?
+
+-- 明细缺失时回退主摄像机
+SELECT location_desc, area, camera_index
+FROM cameras WHERE id = ?
 ```
 
 ## 与差旅报销的衔接
@@ -125,3 +174,5 @@ WHERE frc.fault_report_id = ?
 - 写入操作是追加式的，不会修改或删除已有数据
 - 如果工作记录.xlsx 被其他程序占用（如 Excel 打开），写入会失败，但不影响闭环
 - 同一条故障如果被反复闭环（理论上不会，状态机不允许），会重复写入。去重由幂等性设计在平台侧保证
+- 故障描述的目标是“**清楚、像人工工作记录**”，而不是统一成死板模板；后续可继续根据历史记录样本迭代
+- 若 `handler_note` 本身已经非常具体，系统会尽量保留其原始语义，而不是强行改写成平台术语
