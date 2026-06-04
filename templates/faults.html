@@ -1277,6 +1277,10 @@ button.slot-history-item:focus-visible {
                     <div class="form-group">
                         <label for="handler-note" class="form-label">处理结果 <span class="required">*</span></label>
                         <textarea id="handler-note" class="form-input-modal" rows="3" required placeholder="请输入处理方法和结果"></textarea>
+                        <select id="handler-note-preset" class="form-select-input" style="margin-top: 8px;">
+                            <option value="">选择常用处理结果（可选）</option>
+                        </select>
+                        <div class="field-note">可直接选择常用写法，也可继续手动补充细节。</div>
                     </div>
                     <div class="form-group">
                         <label for="equipment-type" class="form-label">更换设备类型</label>
@@ -1464,6 +1468,48 @@ const FAULT_TYPE_MULTI_CODE_SEPARATOR = ',';
 const PENDING_FAULT_TYPE_LABEL = '待现场确认';
 const is_admin = {{ is_admin | tojson }};
 const can_edit_tags = {{ can_edit_tags | tojson }};
+
+const HANDLE_NOTE_PRESET_OPTIONS = [
+    '摄像机故障更换',
+    '更换故障摄像机',
+    '排查维修后恢复',
+    '重做水晶头后恢复',
+    '水晶头松动，重新制作',
+    '光纤收发器故障更换后恢复',
+    '集中电源故障，更换后恢复',
+    '接口故障，更换后恢复正常',
+    '网线故障，重新制作后恢复',
+    '线路重新敷设后恢复'
+];
+
+function populateHandleNotePresetOptions() {
+    const select = document.getElementById('handler-note-preset');
+    if (!select) return;
+    select.innerHTML = '<option value="">选择常用处理结果（可选）</option>' +
+        HANDLE_NOTE_PRESET_OPTIONS.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+}
+
+function appendHandleNotePreset(value) {
+    const textarea = document.getElementById('handler-note');
+    const select = document.getElementById('handler-note-preset');
+    if (!textarea || !value) {
+        if (select) select.value = '';
+        return;
+    }
+    const current = textarea.value.trim();
+    if (!current) {
+        textarea.value = value;
+    } else if (!current.includes(value)) {
+        const separator = /[；;，,。]$/.test(current) ? '' : '；';
+        textarea.value = `${current}${separator}${value}`;
+    }
+    if (select) select.value = '';
+}
+
+populateHandleNotePresetOptions();
+document.getElementById('handler-note-preset')?.addEventListener('change', function() {
+    appendHandleNotePreset(this.value);
+});
 
 // 分页状态
 let currentPage = 1;
@@ -3425,6 +3471,40 @@ function buildCameraDetailPayload(detail) {
     };
 }
 
+const HANDLE_CAMERA_REASON_OPTIONS = [
+    '摄像机故障',
+    '水晶头松动',
+    '光纤收发器故障',
+    '网线故障',
+    '集中电源故障',
+    '接口故障',
+    '交换机故障',
+    '断电',
+    '通信异常'
+];
+
+const HANDLE_CAMERA_RESOLUTION_OPTIONS = [
+    '故障更换',
+    '更换故障摄像机',
+    '排查维修后恢复',
+    '重做水晶头后恢复',
+    '更换光纤收发器后恢复',
+    '重新制作',
+    '重新敷设',
+    '更换后恢复正常'
+];
+
+function renderHandleCameraDetailsDatalists() {
+    return `
+        <datalist id="handle-camera-reason-options">
+            ${HANDLE_CAMERA_REASON_OPTIONS.map((item) => `<option value="${escapeHtml(item)}"></option>`).join('')}
+        </datalist>
+        <datalist id="handle-camera-resolution-options">
+            ${HANDLE_CAMERA_RESOLUTION_OPTIONS.map((item) => `<option value="${escapeHtml(item)}"></option>`).join('')}
+        </datalist>
+    `;
+}
+
 function renderHandleCameraDetails(fault) {
     const section = document.getElementById('handle-camera-details-section');
     const list = document.getElementById('handle-camera-details-list');
@@ -3438,7 +3518,7 @@ function renderHandleCameraDetails(fault) {
     }
 
     section.style.display = '';
-    list.innerHTML = details.map((detail, index) => {
+    list.innerHTML = renderHandleCameraDetailsDatalists() + details.map((detail, index) => {
         const label = getCameraDetailLabel(detail);
         const currentRecovery = detail.recovery_state || 'pending';
         return `
@@ -3451,8 +3531,8 @@ function renderHandleCameraDetails(fault) {
                     </select>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <input type="text" class="form-input-modal handle-camera-reason" data-camera-id="${detail.camera_id}" placeholder="故障原因（可选）" value="${escapeHtml(detail.detail_fault_reason || '')}" style="font-size: 12px; padding: 4px 8px;">
-                    <input type="text" class="form-input-modal handle-camera-resolution" data-camera-id="${detail.camera_id}" placeholder="处理方式（可选）" value="${escapeHtml(detail.detail_resolution || '')}" style="font-size: 12px; padding: 4px 8px;">
+                    <input type="text" class="form-input-modal handle-camera-reason" data-camera-id="${detail.camera_id}" list="handle-camera-reason-options" placeholder="故障原因（可选）" value="${escapeHtml(detail.detail_fault_reason || '')}" style="font-size: 12px; padding: 4px 8px;">
+                    <input type="text" class="form-input-modal handle-camera-resolution" data-camera-id="${detail.camera_id}" list="handle-camera-resolution-options" placeholder="处理方式（可选）" value="${escapeHtml(detail.detail_resolution || '')}" style="font-size: 12px; padding: 4px 8px;">
                 </div>
                 <input type="text" class="form-input-modal handle-camera-note" data-camera-id="${detail.camera_id}" placeholder="备注（可选）" value="${escapeHtml(detail.detail_note || '')}" style="font-size: 12px; padding: 4px 8px; margin-top: 6px; width: 100%;">
             </div>

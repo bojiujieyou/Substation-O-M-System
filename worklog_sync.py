@@ -201,7 +201,8 @@ def _build_description(camera_labels: list, fault_type: str, handler_note: str) 
     handler_note = str(handler_note or "").strip().strip('；;，,。')
     action = _infer_action(handler_note)
     default_tail = _build_default_tail(fault_type, action)
-    generic_tail = handler_note or default_tail
+    is_generic_note = _looks_generic_note(handler_note)
+    generic_tail = default_tail if is_generic_note else (handler_note or default_tail)
 
     normalized_labels = []
     seen = set()
@@ -224,13 +225,13 @@ def _build_description(camera_labels: list, fault_type: str, handler_note: str) 
     # 单摄像机：优先写成“点位 + 具体备注”
     if len(normalized_labels) == 1:
         label = normalized_labels[0]
-        if handler_note and not _looks_generic_note(handler_note):
+        if handler_note and not is_generic_note:
             return f"{label}{handler_note}"
         return f"{label}{generic_tail}"
 
     # 多摄像机：优先保留点位预览，再接丰富备注；过于笼统时走兜底写法
     preview = _labels_preview(normalized_labels)
-    if handler_note and not _looks_generic_note(handler_note):
+    if handler_note and not is_generic_note:
         return f"{preview}{handler_note}"
     return f"{preview}{generic_tail}"
 
