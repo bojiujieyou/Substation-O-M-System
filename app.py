@@ -3292,7 +3292,7 @@ def get_camera_by_ip():
 
 @app.route('/api/faults/duplicate-check', methods=['GET'])
 def check_duplicate_faults():
-    """检测同一站点+摄像机近期是否有未闭环故障。GET接口避免CSRF问题。"""
+    """检测同一站点+同类型+摄像机有交集的近期未闭环故障。GET接口避免CSRF问题。"""
     station_id = request.args.get('station_id', type=int)
     camera_ids_str = request.args.get('camera_ids', '')
     fault_type = request.args.get('fault_type', '').strip()
@@ -3303,8 +3303,8 @@ def check_duplicate_faults():
         except (ValueError, TypeError):
             pass
 
-    if not station_id:
-        return jsonify({'duplicates': []})
+    if not station_id or not camera_ids:
+        return jsonify({'duplicates': [], 'count': 0})
 
     db = get_db()
     fault_report_columns = ensure_fault_report_multi_camera_schema(db)
@@ -3314,74 +3314,51 @@ def check_duplicate_faults():
     from datetime import datetime as _dt, timedelta as _td
     cutoff = (_dt.now() - _td(days=days_window)).strftime('%Y-%m-%d %H:%M:%S')
 
-    duplicates = []
-    seen_ids = set()
+    placeholders = ', '.join(['?'] * len(camera_ids))
+    type_clause = ''
+    params = [station_id, cutoff]
+    if fault_type:
+        type_clause = ' AND fr.fault_type = ?'
+        params.append(fault_type)
+    params.extend(camera_ids)
+    params.extend(camera_ids)
 
-    if not camera_ids:
-        # 站点级检测：同站点 + 同类型
-        type_clause = ''
-        type_params = ()
-        if fault_type:
-            type_clause = ' AND fr.fault_type = ?'
-            type_params = (fault_type,)
-        rows = db.execute(
-            f"""
-            SELECT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
-                   s.name AS station_name
-            FROM fault_reports fr
-            JOIN stations s ON fr.station_id = s.id
-            WHERE fr.station_id = ?
-              AND fr.status IN ('open', 'handling')
-              AND fr.created_at >= ?{deleted_clause}{type_clause}
-            ORDER BY fr.created_at DESC LIMIT 10
-            """,
-            (station_id, cutoff) + type_params,
-        ).fetchall()
-        for r in rows:
-            duplicates.append({
-                'fault_id': r['id'],
-                'fault_type': r['fault_type'] or '',
-                'status': r['status'],
-                'handler_name': r['handler_name'] or '',
-                'created_at': r['created_at'],
-                'camera_name': None,
-            })
-            seen_ids.add(r['id'])
-    else:
-        # 按摄像机关联检测
-        for cid in camera_ids:
-            rows = db.execute(
-                f"""
-                SELECT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
-                       c.location_desc AS camera_name
-                FROM fault_reports fr
-                JOIN fault_report_cameras frc ON frc.fault_report_id = fr.id
-                JOIN cameras c ON frc.camera_id = c.id
-                WHERE fr.station_id = ?
-                  AND frc.camera_id = ?
-                  AND fr.status IN ('open', 'handling')
-                  AND fr.created_at >= ?{deleted_clause}
-                ORDER BY fr.created_at DESC LIMIT 5
-                """,
-                (station_id, cid, cutoff),
-            ).fetchall()
-            for r in rows:
-                if r['id'] not in seen_ids:
-                    duplicates.append({
-                        'fault_id': r['id'],
-                        'fault_type': r['fault_type'] or '',
-                        'status': r['status'],
-                        'handler_name': r['handler_name'] or '',
-                        'created_at': r['created_at'],
-                        'camera_name': r['camera_name'],
-                    })
-                    seen_ids.add(r['id'])
+    rows = db.execute(
+        f"""
+        SELECT DISTINCT fr.id, fr.fault_type, fr.status, fr.handler_name, fr.created_at,
+               COALESCE(c.location_desc, c2.location_desc, c.area, c2.area, CAST(COALESCE(frc.camera_id, fr.camera_id) AS TEXT)) AS camera_name
+        FROM fault_reports fr
+        LEFT JOIN fault_report_cameras frc ON frc.fault_report_id = fr.id
+        LEFT JOIN cameras c ON frc.camera_id = c.id
+        LEFT JOIN cameras c2 ON fr.camera_id = c2.id
+        WHERE fr.station_id = ?
+          AND fr.status IN ('open', 'handling')
+          AND fr.created_at >= ?{deleted_clause}{type_clause}
+          AND (
+                frc.camera_id IN ({placeholders})
+                OR fr.camera_id IN ({placeholders})
+              )
+        ORDER BY fr.created_at DESC
+        LIMIT 10
+        """,
+        params,
+    ).fetchall()
 
     status_label = {'open': '待处理', 'handling': '处理中'}
-    for d in duplicates:
-        d['status_label'] = status_label.get(d['status'], d['status'])
+    duplicates = []
+    for r in rows:
+        duplicates.append({
+            'fault_id': r['id'],
+            'fault_type': r['fault_type'] or '',
+            'status': r['status'],
+            'handler_name': r['handler_name'] or '',
+            'created_at': r['created_at'],
+            'camera_name': r['camera_name'],
+            'status_label': status_label.get(r['status'], r['status']),
+        })
 
     return jsonify({'duplicates': duplicates, 'count': len(duplicates)})
+
 
 
 # ============================================================
@@ -3548,28 +3525,35 @@ def create_fault():
         suffix = f"：{'、'.join(labels)}" if labels else ''
         return api_error(f'以下摄像头5分钟内已有报修记录，请勿重复提交{suffix}', 409)
 
-    # 7天内重复故障检测：同站点 + 同故障类型 + 未闭环
-    from datetime import datetime as _dt, timedelta as _td
-    _cutoff_7d = (_dt.now() - _td(days=7)).strftime('%Y-%m-%d %H:%M:%S')
-    _dup_existing = db.execute(
-        """
-        SELECT fr.id, fr.fault_type, fr.status, fr.created_at,
-               s.name AS station_name
-        FROM fault_reports fr
-        JOIN stations s ON fr.station_id = s.id
-        WHERE fr.station_id = ?
-          AND fr.status IN ('open', 'handling')
-          AND fr.created_at >= ?
-          AND fr.deleted_at IS NULL
-        ORDER BY fr.created_at DESC
-        """,
-        (data['station_id'], _cutoff_7d),
-    ).fetchall()
-    _new_fault_type = str(data.get('fault_type') or '').strip()
-    _dup_same_type = [r for r in _dup_existing if (r['fault_type'] or '') == _new_fault_type]
-    if _dup_same_type:
-        _dup_list = ', '.join('#' + str(r['id']) for r in _dup_same_type)
-        return api_error(f'该站点近7天已有同类型未闭环工单（{_dup_list}），请先处理后再报修', 409)
+    # 7天内重复故障检测：同站点 + 同故障类型 + 摄像机有交集 + 未闭环
+    if selected_camera_ids:
+        from datetime import datetime as _dt, timedelta as _td
+        _cutoff_7d = (_dt.now() - _td(days=7)).strftime('%Y-%m-%d %H:%M:%S')
+        _placeholders = ', '.join(['?'] * len(selected_camera_ids))
+        _dup_existing = db.execute(
+            f"""
+            SELECT DISTINCT fr.id, fr.fault_type, fr.status, fr.created_at,
+                   COALESCE(c.location_desc, c2.location_desc, c.area, c2.area, CAST(COALESCE(frc.camera_id, fr.camera_id) AS TEXT)) AS camera_name
+            FROM fault_reports fr
+            LEFT JOIN fault_report_cameras frc ON frc.fault_report_id = fr.id
+            LEFT JOIN cameras c ON frc.camera_id = c.id
+            LEFT JOIN cameras c2 ON fr.camera_id = c2.id
+            WHERE fr.station_id = ?
+              AND fr.status IN ('open', 'handling')
+              AND fr.created_at >= ?
+              AND fr.deleted_at IS NULL
+              AND fr.fault_type = ?
+              AND (
+                    frc.camera_id IN ({_placeholders})
+                    OR fr.camera_id IN ({_placeholders})
+                  )
+            ORDER BY fr.created_at DESC
+            """,
+            [data['station_id'], _cutoff_7d, str(data.get('fault_type') or '').strip(), *selected_camera_ids, *selected_camera_ids],
+        ).fetchall()
+        if _dup_existing:
+            _dup_list = ', '.join('#' + str(r['id']) for r in _dup_existing)
+            return api_error(f'所选摄像头近7天已有同类型未闭环工单（{_dup_list}），请先处理后再报修', 409)
 
     # 插入故障记录
     try:
